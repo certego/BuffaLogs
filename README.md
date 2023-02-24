@@ -1,5 +1,51 @@
-#   BuffaLogs
+# BuffaLogs is participating in GSoC 2023 thanks to Honeynet project and IntelOwl!
 
+### The Honeynet Project
+<a href="https://www.honeynet.org"> <img style="border: 0.2px solid black" width=115 height=150 src="https://user-images.githubusercontent.com/188858/221210754-7cdd600a-0a86-4718-863a-41091cf8b600.png" alt="Honeynet.org logo"> </a>
+
+### IntelOwl
+<a href="https://github.com/intelowlproject/IntelOwl/blob/master/README.md"><img src="https://user-images.githubusercontent.com/188858/221217292-25c1b3e4-cadb-491c-ac6a-d6d204d52e50.png" width=547 height=150 alt="Intel Owl"/> </a>
+
+### Google Summer Of Code
+
+Since its birth, this project has been participating in the GSoC under the Honeynet Project!
+
+* 2023: [Project available](https://github.com/intelowlproject/gsoc/tree/main/2023#4-login-monitoring-and-alerting-project)
+
+Stay tuned for the upcoming GSoC! Join the [Honeynet Slack chat](https://gsoc-slack.honeynet.org/) for more info.
+
+### GSoC Application process
+
+#### 0. Get familiar with GSoC
+
+First of all, and if you have not done that yet, read [the contributor guide](https://google.github.io/gsocguides/student/) which will allow you to understand all this process and how the program works overall. Refer to its left side menu to quick access sections that may interest you the most, although we recommend you to read everything.  
+  
+#### 1. Discuss the project idea with the mentor(s)
+
+This is a required step and you can use the current issues as a start to propose your idea.
+
+We are not limited to what is listed right now, if you want to propose a new idea, please discuss it with the mentors in Honeynet [slack](https://gsoc-slack.honeynet.org/) channel `#2023-buffalogs`. We're always open to new ideas and won't hesitate on choosing them if you demonstrate to be a good candidate!  
+  
+#### 2. Understand that
+
+- You're committing to a project and we ask you to publicly publish your weekly progress on it in Github.
+- We will ask you to give feedback on our mentorship and management continuously. Communication is key to the success of the project.
+- You wholeheartedly agree with the [code of conduct](https://github.com/intelowlproject/IntelOwl/blob/master/CODE_OF_CONDUCT.md).
+- You must tell us if there's any proposed idea that you don't think would fit the timeline or could be boring (yes, we're asking for feedback).
+  
+#### 3. Fill out the application form
+
+We recommend you to follow [Google's guide to Writing a Proposal](https://google.github.io/gsocguides/student/writing-a-proposal).
+
+Once you have a draft proposal please share it with us via gsoc [slack](https://gsoc-slack.honeynet.org/) channel `#2023-buffalogs`.
+
+You can also ask for a review anytime to the community or mentor candidates before the contributor application deadline. It's much easier if you get feedback early than to wait for the last moment.
+
+### Official communication channels
+* [Slack chat](https://gsoc-slack.honeynet.org/)
+
+
+# Buffalogs
 BuffaLogs is an Open Source Django Project whose main purpose is to detect impossible travel logins.
 
 In details, it sends several types of alerts:
