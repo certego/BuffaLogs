@@ -1,10 +1,8 @@
 # BuffaLogs is participating in GSoC 2023 thanks to Honeynet project and IntelOwl!
 
-### The Honeynet Project
-<a href="https://www.honeynet.org"> <img style="border: 0.2px solid black" width=115 height=150 src="https://user-images.githubusercontent.com/188858/221210754-7cdd600a-0a86-4718-863a-41091cf8b600.png" alt="Honeynet.org logo"> </a>
-
-### IntelOwl
-<a href="https://github.com/intelowlproject/IntelOwl/blob/master/README.md"><img src="https://user-images.githubusercontent.com/188858/221217292-25c1b3e4-cadb-491c-ac6a-d6d204d52e50.png" width=547 height=150 alt="Intel Owl"/> </a>
+| Honeynet | IntelOwl|
+|------|-----|
+|<a href="https://www.honeynet.org"> <img style="border: 0.2px solid black" width=115 height=150 src="https://user-images.githubusercontent.com/188858/221210754-7cdd600a-0a86-4718-863a-41091cf8b600.png" alt="Honeynet.org logo"> </a> | <a href="https://github.com/intelowlproject/IntelOwl/blob/master/README.md"><img src="https://user-images.githubusercontent.com/188858/221217292-25c1b3e4-cadb-491c-ac6a-d6d204d52e50.png" width=275 height=75 alt="Intel Owl"/> </a> |
 
 ### Google Summer Of Code
 
