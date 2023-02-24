@@ -1,4 +1,4 @@
-# Buffalogs
+# BuffaLogs
 BuffaLogs is an Open Source Django Project whose main purpose is to detect impossible travel logins.
 
 In details, it sends several types of alerts:
