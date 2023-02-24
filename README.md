@@ -1,4 +1,22 @@
-# BuffaLogs is participating in GSoC 2023 thanks to Honeynet project and IntelOwl!
+# Buffalogs
+BuffaLogs is an Open Source Django Project whose main purpose is to detect impossible travel logins.
+
+In details, it sends several types of alerts:
+1.  **Impossible Travel**
+
+    It occurs when a user logs into the system from a significant distance within a range of time that cannot be covered by conventional means of transport.
+
+2.  **Login from new device**
+
+    This alert is sent if the user utilizes a new appliance.
+
+3.  **Login from a new country**
+
+    This alert is dispatched if the system is logged by a user from a country where they have never authenticated before.
+
+*For futher details: [Wiki - About](https://github.com/certego/BuffaLogs/wiki/1.-About)*
+
+## BuffaLogs is participating in GSoC 2023 thanks to Honeynet project and IntelOwl!
 
 | Honeynet | IntelOwl|
 |------|-----|
@@ -41,25 +59,6 @@ You can also ask for a review anytime to the community or mentor candidates befo
 
 ### Official communication channels
 * [Slack chat](https://gsoc-slack.honeynet.org/)
-
-
-# Buffalogs
-BuffaLogs is an Open Source Django Project whose main purpose is to detect impossible travel logins.
-
-In details, it sends several types of alerts:
-1.  **Impossible Travel**
-
-    It occurs when a user logs into the system from a significant distance within a range of time that cannot be covered by conventional means of transport.
-
-2.  **Login from new device**
-
-    This alert is sent if the user utilizes a new appliance.
-
-3.  **Login from a new country**
-
-    This alert is dispatched if the system is logged by a user from a country where they have never authenticated before.
-
-*For futher details: [Wiki - About](https://github.com/certego/BuffaLogs/wiki/1.-About)*
 
 ##  Installation & Running
 BuffaLogs employs the following tools which have to be installed on the machine:
