@@ -1,0 +1,108 @@
+.content{
+    background-color: #dee2e6;
+}
+.users-pie-container{
+    background-color:  #2d353c;
+    border-radius: 20px;
+    position: absolute;
+    margin: 50px;
+    width: 24%;
+    height: 35%;
+    margin-left: 300px;
+}
+.alerts-line-container{
+    background-color: #2d353c;
+    position: absolute;
+    width: 35%;
+    height: 35%;
+    margin-left: 1000px;
+    margin-top: 50px; 
+    border-radius: 20px;
+}
+
+.container-title{
+    color: #dee2e6;
+    margin: 15px;
+}
+.fa-info-circle {
+    color: #dee2e6;
+    margin-left: 5px;
+}
+.container-graphic{
+    margin: 10px;
+}
+.container-title .title-span{
+    visibility: hidden;
+    background-color: #2d353c;
+    color: #dee2e6;
+    text-align: center;
+    border-radius: 6px;
+    position: absolute;
+    margin-left: -90px;
+    margin-bottom: 10px;
+    bottom: 100%;
+    width: 250px;
+    padding: 5px;
+}
+#alerts-span{
+    left: 53%;
+    margin-left: -420px;
+    margin-bottom: 10px;
+    height: 80px;
+}
+.container-title:hover .title-span{
+    visibility: visible;
+}
+.container-title .title-span::after {
+    content: " ";
+    position: absolute;
+    top: 100%; /* At the bottom of the tooltip */
+    left: 40%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+  }
+.breadcrumb-title{
+    margin-left: 300px;
+    padding-top: 40px;
+}
+#reportrange{
+    margin-top: 20px;
+    margin-left: 300px;
+}
+.btn btn-dark me-2 text-truncate{
+    cursor: pointer; 
+    padding: 5px 10px; 
+    border: 1px solid #dee2e6; 
+    width: 100%;
+}
+
+.live-alerts-container{
+    background-color:  #2d353c;
+    border-radius: 20px;
+    position: absolute;
+    margin: 50px;
+    width: 25%;
+    height: 82.7%;
+    margin-left: 2000px;
+}
+#live-alerts-span{
+    left: 12%;
+    height: 3%;
+}
+.world-map-container{
+    background-color:  #2d353c;
+    border-radius: 20px;
+    position: absolute;
+    margin: 600px;
+    width: 61%;
+    height: 45%;
+    margin-left: 300px;
+}
+#users-span{
+    left: 40%;
+}
+#all-alerts-span{
+    left: 11.5%;
+}

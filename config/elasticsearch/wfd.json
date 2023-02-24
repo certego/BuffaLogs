@@ -1,0 +1,164 @@
+{
+  "index_patterns": [
+    "javascript-*",
+    "weblog-*",
+    "feedback-*"
+  ],
+  "settings": {
+    "index.search.slowlog.threshold.query.warn": "10s",
+    "index.search.slowlog.threshold.query.info": "5s",
+    "index.search.slowlog.threshold.query.debug": "2s",
+    "index.search.slowlog.threshold.query.trace": "0ms",
+    "index.search.slowlog.level": "debug",
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "index.mapping.total_fields.limit": 10000,
+    "refresh_interval": "20s",
+    "analysis": {
+      "analyzer": {
+        "path_analyzer": {
+          "type": "custom",
+          "tokenizer": "path_hierarchy",
+          "filter": [
+            "lowercase"
+          ]
+        },
+        "domain_analyzer": {
+          "type": "custom",
+          "tokenizer": "domain_name_tokenizer",
+          "filter": [
+            "lowercase"
+          ]
+        },
+        "mail_analyzer": {
+          "type": "custom",
+          "tokenizer": "email_tokenizer",
+          "filter": [
+            "lowercase"
+          ],
+          "char_filter": "email_angle_bracket_filter"
+        },
+        "note_analyzer": {
+          "type": "custom",
+          "tokenizer": "note_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "domain_name_tokenizer": {
+          "type": "path_hierarchy",
+          "delimiter": ".",
+          "reverse": true
+        },
+        "note_tokenizer": {
+          "type": "simple_pattern_split",
+          "pattern": "::"
+        },
+        "email_tokenizer": {
+          "type": "simple_pattern_split",
+          "pattern": "\\@"
+        }
+      },
+      "char_filter": {
+        "email_angle_bracket_filter": {
+          "type": "mapping",
+          "mappings": [
+            "< => ",
+            "> => "
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "_meta": {
+      "version": "1.6.0-dev"
+    },
+    "date_detection": false,
+    "dynamic_templates": [
+      {
+        "strings_as_keyword": {
+          "mapping": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "match_mapping_type": "string"
+        }
+      }
+    ],
+    "properties": {
+      "@timestamp": {
+        "type": "date"
+      },
+      "certego": {
+        "properties": {
+          "sender": {
+            "properties": {
+              "ip": { "type": "ip" }
+            }
+          }
+        }
+      },
+      "login_timestamp": {
+        "type": "date"
+      },
+      "referrer": {
+        "norms": false,
+        "type": "text",
+        "analyzer": "path_analyzer"
+      },
+      "referrer_domain": {
+        "type": "keyword",
+        "fields": {
+          "text": {
+            "norms": false,
+            "type": "text",
+            "analyzer": "domain_analyzer"
+          }
+        }
+      },
+      "request": {
+        "norms": false,
+        "type": "text",
+        "analyzer": "path_analyzer"
+      },
+      "srcip": {
+        "type": "keyword"
+      },
+      "syslog_host": {
+        "type": "ip"
+      },
+      "geoip": {
+        "properties": {
+          "ip": {
+            "type": "ip"
+          }
+        }
+      },
+      "headers": {
+        "properties": {
+          "iv_remote_address": {
+            "type": "keyword"
+          },
+          "x_forwarded_for": {
+            "type": "keyword"
+          },
+          "origin": {
+            "norms": false,
+            "type": "text",
+            "analyzer": "path_analyzer"
+          },
+          "referer": {
+            "norms": false,
+            "type": "text",
+            "analyzer": "path_analyzer"
+          },
+          "request_path": {
+            "norms": false,
+            "type": "text",
+            "analyzer": "path_analyzer"
+          }
+        }
+      }
+    }
+  }
+}

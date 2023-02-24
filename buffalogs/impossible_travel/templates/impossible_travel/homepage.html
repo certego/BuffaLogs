@@ -1,0 +1,83 @@
+{% extends "impossible_travel/base.html" %} 
+{% load static %} 
+
+{% block title %}
+    Homepage
+{% endblock %}
+
+{% block head_content %}
+
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+{% endblock %}
+
+{% block body_content %}
+<div id="content">
+    <h1 class="breadcrumb-title">Dashboard</h1>
+    <!-- style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%" -->
+    <div class="d-sm-flex align-items-center mb-3"></div>
+        <div id="reportrange" data-startdate="{{startdate}}" data-enddate="{{enddate}}">
+            <a href="#" class="btn btn-dark me-2 text-truncate" id="daterange-filter">
+                <i class="fa fa-calendar"></i>
+                <span></span> <i class="fa fa-caret-down"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="users-pie-container">
+        <div class="container-title">
+            <b>USERS RISK SCORE ANALYTICS</b>
+            <i class="fa fa-info-circle" aria-hidden="true"></i><span id="users-span" class="title-span">Number of users with No Risk, Low, Medium and High risk level whose level has been updated in the time range provided</span>
+        </div> 
+        <div class="container-graphic">
+            {% autoescape off %}<figure>{{users_pie_context}}</figure>{% endautoescape %}
+        </div>
+    </div>
+
+    <div class="alerts-line-container">
+        <div class="container-title">
+            <b>ALERTS ANALYTICS</b>
+            <i class="fa fa-info-circle" aria-hidden="true"></i><span id="alerts-span" class="title-span">Number of alerts shown per hour, day or month according to the time range chosen</span>
+        </div> 
+        <div class="container-graphic">
+            {% autoescape off %}<figure>{{alerts_line_context}}</figure>{% endautoescape %}
+        </div>
+    </div>
+
+    <div class="world-map-container">
+        <div class="container-title">
+            <b>ALERTS BY LOCATION</b>
+            <i class="fa fa-info-circle" aria-hidden="true"></i><span id="all-alerts-span" class="title-span">Number of alerts distibuted in the world according to the location of the corresponding login</span>
+        </div> 
+        <div class="container-graphic">
+            {% autoescape off %}<figure><embed type="image/svg+xml" src="{{world_map_context}}"/></figure>{% endautoescape %}
+        </div>
+    </div>
+
+    <div class="live-alerts-container">
+        <div class="container-title">
+            <b>ALERTS</b>
+            <i class="fa fa-info-circle" aria-hidden="true"></i><span id="live-alerts-span" class="title-span">Incoming alerts</span>
+        </div> 
+        <div class="container-graphic">
+            <div id="myGrid" class="ag-theme-alpine-dark"></div>
+        </div>
+    </div>
+</div>
+    
+
+{% endblock %}
+
+
+{% block extend_scripts %}
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="{% static 'js/homepage.js' %}"></script>
+{% endblock %}

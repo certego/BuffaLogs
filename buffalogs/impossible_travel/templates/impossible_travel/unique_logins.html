@@ -1,0 +1,29 @@
+{% extends "impossible_travel/base.html" %} 
+{% load static %} 
+
+{% block title %} All logins {% endblock %} 
+
+{% block head_content %} 
+    <link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css"/>
+      <link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css"/>
+     
+    <link rel="stylesheet" href="{% static 'css/unique_logins.css' %}"> 
+
+{% endblock %} 
+
+{% block body_content %}
+
+<div class="float-container">
+  
+  <div id="myGrid" class="ag-theme-alpine-dark"></div>
+  
+</div>
+
+{% endblock %} 
+
+{% block extend_scripts %} 
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+    <script src="{% static 'js/unique_logins.js' %}"></script>
+{% endblock %}
