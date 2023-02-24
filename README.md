@@ -26,7 +26,7 @@ In details, it sends several types of alerts:
 
 Since its birth, this project has been participating in the GSoC under the Honeynet Project!
 
-* 2023: [Project available](https://github.com/intelowlproject/gsoc/tree/main/2023#4-login-monitoring-and-alerting-project)
+* 2023: [Project available](https://github.com/intelowlproject/gsoc/tree/main/2023#4-buffalogs-login-monitoring-and-alerting-project)
 
 Stay tuned for the upcoming GSoC! Join the [Honeynet Slack chat](https://gsoc-slack.honeynet.org/) for more info.
 
