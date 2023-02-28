@@ -37,7 +37,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "impossible_travel",
+    "crispy_forms",
+    "crispy_bootstrap5"
 ]
+
+#login/registration form templates
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -195,3 +202,8 @@ CELERY_BEAT_SCHEDULE = {
     },
     "update_risk_level": {"task": "UpdateRiskLevelTask", "schedule": crontab(minute=10)},
 }
+
+#login/logout redirect urls
+LOGIN_REDIRECT_URL = "/home"
+LOGOUT_REDIRECT_URL = "/users/login"
+LOGIN_URL = "/users/login"
