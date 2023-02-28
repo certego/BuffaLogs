@@ -38,6 +38,7 @@
         </header>
         <ul class="nav">
           <li>
+            <p><span class="navbar-text">Welcome {{user.username}}!</span></p>
             <a href="{%  url 'homepage' %}">
               <i class="zmdi zmdi-widgets"></i> Dashboard
             </a>
@@ -47,6 +48,21 @@
               <i class="zmdi zmdi-link"></i> Users
             </a>
           </li>
+          <!--Added link to logout logged in users-->
+          {% if user.is_authenticated %}
+          
+          <li>
+            <a href="{%  url 'logout' %}">
+              <i class="zmdi zmdi-link"></i> Logout
+            </a>
+          </li>
+          {% else %}
+          <li>
+            <a href="{%  url 'register' %}">
+              <i class="zmdi zmdi-link"></i> Login
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </div>

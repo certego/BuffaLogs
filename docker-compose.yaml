@@ -71,7 +71,7 @@ services:
             - nginx_sockets:/var/run/nginx-sockets
             - nginx_logs:/var/log/nginx:rw
         ports:
-            - "80:80"
+            - "8000:8000"
 
     buffalogs:
         container_name: buffalogs
