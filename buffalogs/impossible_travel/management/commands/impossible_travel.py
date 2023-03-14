@@ -1,21 +1,46 @@
+import logging
 from datetime import timedelta
 
+from impossible_travel.models import TaskSettings, User
+from impossible_travel.modules import impossible_travel
+from impossible_travel.tasks import process_logs, process_user
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from impossible_travel.tasks import process_logs, update_risk_level
+from elasticsearch_dsl import Search, connections
 
 
 class Command(BaseCommand):
     help = "Impossible Travel tasks call"
 
     def handle(self, *args, **options):
-        interval = 30
-        start_date = timezone.datetime(2023, 2, 22, 15, 0, 0)
-        end_date = timezone.datetime(2023, 2, 22, 23, 59, 59)
-        current_date = start_date
-        while current_date < end_date:
-            new_date = current_date + timedelta(minutes=interval)
-            process_logs()
-            current_date = new_date
-            update_risk_level()
+        logger = logging.getLogger()
+        imp_travel = impossible_travel.Impossible_Travel()
+        now = timezone.now()
+        while True:
+            try:
+                process_task = TaskSettings.objects.get(task_name=process_logs.__name__)
+                start_date = process_task.end_date
+                end_date = start_date + timedelta(minutes=30)
+                process_task.start_date = start_date
+                process_task.end_date = end_date
+                process_task.save()
+            except ObjectDoesNotExist:
+                end_date = timezone.now()
+                start_date = end_date + timedelta(minutes=-30)
+                TaskSettings.objects.create(task_name=process_logs.__name__, start_date=start_date, end_date=end_date)
+
+            logger = logging.getLogger()
+            logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
+            connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90)
+            s = Search(index="cloud-*").filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}}).exclude("match", **{"event.outcome": "failure"})
+            s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
+            response = s.execute()
+
+            for user in response.aggregations.login_user.buckets:
+                db_user = User.objects.get_or_create(username=user.key)
+                process_user(db_user[0], start_date, end_date)
+
+            if end_date >= now:
+                break

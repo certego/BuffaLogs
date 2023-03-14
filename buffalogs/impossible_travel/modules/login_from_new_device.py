@@ -20,11 +20,12 @@ class Login_New_Device:
         """
         alert_info = {}
         if db_user.login_set.filter(user_agent=login_field["agent"]).count() == 0:
-            timestamp_validated = imp_travel.validate_timestamp(login_field["timestamp"])
+            # timestamp_validated = imp_travel.validate_timestamp(login_field["timestamp"])
+            timestamp = login_field["timestamp"]
             alert_info["alert_name"] = Alert.ruleNameEnum.NEW_DEVICE
             alert_info[
                 "alert_desc"
             ] = f"LOGIN FROM NEW DEVICE\
                 for User: {db_user.username},\
-                at: {timestamp_validated}"
+                at: {timestamp}"
             return alert_info

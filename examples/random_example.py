@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import json
 import random
 from elasticsearch import Elasticsearch
 import yaml

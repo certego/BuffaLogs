@@ -1,6 +1,8 @@
 import logging
 from datetime import timedelta
 
+from impossible_travel.models import Alert, Login, TaskSettings, User
+from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 from celery import shared_task
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -8,8 +10,6 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
-from impossible_travel.models import Alert, Login, TaskSettings, User
-from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 
 logger = logging.getLogger()
 
@@ -33,7 +33,7 @@ def update_risk_level():
 
 def set_alert(db_user, login_alert, alert_info):
     """
-    Insert alert in DB
+    Save the alert on db and logs it
     """
     logger.info(
         f"ALERT {alert_info['alert_name']}\
@@ -45,7 +45,7 @@ def set_alert(db_user, login_alert, alert_info):
     Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
 
 
-def check_fields(user, fields):
+def check_fields(db_user, fields):
     """
     Call the relative function if user_agents and/or geoip exist
     """
@@ -54,7 +54,6 @@ def check_fields(user, fields):
     new_country = login_from_new_country.Login_New_Country()
 
     for login in fields:
-        db_user = User.objects.get(username=user)
         if login["lat"] and login["lon"]:
             if Login.objects.filter(user_id=db_user.id).exists():
                 agent_alert = False
@@ -63,11 +62,6 @@ def check_fields(user, fields):
                     agent_alert = new_dev.check_new_device(db_user, login)
                     if agent_alert:
                         set_alert(db_user, login, agent_alert)
-
-                else:
-                    travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.first(), login)
-                    if travel_alert:
-                        set_alert(db_user, login, travel_alert)
 
                 if login["country"]:
                     country_alert = new_country.check_country(db_user, login)
@@ -84,9 +78,11 @@ def check_fields(user, fields):
 
             else:
                 imp_travel.add_new_login(db_user, login)
+        else:
+            logger.info(f"No lattitude or longitude for User {login}")
 
 
-def process_user(u, start_date, end_date):
+def process_user(db_user, start_date, end_date):
     """
     Get info for each user login and normalization
     """
@@ -94,10 +90,10 @@ def process_user(u, start_date, end_date):
     s = (
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
-        .query("match", **{"user.name": u})
+        .query("match", **{"user.name": db_user.username})
         .exclude("match", **{"event.outcome": "failure"})
         .source(includes=["user.name", "@timestamp", "geoip.latitude", "geoip.longitude", "geoip.country_name", "user_agent.original"])
-        .sort("-@timestamp")
+        .sort("@timestamp")
         .extra(size=10000)
     )
     response = s.execute()
@@ -117,7 +113,7 @@ def process_user(u, start_date, end_date):
         else:
             tmp["agent"] = ""
         fields.append(tmp)
-    check_fields(u, fields)
+    check_fields(db_user, fields)
 
 
 @shared_task(name="ProcessLogsTask")
@@ -141,7 +137,7 @@ def process_logs():
 
     logger = logging.getLogger()
     logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
-    connections.create_connection(hosts=[settings.CERTEGO_ELASTICSEARCH], timeout=90)
+    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90)
     s = (
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
@@ -151,5 +147,5 @@ def process_logs():
     response = s.execute()
 
     for user in response.aggregations.login_user.buckets:
-        imp_travel.add_new_user(user.key)
-        process_user(user.key, start_date, end_date)
+        db_user = User.objects.get_or_create(username=user.key)
+        process_user(db_user[0], start_date, end_date)

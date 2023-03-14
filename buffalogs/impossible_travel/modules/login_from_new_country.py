@@ -12,8 +12,14 @@ class Login_New_Country:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def check_country(self, db_user, login_field):
-        """
-        Check Login from new Country
+        """Check Login from new Country
+
+        :param db_user: user from db    
+        :type db_user: object
+        :param login_field: dictionary login from elastic
+        :type login_field: dict
+        :return: a dict representing this alert
+        :rtype: dict
         """
         alert_info = {}
         if db_user.login_set.filter(country=login_field["country"]).count() == 0:

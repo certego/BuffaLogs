@@ -1,11 +1,10 @@
 import logging
 from datetime import datetime
 
+from impossible_travel.models import Alert, Login, User
 from django.conf import settings
-from django.db import IntegrityError
 from django.utils import timezone
 from geopy.distance import geodesic
-from impossible_travel.models import Alert, Login, User
 
 
 class Impossible_Travel:
@@ -58,14 +57,8 @@ class Impossible_Travel:
             if "does not match format" in str(e):
                 timestamp_format = "%Y-%m-%d %H:%M:%S"
                 timestamp_datetimeObj = timezone.datetime.strptime(str(time), timestamp_format)
-        return timestamp_datetimeObj
-
-    def add_new_user(self, u):
-        try:
-            User.objects.create(username=u)
-        except IntegrityError as e:
-            pass
-            # self.logger.info(f"User already exist {e}")
+        timestamp_aware = timezone.make_aware(timestamp_datetimeObj)
+        return timestamp_aware
 
     def update_model(self, db_user, new_timestamp, new_latitude, new_longitude, new_country, new_user_agent):
         """
