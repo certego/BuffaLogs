@@ -84,15 +84,15 @@ jobs:
       run: |
         source venv/bin/activate
         pip install black
-        black ./buffalogs --config ../.github/configurations/.black --check --diff
+        black ./buffalogs --config .github/configurations/.black --check --diff
     - name: "Lint with flake8 (PEP8 enforcer + linter)"
       run: |
         pip install flake8
-        flake8 ./buffalogs --config ../.github/configurations/.flake8 --show-source
+        flake8 ./buffalogs --config .github/configurations/.flake8 --show-source
     - name: "Isort check"
       run: |
         pip install isort
-        isort ./buffalogs --sp ../.github/configurations/.isort.cfg --profile black --filter-files --check-only --diff
+        isort ./buffalogs --sp .github/configurations/.isort.cfg --profile black --filter-files --check-only --diff
     - name: "Test with Django"
       run: |
         source ../venv/bin/activate
