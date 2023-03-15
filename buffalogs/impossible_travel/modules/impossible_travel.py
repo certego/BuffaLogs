@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
 
-from impossible_travel.models import Alert, Login, User
 from django.conf import settings
 from django.utils import timezone
 from geopy.distance import geodesic
+from impossible_travel.models import Alert, Login, User
 
 
 class Impossible_Travel:
@@ -41,7 +41,6 @@ class Impossible_Travel:
                 ] = f"{alert_info['alert_name']} for User: {db_user.username},\
                     at: {time}, from:({last_login_user_fields['lat']}, {last_login_user_fields['lon']})"
                 return alert_info
-
 
     def update_model(self, db_user, new_timestamp, new_latitude, new_longitude, new_country, new_user_agent):
         """

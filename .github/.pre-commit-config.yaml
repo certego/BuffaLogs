@@ -5,14 +5,14 @@ repos:
     hooks:
     - id: flake8
       exclude: docs/conf.py
-      files: backend
+      files: buffalogs
       args: ["--config", ".github/configurations/.flake8"]
 
 -   repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
-        files: backend
+        files: buffalogs
         args: ["--settings-path", ".github/configurations/.isort.cfg", "--filter-files", "--skip", "venv"]
 
 -   repo: https://github.com/psf/black

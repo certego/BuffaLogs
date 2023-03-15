@@ -1,6 +1,6 @@
+from django.test import TestCase
 from impossible_travel.models import Login, User
 from impossible_travel.modules import impossible_travel, login_from_new_country
-from django.test import TestCase
 
 
 class TestLoginFromNewCountry(TestCase):

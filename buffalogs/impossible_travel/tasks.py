@@ -1,8 +1,6 @@
 import logging
 from datetime import timedelta
 
-from impossible_travel.models import Alert, Login, TaskSettings, User
-from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 from celery import shared_task
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -10,6 +8,8 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
+from impossible_travel.models import Alert, Login, TaskSettings, User
+from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 
 logger = logging.getLogger()
 
