@@ -2,7 +2,6 @@ import logging
 from datetime import timedelta
 
 from impossible_travel.models import TaskSettings, User
-from impossible_travel.modules import impossible_travel
 from impossible_travel.tasks import process_logs, process_user
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -16,7 +15,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         logger = logging.getLogger()
-        imp_travel = impossible_travel.Impossible_Travel()
         now = timezone.now()
         while True:
             try:

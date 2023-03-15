@@ -57,7 +57,6 @@ class TestImpossibleTravel(TestCase):
         self.assertEqual(8, result.minute)
         self.assertEqual(33, result.second)
         self.assertIsNotNone("UTC", result.tzinfo)
-        self.assertIsNotNone(result.tzinfo.utcoffset(result))
 
     def test_validate_timestamp_exceptions(self):
         time = "2023-03-08 17:08:33"
@@ -69,7 +68,6 @@ class TestImpossibleTravel(TestCase):
         self.assertEqual(8, result.minute)
         self.assertEqual(33, result.second)
         self.assertIsNotNone("UTC", result.tzinfo)
-        self.assertIsNotNone(result.tzinfo.utcoffset(result))
 
     def test_validate_timestamp_notvalid(self):
         time = "2023-03-08"

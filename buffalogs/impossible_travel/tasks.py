@@ -121,8 +121,6 @@ def process_logs():
     """
     Find all user logged in between that time range
     """
-    imp_travel = impossible_travel.Impossible_Travel()
-
     try:
         process_task = TaskSettings.objects.get(task_name=process_logs.__name__)
         start_date = process_task.end_date
