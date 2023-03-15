@@ -1,0 +1,22 @@
+
+repos:
+-   repo: https://github.com/pycqa/flake8
+    rev: 5.0.4
+    hooks:
+    - id: flake8
+      exclude: docs/conf.py
+      files: backend
+      args: ["--config", ".github/configurations/.flake8"]
+
+-   repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        files: backend
+        args: ["--settings-path", ".github/configurations/.isort.cfg", "--filter-files", "--skip", "venv"]
+
+-   repo: https://github.com/psf/black
+    rev: 22.12.0
+    hooks:
+      - id: black
+        args: ["--config", ".github/configurations/.black"]

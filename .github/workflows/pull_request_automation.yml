@@ -1,0 +1,102 @@
+
+name: Tests automation
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  detect-changes:
+    name: Detect changes
+    runs-on: ubuntu-22.04
+    outputs:
+      buffalogs_python_code: ${{steps.diff_check.outputs.buffalogs_python_code}}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.base_ref }}
+      - uses: actions/checkout@v3
+        with:
+          clean: false
+      - name: Generate diffs
+        id: diff_check
+        run: |
+          git branch -a --list | cat
+          BUFFALOGS_PYTHON_CODE_CHANGES=$(git diff --compact-summary origin/${{ github.base_ref }} -- buffalogs/* | wc -l)
+          echo "::set-output name=buffalogs_python_code::$BUFFALOGS_PYTHON_CODE_CHANGES"
+  build:
+
+    runs-on: ubuntu-22.04
+    needs: [ "detect-changes" ]
+    if: ${{ needs.detect-changes.outputs.buffalogs_python_code > 0 }}
+
+    services:
+      postgres:
+        image: library/postgres:15.1-alpine
+        env:
+          POSTGRES_DB: buffalogs
+          POSTGRES_USER: default_user
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+      elasticdb:
+        image: elasticsearch:7.17.7
+        env:
+            ES_JAVA_OPTS: -Xms1g -Xmx1g
+            discovery.type: single-node
+        ports:
+            - 9200:9200
+        options: >-
+            --health-cmd "curl -X GET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'"
+            --health-interval 10s
+            --health-timeout 180s
+            --health-retries 5
+            --user elasticsearch
+
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: "Set up Python 3.10"
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.10
+    - name: "Cache venv"
+      id: cache_venv
+      uses: actions/cache@v3
+      with:
+        path: venv
+        key: pip-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('buffalogs/requirements.txt') }}
+    - name: "Install dependencies"
+      if: steps.cache_venv.outputs.cache-hit != 'true'
+      run: |
+        if [ -d "venv" ]; then rm -rf venv; fi
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        if [ -f buffalogs/requirements.txt ]; then pip install -r buffalogs/requirements.txt; fi
+    - name: "Lint with black"
+      run: |
+        source venv/bin/activate
+        pip install black
+        black ./buffalogs --config ../.github/configurations/.black --check --diff
+    - name: "Lint with flake8 (PEP8 enforcer + linter)"
+      run: |
+        pip install flake8
+        flake8 ./buffalogs --config ../.github/configurations/.flake8 --show-source
+    - name: "Isort check"
+      run: |
+        pip install isort
+        isort ./buffalogs --sp ../.github/configurations/.isort.cfg --profile black --filter-files --check-only --diff
+    - name: "Test with Django"
+      run: |
+        source ../venv/bin/activate
+        pip install coverage pytest
+        coverage run manage.py test
+        coverage report
+      working-directory: ./buffalogs
