@@ -2,11 +2,11 @@ import json
 import os
 from unittest.mock import patch
 
+from django.test import TestCase
+from django.utils import timezone
 from impossible_travel import tasks
 from impossible_travel.models import Alert, Login, User
 from impossible_travel.modules import impossible_travel
-from django.test import TestCase
-from django.utils import timezone
 
 
 def load_test_data(name):

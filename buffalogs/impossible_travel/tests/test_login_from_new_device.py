@@ -1,6 +1,6 @@
+from django.test import TestCase
 from impossible_travel.models import Login, User
 from impossible_travel.modules import login_from_new_device
-from django.test import TestCase
 
 
 class TestLoginFromNewdevice(TestCase):

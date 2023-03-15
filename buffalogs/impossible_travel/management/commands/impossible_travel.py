@@ -1,13 +1,13 @@
 import logging
 from datetime import timedelta
 
-from impossible_travel.models import TaskSettings, User
-from impossible_travel.tasks import process_logs, process_user
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
+from impossible_travel.models import TaskSettings, User
+from impossible_travel.tasks import process_logs, process_user
 
 
 class Command(BaseCommand):

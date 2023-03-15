@@ -14,7 +14,7 @@ class Login_New_Country:
     def check_country(self, db_user, login_field):
         """Check Login from new Country
 
-        :param db_user: user from db    
+        :param db_user: user from db
         :type db_user: object
         :param login_field: dictionary login from elastic
         :type login_field: dict
