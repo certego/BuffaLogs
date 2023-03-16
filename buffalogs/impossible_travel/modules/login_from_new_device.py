@@ -16,7 +16,7 @@ class Login_New_Device:
 
     def check_new_device(self, db_user, login_field):
         """
-        Check Login from new Device
+        Check Login from new Device and send alert
         """
         alert_info = {}
         if db_user.login_set.filter(user_agent=login_field["agent"]).count() == 0:
