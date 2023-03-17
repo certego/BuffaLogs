@@ -15,13 +15,13 @@ Please follow the code of conduct in all your interactions with the project.
 
 #  Contribution Process
 ## Discussions
-If you'd like help in troubleshooting on a PR you're working on, or have a new idea to share, join us in [discussions](https://github.com/certego/BuffaLogs/discussions).
-For starting a new discussione, the categories to choose from are: 
+If you would like help in troubleshooting on a PR you are working on, or have a new idea to share, join us in [discussions](https://github.com/certego/BuffaLogs/discussions).
+To start a new discussion, the categories to choose from are: 
 *   General: chat about important news affecting the project
 *   Ideas: share ideas for new features to implement
 *   Polls: take a vote from the community
 *   Q&A: ask the community for help or dubts
-*   Show and tell: show off to the community something you've made
+*   Show and tell: show off to the community something you have made
 
 ## Issues
 You can create or solve an issue. 
@@ -34,16 +34,17 @@ Scan through our existing issues to find one that interests you. You can narrow 
 ## Pull Request
 You should usually open a pull request in the following situations:
 *   Submit trivial fixes (for example, a typo, a broken link or an obvious error)
-*   Start work on a contribution that was already asked for, or that you’ve already discussed, in an issue
-Once you started working on an issue and you have some work to share and discuss with us, please raise a draft PR early with incomplete changes. This way you can continue working on the same and we can track your progress and actively review and help.
+*   Start working on a contribution that was already asked for, or that you have already discussed, in an issue.
+
+Once you have started working on an issue and you have some work to share and discuss with us, please raise a draft PR early with incomplete changes. In this way you can continue working on the same and we can track your progress and actively review and help.
 Pull requests are allowed only for the `develop` branch. That code will be pushed to master only on a new release. Before submitting the PR, remember to pull the most recent changes available in the develop branch.
 How to create and submit a PR:
 1.  [Fork the repository](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) and clone it locally. Connect your local to the `develop` branch and pull in changes from it so that you stay up to date. 
-2.  [Create a new branch](https://docs.github.com/en/get-started/quickstart/github-flow) starting from the `develop` branch with a name that reference to the issue you're working on.
+2.  [Create a new branch](https://docs.github.com/en/get-started/quickstart/github-flow) starting from the `develop` branch with a name that refers to the issue you are working on.
     ```bash
     git checkout -b myfeature develop
     ```
-    Now, we strongly suggest to configure pre-commit to force linters on every commits you perform:
+    Now, we strongly suggest configuring pre-commit to force linters on every commit you perform:
     ```bash
     # create virtualenv to host pre-commit installation
     python3 -m venv venv
@@ -66,7 +67,7 @@ How to create and submit a PR:
     ```
 
 3.  **IF** your changes include differences in the template view, **include sceenshots of the before and after**.
-4.  **Test your changes** Run any existing tests with the command below and create new tests if needed. Whether tests exist or not, make sure your changes don’t break the project.
+4.  **Test your changes**: Run any existing tests with the command below and create new tests if needed. Whether tests exist or not, make sure your changes don’t break the project.
     ```bash
     ./manage.py test impossible_travel
     ```
