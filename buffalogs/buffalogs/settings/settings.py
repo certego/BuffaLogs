@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "impossible_travel",
+    "authentication",
 ]
 
 MIDDLEWARE = [
@@ -124,14 +125,21 @@ LOGGING = {
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": CERTEGO_POSTGRES_DB,
+#         "USER": CERTEGO_POSTGRES_USER,
+#         "PASSWORD": CERTEGO_POSTGRES_PASSWORD,
+#         "HOST": CERTEGO_DB_HOSTNAME,
+#         "PORT": CERTEGO_POSTGRES_PORT,
+#     }
+# }
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": CERTEGO_POSTGRES_DB,
-        "USER": CERTEGO_POSTGRES_USER,
-        "PASSWORD": CERTEGO_POSTGRES_PASSWORD,
-        "HOST": CERTEGO_DB_HOSTNAME,
-        "PORT": CERTEGO_POSTGRES_PORT,
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -195,3 +203,11 @@ CELERY_BEAT_SCHEDULE = {
     },
     "update_risk_level": {"task": "UpdateRiskLevelTask", "schedule": crontab(minute=10)},
 }
+
+#login/logout redirect urls
+LOGIN_REDIRECT_URL = "/home"
+LOGOUT_REDIRECT_URL = "/auth/login"
+LOGIN_URL = "/auth/login"
+
+#default auth model
+AUTH_USER_MODEL = "authentication.User"

@@ -10,8 +10,10 @@ from django.utils.dateparse import parse_datetime
 from elasticsearch_dsl import Search, connections
 from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
 from impossible_travel.models import Alert, Login, User
+from django.contrib.auth.decorators import login_required
 
 
+@login_required
 def homepage(request):
     if request.method == "GET":
         date_range = []
@@ -48,22 +50,28 @@ def homepage(request):
     )
 
 
+@login_required
 def users(request):
     return render(request, "impossible_travel/users.html")
 
 
+@login_required
 def unique_logins(request, pk_user):
     return render(request, "impossible_travel/unique_logins.html")
 
 
+@login_required
 def all_logins(request, pk_user):
     return render(request, "impossible_travel/all_logins.html")
 
 
+
+@login_required
 def alerts(request, pk_user):
     return render(request, "impossible_travel/alerts.html")
 
 
+@login_required
 def get_last_alerts(request):
     context = []
     alerts_list = Alert.objects.all()[:25]
@@ -77,6 +85,7 @@ def get_last_alerts(request):
     return JsonResponse(json.dumps(context, default=str), safe=False)
 
 
+@login_required
 def get_unique_logins(request, pk_user):
     context = []
     logins_list = Login.objects.filter(user_id=pk_user).values()
@@ -90,6 +99,7 @@ def get_unique_logins(request, pk_user):
     return JsonResponse(json.dumps(context, default=str), safe=False)
 
 
+@login_required
 def get_alerts(request, pk_user):
     context = []
     alerts = Alert.objects.filter(user_id=pk_user).values()
@@ -99,6 +109,7 @@ def get_alerts(request, pk_user):
     return JsonResponse(json.dumps(context, default=str), safe=False)
 
 
+@login_required
 def get_users(request):
     context = []
     users_list = User.objects.all().annotate(
@@ -117,6 +128,7 @@ def get_users(request):
     return JsonResponse(json.dumps(context, default=str), safe=False)
 
 
+@login_required
 def get_all_logins(request, pk_user):
     context = []
     count = 0
