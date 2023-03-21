@@ -1,0 +1,19 @@
+[flake8]
+max-line-length = 160
+ignore =
+    E121,
+    E125,
+    E203,
+    W504,
+    W503,
+    F401,
+    F403,
+    F405,
+    F841,
+    DJ08,
+    E501,
+    E402,
+
+exclude =
+    */migrations/*,
+    Dockerfile

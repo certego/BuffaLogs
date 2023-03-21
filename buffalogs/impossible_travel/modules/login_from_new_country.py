@@ -13,15 +13,15 @@ class Login_New_Country:
 
     def check_country(self, db_user, login_field):
         """
-        Check Login from new Country
+        Check Login from new Country and send alert
         """
         alert_info = {}
         if db_user.login_set.filter(country=login_field["country"]).count() == 0:
-            timestamp_validated = imp_travel.validate_timestamp(login_field["timestamp"])
+            time = login_field["timestamp"]
             alert_info["alert_name"] = Alert.ruleNameEnum.NEW_COUNTRY
             alert_info[
                 "alert_desc"
             ] = f"{alert_info['alert_name']}\
                 for User: {db_user.username},\
-                at: {timestamp_validated}"
+                at: {time}"
             return alert_info
