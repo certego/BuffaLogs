@@ -125,23 +125,18 @@ LOGGING = {
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": CERTEGO_POSTGRES_DB,
-#         "USER": CERTEGO_POSTGRES_USER,
-#         "PASSWORD": CERTEGO_POSTGRES_PASSWORD,
-#         "HOST": CERTEGO_DB_HOSTNAME,
-#         "PORT": CERTEGO_POSTGRES_PORT,
-#     }
-# }
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": CERTEGO_POSTGRES_DB,
+        "USER": CERTEGO_POSTGRES_USER,
+        "PASSWORD": CERTEGO_POSTGRES_PASSWORD,
+        "HOST": CERTEGO_DB_HOSTNAME,
+        "PORT": CERTEGO_POSTGRES_PORT,
     }
 }
+
+
 
 
 # Password validation
