@@ -18,18 +18,14 @@ def clear_models_periodically():
     Clear DB models
     """
     now = timezone.now()
-    for user in User.objects.all():
-        diff_days = (now - user.updated).days
-        if diff_days >= settings.CERTEGO_USER_MAX_DAYS:
-            user.delete()
-    for login in Login.objects.all():
-        diff_days = (now - login.updated).days
-        if diff_days >= settings.CERTEGO_LOGIN_MAX_DAYS:
-            login.delete()
-    for alert in User.objects.all():
-        diff_days = (now - alert.updated).days
-        if diff_days >= settings.CERTEGO_ALERT_MAX_DAYS:
-            alert.delete()
+    delete_user_time = now - timedelta(days=settings.CERTEGO_USER_MAX_DAYS)
+    User.objects.filter(updated__lte=delete_user_time).delete()
+
+    delete_login_time = now - timedelta(days=settings.CERTEGO_LOGIN_MAX_DAYS)
+    Login.objects.filter(updated__lte=delete_login_time).delete()
+
+    delete_alert_time = now - timedelta(days=settings.CERTEGO_ALERT_MAX_DAYS)
+    Alert.objects.filter(updated__lte=delete_alert_time).delete()
 
 
 @shared_task(name="UpdateRiskLevelTask")
