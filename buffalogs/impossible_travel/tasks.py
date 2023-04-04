@@ -15,20 +15,19 @@ logger = logging.getLogger()
 
 
 @shared_task(name="UpdateRiskLevelTask")
-def update_risk_level():
+def update_risk_level(new_user):
     with transaction.atomic():
-        for u in User.objects.annotate(Count("alert")):
-            alerts_num = u.alert__count
-            if alerts_num == 0:
-                u.risk_score = User.riskScoreEnum.NO_RISK
-            elif 1 <= alerts_num <= 2:
-                u.risk_score = User.riskScoreEnum.LOW
-            elif 3 <= alerts_num <= 4:
-                u.risk_score = User.riskScoreEnum.MEDIUM
-            else:
-                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}")
-                u.risk_score = User.riskScoreEnum.HIGH
-            u.save()
+        alerts_num = Alert.objects.filter(user__username=new_user.username).count()
+        if alerts_num == 0:
+            new_user.risk_score = User.riskScoreEnum.NO_RISK
+        elif 1 <= alerts_num <= 2:
+            new_user.risk_score = User.riskScoreEnum.LOW
+        elif 3 <= alerts_num <= 4:
+            new_user.risk_score = User.riskScoreEnum.MEDIUM
+        else:
+            logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {new_user.username}")
+            new_user.risk_score = User.riskScoreEnum.HIGH
+        new_user.save()
 
 
 def set_alert(db_user, login_alert, alert_info):
