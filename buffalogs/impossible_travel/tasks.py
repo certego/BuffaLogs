@@ -5,13 +5,31 @@ from celery import shared_task
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
-from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.models import Alert, Login, TaskSettings, User
 from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 
 logger = logging.getLogger()
+
+
+def clear_models_periodically():
+    """
+    Clear DB models
+    """
+    now = timezone.now()
+    for user in User.objects.all():
+        diff_days = (now - user.updated).days
+        if diff_days >= settings.CERTEGO_USER_MAX_DAYS:
+            user.delete()
+    for login in Login.objects.all():
+        diff_days = (now - login.updated).days
+        if diff_days >= settings.CERTEGO_LOGIN_MAX_DAYS:
+            login.delete()
+    for alert in User.objects.all():
+        diff_days = (now - alert.updated).days
+        if diff_days >= settings.CERTEGO_ALERT_MAX_DAYS:
+            alert.delete()
 
 
 @shared_task(name="UpdateRiskLevelTask")
