@@ -5,7 +5,7 @@ from .models import Alert, Login, TaskSettings, User
 
 @admin.register(Login)
 class LoginAdmin(admin.ModelAdmin):
-    list_display = ("id", "get_username", "timestamp", "latitude", "longitude", "country", "user_agent")
+    list_display = ("id", "created", "updated", "get_username", "timestamp", "latitude", "longitude", "country", "user_agent")
     search_fields = ("id", "user__username", "user_agent")
 
     @admin.display(description="username")
@@ -21,7 +21,7 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
-    list_display = ("id", "get_username", "created", "name", "description", "login_raw_data")
+    list_display = ("id", "created", "updated", "get_username", "name", "description", "login_raw_data")
     search_fields = ("user__username", "name")
 
     @admin.display(description="username")

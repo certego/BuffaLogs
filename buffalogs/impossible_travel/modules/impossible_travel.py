@@ -1,10 +1,9 @@
 import logging
-from datetime import datetime
 
 from django.conf import settings
 from django.utils import timezone
 from geopy.distance import geodesic
-from impossible_travel.models import Alert, Login, User
+from impossible_travel.models import Alert, Login
 
 
 class Impossible_Travel:

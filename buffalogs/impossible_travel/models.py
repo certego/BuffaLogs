@@ -43,6 +43,7 @@ class Alert(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     login_raw_data = models.JSONField()
     created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateField(auto_now=True)
     description = models.TextField()
 
 

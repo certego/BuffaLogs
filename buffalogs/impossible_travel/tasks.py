@@ -5,7 +5,6 @@ from celery import shared_task
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
-from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.models import Alert, Login, TaskSettings, User
@@ -14,21 +13,35 @@ from impossible_travel.modules import impossible_travel, login_from_new_country,
 logger = logging.getLogger()
 
 
+def clear_models_periodically():
+    """
+    Clear DB models
+    """
+    now = timezone.now()
+    delete_user_time = now - timedelta(days=settings.CERTEGO_USER_MAX_DAYS)
+    User.objects.filter(updated__lte=delete_user_time).delete()
+
+    delete_login_time = now - timedelta(days=settings.CERTEGO_LOGIN_MAX_DAYS)
+    Login.objects.filter(updated__lte=delete_login_time).delete()
+
+    delete_alert_time = now - timedelta(days=settings.CERTEGO_ALERT_MAX_DAYS)
+    Alert.objects.filter(updated__lte=delete_alert_time).delete()
+
+
 @shared_task(name="UpdateRiskLevelTask")
-def update_risk_level():
+def update_risk_level(new_user):
     with transaction.atomic():
-        for u in User.objects.annotate(Count("alert")):
-            alerts_num = u.alert__count
-            if alerts_num == 0:
-                u.risk_score = User.riskScoreEnum.NO_RISK
-            elif 1 <= alerts_num <= 2:
-                u.risk_score = User.riskScoreEnum.LOW
-            elif 3 <= alerts_num <= 4:
-                u.risk_score = User.riskScoreEnum.MEDIUM
-            else:
-                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}")
-                u.risk_score = User.riskScoreEnum.HIGH
-            u.save()
+        alerts_num = Alert.objects.filter(user__username=new_user.username).count()
+        if alerts_num == 0:
+            new_user.risk_score = User.riskScoreEnum.NO_RISK
+        elif 1 <= alerts_num <= 2:
+            new_user.risk_score = User.riskScoreEnum.LOW
+        elif 3 <= alerts_num <= 4:
+            new_user.risk_score = User.riskScoreEnum.MEDIUM
+        else:
+            logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {new_user.username}")
+            new_user.risk_score = User.riskScoreEnum.HIGH
+        new_user.save()
 
 
 def set_alert(db_user, login_alert, alert_info):
