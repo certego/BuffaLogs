@@ -1,7 +1,6 @@
 version: '3.2'
 
 services:
-
     postgres:
         container_name: buffalogs_postgres
         image: postgres:15.1-alpine
@@ -12,7 +11,7 @@ services:
             - postgres_data:/var/lib/postgresql/data
         ports:
             - "127.0.0.1:5432:5432"
-        
+
     elasticsearch:
         container_name: buffalogs_elasticsearch
         image: docker.elastic.co/elasticsearch/elasticsearch:7.17.7
@@ -35,8 +34,6 @@ services:
             - "127.0.0.1:9200:9200"
         volumes:
             - elasticsearch_data:/usr/share/elasticsearch/data
-        expose:
-            - "9200"
         healthcheck:
             test: curl -XGET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'
 
@@ -85,11 +82,11 @@ services:
         volumes:
             - django_static:/var/www
             - nginx_sockets:/var/run/nginx-sockets
+            - ./buffalogs:/opt/certego/buffalogs
         depends_on:
             - postgres
             - elasticsearch
             - rabbitmq
-
 
     rabbitmq:
         container_name: rabbitmq
@@ -120,6 +117,7 @@ services:
             - ./run_worker.sh
         volumes:
             - ./config:/opt/certego/config:ro
+            - ./buffalogs:/opt/certego/buffalogs
         depends_on:
             - postgres
             - elasticsearch
@@ -138,13 +136,13 @@ services:
             - ./run_beat.sh
         volumes:
             - ./config:/opt/certego/config:ro
+            - ./buffalogs:/opt/certego/buffalogs
         depends_on:
             - postgres
             - elasticsearch
             - rabbitmq
 
 volumes:
-
     elasticsearch_data:
         driver: local
     postgres_data:

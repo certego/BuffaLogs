@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "impossible_travel",
+    "django_celery_beat"
 ]
 
 MIDDLEWARE = [
