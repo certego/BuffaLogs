@@ -20,7 +20,7 @@ To start a new discussion, the categories to choose from are:
 *   General: chat about important news affecting the project
 *   Ideas: share ideas for new features to implement
 *   Polls: take a vote from the community
-*   Q&A: ask the community for help or dubts
+*   Q&A: ask the community for help or doubts
 *   Show and tell: show off to the community something you have made
 
 ## Issues
