@@ -146,3 +146,22 @@ class TestTasks(TestCase):
             Login.objects.get(user__username="Lorena")
         with self.assertRaises(Alert.DoesNotExist):
             Alert.objects.get(user__username="Lorena")
+
+    def test_clear_models_periodically_alert_delete(self):
+        user_obj = User.objects.create(username="Lorena")
+        Login.objects.create(user=user_obj, timestamp=timezone.now())
+        raw_data = {
+            "lat": 40.6079,
+            "lon": -74.4037,
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+            "country": "United States",
+            "timestamp": "2023-04-03T14:01:47.907Z",
+        }
+        Alert.objects.create(user=user_obj, login_raw_data=raw_data)
+        old_date = timezone.now() + timedelta(days=-100)
+        Alert.objects.filter(user__username="Lorena").update(updated=old_date)
+        tasks.clear_models_periodically()
+        with self.assertRaises(Alert.DoesNotExist):
+            Alert.objects.get(user__username="Lorena")
+        self.assertTrue(User.objects.filter(username="Lorena").exists())
+        self.assertTrue(Login.objects.filter(user__username="Lorena").exists())
