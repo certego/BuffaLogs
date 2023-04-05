@@ -197,5 +197,4 @@ CELERY_BEAT_SCHEDULE = {
         "task": "ProcessLogsTask",
         "schedule": crontab(minute=30),
     },
-    "update_risk_level": {"task": "UpdateRiskLevelTask", "schedule": crontab(minute=10)},
 }
