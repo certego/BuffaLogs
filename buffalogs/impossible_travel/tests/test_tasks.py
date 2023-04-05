@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.test import TestCase
@@ -66,15 +67,15 @@ class TestTasks(TestCase):
 
     def test_update_risk_level_norisk(self):
         # 0 alert --> no risk
-        tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
+        tasks.update_risk_level(db_user)
         self.assertEqual("No risk", db_user.risk_score)
 
     def test_update_risk_level_low(self):
         # 1 alert --> Low risk
         db_user = User.objects.get(username="Lorena Goldoni")
         Alert.objects.create(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL, login_raw_data="Test", description="Test_Description")
-        tasks.update_risk_level()
+        tasks.update_risk_level(db_user)
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("Low", db_user.risk_score)
 
@@ -88,7 +89,7 @@ class TestTasks(TestCase):
                 Alert(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY, login_raw_data="Test3", description="Test_Description3"),
             ]
         )
-        tasks.update_risk_level()
+        tasks.update_risk_level(db_user)
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("Medium", db_user.risk_score)
 
@@ -104,7 +105,7 @@ class TestTasks(TestCase):
                 Alert(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY, login_raw_data="Test5", description="Test_Description5"),
             ]
         )
-        tasks.update_risk_level()
+        tasks.update_risk_level(db_user)
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("High", db_user.risk_score)
 
@@ -122,3 +123,45 @@ class TestTasks(TestCase):
         db_user = User.objects.get(username="Lorena Goldoni")
         tasks.process_user(db_user, iso_start_date, iso_end_date)
         mock_chedk_fields.assert_called_once_with(db_user, data_results)
+
+    def test_clear_models_periodically(self):
+        user_obj = User.objects.create(username="Lorena")
+        Login.objects.create(user=user_obj, timestamp=timezone.now())
+        raw_data = {
+            "lat": 40.6079,
+            "lon": -74.4037,
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+            "country": "United States",
+            "timestamp": "2023-04-03T14:01:47.907Z",
+        }
+        Alert.objects.create(user=user_obj, login_raw_data=raw_data)
+        old_date = timezone.now() + timedelta(days=-100)
+        User.objects.filter(username="Lorena").update(updated=old_date)
+        Login.objects.filter(user__username="Lorena").update(updated=old_date)
+        Alert.objects.filter(user__username="Lorena").update(updated=old_date)
+        tasks.clear_models_periodically()
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(username="Lorena")
+        with self.assertRaises(Login.DoesNotExist):
+            Login.objects.get(user__username="Lorena")
+        with self.assertRaises(Alert.DoesNotExist):
+            Alert.objects.get(user__username="Lorena")
+
+    def test_clear_models_periodically_alert_delete(self):
+        user_obj = User.objects.create(username="Lorena")
+        Login.objects.create(user=user_obj, timestamp=timezone.now())
+        raw_data = {
+            "lat": 40.6079,
+            "lon": -74.4037,
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+            "country": "United States",
+            "timestamp": "2023-04-03T14:01:47.907Z",
+        }
+        Alert.objects.create(user=user_obj, login_raw_data=raw_data)
+        old_date = timezone.now() + timedelta(days=-100)
+        Alert.objects.filter(user__username="Lorena").update(updated=old_date)
+        tasks.clear_models_periodically()
+        with self.assertRaises(Alert.DoesNotExist):
+            Alert.objects.get(user__username="Lorena")
+        self.assertTrue(User.objects.filter(username="Lorena").exists())
+        self.assertTrue(Login.objects.filter(user__username="Lorena").exists())
