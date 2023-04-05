@@ -36,12 +36,12 @@ class Command(BaseCommand):
             s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
             response = s.execute()
 
-            clear_models_periodically()
-
             for user in response.aggregations.login_user.buckets:
-                db_user = User.objects.get_or_create(username=user.key)
-                process_user(db_user[0], start_date, end_date)
-                update_risk_level(db_user[0])
+                db_user, created = User.objects.get_or_create(username=user.key)
+                if not created:
+                    db_user.save()
+                process_user(db_user, start_date, end_date)
+                update_risk_level()
 
             if end_date >= now:
                 break

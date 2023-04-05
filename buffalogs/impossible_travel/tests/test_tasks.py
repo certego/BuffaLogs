@@ -67,15 +67,15 @@ class TestTasks(TestCase):
 
     def test_update_risk_level_norisk(self):
         # 0 alert --> no risk
+        tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
-        tasks.update_risk_level(db_user)
         self.assertEqual("No risk", db_user.risk_score)
 
     def test_update_risk_level_low(self):
         # 1 alert --> Low risk
         db_user = User.objects.get(username="Lorena Goldoni")
         Alert.objects.create(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL, login_raw_data="Test", description="Test_Description")
-        tasks.update_risk_level(db_user)
+        tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("Low", db_user.risk_score)
 
@@ -89,7 +89,7 @@ class TestTasks(TestCase):
                 Alert(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY, login_raw_data="Test3", description="Test_Description3"),
             ]
         )
-        tasks.update_risk_level(db_user)
+        tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("Medium", db_user.risk_score)
 
@@ -105,7 +105,7 @@ class TestTasks(TestCase):
                 Alert(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY, login_raw_data="Test5", description="Test_Description5"),
             ]
         )
-        tasks.update_risk_level(db_user)
+        tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("High", db_user.risk_score)
 
