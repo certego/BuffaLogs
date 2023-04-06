@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.models import TaskSettings, User
-from impossible_travel.tasks import clear_models_periodically, process_logs, process_user, update_risk_level
+from impossible_travel.tasks import process_logs, process_user, update_risk_level
 
 
 class Command(BaseCommand):
@@ -36,12 +36,12 @@ class Command(BaseCommand):
             s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
             response = s.execute()
 
-            clear_models_periodically()
-
             for user in response.aggregations.login_user.buckets:
-                db_user = User.objects.get_or_create(username=user.key)
-                process_user(db_user[0], start_date, end_date)
-                update_risk_level(db_user[0])
+                db_user, created = User.objects.get_or_create(username=user.key)
+                if not created:
+                    db_user.save()
+                process_user(db_user, start_date, end_date)
+                update_risk_level()
 
             if end_date >= now:
                 break

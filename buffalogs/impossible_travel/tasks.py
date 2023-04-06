@@ -5,6 +5,7 @@ from celery import shared_task
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.models import Alert, Login, TaskSettings, User
@@ -29,19 +30,23 @@ def clear_models_periodically():
 
 
 @shared_task(name="UpdateRiskLevelTask")
-def update_risk_level(new_user):
+def update_risk_level():
+    clear_models_periodically()
     with transaction.atomic():
-        alerts_num = Alert.objects.filter(user__username=new_user.username).count()
-        if alerts_num == 0:
-            new_user.risk_score = User.riskScoreEnum.NO_RISK
-        elif 1 <= alerts_num <= 2:
-            new_user.risk_score = User.riskScoreEnum.LOW
-        elif 3 <= alerts_num <= 4:
-            new_user.risk_score = User.riskScoreEnum.MEDIUM
-        else:
-            logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {new_user.username}")
-            new_user.risk_score = User.riskScoreEnum.HIGH
-        new_user.save()
+        for u in User.objects.annotate(Count("alert")):
+            alerts_num = u.alert__count
+            if alerts_num == 0:
+                tmp = User.riskScoreEnum.NO_RISK
+            elif 1 <= alerts_num <= 2:
+                tmp = User.riskScoreEnum.LOW
+            elif 3 <= alerts_num <= 4:
+                tmp = User.riskScoreEnum.MEDIUM
+            else:
+                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}")
+                tmp = User.riskScoreEnum.HIGH
+            if u.risk_score != tmp:
+                u.risk_score = tmp
+                u.save()
 
 
 def set_alert(db_user, login_alert, alert_info):
@@ -158,5 +163,7 @@ def process_logs():
     response = s.execute()
 
     for user in response.aggregations.login_user.buckets:
-        db_user = User.objects.get_or_create(username=user.key)
-        process_user(db_user[0], start_date, end_date)
+        db_user, created = User.objects.get_or_create(username=user.key)
+        if not created:
+            db_user.save()
+        process_user(db_user, start_date, end_date)

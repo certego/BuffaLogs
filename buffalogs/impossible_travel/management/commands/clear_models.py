@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from impossible_travel.models import Alert, Login, TaskSettings, User
 
 
