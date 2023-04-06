@@ -1,0 +1,26 @@
+version: '3.2'
+
+services:
+    buffalogs:
+        volumes:
+            - ./buffalogs:/opt/certego/buffalogs
+    celery:
+        volumes:
+            - ./buffalogs:/opt/certego/buffalogs
+
+    celery_beat:
+        volumes:
+            - ./buffalogs:/opt/certego/buffalogs
+
+    postgres:
+        ports:
+            - "127.0.0.1:5432:5432"
+    
+    rabbitmq:
+        ports:
+            - "127.0.0.1:5672:5672"
+            - "127.0.0.1:15672:15672"
+
+    elasticsearch:
+        ports:
+            - "127.0.0.1:9200:9200"
