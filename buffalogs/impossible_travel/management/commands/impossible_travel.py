@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.models import TaskSettings, User
-from impossible_travel.tasks import clear_models_periodically, process_logs, process_user, update_risk_level
+from impossible_travel.tasks import process_logs, process_user, update_risk_level
 
 
 class Command(BaseCommand):
