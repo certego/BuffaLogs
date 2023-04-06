@@ -10,8 +10,8 @@ services:
             - config/buffalogs/buffalogs.env
         volumes:
             - postgres_data:/var/lib/postgresql/data
-        ports:
-            - "127.0.0.1:5432:5432"
+        expose:
+            - "5432"
         
     elasticsearch:
         container_name: buffalogs_elasticsearch
@@ -31,12 +31,8 @@ services:
                 hard: -1
         expose:
             - "9200"
-        ports:
-            - "127.0.0.1:9200:9200"
         volumes:
             - elasticsearch_data:/usr/share/elasticsearch/data
-        expose:
-            - "9200"
         healthcheck:
             test: curl -XGET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'
 
@@ -51,8 +47,6 @@ services:
             - elasticsearch
         depends_on:
             - elasticsearch
-        expose:
-            - "5601"
         ports:
             - "127.0.0.1:5601:5601"
         healthcheck:
@@ -101,9 +95,6 @@ services:
         expose:
             - "5672"
             - "15672"
-        ports:
-            - "5672:5672"
-            - "15672:15672"
         healthcheck:
             test: rabbitmqctl status
 
