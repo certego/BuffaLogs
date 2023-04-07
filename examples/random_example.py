@@ -24,8 +24,13 @@ def main():
 
         tmp["user"] = {"name": random.choice(read_data["user_name"])}
         tmp["event"] = {"outcome": random.choice(event_outcome)}
-        tmp["source"] = {"ip": ip["address"]}
-        tmp["geoip"] = {"country_name": ip["country_name"], "ip": ip["address"], "latitude": ip["latitude"], "longitude": ip["longitude"]}
+        tmp["source"] = {
+            "ip": ip["address"],
+            "geo": {
+                "country_name": ip["country_name"],
+            },
+        }
+        tmp["source"]["geo"]["location"] = {"lat": ip["latitude"], "lon": ip["longitude"]}
         tmp["user_agent"] = {"original": random.choice(read_data["user_agent"])}
 
         now = now + timedelta(seconds=1)
