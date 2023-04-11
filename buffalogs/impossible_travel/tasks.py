@@ -157,6 +157,7 @@ def process_logs():
     s = (
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
+        .query("match", **{"event.category": "authentication"})
         .exclude("match", **{"event.outcome": "failure"})
     )
     s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
