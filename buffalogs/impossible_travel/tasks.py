@@ -118,7 +118,7 @@ def process_user(db_user, start_date, end_date):
     for hit in response:
         tmp = {"timestamp": hit["@timestamp"]}
 
-        if "geo" in hit["source"] and "country_name" in hit["source"]["geo"]:
+        if "location" in hit["source"]["geo"] and "country_name" in hit["source"]["geo"]:
             tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
             tmp["lon"] = hit["source"]["geo"]["location"]["lon"]
             tmp["country"] = hit["source"]["geo"]["country_name"]
