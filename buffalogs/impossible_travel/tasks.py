@@ -110,7 +110,7 @@ def process_user(db_user, start_date, end_date):
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
         .exclude("match", **{"event.outcome": "failure"})
-        .source(includes=["user.name", "@timestamp", "geoip.latitude", "geoip.longitude", "geoip.country_name", "user_agent.original"])
+        .source(includes=["user.name", "@timestamp", "source.geo.location.lat", "source.geo.location.lon", "source.geo.country_name", "user_agent.original"])
         .sort("@timestamp")
         .extra(size=10000)
     )
@@ -118,10 +118,10 @@ def process_user(db_user, start_date, end_date):
     for hit in response:
         tmp = {"timestamp": hit["@timestamp"]}
 
-        if "geoip" in hit and "country_name" in hit["geoip"]:
-            tmp["lat"] = hit["geoip"]["latitude"]
-            tmp["lon"] = hit["geoip"]["longitude"]
-            tmp["country"] = hit["geoip"]["country_name"]
+        if "location" in hit["source"]["geo"] and "country_name" in hit["source"]["geo"]:
+            tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
+            tmp["lon"] = hit["source"]["geo"]["location"]["lon"]
+            tmp["country"] = hit["source"]["geo"]["country_name"]
         else:
             tmp["lat"] = None
             tmp["lon"] = None
@@ -157,6 +157,7 @@ def process_logs():
     s = (
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
+        .query("match", **{"event.category": "authentication"})
         .exclude("match", **{"event.outcome": "failure"})
     )
     s.aggs.bucket("login_user", "terms", field="user.name", size=10000)

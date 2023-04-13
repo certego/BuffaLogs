@@ -10,6 +10,7 @@ def main():
     fields = []
     es = Elasticsearch(["http://localhost:9200"])
     event_outcome = ["failure"] * 10 + ["success"] * 90
+    event_category = ["threat"] * 2 + ["session"] * 2 + ["malware"] * 6 + ["authentication"] * 90
     now = datetime.utcnow() + timedelta(minutes=-30)
     with open("random_data.yaml", "r") as info:
         read_data = yaml.load(info, Loader=yaml.FullLoader)
@@ -24,8 +25,14 @@ def main():
 
         tmp["user"] = {"name": random.choice(read_data["user_name"])}
         tmp["event"] = {"outcome": random.choice(event_outcome)}
-        tmp["source"] = {"ip": ip["address"]}
-        tmp["geoip"] = {"country_name": ip["country_name"], "ip": ip["address"], "latitude": ip["latitude"], "longitude": ip["longitude"]}
+        tmp["event"] = {"category": random.choice(event_category)}
+        tmp["source"] = {
+            "ip": ip["address"],
+            "geo": {
+                "country_name": ip["country_name"],
+            },
+        }
+        tmp["source"]["geo"]["location"] = {"lat": ip["latitude"], "lon": ip["longitude"]}
         tmp["user_agent"] = {"original": random.choice(read_data["user_agent"])}
 
         now = now + timedelta(seconds=1)

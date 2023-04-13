@@ -32,7 +32,12 @@ class Command(BaseCommand):
             logger = logging.getLogger()
             logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
             connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90)
-            s = Search(index="cloud-*").filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}}).exclude("match", **{"event.outcome": "failure"})
+            s = (
+                Search(index=settings.CERTEGO_ELASTIC_INDEX)
+                .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
+                .query("match", **{"event.category": "authentication"})
+                .exclude("match", **{"event.outcome": "failure"})
+            )
             s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
             response = s.execute()
 
@@ -41,7 +46,7 @@ class Command(BaseCommand):
                 if not created:
                     db_user.save()
                 process_user(db_user, start_date, end_date)
-                update_risk_level()
+            update_risk_level()
 
             if end_date >= now:
                 break
