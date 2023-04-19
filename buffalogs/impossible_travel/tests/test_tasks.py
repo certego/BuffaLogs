@@ -6,7 +6,7 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel import tasks
-from impossible_travel.models import Alert, Login, User
+from impossible_travel.models import Alert, Login, TaskSettings, User
 from impossible_travel.modules import impossible_travel
 
 
@@ -165,3 +165,30 @@ class TestTasks(TestCase):
             Alert.objects.get(user__username="Lorena")
         self.assertTrue(User.objects.filter(username="Lorena").exists())
         self.assertTrue(Login.objects.filter(user__username="Lorena").exists())
+
+    def test_process_logs_data_lost(self):
+        TaskSettings.objects.create(
+            task_name="process_logs", start_date=timezone.datetime(2023, 4, 18, 10, 0), end_date=timezone.datetime(2023, 4, 18, 10, 30, 0)
+        )
+        tasks.process_logs()
+        new_end_date_expected = (timezone.now() - timedelta(minutes=1)).replace(microsecond=0)
+        new_start_date_expected = new_end_date_expected - timedelta(minutes=30)
+        process_task = TaskSettings.objects.get(task_name="process_logs")
+        self.assertEqual(new_start_date_expected, (process_task.start_date).replace(microsecond=0))
+        self.assertEqual(new_end_date_expected, (process_task.end_date).replace(microsecond=0))
+
+    def test_process_logs_loop(self):
+        start = (timezone.now() - timedelta(hours=5) - timedelta(minutes=1)).replace(microsecond=0)
+        end = (timezone.now() - timedelta(hours=4.5) - timedelta(minutes=1)).replace(microsecond=0)
+        TaskSettings.objects.create(task_name="process_logs", start_date=start, end_date=end)
+        # Let entire exec for loop
+        tasks.process_logs()
+        start_date_expected = start + timedelta(hours=3)
+        end_date_expected = end + timedelta(hours=3)
+        process_task = TaskSettings.objects.get(task_name="process_logs")
+        self.assertEqual(process_task.start_date, start_date_expected)
+        self.assertEqual(process_task.end_date, end_date_expected)
+        # Now not entire for loop executed
+        tasks.process_logs()
+        start_date_expected = start + timedelta(hours=5)
+        end_date_expected = end + timedelta(hours=4.5)

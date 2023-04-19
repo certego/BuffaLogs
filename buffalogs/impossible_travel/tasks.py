@@ -137,15 +137,13 @@ def process_user(db_user, start_date, end_date):
 @shared_task(name="BuffalogsProcessLogsTask")
 def process_logs():
     """Find all user logged in between that time range"""
-    i = 0
     now = timezone.now()
     process_task, op_result = TaskSettings.objects.get_or_create(
-        task_name="process_logs", defaults={"end_date": timezone.now(), "start_date": timezone.now() - timedelta(minutes=30)}
+        task_name=process_logs.__name__, defaults={"end_date": timezone.now() - timedelta(minutes=1), "start_date": timezone.now() - timedelta(minutes=30)}
     )
-    start_date = process_task.end_date
-    if (now - start_date).days < 1:
-        end_date = start_date + timedelta(minutes=30)
-        while i < 6 and end_date < now:
+    if (now - process_task.end_date).days < 1:
+        # Recovering old data avoiding task time limit
+        for _ in range(6):
             start_date = process_task.end_date
             end_date = start_date + timedelta(minutes=30)
             if end_date > now:
@@ -154,15 +152,15 @@ def process_logs():
             process_task.end_date = end_date
             process_task.save()
             exec_process_logs(start_date, end_date)
-            i = i + 1
+
     else:
-        logger.info(f"Data lost from {start_date} to now")
+        logger.info(f"Data lost from {process_task.end_date} to now")
         end_date = timezone.now() - timedelta(minutes=1)
         start_date = end_date - timedelta(minutes=30)
-        exec_process_logs(start_date, end_date)
         process_task.start_date = start_date
         process_task.end_date = end_date
         process_task.save()
+        exec_process_logs(start_date, end_date)
 
 
 def exec_process_logs(start_date, end_date):
