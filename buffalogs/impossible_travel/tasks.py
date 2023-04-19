@@ -134,24 +134,36 @@ def process_user(db_user, start_date, end_date):
     check_fields(db_user, fields)
 
 
-@shared_task(name="ProcessLogsTask")
+@shared_task(name="BuffalogsProcessLogsTask")
 def process_logs():
-    """
-    Find all user logged in between that time range
-    """
-    try:
-        process_task = TaskSettings.objects.get(task_name=process_logs.__name__)
-        start_date = process_task.end_date
+    """Find all user logged in between that time range"""
+    i = 0
+    now = timezone.now()
+    process_task, op_result = TaskSettings.objects.get_or_create(
+        task_name="process_logs", defaults={"end_date": timezone.now(), "start_date": timezone.now() - timedelta(minutes=30)}
+    )
+    start_date = process_task.end_date
+    if (now - start_date).days < 1:
         end_date = start_date + timedelta(minutes=30)
+        while i < 6 and end_date <= now:
+            start_date = process_task.end_date
+            end_date = start_date + timedelta(minutes=30)
+            process_task.start_date = start_date
+            process_task.end_date = end_date
+            process_task.save()
+            exec_process_logs(start_date, end_date)
+            i = i + 1
+    else:
+        logger.info(f"Data lost from {start_date} to now")
+        end_date = timezone.now() - timedelta(minutes=1)
+        start_date = end_date - timedelta(minutes=30)
+        exec_process_logs(start_date, end_date)
         process_task.start_date = start_date
         process_task.end_date = end_date
         process_task.save()
-    except ObjectDoesNotExist:
-        end_date = timezone.now()
-        start_date = end_date + timedelta(minutes=-30)
-        TaskSettings.objects.create(task_name=process_logs.__name__, start_date=start_date, end_date=end_date)
 
-    logger = logging.getLogger()
+
+def exec_process_logs(start_date, end_date):
     logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
     connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90)
     s = (
@@ -162,9 +174,10 @@ def process_logs():
     )
     s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
     response = s.execute()
-
-    for user in response.aggregations.login_user.buckets:
-        db_user, created = User.objects.get_or_create(username=user.key)
-        if not created:
-            db_user.save()
-        process_user(db_user, start_date, end_date)
+    try:
+        logger.info(f"Successfully got {len(response.aggregations.login_user.buckets)} users")
+        for user in response.aggregations.login_user.buckets:
+            db_user = User.objects.get_or_create(username=user.key)
+            process_user(db_user[0], start_date, end_date)
+    except AttributeError:
+        logger.info("No login_user aggregation found")
