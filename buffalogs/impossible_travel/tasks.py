@@ -145,9 +145,11 @@ def process_logs():
     start_date = process_task.end_date
     if (now - start_date).days < 1:
         end_date = start_date + timedelta(minutes=30)
-        while i < 6 and end_date <= now:
+        while i < 6 and end_date < now:
             start_date = process_task.end_date
             end_date = start_date + timedelta(minutes=30)
+            if end_date > now:
+                break
             process_task.start_date = start_date
             process_task.end_date = end_date
             process_task.save()
