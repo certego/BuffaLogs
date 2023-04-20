@@ -6,7 +6,7 @@ from .models import Alert, Login, TaskSettings, User
 @admin.register(Login)
 class LoginAdmin(admin.ModelAdmin):
     list_display = ("id", "created", "updated", "get_username", "timestamp", "latitude", "longitude", "country", "user_agent", "index")
-    search_fields = ("id", "user__username", "user_agent")
+    search_fields = ("id", "user__username", "user_agent", "index")
 
     @admin.display(description="username")
     def get_username(self, obj):
