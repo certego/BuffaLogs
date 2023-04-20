@@ -57,6 +57,7 @@ class Impossible_Travel:
             longitude=new_login_field["lon"],
             country=new_login_field["country"],
             user_agent=new_login_field["agent"],
+            index=new_login_field["index"],
         )
 
     def validate_timestamp(self, time):

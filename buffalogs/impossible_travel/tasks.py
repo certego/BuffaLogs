@@ -110,14 +110,24 @@ def process_user(db_user, start_date, end_date):
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
         .exclude("match", **{"event.outcome": "failure"})
-        .source(includes=["user.name", "@timestamp", "source.geo.location.lat", "source.geo.location.lon", "source.geo.country_name", "user_agent.original"])
+        .source(
+            includes=[
+                "user.name",
+                "@timestamp",
+                "source.geo.location.lat",
+                "source.geo.location.lon",
+                "source.geo.country_name",
+                "user_agent.original",
+                "_index",
+            ]
+        )
         .sort("@timestamp")
         .extra(size=10000)
     )
     response = s.execute()
     for hit in response:
         tmp = {"timestamp": hit["@timestamp"]}
-
+        tmp["index"] = hit.meta["index"]
         if "location" in hit["source"]["geo"] and "country_name" in hit["source"]["geo"]:
             tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
             tmp["lon"] = hit["source"]["geo"]["location"]["lon"]

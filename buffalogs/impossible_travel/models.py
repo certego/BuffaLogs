@@ -27,6 +27,7 @@ class Login(models.Model):
     longitude = models.FloatField(null=True)
     country = models.TextField(blank=True)
     user_agent = models.TextField(blank=True)
+    index = models.TextField()
 
 
 class Alert(models.Model):
