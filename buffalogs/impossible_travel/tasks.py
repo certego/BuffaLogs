@@ -3,7 +3,6 @@ from datetime import timedelta
 
 from celery import shared_task
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
@@ -127,6 +126,7 @@ def process_user(db_user, start_date, end_date):
     response = s.execute()
     for hit in response:
         tmp = {"timestamp": hit["@timestamp"]}
+        print(type(hit))
         tmp["index"] = hit.meta["index"]
         if "location" in hit["source"]["geo"] and "country_name" in hit["source"]["geo"]:
             tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
