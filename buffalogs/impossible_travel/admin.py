@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Alert, Login, TaskSettings, User
+from .models import Alert, Config, Login, TaskSettings, User
 
 
 @admin.register(Login)
@@ -33,3 +33,9 @@ class AlertAdmin(admin.ModelAdmin):
 class TaskSettingsAdmin(admin.ModelAdmin):
     list_display = ("id", "created", "updated", "task_name", "start_date", "end_date")
     search_fields = ("id", "task_name", "start_date")
+
+
+@admin.register(Config)
+class ConfigsAdmin(admin.ModelAdmin):
+    list_display = ("created", "updated", "allowed_countries", "vip_users")
+    search_fields = ("allowed_countries", "vip_users")

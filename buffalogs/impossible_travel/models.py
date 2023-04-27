@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -54,3 +55,10 @@ class TaskSettings(models.Model):
     updated = models.DateTimeField(auto_now=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+
+
+class Config(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    allowed_countries = ArrayField(models.CharField(max_length=20), blank=True)
+    vip_users = ArrayField(models.CharField(max_length=100), blank=True)
