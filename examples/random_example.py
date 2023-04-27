@@ -24,8 +24,7 @@ def main():
         tmp["@timestamp"] = head + tail
 
         tmp["user"] = {"name": random.choice(read_data["user_name"])}
-        tmp["event"] = {"outcome": random.choice(event_outcome)}
-        tmp["event"] = {"category": random.choice(event_category)}
+        tmp["event"] = {"outcome": random.choice(event_outcome), "category": random.choice(event_category)}
         tmp["source"] = {
             "ip": ip["address"],
             "geo": {
@@ -36,7 +35,7 @@ def main():
         tmp["user_agent"] = {"original": random.choice(read_data["user_agent"])}
 
         now = now + timedelta(seconds=1)
-
+        print(tmp)
         fields.append(tmp)
     write_bulk(es, fields)
 
