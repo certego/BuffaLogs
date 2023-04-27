@@ -27,6 +27,7 @@ class Login(models.Model):
     longitude = models.FloatField(null=True)
     country = models.TextField(blank=True)
     user_agent = models.TextField(blank=True)
+    index = models.TextField()
 
 
 class Alert(models.Model):
@@ -43,7 +44,7 @@ class Alert(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     login_raw_data = models.JSONField()
     created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateField(auto_now=True)
+    updated = models.DateTimeField(auto_now=True)
     description = models.TextField()
 
 

@@ -22,6 +22,9 @@
         },
         "user_agent" : {
           "original" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
+        },
+        "meta": {
+          "index": "cloud-*"
         }
     },
     {
@@ -47,6 +50,9 @@
         },
         "user_agent" : {
           "original" : "Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59"
+        },
+        "meta": {
+          "index": "cloud-*"
         }
     },
     {
@@ -72,6 +78,9 @@
         },
         "user_agent" : {
           "original" : "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+        },
+        "meta": {
+          "index": "cloud-*"
         }
     },
     {
@@ -97,6 +106,9 @@
         },
         "user_agent" : {
           "original" : "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)"
+        },
+        "meta": {
+          "index": "cloud-*"
         }
     },
     {
@@ -122,6 +134,9 @@
         },
         "user_agent" : {
           "original" : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
+        },
+        "meta": {
+          "index": "weblog-*"
         }
     },
     {
@@ -147,6 +162,9 @@
         },
         "user_agent": {
             "original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"
+        },
+        "meta": {
+          "index": "weblog-*"
         }
     },
     {
@@ -172,6 +190,9 @@
         },
         "user_agent": {
             "original": "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+        },
+        "meta": {
+          "index": "weblog-*"
         }
     },
     {
@@ -197,6 +218,9 @@
         },
         "user_agent": {
             "original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"
+        },
+        "meta": {
+          "index": "weblog-*"
         }
     }    
 ]
