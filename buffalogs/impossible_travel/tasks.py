@@ -96,7 +96,7 @@ def check_fields(db_user, fields):
             else:
                 imp_travel.add_new_login(db_user, login)
         else:
-            logger.info(f"No lattitude or longitude for User {login}")
+            logger.info(f"No latitude or longitude for User {login}")
 
 
 def process_user(db_user, start_date, end_date):
@@ -124,6 +124,7 @@ def process_user(db_user, start_date, end_date):
         .extra(size=10000)
     )
     response = s.execute()
+    logger.info(f"Got {len(response)} logins for user {db_user.username}")
     for hit in response:
         tmp = {"timestamp": hit["@timestamp"]}
         print(type(hit))
