@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
-from impossible_travel.models import Alert, Login, TaskSettings, User
+from impossible_travel.models import Alert, Config, Login, TaskSettings, User
 from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 
 logger = logging.getLogger()
@@ -82,7 +82,7 @@ def check_fields(db_user, fields):
 
                 if login["country"]:
                     country_alert = new_country.check_country(db_user, login)
-                    if country_alert:
+                    if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
                         set_alert(db_user, login, country_alert)
 
                 if country_alert or agent_alert:
