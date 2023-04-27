@@ -191,6 +191,6 @@ def exec_process_logs(start_date, end_date):
             if not created:
                 # Saving user to update updated_at field
                 db_user.save()
-            process_user(db_user[0], start_date, end_date)
+            process_user(db_user, start_date, end_date)
     except AttributeError:
         logger.info("No login_user aggregation found")
