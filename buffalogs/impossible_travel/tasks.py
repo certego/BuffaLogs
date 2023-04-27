@@ -180,14 +180,17 @@ def exec_process_logs(start_date, end_date):
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"event.category": "authentication"})
-        .exclude("match", **{"event.outcome": "failure"})
+        .query("match", **{"event.outcome": "success"})
     )
     s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
     response = s.execute()
     try:
         logger.info(f"Successfully got {len(response.aggregations.login_user.buckets)} users")
         for user in response.aggregations.login_user.buckets:
-            db_user = User.objects.get_or_create(username=user.key)
+            db_user, created = User.objects.get_or_create(username=user.key)
+            if not created:
+                # Saving user to update updated_at field
+                db_user.save()
             process_user(db_user[0], start_date, end_date)
     except AttributeError:
         logger.info("No login_user aggregation found")
