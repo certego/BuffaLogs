@@ -3,7 +3,7 @@ from impossible_travel.models import Alert, Config, Login, TaskSettings, User
 
 class Setup:
     def setup(self):
-        user = User.objects.bulk_create([User(username="Lorena Goldoni"), User(username="Asa Strickland"), User(username="Krista Moran")])
+        user = User.objects.bulk_create([User(username="Lorena Goldoni"), User(username="Asa Strickland"), User(username="Aisha Delgado")])
         logins = Login.objects.bulk_create(
             [
                 # Login for not vip_users but allowed_countries

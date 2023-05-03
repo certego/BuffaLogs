@@ -190,3 +190,38 @@ class TestTasks(TestCase):
         tasks.process_logs()
         start_date_expected = start + timedelta(hours=5)
         end_date_expected = end + timedelta(hours=4.5)
+
+    def test_check_fields(self):
+        fields1 = load_test_data("test_check_fields_part1")
+        fields2 = load_test_data("test_check_fields_part2")
+        db_user = User.objects.get(username="Aisha Delgado")
+
+        # First part - Expected logins in Login Model:
+        #   1. at 2023-05-03T06:50:03.768Z from India,
+        #   2. at 2023-05-03T06:57:27.768Z from Japan,
+        #   3. at 2023-05-03T07:10:23.154Z from United States
+        tasks.check_fields(db_user, fields1)
+        self.assertEqual(3, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3").count())
+        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="India").count())
+        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count())
+        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count())
+        # First part - Expected alerts in Alert Model:
+        #   1. at 2023-05-03T06:55:31.768Z alert NEW DEVICE
+        #   2. at 2023-05-03T06:55:31.768Z alert NEW COUNTRY - NO because allowed_country
+        #   3. at 2023-05-03T06:55:31.768Z alert IMP TRAVEL
+        #   4. at 2023-05-03T06:57:27.768Z alert NEW DEVICE
+        #   4. at 2023-05-03T06:57:27.768Z alert NEW COUNTRY
+        #   5. at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
+        #   6. at 2023-05-03T07:10:23.154Z alert IMP TRAVEL - TO DO, deve scattare !!!!
+        self.assertEqual(5, Alert.objects.filter(user=db_user).count())
+        self.assertEqual(2, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_DEVICE).count())
+        self.assertEqual(1, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY).count())
+        self.assertEqual(2, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL).count())
+        self.assertEqual(0, Alert.objects.filter(user=db_user, is_vip=True).count())
+
+        # Adding "Aisha Delgado" to vip users
+        Config.objects.filter(id=1).delete()
+        Config.objects.create(allowed_countries=["Italy"], vip_users=["Aisha Delgado"])
+
+        # Second part - Expected logins in Login Model:
+        tasks.check_fields(db_user, fields2)
