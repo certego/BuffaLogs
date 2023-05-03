@@ -59,7 +59,10 @@ def set_alert(db_user, login_alert, alert_info):
         from {login_alert['country']}\
         from device:{login_alert['agent']}"
     )
-    Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    if Config.objects.filter(vip_users__contains=[db_user.username]):
+        setattr(alert, "is_vip", True)
+        alert.save()
 
 
 def check_fields(db_user, fields):
