@@ -164,16 +164,16 @@ class TestTasks(TestCase):
         self.assertTrue(User.objects.filter(username="Lorena").exists())
         self.assertTrue(Login.objects.filter(user__username="Lorena").exists())
 
-    # def test_process_logs_data_lost(self):
-    #     TaskSettings.objects.create(
-    #         task_name="process_logs", start_date=timezone.datetime(2023, 4, 18, 10, 0), end_date=timezone.datetime(2023, 4, 18, 10, 30, 0)
-    #     )
-    #     tasks.process_logs()
-    #     new_end_date_expected = (timezone.now() - timedelta(minutes=1)).replace(microsecond=0)
-    #     new_start_date_expected = new_end_date_expected - timedelta(minutes=30)
-    #     process_task = TaskSettings.objects.get(task_name="process_logs")
-    #     self.assertEqual(new_start_date_expected, (process_task.start_date).replace(microsecond=0))
-    #     self.assertEqual(new_end_date_expected, (process_task.end_date).replace(microsecond=0))
+    def test_process_logs_data_lost(self):
+        TaskSettings.objects.create(
+            task_name="process_logs", start_date=timezone.datetime(2023, 4, 18, 10, 0), end_date=timezone.datetime(2023, 4, 18, 10, 30, 0)
+        )
+        tasks.process_logs()
+        new_end_date_expected = (timezone.now() - timedelta(minutes=1)).replace(microsecond=0)
+        new_start_date_expected = new_end_date_expected - timedelta(minutes=30)
+        process_task = TaskSettings.objects.get(task_name="process_logs")
+        self.assertEqual(new_start_date_expected, (process_task.start_date).replace(microsecond=0))
+        self.assertEqual(new_end_date_expected, (process_task.end_date).replace(microsecond=0))
 
     def test_process_logs_loop(self):
         start = (timezone.now() - timedelta(hours=5) - timedelta(minutes=1)).replace(microsecond=0)
