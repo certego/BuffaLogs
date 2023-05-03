@@ -53,11 +53,7 @@ def set_alert(db_user, login_alert, alert_info):
     Save the alert on db and logs it
     """
     logger.info(
-        f"ALERT {alert_info['alert_name']}\
-        for User:{db_user.username}\
-        at:{login_alert['timestamp']}\
-        from {login_alert['country']}\
-        from device:{login_alert['agent']}"
+        f"ALERT {alert_info['alert_name']} for User:{db_user.username} at:{login_alert['timestamp']} from {login_alert['country']} from device:{login_alert['agent']}"
     )
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     if Config.objects.filter(vip_users__contains=[db_user.username]):
