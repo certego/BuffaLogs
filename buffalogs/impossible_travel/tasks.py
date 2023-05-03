@@ -99,7 +99,7 @@ def check_fields(db_user, fields):
             else:
                 imp_travel.add_new_login(db_user, login)
         else:
-            logger.info(f"No latitude or longitude for User {login}")
+            logger.info(f"No latitude or longitude for User {db_user.username}")
 
 
 def process_user(db_user, start_date, end_date):
