@@ -1,12 +1,9 @@
-import calendar
-import json
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 
 import pygal
 from dateutil.relativedelta import relativedelta
-from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
-from impossible_travel.models import Alert, Login, User
+from impossible_travel.models import Alert, User
 from impossible_travel.modules import impossible_travel
 from pygal.style import Style
 

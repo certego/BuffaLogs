@@ -7,17 +7,24 @@
         "event" : {
           "outcome" : "success"
         },
-        "source" : {
-          "ip" : "203.0.113.28"
+        "event" : {
+          "category" : "authentication"
         },
-        "geoip" : {
-          "country_name" : "India",
+        "source" : {
           "ip" : "203.0.113.28",
-          "latitude" : 28.3618,
-          "longitude" : 77.2594
+          "geo" : {
+            "country_name" : "India",
+            "location" : {
+              "lat" : 28.3618,
+              "lon" : 77.2594
+            }
+          }
         },
         "user_agent" : {
           "original" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
+        },
+        "meta": {
+          "index": "cloud-*"
         }
     },
     {
@@ -28,17 +35,24 @@
         "event" : {
           "outcome" : "failure"
         },
-        "source" : {
-          "ip" : "203.0.113.16"
+        "event" : {
+          "category" : "authentication"
         },
-        "geoip" : {
-          "country_name" : "United States",
+        "source" : {
           "ip" : "203.0.113.16",
-          "latitude" : 37.5252,
-          "longitude" : -77.3622
+          "geo" : {
+            "country_name" : "United States",
+            "location" : {
+              "lat" : 37.5252,
+              "lon" : -77.3622
+            }
+          }
         },
         "user_agent" : {
           "original" : "Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59"
+        },
+        "meta": {
+          "index": "cloud-*"
         }
     },
     {
@@ -49,17 +63,24 @@
         "event" : {
           "outcome" : "success"
         },
-        "source" : {
-          "ip" : "203.0.113.26"
+        "event" : {
+          "category" : "authentication"
         },
-        "geoip" : {
-          "country_name" : "Japan",
+        "source" : {
           "ip" : "203.0.113.26",
-          "latitude" : 34.3883,
-          "longitude" : 132.4803
+          "geo" : {
+            "country_name" :"Japan",
+            "location" : {
+              "lat" : 34.3883,
+              "lon" : 132.4803
+            }
+          }
         },
         "user_agent" : {
           "original" : "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+        },
+        "meta": {
+          "index": "cloud-*"
         }
     },
     {
@@ -70,17 +91,24 @@
         "event" : {
           "outcome" : "success"
         },
-        "source" : {
-          "ip" : "203.0.113.7"
+        "event" : {
+          "category" : "authentication"
         },
-        "geoip" : {
-          "country_name" : "United States",
+        "source" : {
           "ip" : "203.0.113.7",
-          "latitude" : 40.364,
-          "longitude" : -79.8605
+          "geo" : {
+            "country_name" : "United States",
+            "location" : {
+              "lat" : 40.364,
+              "lon" : -79.8605
+            }
+          }
         },
         "user_agent" : {
           "original" : "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)"
+        },
+        "meta": {
+          "index": "cloud-*"
         }
     },
     {
@@ -91,17 +119,24 @@
         "event" : {
           "outcome" : "success"
         },
-        "source" : {
-          "ip" : "203.0.113.5"
+        "event" : {
+          "category" : "authentication"
         },
-        "geoip" : {
-          "country_name" : "United States",
+        "source" : {
           "ip" : "203.0.113.5",
-          "latitude" : 39.1841,
-          "longitude" : -77.0242
+          "geo" : {
+            "country_name" :"United States",
+            "location" : {
+              "lat" : 39.1841,
+              "lon" : -77.0242
+            }
+          }
         },
         "user_agent" : {
           "original" : "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
+        },
+        "meta": {
+          "index": "weblog-*"
         }
     },
     {
@@ -112,17 +147,24 @@
         "event": {
             "outcome": "success"
         },
-        "source": {
-            "ip": "203.0.113.20"
+        "event" : {
+          "category" : "authentication"
         },
-        "geoip": {
-            "country_name": "Japan",
+        "source": {
             "ip": "203.0.113.20",
-            "latitude": 35.5259,
-            "longitude": 139.5486
+            "geo" : {
+              "country_name" : "Japan",
+              "location" : {
+                "lat" : 35.5259,
+                "lon" : 139.5486
+              }
+            }
         },
         "user_agent": {
             "original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"
+        },
+        "meta": {
+          "index": "weblog-*"
         }
     },
     {
@@ -133,17 +175,24 @@
         "event": {
             "outcome": "success"
         },
-        "source": {
-            "ip": "203.0.113.19"
+        "event" : {
+          "category" : "authentication"
         },
-        "geoip": {
-            "country_name": "Japan",
+        "source": {
             "ip": "203.0.113.19",
-            "latitude": 35.8194,
-            "longitude": 139.9622
+            "geo" : {
+              "country_name" : "Japan",
+              "location" : {
+                "lat" : 35.8194,
+                "lon" : 139.9622
+              }
+            }
         },
         "user_agent": {
             "original": "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+        },
+        "meta": {
+          "index": "weblog-*"
         }
     },
     {
@@ -154,17 +203,24 @@
         "event": {
             "outcome": "success"
         },
-        "source": {
-            "ip": "203.0.113.24"
+        "event" : {
+          "category" : "authentication"
         },
-        "geoip": {
-            "country_name": "Japan",
+        "source": {
             "ip": "203.0.113.24",
-            "latitude": 36.2462,
-            "longitude": 138.8497
+            "geo" : {
+              "country_name" : "Japan",
+              "location" : {
+                "lat" : 36.2462,
+                "lon" : 138.8497
+              }
+            }
         },
         "user_agent": {
             "original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"
+        },
+        "meta": {
+          "index": "weblog-*"
         }
     }    
 ]

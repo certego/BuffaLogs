@@ -1,9 +1,9 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from impossible_travel.models import Alert, Login, TaskSettings, User
 
 
 class Command(BaseCommand):
-    help = "Clear Alert, Login and User models"
+    help = "Clear Alert, Login, User and TaskSettings models"
 
     def handle(self, *args, **options):
         Alert.objects.all().delete()

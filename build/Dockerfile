@@ -3,7 +3,7 @@ FROM python:3.10-slim-bullseye
 ENV INSTALL_PATH /opt/certego
 RUN mkdir -p $INSTALL_PATH
 WORKDIR $INSTALL_PATH
-COPY requirements.txt requirements.txt
+COPY buffalogs/requirements.txt requirements.txt
 
 
 RUN sed -i 's/main/main non-free/g' /etc/apt/sources.list \
