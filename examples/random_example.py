@@ -24,8 +24,7 @@ def main():
         tmp["@timestamp"] = head + tail
 
         tmp["user"] = {"name": random.choice(read_data["user_name"])}
-        tmp["event"] = {"outcome": random.choice(event_outcome)}
-        tmp["event"] = {"category": random.choice(event_category)}
+        tmp["event"] = {"outcome": random.choice(event_outcome), "category": random.choice(event_category)}
         tmp["source"] = {
             "ip": ip["address"],
             "geo": {
@@ -36,18 +35,17 @@ def main():
         tmp["user_agent"] = {"original": random.choice(read_data["user_agent"])}
 
         now = now + timedelta(seconds=1)
-
         fields.append(tmp)
-    write_bulk(es, fields)
+    write_bulk(es, now, fields)
 
 
-def write_bulk(es, msg_list):
+def write_bulk(es, now, msg_list):
     """Save a list of messages to sensor_stats index
 
     :param msg_list: a list of messages to save
     :type msg_list: list
     """
-    bulk(es, _bulk_gendata("cloud-test_data", msg_list))
+    bulk(es, _bulk_gendata(f"cloud-test_data-{str(now.year)}-{str(now.month)}-{str(now.day)}", msg_list))
 
 
 def _bulk_gendata(index, msg_list):
