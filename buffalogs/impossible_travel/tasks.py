@@ -57,7 +57,7 @@ def set_alert(db_user, login_alert, alert_info):
     )
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     if Config.objects.filter(vip_users__contains=[db_user.username]):
-        setattr(alert, "is_vip", True)
+        alert.is_vip = True
         alert.save()
 
 

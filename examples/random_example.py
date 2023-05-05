@@ -45,7 +45,7 @@ def write_bulk(es, now, msg_list):
     :param msg_list: a list of messages to save
     :type msg_list: list
     """
-    bulk(es, _bulk_gendata("cloud-test_data-" + str(now.year) + "-" + str(now.month) + "-" + str(now.day), msg_list))
+    bulk(es, _bulk_gendata(f"cloud-test_data-{str(now.year)}-{str(now.month)}-{str(now.day)}", msg_list))
 
 
 def _bulk_gendata(index, msg_list):
