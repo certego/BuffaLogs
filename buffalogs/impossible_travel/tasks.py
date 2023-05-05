@@ -85,12 +85,13 @@ def check_fields(db_user, fields):
                         set_alert(db_user, login, country_alert)
 
                 if country_alert or agent_alert:
-                    travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.first(), login)
-                    if travel_alert:
-                        set_alert(db_user, login, travel_alert)
                     imp_travel.add_new_login(db_user, login)
                 else:
                     imp_travel.update_model(db_user, login["timestamp"], login["lat"], login["lon"], login["country"], login["agent"])
+
+                travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.first(), login)
+                if travel_alert:
+                    set_alert(db_user, login, travel_alert)
 
             else:
                 imp_travel.add_new_login(db_user, login)
