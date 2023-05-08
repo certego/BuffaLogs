@@ -71,7 +71,7 @@ def check_fields(db_user, fields):
 
     for login in fields:
         if login["lat"] and login["lon"]:
-            if Login.objects.filter(user_id=db_user.id).exists():
+            if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
                 agent_alert = False
                 country_alert = False
                 if login["agent"]:
@@ -84,13 +84,14 @@ def check_fields(db_user, fields):
                     if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
                         set_alert(db_user, login, country_alert)
 
-                if country_alert or agent_alert:
-                    travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.first(), login)
-                    if travel_alert:
-                        set_alert(db_user, login, travel_alert)
-                    imp_travel.add_new_login(db_user, login)
-                else:
+                travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.last(), login)
+                if travel_alert:
+                    set_alert(db_user, login, travel_alert)
+
+                if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
                     imp_travel.update_model(db_user, login["timestamp"], login["lat"], login["lon"], login["country"], login["agent"])
+                else:
+                    imp_travel.add_new_login(db_user, login)
 
             else:
                 imp_travel.add_new_login(db_user, login)

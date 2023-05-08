@@ -19,8 +19,16 @@
         "index": "cloud-test_data-2023-5-3",
         "agent": "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
         "timestamp": "2023-05-03T07:20:36.154Z",
-	    "lat": 27.0519,
-        "lon": 75.7899,
-        "country": "India"
+	    "lat": 30.3657,
+        "lon": -88.5561,
+        "country": "United States"
+    },
+    {
+        "index": "cloud-test_data-2023-5-3",
+        "agent": "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
+        "timestamp": "2023-05-03T07:30:36.154Z",
+	    "lat": 30.3657,
+        "lon": -88.5561,
+        "country": "United States"
     }
 ]
