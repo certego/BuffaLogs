@@ -108,7 +108,7 @@ def process_user(db_user, start_date, end_date):
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
-        .exclude("match", **{"event.outcome": "failure"})
+        .query("match", **{"event.outcome": "success"})
         .source(
             includes=[
                 "user.name",
