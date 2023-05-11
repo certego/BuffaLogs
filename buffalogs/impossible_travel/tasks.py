@@ -128,7 +128,7 @@ def process_user(db_user, start_date, end_date):
     logger.info(f"Got {len(response)} logins for user {db_user.username}")
     for hit in response:
         tmp = {"timestamp": hit["@timestamp"]}
-        tmp["index"] = hit.meta["index"]
+        tmp["index"] = hit.meta["index"].split("-")[0]
         if "location" in hit["source"]["geo"] and "country_name" in hit["source"]["geo"]:
             tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
             tmp["lon"] = hit["source"]["geo"]["location"]["lon"]
