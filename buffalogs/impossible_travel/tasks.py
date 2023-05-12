@@ -89,7 +89,7 @@ def check_fields(db_user, fields):
                     set_alert(db_user, login, travel_alert)
 
                 if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
-                    imp_travel.update_model(db_user, login["timestamp"], login["lat"], login["lon"], login["country"], login["agent"])
+                    imp_travel.update_model(db_user, login)
                 else:
                     imp_travel.add_new_login(db_user, login)
 
