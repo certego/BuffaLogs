@@ -105,7 +105,7 @@ def process_user(db_user, start_date, end_date):
     """
     fields = []
     s = (
-        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
+        Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
         .query("match", **{"event.outcome": "success"})
@@ -133,7 +133,7 @@ def process_user(db_user, start_date, end_date):
             tmp = {"timestamp": hit["@timestamp"]}
             tmp["id"] = hit.meta["id"]
             tmp["index"] = hit.meta["index"].split("-")[0]
-            tmp["source"] = hit["source"]["ip"]
+            tmp["ip"] = hit["source"]["ip"]
             if "geo" in hit.source:
                 if "location" in hit.source.geo and "country_name" in hit.source.geo:
                     tmp["lat"] = hit["source"]["geo"]["location"]["lat"]

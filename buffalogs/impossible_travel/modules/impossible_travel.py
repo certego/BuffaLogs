@@ -38,7 +38,7 @@ class Impossible_Travel:
                 alert_info[
                     "alert_desc"
                 ] = f"{alert_info['alert_name']} for User: {db_user.username},\
-                    at: {time}, from:({last_login_user_fields['lat']}, {last_login_user_fields['lon']})"
+                    at: {time}, from:{last_login_user_fields['country']}"
                 return alert_info
 
     def update_model(self, db_user, new_login):
