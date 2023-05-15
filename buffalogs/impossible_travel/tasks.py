@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
-from impossible_travel.models import Alert, Login, TaskSettings, User
+from impossible_travel.models import Alert, Config, Login, TaskSettings, User
 from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 
 logger = logging.getLogger()
@@ -41,7 +41,7 @@ def update_risk_level():
             elif 3 <= alerts_num <= 4:
                 tmp = User.riskScoreEnum.MEDIUM
             else:
-                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}")
+                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}, {alerts_num} detected")
                 tmp = User.riskScoreEnum.HIGH
             if u.risk_score != tmp:
                 u.risk_score = tmp
@@ -53,13 +53,12 @@ def set_alert(db_user, login_alert, alert_info):
     Save the alert on db and logs it
     """
     logger.info(
-        f"ALERT {alert_info['alert_name']}\
-        for User:{db_user.username}\
-        at:{login_alert['timestamp']}\
-        from {login_alert['country']}\
-        from device:{login_alert['agent']}"
+        f"ALERT {alert_info['alert_name']} for User:{db_user.username} at:{login_alert['timestamp']} from {login_alert['country']} from device:{login_alert['agent']}"
     )
-    Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    if Config.objects.filter(vip_users__contains=[db_user.username]):
+        alert.is_vip = True
+        alert.save()
 
 
 def check_fields(db_user, fields):
@@ -72,7 +71,7 @@ def check_fields(db_user, fields):
 
     for login in fields:
         if login["lat"] and login["lon"]:
-            if Login.objects.filter(user_id=db_user.id).exists():
+            if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
                 agent_alert = False
                 country_alert = False
                 if login["agent"]:
@@ -82,21 +81,22 @@ def check_fields(db_user, fields):
 
                 if login["country"]:
                     country_alert = new_country.check_country(db_user, login)
-                    if country_alert:
+                    if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
                         set_alert(db_user, login, country_alert)
 
-                if country_alert or agent_alert:
-                    travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.first(), login)
-                    if travel_alert:
-                        set_alert(db_user, login, travel_alert)
-                    imp_travel.add_new_login(db_user, login)
+                travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.last(), login)
+                if travel_alert:
+                    set_alert(db_user, login, travel_alert)
+
+                if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
+                    imp_travel.update_model(db_user, login)
                 else:
-                    imp_travel.update_model(db_user, login["timestamp"], login["lat"], login["lon"], login["country"], login["agent"])
+                    imp_travel.add_new_login(db_user, login)
 
             else:
                 imp_travel.add_new_login(db_user, login)
         else:
-            logger.info(f"No lattitude or longitude for User {login}")
+            logger.info(f"No latitude or longitude for User {db_user.username}")
 
 
 def process_user(db_user, start_date, end_date):
@@ -108,7 +108,7 @@ def process_user(db_user, start_date, end_date):
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
-        .exclude("match", **{"event.outcome": "failure"})
+        .query("match", **{"event.outcome": "success"})
         .source(
             includes=[
                 "user.name",
@@ -118,29 +118,35 @@ def process_user(db_user, start_date, end_date):
                 "source.geo.country_name",
                 "user_agent.original",
                 "_index",
+                "source.ip",
+                "_id",
             ]
         )
         .sort("@timestamp")
         .extra(size=10000)
     )
     response = s.execute()
+    logger.info(f"Got {len(response)} logins for user {db_user.username}")
     for hit in response:
-        tmp = {"timestamp": hit["@timestamp"]}
-        print(type(hit))
-        tmp["index"] = hit.meta["index"]
-        if "location" in hit["source"]["geo"] and "country_name" in hit["source"]["geo"]:
-            tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
-            tmp["lon"] = hit["source"]["geo"]["location"]["lon"]
-            tmp["country"] = hit["source"]["geo"]["country_name"]
-        else:
-            tmp["lat"] = None
-            tmp["lon"] = None
-            tmp["country"] = ""
-        if "user_agent" in hit:
-            tmp["agent"] = hit["user_agent"]["original"]
-        else:
-            tmp["agent"] = ""
-        fields.append(tmp)
+        if "source" in hit:
+            tmp = {"timestamp": hit["@timestamp"]}
+            tmp["id"] = hit.meta["id"]
+            tmp["index"] = hit.meta["index"].split("-")[0]
+            tmp["ip"] = hit["source"]["ip"]
+            if "geo" in hit.source:
+                if "location" in hit.source.geo and "country_name" in hit.source.geo:
+                    tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
+                    tmp["lon"] = hit["source"]["geo"]["location"]["lon"]
+                    tmp["country"] = hit["source"]["geo"]["country_name"]
+                else:
+                    tmp["lat"] = None
+                    tmp["lon"] = None
+                    tmp["country"] = ""
+                if "user_agent" in hit:
+                    tmp["agent"] = hit["user_agent"]["original"]
+                else:
+                    tmp["agent"] = ""
+                fields.append(tmp)
     check_fields(db_user, fields)
 
 
@@ -191,6 +197,6 @@ def exec_process_logs(start_date, end_date):
             if not created:
                 # Saving user to update updated_at field
                 db_user.save()
-            process_user(db_user[0], start_date, end_date)
+            process_user(db_user, start_date, end_date)
     except AttributeError:
         logger.info("No login_user aggregation found")

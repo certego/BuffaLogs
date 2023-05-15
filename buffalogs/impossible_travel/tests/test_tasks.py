@@ -8,8 +8,9 @@ from django.utils import timezone
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from impossible_travel import tasks
-from impossible_travel.models import Alert, Login, TaskSettings, User
+from impossible_travel.models import Alert, Config, Login, TaskSettings, User
 from impossible_travel.modules import impossible_travel
+from impossible_travel.tests.setup import Setup
 
 
 def load_test_data(name):
@@ -20,45 +21,20 @@ def load_test_data(name):
 
 
 class TestTasks(TestCase):
-
-    imp_travel = impossible_travel.Impossible_Travel()
-
     @classmethod
     def setUpTestData(self):
-        user = User.objects.create(
-            username="Lorena Goldoni",
-        )
-        user.save()
-        logins = Login.objects.bulk_create(
-            [
-                Login(
-                    user=user,
-                    timestamp="2023-03-08T17:08:33.358Z",
-                    latitude=44.4937,
-                    longitude=24.3456,
-                    country="Italy",
-                    user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
-                ),
-                Login(
-                    user=user,
-                    timestamp="2023-03-08T17:25:33.358Z",
-                    latitude=45.4758,
-                    longitude=9.2275,
-                    country="Italy",
-                    user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5",
-                ),
-            ]
-        )
+        setup_obj = Setup()
+        setup_obj.setup()
 
     def test_set_alert(self):
-        # Add an alert and check if it is correctly inserted in the Alert DB
+        # Add an alert and check if it is correctly inserted in the Alert Model
         db_user = User.objects.get(username="Lorena Goldoni")
-        login = Login.objects.get(user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5")
-        timestamp = login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": login.country, "agent": login.user_agent}
+        db_login = Login.objects.get(user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5")
+        timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
         name = Alert.ruleNameEnum.IMP_TRAVEL
         desc = f"{name} for User: {db_user.username},\
-                    at: {timestamp}, from:({login.latitude}, {login.longitude})"
+                    at: {timestamp}, from:({db_login.latitude}, {db_login.longitude})"
         alert_info = {
             "alert_name": name,
             "alert_desc": desc,
@@ -66,6 +42,25 @@ class TestTasks(TestCase):
         tasks.set_alert(db_user, login_data, alert_info)
         db_alert = Alert.objects.get(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL)
         self.assertIsNotNone(db_alert)
+        self.assertEqual("Impossible Travel detected", db_alert.name)
+        self.assertFalse(db_alert.is_vip)
+
+    def test_set_alert_vip_user(self):
+        # Test for alert in case of a vip_user
+        db_user = User.objects.get(username="Asa Strickland")
+        db_login = Login.objects.filter(user=db_user).first()
+        timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
+        name = Alert.ruleNameEnum.IMP_TRAVEL
+        desc = f"{name} for User: {db_user.username},\
+                    at: {timestamp}, from:({db_login.latitude}, {db_login.longitude})"
+        alert_info = {
+            "alert_name": name,
+            "alert_desc": desc,
+        }
+        tasks.set_alert(db_user, login_data, alert_info)
+        db_alert = Alert.objects.get(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL)
+        self.assertTrue(db_alert.is_vip)
 
     def test_update_risk_level_norisk(self):
         # 0 alert --> no risk
@@ -195,3 +190,121 @@ class TestTasks(TestCase):
         tasks.process_logs()
         start_date_expected = start + timedelta(hours=5)
         end_date_expected = end + timedelta(hours=4.5)
+
+    def test_check_fields_logins(self):
+        fields1 = load_test_data("test_check_fields_part1")
+        fields2 = load_test_data("test_check_fields_part2")
+        db_user = User.objects.get(username="Aisha Delgado")
+
+        # First part - Expected logins in Login Model:
+        #   1. at 2023-05-03T06:50:03.768Z from India,
+        #   2. at 2023-05-03T06:57:27.768Z from Japan,
+        #   3. at 2023-05-03T07:10:23.154Z from United States
+        tasks.check_fields(db_user, fields1)
+        self.assertEqual(3, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3").count())
+        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="India").count())
+        self.assertEqual(6, Login.objects.get(user=db_user, country="India").timestamp.hour)
+        self.assertEqual(50, Login.objects.get(user=db_user, country="India").timestamp.minute)
+        self.assertEqual(3, Login.objects.get(user=db_user, country="India").timestamp.second)
+        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count())
+        self.assertEqual(7, Login.objects.get(user=db_user, country="United States").timestamp.hour)
+        self.assertEqual(10, Login.objects.get(user=db_user, country="United States").timestamp.minute)
+        self.assertEqual(23, Login.objects.get(user=db_user, country="United States").timestamp.second)
+        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count())
+        self.assertEqual(6, Login.objects.get(user=db_user, country="Japan").timestamp.hour)
+        self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
+        self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
+
+        # First part - Expected alerts in Alert Model:
+        #   1. at 2023-05-03T06:55:31.768Z alert NEW DEVICE
+        #   2. at 2023-05-03T06:55:31.768Z alert NEW COUNTRY - NO because allowed_countries["Italy", "United States"]
+        #   3. at 2023-05-03T06:55:31.768Z alert IMP TRAVEL
+        #   4. at 2023-05-03T06:57:27.768Z alert NEW DEVICE
+        #   4. at 2023-05-03T06:57:27.768Z alert NEW COUNTRY
+        #   5. at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
+        #   6. at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
+        self.assertEqual(6, Alert.objects.filter(user=db_user).count())
+        self.assertEqual(2, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_DEVICE).count())
+        self.assertEqual(1, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY).count())
+        self.assertEqual(3, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL).count())
+        self.assertEqual(0, Alert.objects.filter(user=db_user, is_vip=True).count())
+
+        # Adding "Aisha Delgado" to vip users
+        Config.objects.filter(id=1).delete()
+        Config.objects.create(allowed_countries=["Italy"], vip_users=["Aisha Delgado"])
+
+        # Second part - Expected changed logins in Login Model:
+        #   4. at 2023-05-03T07:14:22.768Z from India with user_agent: Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0
+        #   5. at 2023-05-03T07:18:38.768Z from India with user_agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)
+        #   6. at 2023-05-03T07:20:36.154Z from United States with user_agent: Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0
+        tasks.check_fields(db_user, fields2)
+        self.assertEqual(6, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3").count())
+        self.assertEqual(3, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="India").count())
+        self.assertEqual(
+            7, Login.objects.get(user=db_user, country="India", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0").timestamp.hour
+        )
+        self.assertEqual(
+            14,
+            Login.objects.get(user=db_user, country="India", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0").timestamp.minute,
+        )
+        self.assertEqual(
+            22,
+            Login.objects.get(user=db_user, country="India", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0").timestamp.second,
+        )
+        self.assertEqual(
+            7,
+            Login.objects.get(
+                user=db_user, country="India", user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+            ).timestamp.hour,
+        )
+        self.assertEqual(
+            18,
+            Login.objects.get(
+                user=db_user, country="India", user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+            ).timestamp.minute,
+        )
+        self.assertEqual(
+            38,
+            Login.objects.get(
+                user=db_user, country="India", user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+            ).timestamp.second,
+        )
+        self.assertEqual(2, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count())
+        self.assertEqual(
+            7,
+            Login.objects.get(
+                user=db_user, country="United States", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+            ).timestamp.hour,
+        )
+        self.assertEqual(
+            30,
+            Login.objects.get(
+                user=db_user, country="United States", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+            ).timestamp.minute,
+        )
+        self.assertEqual(
+            36,
+            Login.objects.get(
+                user=db_user, country="United States", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+            ).timestamp.second,
+        )
+        self.assertEqual(2, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count())
+        self.assertEqual(7, Login.objects.filter(user=db_user, country="United States").last().timestamp.hour)
+        self.assertEqual(30, Login.objects.filter(user=db_user, country="United States").last().timestamp.minute)
+        self.assertEqual(36, Login.objects.filter(user=db_user, country="United States").last().timestamp.second)
+        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count())
+        self.assertEqual(6, Login.objects.get(user=db_user, country="Japan").timestamp.hour)
+        self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
+        self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
+
+        # Second part - Expected new alerts in Alert Model:
+        #   7. at 2023-05-03T07:14:22.768Z alert NEW DEVICE
+        #   8. at 2023-05-03T07:14:22.768Z alert IMP TRAVEL
+        #   9. at 2023-05-03T07:18:38.768Z alert NEW DEVICE
+        #   10. at 2023-05-03T07:18:38.768Z alert IMP TRAVEL
+        #   11. at 2023-05-03T07:20:36.154Z alert IMP TRAVEL
+        self.assertEqual(4, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_DEVICE).count())
+        self.assertEqual(1, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY).count())
+        self.assertEqual(6, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL).count())
+        self.assertEqual(5, Alert.objects.filter(user=db_user, is_vip=True).count())
+        self.assertEqual(11, Alert.objects.filter(user=db_user).count())
