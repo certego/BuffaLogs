@@ -38,26 +38,34 @@ class Impossible_Travel:
                 alert_info[
                     "alert_desc"
                 ] = f"{alert_info['alert_name']} for User: {db_user.username},\
-                    at: {time}, from:({last_login_user_fields['lat']}, {last_login_user_fields['lon']})"
+                    at: {time}, from:{last_login_user_fields['country']}"
                 return alert_info
 
-    def update_model(self, db_user, new_timestamp, new_latitude, new_longitude, new_country, new_user_agent):
+    def update_model(self, db_user, new_login):
         """
         Update DB entry with last login info
         """
-        db_user.login_set.filter(user_agent=new_user_agent, country=new_country).update(
-            timestamp=new_timestamp, latitude=new_latitude, longitude=new_longitude, country=new_country, user_agent=new_user_agent
+        db_user.login_set.filter(user_agent=new_login["agent"], country=new_login["country"]).update(
+            timestamp=new_login["timestamp"],
+            latitude=new_login["lat"],
+            longitude=new_login["lon"],
+            country=new_login["country"],
+            user_agent=new_login["agent"],
+            event_id=new_login["id"],
+            ip=new_login["ip"],
         )
 
     def add_new_login(self, db_user, new_login_field):
         Login.objects.create(
             user_id=db_user.id,
             timestamp=new_login_field["timestamp"],
+            ip=new_login_field["ip"],
             latitude=new_login_field["lat"],
             longitude=new_login_field["lon"],
             country=new_login_field["country"],
             user_agent=new_login_field["agent"],
             index=new_login_field["index"],
+            event_id=new_login_field["id"],
         )
 
     def validate_timestamp(self, time):

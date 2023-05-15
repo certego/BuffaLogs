@@ -41,7 +41,7 @@ def update_risk_level():
             elif 3 <= alerts_num <= 4:
                 tmp = User.riskScoreEnum.MEDIUM
             else:
-                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}")
+                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}, {alerts_num} detected")
                 tmp = User.riskScoreEnum.HIGH
             if u.risk_score != tmp:
                 u.risk_score = tmp
@@ -89,7 +89,7 @@ def check_fields(db_user, fields):
                     set_alert(db_user, login, travel_alert)
 
                 if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
-                    imp_travel.update_model(db_user, login["timestamp"], login["lat"], login["lon"], login["country"], login["agent"])
+                    imp_travel.update_model(db_user, login)
                 else:
                     imp_travel.add_new_login(db_user, login)
 
@@ -108,7 +108,7 @@ def process_user(db_user, start_date, end_date):
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
-        .exclude("match", **{"event.outcome": "failure"})
+        .query("match", **{"event.outcome": "success"})
         .source(
             includes=[
                 "user.name",
@@ -118,6 +118,8 @@ def process_user(db_user, start_date, end_date):
                 "source.geo.country_name",
                 "user_agent.original",
                 "_index",
+                "source.ip",
+                "_id",
             ]
         )
         .sort("@timestamp")
@@ -126,21 +128,25 @@ def process_user(db_user, start_date, end_date):
     response = s.execute()
     logger.info(f"Got {len(response)} logins for user {db_user.username}")
     for hit in response:
-        tmp = {"timestamp": hit["@timestamp"]}
-        tmp["index"] = hit.meta["index"]
-        if "location" in hit["source"]["geo"] and "country_name" in hit["source"]["geo"]:
-            tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
-            tmp["lon"] = hit["source"]["geo"]["location"]["lon"]
-            tmp["country"] = hit["source"]["geo"]["country_name"]
-        else:
-            tmp["lat"] = None
-            tmp["lon"] = None
-            tmp["country"] = ""
-        if "user_agent" in hit:
-            tmp["agent"] = hit["user_agent"]["original"]
-        else:
-            tmp["agent"] = ""
-        fields.append(tmp)
+        if "source" in hit:
+            tmp = {"timestamp": hit["@timestamp"]}
+            tmp["id"] = hit.meta["id"]
+            tmp["index"] = hit.meta["index"].split("-")[0]
+            tmp["ip"] = hit["source"]["ip"]
+            if "geo" in hit.source:
+                if "location" in hit.source.geo and "country_name" in hit.source.geo:
+                    tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
+                    tmp["lon"] = hit["source"]["geo"]["location"]["lon"]
+                    tmp["country"] = hit["source"]["geo"]["country_name"]
+                else:
+                    tmp["lat"] = None
+                    tmp["lon"] = None
+                    tmp["country"] = ""
+                if "user_agent" in hit:
+                    tmp["agent"] = hit["user_agent"]["original"]
+                else:
+                    tmp["agent"] = ""
+                fields.append(tmp)
     check_fields(db_user, fields)
 
 

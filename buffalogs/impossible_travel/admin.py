@@ -5,8 +5,8 @@ from .models import Alert, Config, Login, TaskSettings, User
 
 @admin.register(Login)
 class LoginAdmin(admin.ModelAdmin):
-    list_display = ("id", "created", "updated", "get_username", "timestamp", "latitude", "longitude", "country", "user_agent", "index")
-    search_fields = ("id", "user__username", "user_agent", "index")
+    list_display = ("id", "created", "updated", "get_username", "timestamp", "latitude", "longitude", "country", "user_agent", "index", "ip", "event_id")
+    search_fields = ("id", "user__username", "user_agent", "index", "event_id", "ip")
 
     @admin.display(description="username")
     def get_username(self, obj):

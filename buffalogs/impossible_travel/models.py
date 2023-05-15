@@ -29,6 +29,8 @@ class Login(models.Model):
     country = models.TextField(blank=True)
     user_agent = models.TextField(blank=True)
     index = models.TextField()
+    event_id = models.TextField()
+    ip = models.TextField()
 
 
 class Alert(models.Model):
