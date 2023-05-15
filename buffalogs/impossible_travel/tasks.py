@@ -109,7 +109,6 @@ def process_user(db_user, start_date, end_date):
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
         .query("match", **{"event.outcome": "success"})
-        .query("match", **{"event.type": "start"})
         .source(
             includes=[
                 "user.name",
@@ -188,7 +187,6 @@ def exec_process_logs(start_date, end_date):
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"event.category": "authentication"})
         .query("match", **{"event.outcome": "success"})
-        .query("match", **{"event.type": "start"})
     )
     s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
     response = s.execute()
