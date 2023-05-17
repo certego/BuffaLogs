@@ -181,7 +181,7 @@ def process_logs():
 
 def exec_process_logs(start_date, end_date):
     logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
-    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90)
+    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
