@@ -84,7 +84,7 @@ def check_fields(db_user, fields):
                     if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
                         set_alert(db_user, login, country_alert)
 
-                travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.last(), login)
+                travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.latest("timestamp"), login)
                 if travel_alert:
                     set_alert(db_user, login, travel_alert)
 
