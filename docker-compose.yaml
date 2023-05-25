@@ -33,7 +33,7 @@ services:
         build:
             context: .
             dockerfile: build/Dockerfile
-        image: buffalogs:latest
+        image: certego/buffalogs:1.0.0
         hostname: buffalogs
         env_file:
             -  config/buffalogs/buffalogs.env
