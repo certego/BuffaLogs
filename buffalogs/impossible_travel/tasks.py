@@ -41,8 +41,10 @@ def update_risk_level():
             elif 3 <= alerts_num <= 4:
                 tmp = User.riskScoreEnum.MEDIUM
             else:
-                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}, {alerts_num} detected")
                 tmp = User.riskScoreEnum.HIGH
+                if u.risk_score != tmp:
+                    # Added log only if it's updated, not always for each High risk user
+                    logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}, {alerts_num} detected")
             if u.risk_score != tmp:
                 u.risk_score = tmp
                 u.save()
