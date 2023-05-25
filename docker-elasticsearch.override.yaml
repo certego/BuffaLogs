@@ -39,3 +39,8 @@ services:
             - "127.0.0.1:5601:5601"
         healthcheck:
             test: curl -fs http://localhost:5601/
+
+volumes:
+
+    elasticsearch_data:
+        driver: local

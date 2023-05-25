@@ -96,8 +96,6 @@ services:
 
 volumes:
 
-    elasticsearch_data:
-        driver: local
     postgres_data:
         driver: local
     nginx_sockets:
