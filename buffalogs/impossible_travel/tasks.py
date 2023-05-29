@@ -84,16 +84,21 @@ def check_fields(db_user, fields):
                     if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
                         set_alert(db_user, login, country_alert)
 
-                travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.last(), login)
-                if travel_alert:
-                    set_alert(db_user, login, travel_alert)
+                if not db_user.login_set.filter(ip=login["ip"]).exists():
+                    logger.info(f"Calculating impossible travel: {login['id']}")
+                    travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.latest("timestamp"), login)
+                    if travel_alert:
+                        set_alert(db_user, login, travel_alert)
 
                 if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
                     imp_travel.update_model(db_user, login)
                 else:
+                    logger.info(f"Updating login {login['id']} for user: {db_user.username}")
+                    logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
                     imp_travel.add_new_login(db_user, login)
 
             else:
+                logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
                 imp_travel.add_new_login(db_user, login)
         else:
             logger.info(f"No latitude or longitude for User {db_user.username}")
