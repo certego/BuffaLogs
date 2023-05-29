@@ -73,7 +73,6 @@ services:
             - ./config:/opt/certego/config:ro
         depends_on:
             - postgres
-            - elasticsearch
             - rabbitmq
 
     celery_beat:
@@ -91,7 +90,6 @@ services:
             - ./config:/opt/certego/config:ro
         depends_on:
             - postgres
-            - elasticsearch
             - rabbitmq
 
 volumes:
