@@ -16,16 +16,16 @@ logger = get_task_logger(__name__)
 def clear_models_periodically():
     """Delete old data in the models"""
     now = timezone.now()
-    delete_user_time = now - timedelta(days=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS)
+    delete_user_time = now - timedelta(days=settings.CERTEGO_USER_MAX_DAYS)
     User.objects.filter(updated__lte=delete_user_time).delete()
 
-    delete_login_time = now - timedelta(days=settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS)
+    delete_login_time = now - timedelta(days=settings.CERTEGO_LOGIN_MAX_DAYS)
     Login.objects.filter(updated__lte=delete_login_time).delete()
 
-    delete_alert_time = now - timedelta(days=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS)
+    delete_alert_time = now - timedelta(days=settings.CERTEGO_ALERT_MAX_DAYS)
     Alert.objects.filter(updated__lte=delete_alert_time).delete()
 
-    delete_ip_time = now - timedelta(days=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS)
+    delete_ip_time = now - timedelta(days=settings.CERTEGO_IP_MAX_DAYS)
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
@@ -126,7 +126,7 @@ def process_user(db_user, start_date, end_date):
     """
     fields = []
     s = (
-        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
+        Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
         .query("match", **{"event.outcome": "success"})
@@ -212,7 +212,7 @@ def exec_process_logs(start_date, end_date):
     logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
     connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90)
     s = (
-        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
+        Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"event.category": "authentication"})
         .query("match", **{"event.outcome": "success"})
