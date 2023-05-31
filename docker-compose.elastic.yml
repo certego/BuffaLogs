@@ -5,6 +5,9 @@ services:
         container_name: buffalogs_elasticsearch
         image: docker.elastic.co/elasticsearch/elasticsearch:7.17.7
         hostname: elasticsearch
+        build:
+            context: .
+            dockerfile: build/Dockerfile
         environment: 
             - node.name=buffalogs_elastic
             - bootstrap.memory_lock=true
