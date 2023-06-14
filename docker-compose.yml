@@ -5,7 +5,6 @@ services:
     postgres:
         container_name: buffalogs_postgres
         image: postgres:15.1-alpine
-        restart: always
         env_file:
             - config/buffalogs/buffalogs.env
         volumes:
