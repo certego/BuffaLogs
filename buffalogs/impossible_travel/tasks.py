@@ -41,8 +41,10 @@ def update_risk_level():
             elif 3 <= alerts_num <= 4:
                 tmp = User.riskScoreEnum.MEDIUM
             else:
-                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}, {alerts_num} detected")
                 tmp = User.riskScoreEnum.HIGH
+                if u.risk_score != tmp:
+                    # Added log only if it's updated, not always for each High risk user
+                    logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}, {alerts_num} detected")
             if u.risk_score != tmp:
                 u.risk_score = tmp
                 u.save()
@@ -84,16 +86,21 @@ def check_fields(db_user, fields):
                     if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
                         set_alert(db_user, login, country_alert)
 
-                travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.last(), login)
-                if travel_alert:
-                    set_alert(db_user, login, travel_alert)
+                if not db_user.login_set.filter(ip=login["ip"]).exists():
+                    logger.info(f"Calculating impossible travel: {login['id']}")
+                    travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.latest("timestamp"), login)
+                    if travel_alert:
+                        set_alert(db_user, login, travel_alert)
 
                 if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
                     imp_travel.update_model(db_user, login)
                 else:
+                    logger.info(f"Updating login {login['id']} for user: {db_user.username}")
+                    logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
                     imp_travel.add_new_login(db_user, login)
 
             else:
+                logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
                 imp_travel.add_new_login(db_user, login)
         else:
             logger.info(f"No latitude or longitude for User {db_user.username}")
@@ -181,7 +188,7 @@ def process_logs():
 
 def exec_process_logs(start_date, end_date):
     logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
-    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90)
+    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
