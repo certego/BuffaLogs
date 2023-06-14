@@ -110,6 +110,7 @@ def check_fields(db_user, fields):
             else:
                 logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
                 imp_travel.add_new_login(db_user, login)
+                imp_travel.add_new_user_ip(db_user, login["ip"])
         else:
             logger.info(f"No latitude or longitude for User {db_user.username}")
 
