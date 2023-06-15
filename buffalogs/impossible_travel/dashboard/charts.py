@@ -25,7 +25,7 @@ def users_pie_chart(start, end):
         legend_font_size=25,
         tooltip_font_size=25,
     )
-    users_pie_chart = pygal.Pie(style=custom_style, width=1000, height=750)
+    users_pie_chart = pygal.Pie(style=custom_style, width=1000, height=650)
 
     users_pie_chart.add("No risk", User.objects.filter(updated__range=(start, end), risk_score="No risk").count())
     users_pie_chart.add("Low", User.objects.filter(updated__range=(start, end), risk_score="Low").count())
@@ -118,7 +118,7 @@ def world_map_chart(start, end):
     world_map_chart = pygal.maps.world.World(
         style=custom_style,
         width=380,
-        height=160,
+        height=130,
         show_legend=False,
     )
     countries = {
