@@ -83,9 +83,9 @@
     border-radius: 20px;
     position: absolute;
     margin: 50px;
-    width: 25%;
+    width: 20%;
     height: 82.7%;
-    margin-left: 2000px;
+    margin-left: 1900px;
 }
 #live-alerts-span{
     left: 12%;
@@ -97,7 +97,7 @@
     position: absolute;
     margin: 600px;
     width: 61%;
-    height: 45%;
+    height: 40%;
     margin-left: 300px;
 }
 #users-span{

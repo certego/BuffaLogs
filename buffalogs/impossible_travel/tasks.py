@@ -43,8 +43,10 @@ def update_risk_level():
             elif 3 <= alerts_num <= 4:
                 tmp = User.riskScoreEnum.MEDIUM
             else:
-                logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}")
                 tmp = User.riskScoreEnum.HIGH
+                if u.risk_score != tmp:
+                    # Added log only if it's updated, not always for each High risk user
+                    logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}, {alerts_num} detected")
             if u.risk_score != tmp:
                 u.risk_score = tmp
                 u.save()
@@ -211,7 +213,7 @@ def exec_process_logs(start_date, end_date):
     :type end_date: datetime
     """
     logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
-    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90)
+    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (
         Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
