@@ -66,20 +66,20 @@ BuffaLogs employs the following tools which have to be installed on the machine:
 - [Docker-compose](https://docs.docker.com/compose/install/)
 - [Python](https://www.python.org/downloads/)
 
-Then, you clone this repository on your local computer with:
+Then, you can clone this repository on your local computer with:
 
 ```bash
 git clone git@github.com:certego/BuffaLogs.git
 ```
-Then load the elasticsearch templates running the *load_templates.sh* script from *buffalogs_module/config/elasticsearch*:
-```bash
-./load_templates.sh
-```
-Now, you are ready to start up the application by running:
-```bash
-sudo docker-compose up -d
-```
-Results are available at `localhost:80`
+Or download the application directly from the [Docker Hub](https://hub.docker.com/r/certego/buffalogs), with the `sudo docker pull certego/buffalogs:<release_tag>`.
+
+After that, there are two ways of running BuffaLogs, depending on your system configurations:
+* if you already have an elastic cluster:
+    *  set the address of the host into the `CERTEGO_ELASTICSEARCH` variable in the `buffalogs.env` file
+    *  launch ` docker-compose up -d` to run the containers
+* if you have no hosts with Elasticsearch installed on it, you can run it directly with Buffalogs:
+    * run `docker-compose -f docker-compose.yml -f docker-compose.elastic.yml up -d` in order to execute all the containers, included Elasticsearch and Kibana
+    * Now elasticsearch and kibana are running on the same host with Buffalogs.
 
 ![buffalogs_dashboard_screenshot](https://user-images.githubusercontent.com/33703137/220879987-b6453e9d-0129-45c1-bc26-0542005e8730.png)
 
