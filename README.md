@@ -95,6 +95,7 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
             "name": <user_name>
         },
         "event": {
+            "category": "authentication"
             "outcome": <"success" OR "failure">
         },
         "geoip": {
