@@ -31,7 +31,7 @@ class Impossible_Travel:
 
         if distance_km > settings.CERTEGO_DISTANCE_KM_ACCEPTED:
             last_timestamp_datetimeObj = self.validate_timestamp(last_login_user_fields["timestamp"])
-            prev_timestamp_datetimeObj = prev_login.timestamp
+            prev_timestamp_datetimeObj = timezone.make_aware(prev_login.timestamp)
 
             diff_timestamp = last_timestamp_datetimeObj - prev_timestamp_datetimeObj
             diff_timestamp_hours = diff_timestamp.total_seconds() / 3600
