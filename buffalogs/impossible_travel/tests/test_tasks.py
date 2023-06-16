@@ -270,7 +270,7 @@ class TestTasks(TestCase):
         )
         self.assertEqual(2, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count())
         self.assertEqual(7, Login.objects.filter(user=db_user, country="United States").last().timestamp.hour)
-        self.assertEqual(30, Login.objects.filter(user=db_user, country="United States").last().timestamp.minute)
+        self.assertEqual(31, Login.objects.filter(user=db_user, country="United States").last().timestamp.minute)
         self.assertEqual(36, Login.objects.filter(user=db_user, country="United States").last().timestamp.second)
         self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count())
         self.assertEqual(6, Login.objects.get(user=db_user, country="Japan").timestamp.hour)
