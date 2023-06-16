@@ -147,23 +147,6 @@ class TestTasks(TestCase):
         db_alert = Alert.objects.get(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL)
         self.assertTrue(db_alert.is_vip)
 
-    def test_set_alert_vip_user(self):
-        """Test set_alert() function in case of an alert triggered for a vip_user"""
-        db_user = User.objects.get(username="Asa Strickland")
-        db_login = Login.objects.filter(user=db_user).first()
-        timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
-        name = Alert.ruleNameEnum.IMP_TRAVEL
-        desc = f"{name} for User: {db_user.username},\
-                    at: {timestamp}, from:({db_login.latitude}, {db_login.longitude})"
-        alert_info = {
-            "alert_name": name,
-            "alert_desc": desc,
-        }
-        tasks.set_alert(db_user, login_data, alert_info)
-        db_alert = Alert.objects.get(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL)
-        self.assertTrue(db_alert.is_vip)
-
     # TO DO
     # @patch("buffalogs.tasks.check_fields")
     # @patch.object(tasks.Search, "execute")
