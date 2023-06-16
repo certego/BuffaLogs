@@ -1,22 +1,20 @@
-import logging
 from datetime import timedelta
 
 from celery import shared_task
+from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
-from impossible_travel.models import Alert, Config, Login, TaskSettings, User
+from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 
-logger = logging.getLogger()
+logger = get_task_logger(__name__)
 
 
 def clear_models_periodically():
-    """
-    Clear DB models
-    """
+    """Delete old data in the models"""
     now = timezone.now()
     delete_user_time = now - timedelta(days=settings.CERTEGO_USER_MAX_DAYS)
     User.objects.filter(updated__lte=delete_user_time).delete()
@@ -27,9 +25,13 @@ def clear_models_periodically():
     delete_alert_time = now - timedelta(days=settings.CERTEGO_ALERT_MAX_DAYS)
     Alert.objects.filter(updated__lte=delete_alert_time).delete()
 
+    delete_ip_time = now - timedelta(days=settings.CERTEGO_IP_MAX_DAYS)
+    UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
+
 
 @shared_task(name="UpdateRiskLevelTask")
 def update_risk_level():
+    """Update users risk level depending on how many alerts were triggered"""
     clear_models_periodically()
     with transaction.atomic():
         for u in User.objects.annotate(Count("alert")):
@@ -51,8 +53,14 @@ def update_risk_level():
 
 
 def set_alert(db_user, login_alert, alert_info):
-    """
-    Save the alert on db and logs it
+    """Save the alert on db and logs it
+
+    :param db_user: user from db
+    :type db_user: object
+    :param login_alert: dictionary login from elastic
+    :type login_alert: dict
+    :param alert_info: dictionary with alert info
+    :type alert_info: dict
     """
     logger.info(
         f"ALERT {alert_info['alert_name']} for User:{db_user.username} at:{login_alert['timestamp']} from {login_alert['country']} from device:{login_alert['agent']}"
@@ -86,29 +94,38 @@ def check_fields(db_user, fields):
                     if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
                         set_alert(db_user, login, country_alert)
 
-                if not db_user.login_set.filter(ip=login["ip"]).exists():
+                if not db_user.usersip_set.filter(ip=login["ip"]).exists():
                     logger.info(f"Calculating impossible travel: {login['id']}")
                     travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.latest("timestamp"), login)
                     if travel_alert:
                         set_alert(db_user, login, travel_alert)
+                    #   Add the new ip address from which the login comes to the db
+                    imp_travel.add_new_user_ip(db_user, login["ip"])
 
                 if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
+                    logger.info(f"Updating login {login['id']} for user: {db_user.username}")
                     imp_travel.update_model(db_user, login)
                 else:
-                    logger.info(f"Updating login {login['id']} for user: {db_user.username}")
                     logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
                     imp_travel.add_new_login(db_user, login)
 
             else:
                 logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
                 imp_travel.add_new_login(db_user, login)
+                imp_travel.add_new_user_ip(db_user, login["ip"])
         else:
             logger.info(f"No latitude or longitude for User {db_user.username}")
 
 
 def process_user(db_user, start_date, end_date):
-    """
-    Get info for each user login and normalization
+    """Get info for each user login and normalization
+
+    :param db_user: user from db
+    :type db_user: object
+    :param start_date: start date of analysis
+    :type start_date: timezone
+    :param end_date: finish date of analysis
+    :type end_date: timezone
     """
     fields = []
     s = (
@@ -116,6 +133,7 @@ def process_user(db_user, start_date, end_date):
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
         .query("match", **{"event.outcome": "success"})
+        .query("match", **{"event.type": "start"})
         .source(
             includes=[
                 "user.name",
@@ -187,6 +205,13 @@ def process_logs():
 
 
 def exec_process_logs(start_date, end_date):
+    """Starting the execution for the given time range
+
+    :param start_date: Start datetime
+    :type start_date: datetime
+    :param end_date: End datetime
+    :type end_date: datetime
+    """
     logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
     connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (
@@ -194,6 +219,7 @@ def exec_process_logs(start_date, end_date):
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"event.category": "authentication"})
         .query("match", **{"event.outcome": "success"})
+        .query("match", **{"event.type": "start"})
     )
     s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
     response = s.execute()
