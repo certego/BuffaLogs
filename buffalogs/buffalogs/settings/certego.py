@@ -13,12 +13,12 @@ CERTEGO_POSTGRES_DB = os.environ.get("POSTGRES_DB", "buffalogs")
 CERTEGO_POSTGRES_USER = os.environ.get("POSTGRES_USER", "default_user")
 CERTEGO_POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "password")
 CERTEGO_POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
-CERTEGO_ELASTIC_INDEX = os.environ.get("ELASTIC_INDEX", "weblog-*,cloud-*")
+CERTEGO_ELASTIC_INDEX = os.environ.get("ELASTIC_INDEX", "weblog-*,cloud-*,filebeat-*")
 CERTEGO_SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-am9z-fi-x*aqxlb-@abkhb@pu!0da%0a77h%-8d(dwzrrktwhu")
 
 if CERTEGO_ENVIRONMENT == ENVIRONMENT_DOCKER:
 
-    CERTEGO_ELASTICSEARCH = "http://elasticsearch:9200/"
+    CERTEGO_ELASTICSEARCH = os.environ.get("CERTEGO_ELASTICSEARCH", "http://elasticsearch:9200/")
     CERTEGO_DB_HOSTNAME = "postgres"
     CERTEGO_DEBUG = False
     CERTEGO_STATIC_ROOT = "/var/www/static/"
@@ -27,7 +27,7 @@ if CERTEGO_ENVIRONMENT == ENVIRONMENT_DOCKER:
     CERTEGO_RABBITMQ_URI = f"amqp://guest:guest@{CERTEGO_RABBITMQ_HOST}/"
 
 elif CERTEGO_ENVIRONMENT == ENVIRONMENT_DEBUG:
-    CERTEGO_ELASTICSEARCH = "http://localhost:9200/"
+    CERTEGO_ELASTICSEARCH = os.environ.get("CERTEGO_ELASTICSEARCH", "http://localhost:9200/")
     CERTEGO_DB_HOSTNAME = "localhost"
     CERTEGO_DEBUG = True
     CERTEGO_STATIC_ROOT = "impossible_travel/static/"

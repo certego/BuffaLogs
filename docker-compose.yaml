@@ -11,45 +11,6 @@ services:
             - postgres_data:/var/lib/postgresql/data
         expose:
             - "5432"
-        
-    elasticsearch:
-        container_name: buffalogs_elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.7
-        hostname: elasticsearch
-        environment: 
-            - node.name=buffalogs_elastic
-            - bootstrap.memory_lock=true
-            - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-            - discovery.type=single-node
-            - cluster.routing.allocation.disk.watermark.low=99%
-            - cluster.routing.allocation.disk.watermark.high=99%
-            - cluster.routing.allocation.disk.watermark.flood_stage=99%
-        ulimits:
-            memlock: 
-                soft: -1
-                hard: -1
-        expose:
-            - "9200"
-        volumes:
-            - elasticsearch_data:/usr/share/elasticsearch/data
-        healthcheck:
-            test: curl -XGET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'
-
-    kibana:
-        container_name: buffalogs_kibana
-        image: docker.elastic.co/kibana/kibana:7.17.7
-        hostname: kibana
-        environment:
-            ELASTICSEARCH_URL: http://elasticsearch:9200
-            ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-        links:
-            - elasticsearch
-        depends_on:
-            - elasticsearch
-        ports:
-            - "127.0.0.1:5601:5601"
-        healthcheck:
-            test: curl -fs http://localhost:5601/
 
     nginx:
         container_name: nginx
@@ -71,7 +32,7 @@ services:
         build:
             context: .
             dockerfile: build/Dockerfile
-        image: buffalogs:latest
+        image: certego/buffalogs:1.0.0
         hostname: buffalogs
         env_file:
             -  config/buffalogs/buffalogs.env
@@ -80,7 +41,6 @@ services:
             - nginx_sockets:/var/run/nginx-sockets
         depends_on:
             - postgres
-            - elasticsearch
             - rabbitmq
 
 
@@ -112,7 +72,6 @@ services:
             - ./config:/opt/certego/config:ro
         depends_on:
             - postgres
-            - elasticsearch
             - rabbitmq
 
     celery_beat:
@@ -130,13 +89,10 @@ services:
             - ./config:/opt/certego/config:ro
         depends_on:
             - postgres
-            - elasticsearch
             - rabbitmq
 
 volumes:
 
-    elasticsearch_data:
-        driver: local
     postgres_data:
         driver: local
     nginx_sockets:
