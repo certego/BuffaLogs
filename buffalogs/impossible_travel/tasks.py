@@ -206,4 +206,4 @@ def exec_process_logs(start_date, end_date):
                 db_user.save()
             process_user(db_user, start_date, end_date)
     except AttributeError:
-        logger.info("No login_user aggregation found")
+        logger.info("No users login aggregation found")
