@@ -18,9 +18,6 @@ def load_test_data(name):
 
 
 class TestTasks(TestCase):
-
-    imp_travel = impossible_travel.Impossible_Travel()
-
     @classmethod
     def setUpTestData(self):
         setup_obj = Setup()
@@ -115,14 +112,14 @@ class TestTasks(TestCase):
         self.assertEqual("High", db_user.risk_score)
 
     def test_set_alert(self):
-        # Add an alert and check if it is correctly inserted in the Alert DB
+        # Add an alert and check if it is correctly inserted in the Alert Model
         db_user = User.objects.get(username="Lorena Goldoni")
-        login = Login.objects.get(user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5")
-        timestamp = login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": login.country, "agent": login.user_agent}
+        db_login = Login.objects.get(user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5")
+        timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
         name = Alert.ruleNameEnum.IMP_TRAVEL
         desc = f"{name} for User: {db_user.username},\
-                    at: {timestamp}, from:({login.latitude}, {login.longitude})"
+                    at: {timestamp}, from:({db_login.latitude}, {db_login.longitude})"
         alert_info = {
             "alert_name": name,
             "alert_desc": desc,
@@ -130,6 +127,25 @@ class TestTasks(TestCase):
         tasks.set_alert(db_user, login_data, alert_info)
         db_alert = Alert.objects.get(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL)
         self.assertIsNotNone(db_alert)
+        self.assertEqual("Impossible Travel detected", db_alert.name)
+        self.assertFalse(db_alert.is_vip)
+
+    def test_set_alert_vip_user(self):
+        # Test for alert in case of a vip_user
+        db_user = User.objects.get(username="Asa Strickland")
+        db_login = Login.objects.filter(user=db_user).first()
+        timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
+        name = Alert.ruleNameEnum.IMP_TRAVEL
+        desc = f"{name} for User: {db_user.username},\
+                    at: {timestamp}, from:({db_login.latitude}, {db_login.longitude})"
+        alert_info = {
+            "alert_name": name,
+            "alert_desc": desc,
+        }
+        tasks.set_alert(db_user, login_data, alert_info)
+        db_alert = Alert.objects.get(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL)
+        self.assertTrue(db_alert.is_vip)
 
     def test_set_alert_vip_user(self):
         """Test set_alert() function in case of an alert triggered for a vip_user"""
