@@ -1,7 +1,6 @@
 import json
 import os
-from datetime import timedelta
-from unittest.mock import patch
+from datetime import datetime, timedelta
 
 from django.test import TestCase
 from django.utils import timezone
@@ -19,6 +18,7 @@ def load_test_data(name):
 
 
 class TestTasks(TestCase):
+
     imp_travel = impossible_travel.Impossible_Travel()
 
     @classmethod
@@ -65,6 +65,7 @@ class TestTasks(TestCase):
     def test_update_risk_level_norisk(self):
         """Test update_risk_level() function for no_risk user"""
         # 0 alert --> no risk
+        self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("No risk", db_user.risk_score)
@@ -72,6 +73,7 @@ class TestTasks(TestCase):
     def test_update_risk_level_low(self):
         """Test update_risk_level() function for low risk user"""
         # 1 alert --> Low risk
+        self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
         Alert.objects.create(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL, login_raw_data="Test", description="Test_Description")
         tasks.update_risk_level()
@@ -81,6 +83,7 @@ class TestTasks(TestCase):
     def test_update_risk_level_medium(self):
         """Test update_risk_level() function for medium risk user"""
         #   3 alerts --> Medium risk
+        self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
         Alert.objects.bulk_create(
             [
@@ -96,6 +99,7 @@ class TestTasks(TestCase):
     def test_update_risk_level_high(self):
         """Test update_risk_level() function for high risk user"""
         #   5 alerts --> High risk
+        self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
         Alert.objects.bulk_create(
             [
@@ -187,11 +191,10 @@ class TestTasks(TestCase):
         start_date_expected = start + timedelta(hours=5)
         end_date_expected = end + timedelta(hours=4.5)
 
-    def test_check_fields(self):
+    def test_check_fields_logins(self):
         fields1 = load_test_data("test_check_fields_part1")
         fields2 = load_test_data("test_check_fields_part2")
         db_user = User.objects.get(username="Aisha Delgado")
-
         # First part - Expected logins in Login Model:
         #   1. at 2023-05-03T06:50:03.768Z from India,
         #   2. at 2023-05-03T06:57:27.768Z from Japan,
@@ -210,26 +213,6 @@ class TestTasks(TestCase):
         self.assertEqual(6, Login.objects.get(user=db_user, country="Japan").timestamp.hour)
         self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
         self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
-        self.assertEqual(4, UsersIP.objects.filter(user=db_user).count())
-
-        # First part - Expected alerts in Alert Model:
-        #   1. at 2023-05-03T06:55:31.768Z alert NEW DEVICE
-        #   2. at 2023-05-03T06:55:31.768Z alert NEW COUNTRY - NO because allowed_countries["Italy", "United States"]
-        #   3. at 2023-05-03T06:55:31.768Z alert IMP TRAVEL
-        #   4. at 2023-05-03T06:57:27.768Z alert NEW DEVICE
-        #   4. at 2023-05-03T06:57:27.768Z alert NEW COUNTRY
-        #   5. at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
-        #   6. at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
-        self.assertEqual(6, Alert.objects.filter(user=db_user).count())
-        self.assertEqual(2, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_DEVICE).count())
-        self.assertEqual(1, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY).count())
-        self.assertEqual(3, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL).count())
-        self.assertEqual(0, Alert.objects.filter(user=db_user, is_vip=True).count())
-
-        # Adding "Aisha Delgado" to vip users
-        Config.objects.filter(id=1).delete()
-        Config.objects.create(allowed_countries=["Italy"], vip_users=["Aisha Delgado"])
-
         # Second part - Expected changed logins in Login Model:
         #   4. at 2023-05-03T07:14:22.768Z from India with user_agent: Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0
         #   5. at 2023-05-03T07:18:38.768Z from India with user_agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)
@@ -294,14 +277,63 @@ class TestTasks(TestCase):
         self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
         self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
 
+    def check_fields_alerts(self):
+        fields1 = load_test_data("test_check_fields_part1")
+        fields2 = load_test_data("test_check_fields_part2")
+        db_user = User.objects.get(username="Aisha Delgado")
+        tasks.check_fields(db_user, fields1)
+        # First part - Expected alerts in Alert Model:
+        #   1. at 2023-05-03T06:55:31.768Z alert NEW DEVICE
+        #   2. at 2023-05-03T06:55:31.768Z alert NEW COUNTRY - NO because allowed_countries["Italy", "United States"]
+        #   3. at 2023-05-03T06:55:31.768Z alert IMP TRAVEL
+        #   4. at 2023-05-03T06:57:27.768Z alert NEW DEVICE
+        #   4. at 2023-05-03T06:57:27.768Z alert NEW COUNTRY
+        #   5. at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
+        #   6. at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
+        self.assertEqual(6, Alert.objects.filter(user=db_user).count())
+        self.assertEqual(2, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_DEVICE).count())
+        self.assertEqual(1, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY).count())
+        self.assertEqual(3, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL).count())
+        self.assertEqual(0, Alert.objects.filter(user=db_user, is_vip=True).count())
+
+        # Adding "Aisha Delgado" to vip users
+        Config.objects.filter(id=1).delete()
+        Config.objects.create(allowed_countries=["Italy"], vip_users=["Aisha Delgado"])
+
         # Second part - Expected new alerts in Alert Model:
         #   7. at 2023-05-03T07:14:22.768Z alert NEW DEVICE
         #   8. at 2023-05-03T07:14:22.768Z alert IMP TRAVEL
         #   9. at 2023-05-03T07:18:38.768Z alert NEW DEVICE
         #   10. at 2023-05-03T07:18:38.768Z alert IMP TRAVEL
         #   11. at 2023-05-03T07:20:36.154Z alert IMP TRAVEL
+        tasks.check_fields(db_user, fields2)
         self.assertEqual(4, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_DEVICE).count())
         self.assertEqual(1, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.NEW_COUNTRY).count())
         self.assertEqual(6, Alert.objects.filter(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL).count())
         self.assertEqual(5, Alert.objects.filter(user=db_user, is_vip=True).count())
         self.assertEqual(11, Alert.objects.filter(user=db_user).count())
+
+    def test_check_fields_usersip(self):
+        db_user = User.objects.get(username="Aisha Delgado")
+        fields1 = load_test_data("test_check_fields_part1")
+        fields2 = load_test_data("test_check_fields_part2")
+        fields3 = load_test_data("test_check_fields_part3")
+        tasks.check_fields(db_user, fields1)
+        # First part: Check presence of ips in the UsersIP model
+        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.37").exists())
+        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.17").exists())
+        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.20").exists())
+        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.11").exists())
+        self.assertEqual(4, UsersIP.objects.filter(user=db_user).count())
+        # Second part: Check presence of ips in the UsersIP model
+        tasks.check_fields(db_user, fields2)
+        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.40").exists())
+        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.35").exists())
+        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.15").exists())
+        self.assertEqual(7, UsersIP.objects.filter(user=db_user).count())
+        # Check No duplicated ips
+        self.assertEqual(1, UsersIP.objects.filter(user=db_user, ip="203.0.113.17").count())
+        self.assertEqual(1, UsersIP.objects.filter(user=db_user, ip="203.0.113.11").count())
+        # Third part: no new alerts because all the ips have already been used
+        tasks.check_fields(db_user, fields3)
+        self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
