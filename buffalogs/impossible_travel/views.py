@@ -218,17 +218,14 @@ def alerts_line_chart_api(request, start, end):
     else:
         result["Timeframe"] = "month"
         start_date = timezone.datetime(start_date.year, start_date.month, 1)
-        start_date = end_date.replace(tzinfo=None)
         while start_date <= end_date:
-            #     date_range.append(datetime(start_date.year, start_date.month, 1))
-            #     date_range.append(datetime(start_date.year, start_date.month, calendar.monthrange(start_date.year, start_date.month)[1]))
-            date_range.append(start_date)
+            date_range.append(datetime(start_date.year, start_date.month, 1))
+            date_range.append(datetime(start_date.year, start_date.month, calendar.monthrange(start_date.year, start_date.month)[1]))
             date_str.append(start_date.strftime("%Y-%m"))
             start_date = start_date + relativedelta(months=1)
-            date_range.append(start_date)
-        for i in date_str:
-            date_divided = i.split("-")
-            result[i] = Alert.objects.filter(login_raw_data__timestamp__year=date_divided[0], login_raw_data__timestamp__month=date_divided[1]).count()
+        for i in range(0, len(date_range) - 1, 2):
+            date = str(date_range[i].year) + "-" + str(date_range[i].month)
+            result[date] = Alert.objects.filter(login_raw_data__timestamp__range=(date_range[i].isoformat(), date_range[i + 1].isoformat())).count()
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
 
