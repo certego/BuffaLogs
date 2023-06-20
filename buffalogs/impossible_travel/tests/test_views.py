@@ -194,3 +194,11 @@ class TestViews(APITestCase):
         response = self.client.get(reverse("alerts_line_chart_api", args=[start, end]))
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
+
+    def test_world_map_chart_api(self):
+        start = datetime(2023, 5, 1, 0, 0).strftime("%Y-%m-%dT%H:%M:%SZ")
+        end = datetime(2023, 6, 30, 23, 59, 59).strftime("%Y-%m-%dT%H:%M:%SZ")
+        dict_expected_result = {"us": 3, "jp": 3}
+        response = self.client.get(reverse("world_map_chart_api", args=[start, end]))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(dict_expected_result, json.loads(response.content))
