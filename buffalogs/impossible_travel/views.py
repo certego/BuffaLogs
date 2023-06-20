@@ -232,12 +232,17 @@ def alerts_line_chart_api(request, start, end):
 
 @api_view(["GET"])
 def world_map_chart_api(request, start, end):
+    timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
+    start_date = datetime.strptime(start, timestamp_format)
+    end_date = datetime.strptime(end, timestamp_format)
     countries = _load_data("countries")
     result = {}
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
-            login_raw_data__timestamp__range=(start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end.strftime("%Y-%m-%dT%H:%M:%S.%fZ")), login_raw_data__country=value
+            login_raw_data__timestamp__range=(start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")),
+            login_raw_data__country=value,
         ).count()
-        result[key] = country_alerts
+        if country_alerts != 0:
+            result[key] = country_alerts
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
