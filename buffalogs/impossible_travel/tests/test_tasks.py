@@ -6,7 +6,6 @@ from django.test import TestCase
 from django.utils import timezone
 from impossible_travel import tasks
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import impossible_travel
 from impossible_travel.tests.setup import Setup
 
 

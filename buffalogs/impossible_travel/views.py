@@ -14,7 +14,6 @@ from django.views.decorators.http import require_http_methods
 from elasticsearch_dsl import Search, connections
 from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
 from impossible_travel.models import Alert, Login, User
-from rest_framework.decorators import api_view
 
 
 def _load_data(name):
