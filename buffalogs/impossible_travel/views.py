@@ -182,7 +182,7 @@ def users_pie_chart_api(request, start, end):
     return HttpResponse(data, content_type="json")
 
 
-@api_view(["GET"])
+@require_http_methods(["GET"])
 def alerts_line_chart_api(request, start, end):
     timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
     start_date = datetime.strptime(start, timestamp_format)
@@ -230,7 +230,7 @@ def alerts_line_chart_api(request, start, end):
     return HttpResponse(data, content_type="json")
 
 
-@api_view(["GET"])
+@require_http_methods(["GET"])
 def world_map_chart_api(request, start, end):
     timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
     start_date = datetime.strptime(start, timestamp_format)
