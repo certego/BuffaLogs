@@ -167,38 +167,41 @@ class TestViews(APITestCase):
         end = datetime.now()
         start = end - timedelta(hours=5)
         dict_expected_result = {"no_risk": 1, "low": 3, "medium": 1, "high": 0}
-        response = self.client.get(reverse("users_pie_chart_api", args=[str(start), str(end)]))
+        response = self.client.get(f"{reverse('users_pie_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
+        print(start)
+        print(end)
+        print(User.objects.filter(updated__range=(start, end), risk_score="No risk").count())
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
     def test_alerts_line_chart_api_hour(self):
-        start = datetime(2023, 6, 20, 10, 0).strftime("%Y-%m-%dT%H:%M:%SZ")
-        end = datetime(2023, 6, 20, 12, 0).strftime("%Y-%m-%dT%H:%M:%SZ")
+        start = datetime(2023, 6, 20, 10, 0)
+        end = datetime(2023, 6, 20, 12, 0)
         dict_expected_result = {"Timeframe": "hour", "2023-06-20T10:00:00Z": 1, "2023-06-20T11:00:00Z": 2}
-        response = self.client.get(reverse("alerts_line_chart_api", args=[start, end]))
+        response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
     def test_alerts_line_chart_api_day(self):
-        start = datetime(2023, 6, 19, 0, 0).strftime("%Y-%m-%dT%H:%M:%SZ")
-        end = datetime(2023, 6, 20, 23, 59, 59).strftime("%Y-%m-%dT%H:%M:%SZ")
+        start = datetime(2023, 6, 19, 0, 0)
+        end = datetime(2023, 6, 20, 23, 59, 59)
         dict_expected_result = {"Timeframe": "day", "2023-6-19": 2, "2023-6-20": 3}
-        response = self.client.get(reverse("alerts_line_chart_api", args=[start, end]))
+        response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
     def test_alerts_line_chart_api_month(self):
-        start = datetime(2023, 5, 1, 0, 0).strftime("%Y-%m-%dT%H:%M:%SZ")
-        end = datetime(2023, 6, 30, 23, 59, 59).strftime("%Y-%m-%dT%H:%M:%SZ")
+        start = datetime(2023, 5, 1, 0, 0)
+        end = datetime(2023, 6, 30, 23, 59, 59)
         dict_expected_result = {"Timeframe": "month", "2023-5": 1, "2023-6": 5}
-        response = self.client.get(reverse("alerts_line_chart_api", args=[start, end]))
+        response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
     def test_world_map_chart_api(self):
-        start = datetime(2023, 5, 1, 0, 0).strftime("%Y-%m-%dT%H:%M:%SZ")
-        end = datetime(2023, 6, 30, 23, 59, 59).strftime("%Y-%m-%dT%H:%M:%SZ")
+        start = datetime(2023, 5, 1, 0, 0)
+        end = datetime(2023, 6, 30, 23, 59, 59)
         dict_expected_result = {"us": 3, "jp": 3}
-        response = self.client.get(reverse("world_map_chart_api", args=[start, end]))
+        response = self.client.get(f"{reverse('world_map_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))

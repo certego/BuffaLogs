@@ -167,10 +167,10 @@ def get_all_logins(request, pk_user):
 
 
 @require_http_methods(["GET"])
-def users_pie_chart_api(request, start, end):
-    timestamp_format = "%Y-%m-%d %H:%M:%S.%f"
-    start_date = datetime.strptime(start, timestamp_format)
-    end_date = datetime.strptime(end, timestamp_format)
+def users_pie_chart_api(request):
+    timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
+    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
+    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
     result = {
         "no_risk": User.objects.filter(updated__range=(start_date, end_date), risk_score="No risk").count(),
         "low": User.objects.filter(updated__range=(start_date, end_date), risk_score="Low").count(),
@@ -182,10 +182,10 @@ def users_pie_chart_api(request, start, end):
 
 
 @require_http_methods(["GET"])
-def alerts_line_chart_api(request, start, end):
+def alerts_line_chart_api(request):
     timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
-    start_date = datetime.strptime(start, timestamp_format)
-    end_date = datetime.strptime(end, timestamp_format)
+    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
+    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
     date_range = []
     date_str = []
     result = {}
@@ -230,10 +230,10 @@ def alerts_line_chart_api(request, start, end):
 
 
 @require_http_methods(["GET"])
-def world_map_chart_api(request, start, end):
+def world_map_chart_api(request):
     timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
-    start_date = datetime.strptime(start, timestamp_format)
-    end_date = datetime.strptime(end, timestamp_format)
+    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
+    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
     countries = _load_data("countries")
     result = {}
     for key, value in countries.items():
