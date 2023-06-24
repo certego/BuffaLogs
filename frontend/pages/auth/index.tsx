@@ -1,5 +1,5 @@
 "use client";
-
+import { useCookies } from "react-cookie";
 import {
   Form,
   FormControl,
@@ -16,6 +16,10 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/router";
+import { loginUser } from "@/lib/auth";
+import { useEffect, useState } from "react";
+import { removeToken } from "@/lib/token";
+
 
 const formSchema = z.object({
   username: z.string().min(2, {
@@ -27,7 +31,14 @@ const formSchema = z.object({
 });
 
 export default function Auth() {
+  const [errorMessage, setErrorMessage] = useState("");
+  const [cookie, setCookie] = useCookies(['user']);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter()
+
+  useEffect(() => {
+    removeToken();
+  }, []);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,10 +48,28 @@ export default function Auth() {
     },
   });
 
-  // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    router.push('/')
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const to_forward = "/dashboard/";
+      setIsLoading(true);
+      const data = await loginUser(values.username, values.Password)
+      console.log(data.tokens)
+      if (data && data.tokens) {
+        setCookie("user", JSON.stringify(data), {
+          path: "/",
+          maxAge: 3600,
+          sameSite: true,
+        });
+        setTimeout(() => {
+          router.push(to_forward);
+        }, 1000);
+      } else {
+        setErrorMessage("Invalid Credentials!");
+      }
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

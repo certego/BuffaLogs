@@ -1,17 +1,14 @@
-from django.shortcuts import render
 import logging
 import os
+
 from django.contrib.auth import get_user_model
 from django.http import HttpResponsePermanentRedirect
+from django.shortcuts import render
 from rest_framework import generics, permissions, status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
-from .serializers import (
-    LoginSerializer,
-    LogoutSerializer,
-    RegisterSerializer,
-    UserSerializer,
-)
+
+from .serializers import LoginSerializer, LogoutSerializer, RegisterSerializer, UserSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +61,7 @@ class LogoutAPIView(generics.GenericAPIView):
 
     def post(self, request):
 
-        serializer = self.serializer_class(
-            data=request.data, context={"request": request}
-        )
+        serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -80,7 +75,6 @@ class MeAPIView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return User.objects.filter(id=user.id)
-
 
 
 # Create your views here.
