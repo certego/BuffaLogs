@@ -14,7 +14,7 @@ In detail, it sends several types of alerts:
 
     This alert is dispatched if the system is logged by a user from a country where they have never authenticated before.
 
-*For futher details: [Wiki - About](https://github.com/certego/BuffaLogs/wiki/1.-About)*
+*For further details: [Wiki - About](https://github.com/certego/BuffaLogs/wiki/1.-About)*
 
 ## BuffaLogs is participating in GSoC 2023 thanks to Honeynet project and IntelOwl!
 
@@ -83,7 +83,7 @@ After that, there are two ways of running BuffaLogs, depending on your system co
 
 ![buffalogs_dashboard_screenshot](https://user-images.githubusercontent.com/33703137/220879987-b6453e9d-0129-45c1-bc26-0542005e8730.png)
 
-*For futher examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/2.-Example)*
+*For further examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/2.-Example)*
 
 ##   Logs Structure
 
@@ -112,7 +112,13 @@ For a basic analysis to detect only impossible travel logins, the *user_agent* f
 ##  BuffaLogs Architecture
 ![Buffalogs_Architecture](https://user-images.githubusercontent.com/33703137/220896332-4fe08f32-1879-4150-bd5d-9df9dc21a7a7.jpg)
 
-*For futher details: [Wiki - Architecture](https://github.com/certego/BuffaLogs/wiki/3.-Architecture)*
+*For further details: [Wiki - Architecture](https://github.com/certego/BuffaLogs/wiki/3.-Architecture)*
+
+##  REST APIs
+
+In order to obtain the charts data, you can query the REST APIs.
+
+*For further details: [Wiki - REST APIs](https://github.com/certego/BuffaLogs/wiki/5.-REST-APIs)*
 
 ##  Uninstall
 
