@@ -164,14 +164,11 @@ class TestViews(APITestCase):
         )
 
     def test_users_pie_chart_api(self):
-        end = datetime.now()
-        start = end - timedelta(hours=5)
+        end = datetime.now() + timedelta(minutes=1)
+        start = end - timedelta(hours=3)
         dict_expected_result = {"no_risk": 1, "low": 3, "medium": 1, "high": 0}
         response = self.client.get(f"{reverse('users_pie_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
-        print(start)
-        print(end)
-        print(User.objects.filter(updated__range=(start, end), risk_score="No risk").count())
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
     def test_alerts_line_chart_api_hour(self):
