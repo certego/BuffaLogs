@@ -14,8 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from impossible_travel import views
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 urlpatterns = [
     path("", views.homepage, name="homepage"),
@@ -33,4 +34,5 @@ urlpatterns = [
     path("users_pie_chart_api/", views.users_pie_chart_api, name="users_pie_chart_api"),
     path("alerts_line_chart_api/", views.alerts_line_chart_api, name="alerts_line_chart_api"),
     path("world_map_chart_api/", views.world_map_chart_api, name="world_map_chart_api"),
+    path("authentication/", include("authentication.urls")),
 ]
