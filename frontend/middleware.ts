@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
   const cookie = request.cookies.get('user');
-  console.log(cookie, "uahdasd")
 
   if (cookie === undefined && request.url.includes('/dashboard')) {
     return NextResponse.redirect(new URL('/auth', request.url));}
