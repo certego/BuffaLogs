@@ -20,10 +20,13 @@
     "class-variance-authority": "^0.6.0",
     "clsx": "^1.2.1",
     "cookie": "^0.5.0",
+    "d3-fetch": "^3.0.1",
+    "d3-scale": "^4.0.2",
     "date-fns": "^2.30.0",
     "dotted-map": "^2.2.3",
     "eslint": "8.43.0",
     "eslint-config-next": "13.4.6",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.248.0",
     "next": "13.4.6",
     "postcss": "8.4.24",
@@ -32,6 +35,8 @@
     "react-day-picker": "^8.8.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.45.0",
+    "react-simple-maps": "^3.0.0",
+    "recharts": "^2.7.2",
     "tailwind-merge": "^1.13.2",
     "tailwindcss": "3.3.2",
     "tailwindcss-animate": "^1.0.6",
@@ -40,6 +45,10 @@
   },
   "devDependencies": {
     "@types/cookie": "^0.5.1",
+    "@types/d3-fetch": "^3.0.2",
+    "@types/d3-scale": "^4.0.3",
+    "@types/lodash": "^4.14.195",
+    "@types/react-simple-maps": "^3.0.0",
     "cookies-next": "^2.1.2"
   }
 }
