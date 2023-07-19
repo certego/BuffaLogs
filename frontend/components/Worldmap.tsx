@@ -37,7 +37,6 @@ const MapChart = () => {
     () => scaleLinear().domain([0, maxValue]).range([0, 24]),
     [maxValue]
   );
-  //#5B5C60
 
   return (
     <div className="">

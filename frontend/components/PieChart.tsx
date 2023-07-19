@@ -1,5 +1,9 @@
+import dynamic from 'next/dynamic';
 import React from 'react';
-import { PieChart, Pie, Cell } from 'recharts';
+import { Pie, Cell } from 'recharts';
+const PieChart = dynamic(() => (
+  import("recharts").then(recharts => recharts.PieChart)
+), { ssr: false });
 
 const RADIAN = Math.PI / 180;
 const data = [
@@ -33,13 +37,15 @@ const needle = (value: number, data: any[], cx: number, cy: number, iR: number, 
 
   return [
     <circle key={0} cx={x0} cy={y0} r={r} fill={color} stroke="none" />,
-    <path key={0} d={`M${xba} ${yba}L${xbb} ${ybb} L${xp} ${yp} L${xba} ${yba}`} stroke="#none" fill={color} />,
+    <path key={1} d={`M${xba} ${yba}L${xbb} ${ybb} L${xp} ${yp} L${xba} ${yba}`} stroke="#none" fill={color} />,
   ];
 };
 
+
+
 const Piechart: React.FC = () => {
   return (
-    <PieChart width={382} height={300}>
+    <PieChart width={382} height={250}>
       <Pie
         dataKey="value"
         startAngle={180}

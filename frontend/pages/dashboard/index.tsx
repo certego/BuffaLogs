@@ -1,27 +1,26 @@
 import Header from "@/components/Header";
-import BarChart from "@/components/BarChart";
 import Piechart from "@/components/PieChart";
-import MapChart from "@/components/Worldmap";
-
-export const data = [
-  ["Task", "Hours per Day"],
-  ["high", 7],
-  ["low", 7],
-];
-
-export const options = {
-  title: "user risk level",
-  backgroundColor: "#030712",
-  titleTextStyle: "#000000",
-  colors: ["#131313", "#101010"],
-};
+import Barchart from "@/components/BarChart";
+import React from "react";
+import { DateRange } from "react-day-picker";
+import { addDays } from "date-fns";
+import MapChart from "@/components/WorldMap";
 
 export default function Dashboard() {
-  //width se manuover horha hai
+  const [date, setDate] = React.useState<DateRange | undefined>({
+    from: new Date(2023, 0, 20),
+    to: addDays(new Date(2023, 0, 20), 20),
+  })
+
+  const updateDate = (date: DateRange) => {
+    setDate(date);
+  }
+
   return (
     <>
-      <Header />
-      <main className="w-screen flex flex-col justify-center mt-10">
+    <div className="h-screen w-screen">
+      <Header/>
+      <main className="flex flex-col justify-center mt-10">
         <div id="main-div" className="flex flex-row justify-center ">
           <div id="charts" className="w-[63%] flex flex-col space-y-6 ">
             <div
@@ -37,16 +36,20 @@ export default function Dashboard() {
             </div>
             <div
               id="misc-graphs"
-              className="flex flex-row justify-items-stretch items-center space-x-4 w-full"
+              className="flex flex-row justify-evenly items-center space-x-4 w-full"
             >
-              <div id="pie-charts" className="border rounded-2xl w-1/2">
-              <h2 className="font-SpaceGrotesk text-2xl mt-5 ml-5">
-                PieChart
-              </h2>
-                <Piechart/>
+              <div className="border rounded-2xl w-1/2">
+                <h2 className="font-SpaceGrotesk text-2xl mt-5 ml-5">
+                  Risk Chart
+                </h2>
+                <Piechart />
               </div>
-              <div id="bar-chart" className="border rounded-2xl">
-                {/* <PieChart/> */}
+
+              <div className="border rounded-2xl h-full w-full flex flex-col justify-between ">
+                <h2 className="font-SpaceGrotesk text-2xl mt-5 ml-5">
+                  Login Alerts
+                </h2>
+                <Barchart />
               </div>
             </div>
           </div>
@@ -54,10 +57,10 @@ export default function Dashboard() {
           <div id="user-logs" className="w-[30%] border rounded-2xl">
             <h2 className="font-SpaceGrotesk text-2xl mt-5 ml-5">User Logs</h2>
           </div>
-          
         </div>
         <div className="pb-10"></div>
       </main>
+    </div>
     </>
   );
 }

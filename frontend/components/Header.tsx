@@ -1,7 +1,6 @@
 "use client"
 
 import { logoutUser } from "@/lib/auth";
-
 import { Button } from "./ui/button";
 import { DatePickerWithRange } from "./DatePicker";
 import Link from "next/link";
@@ -10,8 +9,8 @@ import { useRouter } from "next/router";
 const Header: React.FC = () => {
   const router = useRouter();
     return(
-        <>
-        <div className=" flex flex-row justify-between mx-10 h-[10%] mt-10">
+      <>
+        <div className=" flex flex-row justify-between items-center mx-10 mt-10">
         <span className="flex flex-row items-end space-x-7">
           <Link href="/">
             <div className="text-left">
