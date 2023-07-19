@@ -5,17 +5,11 @@ import React from "react";
 import { DateRange } from "react-day-picker";
 import { addDays } from "date-fns";
 import MapChart from "@/components/WorldMap";
+import { useDateContext } from "@/contexts/DateContext";
 
 export default function Dashboard() {
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(2023, 0, 20),
-    to: addDays(new Date(2023, 0, 20), 20),
-  })
-
-  const updateDate = (date: DateRange) => {
-    setDate(date);
-  }
-
+  const { date, setDate } = useDateContext();
+  console.log(date, "sjkh")
   return (
     <>
     <div className="h-screen w-screen">

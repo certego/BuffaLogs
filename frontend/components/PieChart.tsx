@@ -1,3 +1,4 @@
+import { useDateContext } from '@/contexts/DateContext';
 import dynamic from 'next/dynamic';
 import React from 'react';
 import { Pie, Cell } from 'recharts';
@@ -44,6 +45,7 @@ const needle = (value: number, data: any[], cx: number, cy: number, iR: number, 
 
 
 const Piechart: React.FC = () => {
+
   return (
     <PieChart width={382} height={250}>
       <Pie
