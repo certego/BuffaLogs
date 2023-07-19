@@ -2,14 +2,10 @@ import Header from "@/components/Header";
 import Piechart from "@/components/PieChart";
 import Barchart from "@/components/BarChart";
 import React from "react";
-import { DateRange } from "react-day-picker";
-import { addDays } from "date-fns";
 import MapChart from "@/components/WorldMap";
-import { useDateContext } from "@/contexts/DateContext";
+import LogsTable from "@/components/LogsTable";
 
 export default function Dashboard() {
-  const { date, setDate } = useDateContext();
-  console.log(date, "sjkh")
   return (
     <>
     <div className="h-screen w-screen">
@@ -50,6 +46,9 @@ export default function Dashboard() {
           <div id="spacing" className="w-[2%]"></div>
           <div id="user-logs" className="w-[30%] border rounded-2xl">
             <h2 className="font-SpaceGrotesk text-2xl mt-5 ml-5">User Logs</h2>
+            <div className="px-5 py-5 text-left">
+            <LogsTable/>
+            </div>
           </div>
         </div>
         <div className="pb-10"></div>
