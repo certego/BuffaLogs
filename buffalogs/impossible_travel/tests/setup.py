@@ -1,4 +1,4 @@
-from impossible_travel.models import Alert, Config, Login, TaskSettings, User
+from impossible_travel.models import Config, Login, User
 
 
 class Setup:

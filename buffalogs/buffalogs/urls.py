@@ -31,5 +31,8 @@ urlpatterns = [
     path("users/<int:pk_user>/all_logins", views.all_logins, name="all_logins"),
     path("users/<int:pk_user>/alerts/get_alerts", views.get_alerts, name="get_alerts"),
     path("users/<int:pk_user>/alerts", views.alerts, name="alerts"),
+    path("users_pie_chart_api/", views.users_pie_chart_api, name="users_pie_chart_api"),
+    path("alerts_line_chart_api/", views.alerts_line_chart_api, name="alerts_line_chart_api"),
+    path("world_map_chart_api/", views.world_map_chart_api, name="world_map_chart_api"),
     path("authentication/", include("authentication.urls")),
 ]
