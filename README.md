@@ -91,16 +91,23 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
 
     ```
     {
+        "@timestamp" : <timestamp_isoformat>,
         "user": {
             "name": <user_name>
         },
         "event": {
-            "outcome": <"success" OR "failure">
+            "outcome": <"success" OR "failure">,
+            "category" : "authentication"
         },
-        "geoip": {
-            "latitude": <latitude>,
-            "longitude": <longitude>,
-            "country_name": <country_name>
+        "source" : {
+          "ip" : <source_ip_address>,
+          "geo" : {
+            "country_name" : <source_country_name>,
+            "location" : {
+              "lat" : <source_latitude>,
+              "lon" : <source_longitude>
+            }
+          }
         },
         "user_agent": {
             "original": <user_agent>
