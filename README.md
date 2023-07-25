@@ -78,7 +78,7 @@ After that, there are two ways of running BuffaLogs, depending on your system co
     *  set the address of the host into the `CERTEGO_ELASTICSEARCH` variable in the `buffalogs.env` file
     *  launch ` docker-compose up -d` to run the containers
 * if you have no hosts with Elasticsearch installed on it, you can run it directly with Buffalogs:
-    * run `docker-compose -f docker-compose.yml -f docker-compose.elastic.yml up -d` in order to execute all the containers, included Elasticsearch and Kibana
+    * run `docker-compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
     * Now elasticsearch and kibana are running on the same host with Buffalogs.
 
 ![buffalogs_dashboard_screenshot](https://user-images.githubusercontent.com/33703137/220879987-b6453e9d-0129-45c1-bc26-0542005e8730.png)
