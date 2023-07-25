@@ -34,5 +34,7 @@ urlpatterns = [
     path("users_pie_chart_api/", views.users_pie_chart_api, name="users_pie_chart_api"),
     path("alerts_line_chart_api/", views.alerts_line_chart_api, name="alerts_line_chart_api"),
     path("world_map_chart_api/", views.world_map_chart_api, name="world_map_chart_api"),
+    path("alerts_api/", views.alerts_api, name="alerts_api"),
+    path("risk_score_api/", views.risk_score_api, name="risk_score_api"),
     path("authentication/", include("authentication.urls")),
 ]

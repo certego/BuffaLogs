@@ -245,3 +245,30 @@ def world_map_chart_api(request):
             result[key] = country_alerts
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
+
+
+@require_http_methods(["GET"])
+def alerts_api(request):
+    result = []
+    timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
+    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
+    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
+    alerts_list = Alert.objects.filter(created__range=(start_date, end_date)).values()
+    for alert in alerts_list:
+        tmp = {"timestamp": alert["login_raw_data"]["timestamp"], "username": User.objects.get(id=alert["user_id"]).username, "rule_name": alert["name"]}
+        result.append(tmp)
+    data = json.dumps(result)
+    return HttpResponse(data, content_type="json")
+
+
+@require_http_methods(["GET"])
+def risk_score_api(request):
+    result = {}
+    timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
+    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
+    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
+    user_risk_list = User.objects.filter(updated__range=(start_date, end_date)).values()
+    for key in user_risk_list:
+        result[key] = user_risk_list[key]
+    data = json.dumps(result)
+    return HttpResponse(data, content_type="json")

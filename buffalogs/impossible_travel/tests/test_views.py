@@ -202,3 +202,25 @@ class TestViews(APITestCase):
         response = self.client.get(f"{reverse('world_map_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
+
+    def test_alerts_api(self):
+        end = datetime.now()
+        start = end - timedelta(days=100)
+        list_expected_result = [
+            {"timestamp": "2023-06-19T17:17:31.358Z", "username": "Lorena Goldoni", "rule_name": "Impossible Travel detected"},
+            {"timestamp": "2023-06-19T18:15:33.548Z", "username": "Lorena Goldoni", "rule_name": "Impossible Travel detected"},
+            {"timestamp": "2023-06-20T10:17:33.358Z", "username": "Lorena Goldoni", "rule_name": "Impossible Travel detected"},
+        ]
+        response = self.client.get(f"{reverse('alerts_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(list_expected_result, json.loads(response.content))
+
+    def test_risk_score_api(self):
+        User.objects.get(username="Lorena Goldoni").risk_score = User.riskScoreEnum.LOW
+        User.objects.get(username="Lorygold").risk_score = User.riskScoreEnum.MEDIUM
+        end = datetime.now()
+        start = end - timedelta(minutes=1)
+        dict_expected_result = {"Lorena Goldoni": "Low", "Lorygold": "Medium"}
+        response = self.client.get(f"{reverse('risk_score_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(dict_expected_result, json.loads(response.content))
