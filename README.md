@@ -116,7 +116,15 @@ For a basic analysis to detect only impossible travel logins, the *user_agent* f
 
 ##  REST APIs
 
-In order to obtain the charts data, you can query the REST APIs.
+Five views were implemented using DRF - Django-Rest Framework, in order to provide the possible to query and produce the charts data.
+In particular, the supplied APIs are:
+| **API's name**| **API result**|
+|---|---|
+| *users_pie_chart_api* | It returns the association between the risk level and the number of users with that risk score |
+| *alerts_line_chart_api* | It provides the number of alerts triggered in a particular timeframe |
+| *world_map_chart_api* | It supplies the relation of countries and the number of alerts triggered from them |
+| *alerts_api* | It offers the details about the alerts generated in the provided interval |
+| *risk_score_api* | It provides the association between user and risk level for the users whose risk changed in the requested timeframe |
 
 *For further details: [Wiki - REST APIs](https://github.com/certego/BuffaLogs/wiki/5.-REST-APIs)*
 
