@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
 
-    postgres:
+    buffalogs_postgres:
         container_name: buffalogs_postgres
         image: postgres:15.1-alpine
         env_file:
@@ -12,7 +12,7 @@ services:
         expose:
             - "5432"
 
-    nginx:
+    buffalogs_nginx:
         container_name: nginx
         image: nginx:mainline-alpine
         hostname: nginx
@@ -44,7 +44,7 @@ services:
             - rabbitmq
 
 
-    rabbitmq:
+    buffalogs_rabbitmq:
         container_name: rabbitmq
         image: rabbitmq:3.11-management-alpine
         hostname: rabbitmq
@@ -57,7 +57,7 @@ services:
         healthcheck:
             test: rabbitmqctl status
 
-    celery:
+    buffalogs_celery:
         container_name: celery
         image: buffalogs:latest
         hostname: celery
@@ -74,7 +74,7 @@ services:
             - postgres
             - rabbitmq
 
-    celery_beat:
+    buffalogs_celery_beat:
         container_name: celery_beat
         build:
             context: .
@@ -93,13 +93,13 @@ services:
 
 volumes:
 
-    postgres_data:
+    buffalogs_postgres_data:
         driver: local
-    nginx_sockets:
+    buffalogs_nginx_sockets:
         driver: local
-    django_static:
+    buffalogs_django_static:
         driver: local
-    nginx_logs:
+    buffalogs_nginx_logs:
         driver: local
-    rabbitmq_data:
+    buffalogs_rabbitmq_data:
         driver: local
