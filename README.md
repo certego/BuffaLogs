@@ -78,7 +78,7 @@ After that, there are two ways of running BuffaLogs, depending on your system co
     *  set the address of the host into the `CERTEGO_ELASTICSEARCH` variable in the `buffalogs.env` file
     *  launch ` docker-compose up -d` to run the containers
 * if you have no hosts with Elasticsearch installed on it, you can run it directly with Buffalogs:
-    * run `docker-compose -f docker-compose.yml -f docker-compose.elastic.yml up -d` in order to execute all the containers, included Elasticsearch and Kibana
+    * run `docker-compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
     * Now elasticsearch and kibana are running on the same host with Buffalogs.
 
 ![buffalogs_dashboard_screenshot](https://user-images.githubusercontent.com/33703137/220879987-b6453e9d-0129-45c1-bc26-0542005e8730.png)
@@ -91,16 +91,23 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
 
     ```
     {
+        "@timestamp" : <timestamp_isoformat>,
         "user": {
             "name": <user_name>
         },
         "event": {
-            "outcome": <"success" OR "failure">
+            "outcome": <"success" OR "failure">,
+            "category" : "authentication"
         },
-        "geoip": {
-            "latitude": <latitude>,
-            "longitude": <longitude>,
-            "country_name": <country_name>
+        "source" : {
+          "ip" : <source_ip_address>,
+          "geo" : {
+            "country_name" : <source_country_name>,
+            "location" : {
+              "lat" : <source_latitude>,
+              "lon" : <source_longitude>
+            }
+          }
         },
         "user_agent": {
             "original": <user_agent>
@@ -116,7 +123,15 @@ For a basic analysis to detect only impossible travel logins, the *user_agent* f
 
 ##  REST APIs
 
-In order to obtain the charts data, you can query the REST APIs.
+Five views were implemented using DRF - Django-Rest Framework, in order to provide the possible to query and produce the charts data.
+In particular, the supplied APIs are:
+| **API's name**| **API result**|
+|---|---|
+| *users_pie_chart_api* | It returns the association between the risk level and the number of users with that risk score |
+| *alerts_line_chart_api* | It provides the number of alerts triggered in a particular timeframe |
+| *world_map_chart_api* | It supplies the relation of countries and the number of alerts triggered from them |
+| *alerts_api* | It offers the details about the alerts generated in the provided interval |
+| *risk_score_api* | It provides the association between user and risk level for the users whose risk changed in the requested timeframe |
 
 *For further details: [Wiki - REST APIs](https://github.com/certego/BuffaLogs/wiki/5.-REST-APIs)*
 
