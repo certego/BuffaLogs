@@ -36,7 +36,7 @@ const Piechart: React.FC = () => {
   };
 
   useEffect(() => {
-    const colors = ["#5B5C60", "#FF5533", "#FF5533", "#FF5533"];
+    const colors = ["#5B5C60", "#5e4C60", "#5B5C60", "#FF5533"];
     const fetchData = async () => {
       try {
         const updateData = await getUsersPieChart(date);
@@ -118,7 +118,7 @@ const Piechart: React.FC = () => {
           x={ex + (cos >= 0 ? 1 : -1) * 12}
           y={ey}
           textAnchor={textAnchor}
-          fill="#333"
+          fill="#fff"
         >{`${payload.type} ${value}`}</text>
       </g>
     );
@@ -144,7 +144,7 @@ const Piechart: React.FC = () => {
         {data.map((entry, index) => (
           <Cell key={`cell-${index}`} fill={entry.color}></Cell>
         ))}
-        <Label value={label} position="center" />
+        <Label value={label} color="fff" position="center" />
       </Pie>
     </PieChart>
   );

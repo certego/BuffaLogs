@@ -1,33 +1,22 @@
-import { useDateContext } from "@/contexts/DateContext";
-import { getAlertsLineChart } from "@/lib/requestdata";
-import { get } from "lodash";
-import React, { useEffect, useState } from "react";
-import {
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import { useDateContext } from '@/contexts/DateContext';
+import { getAlertsLineChart } from '@/lib/requestdata';
+import React, { useEffect, useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+interface DataItem {
+  date: string;
+  value: number;
+  type: string;
+}
 
 const Barchart: React.FC = () => {
-  interface alertDataType {
-      date: string,
-      value: number,
-      type: string,
-  }
-
-  const [data, setData] = useState<alertDataType[]>([]);
+  const [data, setData] = useState<DataItem[]>([]);
   const { date } = useDateContext();
 
   useEffect(() => {
     const fetchData = async () => {
       try{
-        const formattedData: alertDataType[] = [];
+        const formattedData: DataItem[] = [];
         const updateData = await getAlertsLineChart(date);
         for (const key in updateData) {
           if (key !== 'Timeframe') {
@@ -40,11 +29,11 @@ const Barchart: React.FC = () => {
               value: value,
               type: type,
             };
-      
             formattedData.push(newDataItem);
           }
         }
         setData(formattedData);
+        console.log(formattedData, "formattedData")
       } catch(e) {
         console.log(e, "error");
       }
@@ -52,30 +41,19 @@ const Barchart: React.FC = () => {
     fetchData();
   }, [date]);
 
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeItem = data[activeIndex];
-
-  const handleClick = (data: any, index: number) => {
-    setActiveIndex(index);
-  };
-
   return (
-    <div style={{ width: "80%" }} className="mx-10 my-10 ">
-      <ResponsiveContainer width="100%" height={100}>
-        <BarChart width={150} height={40} data={data}>
-          <Bar dataKey="value" onClick={handleClick}>
-            {data.map((entry, index) => (
-              <Cell
-                cursor="pointer"
-                fill={index === activeIndex ? "#FF5533" : "#5B5C60"}
-                key={`cell-${index}`}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-      <p className="content font-SpaceGrotesk">{`Alerts on ${activeItem?.date}`}</p>
-    </div>
+    <ResponsiveContainer width="80%" height={200}>
+    <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+      <CartesianGrid stroke="#444" strokeDasharray="3 3" />
+      <XAxis dataKey="date" stroke="#5B5C60" />
+      <YAxis stroke="#5B5C60" />
+      <Tooltip
+        contentStyle={{ background: '#333', border: 'none', color: '#FF5533' }}
+        cursor={{ fill: 'rgba(255,255,255,0.1)' }}
+      />
+      <Bar dataKey="value" fill="#5B5C60" label={{ position: 'top', fill: '#FF5533' }} />
+    </BarChart>
+  </ResponsiveContainer>
   );
 };
 

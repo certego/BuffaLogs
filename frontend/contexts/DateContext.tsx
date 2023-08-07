@@ -15,8 +15,8 @@ interface DateContextProviderProps {
 
 export const DateContextProvider: React.FC<DateContextProviderProps> = ({ children }) => {
   const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(2022, 0, 20),
-    to: addDays(new Date(2022, 0, 20), 20),
+    from: new Date(2023, 6, 20),
+    to: addDays(new Date(2023, 7, 1), 20),
   });
 
   return (

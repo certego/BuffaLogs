@@ -2,8 +2,8 @@ import Header from "@/components/Header";
 import Piechart from "@/components/PieChart";
 import Barchart from "@/components/BarChart";
 import React from "react";
-import MapChart from "@/components/WorldMap";
 import LogsTable from "@/components/LogsTable";
+import MapChart from "@/components/Worldmap";
 
 export default function Dashboard() {
   return (
@@ -39,13 +39,13 @@ export default function Dashboard() {
                 <h2 className="font-SpaceGrotesk text-2xl mt-5 ml-5">
                   Login Alerts
                 </h2>
-                <Barchart />
+                <Barchart/>
               </div>
             </div>
           </div>
           <div id="spacing" className="w-[2%]"></div>
           <div id="user-logs" className="w-[30%] border rounded-2xl">
-            <h2 className="font-SpaceGrotesk text-2xl mt-5 ml-5">User Logs</h2>
+            <h2 className="font-SpaceGrotesk text-2xl mt-5 ml-5">User Alerts</h2>
             <div className="px-5 py-5 text-left">
             <LogsTable/>
             </div>

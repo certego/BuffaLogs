@@ -1,30 +1,46 @@
-export default function LogsTable() {
-  return (
-    <table className="table-auto overflow-auto text-lg">
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>TimeStamp</th>
-          <th>Alert</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Abheek Tripathy</td>
-          <td>2022-19-8</td>
-          <td>New Device</td>
-        </tr>
-        <tr>
-        <td>Abheek</td>
-          <td>2022-19-8</td>
-          <td>New Device</td>
-        </tr>
-        <tr>
-        <td>Abheek</td>
-          <td>2022-19-8</td>
-          <td>New Device</td>
-        </tr>
-      </tbody>
-    </table>
-  );
+import React, { useContext, useEffect, useState } from "react";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import { ColDef } from "ag-grid-community";
+import { useDateContext } from "@/contexts/DateContext";
+import { getAlerts } from "@/lib/requestdata";
+
+interface RowData {
+  timestamp: string;
+  username: string;
+  rule_name: string;
 }
+
+interface TableComponentProps {
+  rowData: RowData[];
+}
+
+const TableComponent: React.FC = () => {
+  const { date } = useDateContext();
+  const [data, setData] = useState<RowData[]>([]);
+  const columnDefs: ColDef[] = [
+    { headerName: "Timestamp", field: "timestamp" },
+    { headerName: "Username", field: "username" },
+    { headerName: "Rule Name", field: "rule_name" },
+  ];
+
+  useEffect(() => {
+    async function fetchData() {
+      const a = await getAlerts(date);
+      setData(a);
+    }
+    fetchData();
+  }, [date]);
+
+  return (
+    <div
+      className="ag-theme-alpine-dark"
+      style={{ height: 800, width: "100%" }}
+    >
+      <AgGridReact columnDefs={columnDefs} rowData={data} />
+    </div>
+  );
+};
+
+export default TableComponent;
