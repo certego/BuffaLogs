@@ -198,13 +198,10 @@ class TestViews(APITestCase):
     def test_world_map_chart_api(self):
         start = datetime(2023, 5, 1, 0, 0)
         end = datetime(2023, 6, 30, 23, 59, 59)
-        list_expected_result = [
-            {"country": "jp", "lat": 36.2462, "lon": 138.8497, "alerts": 3},
-            {"country": "us", "lat": 36.2462, "lon": 138.8497, "alerts": 3},
-            {"country": "us", "lat": 40.364, "lon": -79.8605, "alerts": 3},
-        ]
+        list_expected_result = [{"country": "jp", "lat": 36.2462, "lon": 138.8497, "alerts": 3}, {"country": "us", "lat": 40.364, "lon": -79.8605, "alerts": 3}]
         response = self.client.get(f"{reverse('world_map_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(list_expected_result), 6)
         self.assertListEqual(list_expected_result, json.loads(response.content))
 
     def test_alerts_api(self):
