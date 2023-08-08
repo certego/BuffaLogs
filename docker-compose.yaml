@@ -13,7 +13,7 @@ services:
             - "5432"
 
     buffalogs_nginx:
-        container_name: nginx
+        container_name: buffalogs_nginx
         image: nginx:mainline-alpine
         hostname: nginx
         depends_on:
