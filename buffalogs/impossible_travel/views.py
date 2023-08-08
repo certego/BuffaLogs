@@ -246,17 +246,16 @@ def world_map_chart_api(request):
             for alert in country_alerts:
                 if [alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]] not in tmp:
                     tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
-            for triple_list in tmp:
-                result.append(
-                    {
-                        "country": key,
-                        "lat": triple_list[1],
-                        "lon": triple_list[2],
-                        "alerts": Alert.objects.filter(
-                            login_raw_data__country=triple_list[0], login_raw_data__lat=triple_list[1], login_raw_data__lon=triple_list[2]
-                        ).count(),
-                    }
-                )
+                    result.append(
+                        {
+                            "country": key,
+                            "lat": alert.login_raw_data["lat"],
+                            "lon": alert.login_raw_data["lon"],
+                            "alerts": Alert.objects.filter(
+                                login_raw_data__country=value, login_raw_data__lat=alert.login_raw_data["lat"], login_raw_data__lon=alert.login_raw_data["lon"]
+                            ).count(),
+                        }
+                    )
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
 
