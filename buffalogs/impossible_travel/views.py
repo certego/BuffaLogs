@@ -245,11 +245,11 @@ def world_map_chart_api(request):
         if country_alerts:
             for alert in country_alerts:
                 if [alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]] not in tmp:
-                    tmp.append([alert.login_raw_data__country, alert.login_raw_data__lat, alert.login_raw_data__lon])
+                    tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
             for triple_list in tmp:
                 result.append(
                     {
-                        "country": triple_list[0],
+                        "country": key,
                         "lat": triple_list[1],
                         "lon": triple_list[2],
                         "alerts": Alert.objects.filter(
