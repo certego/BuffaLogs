@@ -198,10 +198,14 @@ class TestViews(APITestCase):
     def test_world_map_chart_api(self):
         start = datetime(2023, 5, 1, 0, 0)
         end = datetime(2023, 6, 30, 23, 59, 59)
-        dict_expected_result = {"us": 3, "jp": 3}
+        num_alerts = 0
+        list_expected_result = [{"country": "jp", "lat": 36.2462, "lon": 138.8497, "alerts": 3}, {"country": "us", "lat": 40.364, "lon": -79.8605, "alerts": 3}]
         response = self.client.get(f"{reverse('world_map_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        for elem in list_expected_result:
+            num_alerts += elem["alerts"]
         self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(dict_expected_result, json.loads(response.content))
+        self.assertEqual(num_alerts, Alert.objects.all().count())
+        self.assertListEqual(list_expected_result, json.loads(response.content))
 
     def test_alerts_api(self):
         creation_mock_time = datetime(2023, 7, 25, 12, 0)
