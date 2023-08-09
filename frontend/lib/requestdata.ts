@@ -47,7 +47,7 @@ export async function getAlertsLineChart(dateRange?: DateRange): Promise<any> {
     }
   }
   
-export async function geWorldMapChart(dateRange?: DateRange): Promise<any> {
+export async function getWorldMapChart(dateRange?: DateRange): Promise<any> {
     if (dateRange && dateRange.from && dateRange.to) {
       const start = dateRange.from.toISOString().slice(0, -5) + "Z";
       const end = dateRange.to.toISOString().slice(0, -5)+ "Z";

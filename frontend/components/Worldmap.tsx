@@ -8,30 +8,32 @@ import {
 import { csv } from "d3-fetch";
 import { scaleLinear } from "d3-scale";
 import sortBy from "lodash/sortBy";
+import { getWorldMapChart } from "@/lib/requestdata";
+import { useDateContext } from "@/contexts/DateContext";
 
 
-interface City {
-  population: number;
-  city_code: string;
-  city: string;
+interface Country {
+  country: string;
   lat: number;
-  lng: number;
+  lon: number;
+  alerts: number;
 }
 
 const geoUrl =
   "https://raw.githubusercontent.com/deldersveld/topojson/master/world-continents.json";
 
 const MapChart = () => {
-  const [data, setData] = useState<City[]>([]);
+  const [data, setData] = useState<Country[]>([]);
   const [maxValue, setMaxValue] = useState<Number>(0);
+  const {date} = useDateContext();
 
   useEffect(() => {
-    csv("/data.csv").then((cities: any) => {
-      const sortedCities = sortBy(cities, (o: any) => -o.population);
-      setMaxValue(sortedCities[0].population);
-      setData(sortedCities);
-    });
-  }, []);
+    const fetchData = async () => {
+      const data = await getWorldMapChart(date)
+      setData(data);
+    }
+  fetchData();
+  }, [date]);
 
   const popScale = useMemo(
     () => scaleLinear().domain([0, maxValue]).range([0, 24]),
@@ -48,10 +50,10 @@ const MapChart = () => {
           ))
         }
       </Geographies>
-      {data.map(({ city_code, lng, lat, population }) => {
+      {data.map(({ country, lat, lon, alerts }) => {
         return (
-          <Marker key={city_code} coordinates={[lng, lat]}>
-            <circle fill="#F53" stroke="#FFF" r={popScale(population)} />
+          <Marker key={country} coordinates={[lon, lat]}>
+            <circle fill="#F53" stroke="#FFF" r={popScale(alerts)} />
           </Marker>
         );
       })}
