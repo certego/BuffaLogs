@@ -235,14 +235,27 @@ def world_map_chart_api(request):
     start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
     end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
     countries = _load_data("countries")
-    result = {}
+    result = []
+    tmp = []
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
             login_raw_data__timestamp__range=(start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")),
             login_raw_data__country=value,
-        ).count()
-        if country_alerts != 0:
-            result[key] = country_alerts
+        )
+        if country_alerts:
+            for alert in country_alerts:
+                if [alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]] not in tmp:
+                    tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
+                    result.append(
+                        {
+                            "country": key,
+                            "lat": alert.login_raw_data["lat"],
+                            "lon": alert.login_raw_data["lon"],
+                            "alerts": Alert.objects.filter(
+                                login_raw_data__country=value, login_raw_data__lat=alert.login_raw_data["lat"], login_raw_data__lon=alert.login_raw_data["lon"]
+                            ).count(),
+                        }
+                    )
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
 
