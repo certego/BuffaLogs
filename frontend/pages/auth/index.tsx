@@ -19,11 +19,12 @@ import { useRouter } from "next/router";
 import { loginUser } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import { removeToken } from "@/lib/token";
+import { toast } from "@/components/ui/use-toast";
 
 
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
+  email: z.string().min(2, {
+    message: "Email must be at least 6 characters.",
   }),
   Password: z.string().min(2, {
     message: "Password must be at least 6 characters.",
@@ -43,28 +44,36 @@ export default function Auth() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      email: "",
       Password: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const to_forward = "/dashboard/";
-      setIsLoading(true);
-      const data = await loginUser(values.username, values.Password)
-      console.log(data.tokens)
+      const data = await loginUser(values.email, values.Password)
       if (data && data.tokens) {
+        console.log("kjahnasfn")
         setCookie("user", JSON.stringify(data), {
           path: "/",
           maxAge: 3600,
           sameSite: true,
         });
+        toast({
+          title: "Success!",
+          description: "Redirecting to dashboard.",
+        })
         setTimeout(() => {
           router.push(to_forward);
         }, 1000);
+      const to_forward = "/dashboard/";
+      setIsLoading(true);
       } else {
         setErrorMessage("Invalid Credentials!");
+        toast({
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your request.",
+        })
       }
     } catch (error) {
     } finally {
@@ -85,12 +94,12 @@ export default function Auth() {
               <>
                 <FormField
                   control={form.control}
-                  name="username"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your Username" {...field} />
+                        <Input placeholder="Enter your Email" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -115,7 +124,7 @@ export default function Auth() {
                 Submit
               </Button>
               <Link href={"/"} className="ml-4 text-sm opacity-70 items-end underline underline-offset-2">
-                Contact Support?
+                Redirect to Home?
               </Link>
             </form>
           </Form>

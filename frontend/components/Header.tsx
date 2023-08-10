@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { DatePickerWithRange } from "./DatePicker";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { toast } from "./ui/use-toast";
 
 const Header: React.FC = () => {
   const router = useRouter();
@@ -23,6 +24,9 @@ const Header: React.FC = () => {
         <Button
           onClick={async () => {
             const push = await logoutUser();
+            toast({
+              title: "Logged out!",
+            })
             router.push("/auth");
           }}
         >
