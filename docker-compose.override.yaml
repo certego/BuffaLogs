@@ -4,19 +4,19 @@ services:
     buffalogs:
         volumes:
             - ./buffalogs:/opt/certego/buffalogs
-    celery:
+    buffalogs_celery:
         volumes:
             - ./buffalogs:/opt/certego/buffalogs
 
-    celery_beat:
+    buffalogs_celery_beat:
         volumes:
             - ./buffalogs:/opt/certego/buffalogs
 
-    postgres:
+    buffalogs_postgres:
         ports:
             - "127.0.0.1:5432:5432"
     
-    rabbitmq:
+    buffalogs_rabbitmq:
         ports:
             - "127.0.0.1:5672:5672"
             - "127.0.0.1:15672:15672"

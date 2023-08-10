@@ -83,7 +83,7 @@ After that, there are two ways of running BuffaLogs, depending on your system co
 
 ![buffalogs_dashboard_screenshot](https://user-images.githubusercontent.com/33703137/220879987-b6453e9d-0129-45c1-bc26-0542005e8730.png)
 
-*For further examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/2.-Example)*
+*For further examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/3.-Example)*
 
 ##   Logs Structure
 
@@ -119,7 +119,7 @@ For a basic analysis to detect only impossible travel logins, the *user_agent* f
 ##  BuffaLogs Architecture
 ![Buffalogs_Architecture](https://user-images.githubusercontent.com/33703137/220896332-4fe08f32-1879-4150-bd5d-9df9dc21a7a7.jpg)
 
-*For further details: [Wiki - Architecture](https://github.com/certego/BuffaLogs/wiki/3.-Architecture)*
+*For further details: [Wiki - Architecture](https://github.com/certego/BuffaLogs/wiki/4.-Architecture)*
 
 ##  REST APIs
 

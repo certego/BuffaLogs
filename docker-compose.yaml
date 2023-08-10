@@ -2,18 +2,18 @@ version: '3.2'
 
 services:
 
-    postgres:
+    buffalogs_postgres:
         container_name: buffalogs_postgres
         image: postgres:15.1-alpine
         env_file:
             - config/buffalogs/buffalogs.env
         volumes:
-            - postgres_data:/var/lib/postgresql/data
+            - buffalogs_postgres_data:/var/lib/postgresql/data
         expose:
             - "5432"
 
-    nginx:
-        container_name: nginx
+    buffalogs_nginx:
+        container_name: buffalogs_nginx
         image: nginx:mainline-alpine
         hostname: nginx
         depends_on:
@@ -21,9 +21,9 @@ services:
         volumes:
             - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
             # - ./config/nginx/certs:/etc/nginx/certs:ro
-            - django_static:/var/www:ro
-            - nginx_sockets:/var/run/nginx-sockets
-            - nginx_logs:/var/log/nginx:rw
+            - buffalogs_django_static:/var/www:ro
+            - buffalogs_nginx_sockets:/var/run/nginx-sockets
+            - buffalogs_nginx_logs:/var/log/nginx:rw
         ports:
             - "80:80"
 
@@ -37,28 +37,28 @@ services:
         env_file:
             -  config/buffalogs/buffalogs.env
         volumes:
-            - django_static:/var/www
-            - nginx_sockets:/var/run/nginx-sockets
+            - buffalogs_django_static:/var/www
+            - buffalogs_nginx_sockets:/var/run/nginx-sockets
         depends_on:
-            - postgres
-            - rabbitmq
+            - buffalogs_postgres
+            - buffalogs_rabbitmq
 
 
-    rabbitmq:
-        container_name: rabbitmq
+    buffalogs_rabbitmq:
+        container_name: buffalogs_rabbitmq
         image: rabbitmq:3.11-management-alpine
         hostname: rabbitmq
         volumes:
             - ./config/rabbitmq:/etc/rabbitmq:ro
-            - rabbitmq_data:/var/lib/rabbitmq
+            - buffalogs_rabbitmq_data:/var/lib/rabbitmq
         expose:
             - "5672"
             - "15672"
         healthcheck:
             test: rabbitmqctl status
 
-    celery:
-        container_name: celery
+    buffalogs_celery:
+        container_name: buffalogs_celery
         image: buffalogs:latest
         hostname: celery
         build:
@@ -71,11 +71,11 @@ services:
         volumes:
             - ./config:/opt/certego/config:ro
         depends_on:
-            - postgres
-            - rabbitmq
+            - buffalogs_postgres
+            - buffalogs_rabbitmq
 
-    celery_beat:
-        container_name: celery_beat
+    buffalogs_celery_beat:
+        container_name: buffalogs_celery_beat
         build:
             context: .
             dockerfile: build/Dockerfile
@@ -88,18 +88,18 @@ services:
         volumes:
             - ./config:/opt/certego/config:ro
         depends_on:
-            - postgres
-            - rabbitmq
+            - buffalogs_postgres
+            - buffalogs_rabbitmq
 
 volumes:
 
-    postgres_data:
+    buffalogs_postgres_data:
         driver: local
-    nginx_sockets:
+    buffalogs_nginx_sockets:
         driver: local
-    django_static:
+    buffalogs_django_static:
         driver: local
-    nginx_logs:
+    buffalogs_nginx_logs:
         driver: local
-    rabbitmq_data:
+    buffalogs_rabbitmq_data:
         driver: local
