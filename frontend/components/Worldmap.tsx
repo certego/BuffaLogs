@@ -3,7 +3,8 @@ import {
   ComposableMap,
   Geographies,
   Geography,
-  Marker
+  Marker,
+  ZoomableGroup
 } from "react-simple-maps";
 import { csv } from "d3-fetch";
 import { scaleLinear } from "d3-scale";
@@ -43,6 +44,7 @@ const MapChart = () => {
   return (
     <div className="">
     <ComposableMap projectionConfig={{ rotate: [-10, 0, 0] }}>
+    <ZoomableGroup center={[0, 0]} zoom={1}>
       <Geographies geography={geoUrl}>
         {({ geographies }) =>
           geographies.map((geo) => (
@@ -57,6 +59,7 @@ const MapChart = () => {
           </Marker>
         );
       })}
+       </ZoomableGroup>
     </ComposableMap>
     </div>
   );
