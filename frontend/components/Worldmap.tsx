@@ -29,22 +29,30 @@ const MapChart = () => {
   const {date} = useDateContext();
 
   useEffect(() => {
+    
     const fetchData = async () => {
-      const data = await getWorldMapChart(date)
+      const data: Country[] = await getWorldMapChart(date)
       setData(data);
+      let maxAlerts = data[0].alerts;
+      for (const country of data) {
+        if (country.alerts > maxAlerts) {
+          maxAlerts = country.alerts;
+        }
+      }
+      setMaxValue(maxAlerts);
     }
   fetchData();
   }, [date]);
 
   const popScale = useMemo(
-    () => scaleLinear().domain([0, maxValue]).range([0, 24]),
+    () => scaleLinear().domain([0, maxValue]).range([0, 12]),
     [maxValue]
   );
 
   return (
     <div className="">
     <ComposableMap projectionConfig={{ rotate: [-10, 0, 0] }}>
-    <ZoomableGroup center={[0, 0]} zoom={1}>
+    <ZoomableGroup center={[0, 0]} zoom={1} maxZoom={6}>
       <Geographies geography={geoUrl}>
         {({ geographies }) =>
           geographies.map((geo) => (

@@ -15,7 +15,7 @@ export default function Dashboard() {
           <div id="charts" className="w-[63%] flex flex-col space-y-6 ">
             <div
               id="world-chart"
-              className="border rounded-2xl flex flex-col justify-center"
+              className="border rounded-2xl flex flex-col justify-center "
             >
               <h2 className="font-SpaceGrotesk text-2xl mt-5 ml-5">
                 Login Locations

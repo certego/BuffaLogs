@@ -72,7 +72,7 @@ export default function Auth() {
         setErrorMessage("Invalid Credentials!");
         toast({
           title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
+          description: "There was a problem with your authentication request.",
         })
       }
     } catch (error) {
@@ -112,7 +112,7 @@ export default function Auth() {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your Password" {...field} />
+                        <Input type="password" placeholder="Enter your Password" {...field} />
                       </FormControl>
 
                       <FormMessage />
