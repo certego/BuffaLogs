@@ -4,14 +4,11 @@ import {
   Geographies,
   Geography,
   Marker,
-  ZoomableGroup
+  ZoomableGroup,
 } from "react-simple-maps";
-import { csv } from "d3-fetch";
 import { scaleLinear } from "d3-scale";
-import sortBy from "lodash/sortBy";
 import { getWorldMapChart } from "@/lib/requestdata";
 import { useDateContext } from "@/contexts/DateContext";
-
 
 interface Country {
   country: string;
@@ -25,13 +22,13 @@ const geoUrl =
 
 const MapChart = () => {
   const [data, setData] = useState<Country[]>([]);
-  const [maxValue, setMaxValue] = useState<Number>(0);
-  const {date} = useDateContext();
+  const [zoom, setZoom] = useState<number>(1);
+  const [maxValue, setMaxValue] = useState<number>(0);
+  const { date } = useDateContext();
 
   useEffect(() => {
-    
     const fetchData = async () => {
-      const data: Country[] = await getWorldMapChart(date)
+      const data: Country[] = await getWorldMapChart(date);
       setData(data);
       let maxAlerts = data[0].alerts;
       for (const country of data) {
@@ -40,35 +37,46 @@ const MapChart = () => {
         }
       }
       setMaxValue(maxAlerts);
-    }
-  fetchData();
+    };
+    fetchData();
   }, [date]);
 
   const popScale = useMemo(
-    () => scaleLinear().domain([0, maxValue]).range([0, 12]),
+    () => scaleLinear().domain([0, maxValue]).range([0, 18]),
     [maxValue]
   );
 
   return (
     <div className="">
-    <ComposableMap projectionConfig={{ rotate: [-10, 0, 0] }}>
-    <ZoomableGroup center={[0, 0]} zoom={1} maxZoom={6}>
-      <Geographies geography={geoUrl}>
-        {({ geographies }) =>
-          geographies.map((geo) => (
-            <Geography key={geo.rsmKey} geography={geo} fill="#5B5C60" />
-          ))
-        }
-      </Geographies>
-      {data.map(({ country, lat, lon, alerts }) => {
-        return (
-          <Marker key={country} coordinates={[lon, lat]}>
-            <circle fill="#F53" stroke="#FFF" r={popScale(alerts)} />
-          </Marker>
-        );
-      })}
-       </ZoomableGroup>
-    </ComposableMap>
+      <ComposableMap projectionConfig={{ rotate: [-10, 0, 0] }}>
+        <ZoomableGroup
+          center={[0, 0]}
+          zoom={1}
+          maxZoom={6}
+          onMoveEnd={({ coordinates, zoom }) => {
+            setZoom(zoom);
+          }}
+        >
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => (
+                <Geography key={geo.rsmKey} geography={geo} fill="#5B5C60" />
+              ))
+            }
+          </Geographies>
+          {data.map(({ country, lat, lon, alerts }) => {
+            return (
+              <Marker key={country} coordinates={[lon, lat]}>
+                <circle
+                  fill="#F53"
+                  stroke="#FFF"
+                  r={popScale(alerts)/zoom}
+                />
+              </Marker>
+            );
+          })}
+        </ZoomableGroup>
+      </ComposableMap>
     </div>
   );
 };
