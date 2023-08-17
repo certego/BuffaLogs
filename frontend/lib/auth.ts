@@ -10,8 +10,9 @@ export const loginUser = async (email: String, password: String) => {
   });
   const { status } = res;
   if (status !== 200) {
+    console.log("Error While Authenticating");
     return {
-      error: "Invalid Credentials!",
+      error: "Invalid Credentials!"
     };
   }
   const data = res.json();
