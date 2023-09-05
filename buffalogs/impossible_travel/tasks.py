@@ -69,6 +69,7 @@ def set_alert(db_user, login_alert, alert_info):
     if Config.objects.filter(vip_users__contains=[db_user.username]):
         alert.is_vip = True
         alert.save()
+    return alert
 
 
 def check_fields(db_user, fields):
@@ -87,18 +88,21 @@ def check_fields(db_user, fields):
                 if login["agent"]:
                     agent_alert = new_dev.check_new_device(db_user, login)
                     if agent_alert:
-                        set_alert(db_user, login, agent_alert)
+                        set_alert(db_user, login_alert=login, alert_info=agent_alert)
 
                 if login["country"]:
                     country_alert = new_country.check_country(db_user, login)
                     if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
-                        set_alert(db_user, login, country_alert)
+                        set_alert(db_user, login_alert=login, alert_info=country_alert)
 
                 if not db_user.usersip_set.filter(ip=login["ip"]).exists():
                     logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert = imp_travel.calc_distance(db_user, db_user.login_set.latest("timestamp"), login)
+                    travel_alert, travel_vel = imp_travel.calc_distance(db_user, prev_login=db_user.login_set.latest("timestamp"), last_login_user_fields=login)
                     if travel_alert:
-                        set_alert(db_user, login, travel_alert)
+                        new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
+                        new_alert.login_raw_data["buffalogs.start_country"] = db_user.login_set.latest("timestamp").country
+                        new_alert.login_raw_data["buffalogs.avg_speed"] = travel_vel
+                        new_alert.save()
                     #   Add the new ip address from which the login comes to the db
                     imp_travel.add_new_user_ip(db_user, login["ip"])
 

@@ -49,6 +49,9 @@ class TestImpossibleTravel(TestCase):
         prev_login = Login.objects.get(id=db_user.id)
         result = self.imp_travel.calc_distance(db_user, prev_login, last_login_user_fields)
         self.assertEqual("Impossible Travel detected", result["alert_name"].value)
+        self.assertIn("for User: Lorena Goldoni", result["alert_desc"])
+        self.assertIn("from: Sudan", result["alert_desc"])
+        self.assertIn("previous country: United States, distance covered at 10109599 Km/h", result["alert_desc"])
 
     def test_validate_timestamp(self):
         # try - format: "%Y-%m-%dT%H:%M:%S.%fZ"
