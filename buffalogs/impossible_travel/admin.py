@@ -37,5 +37,5 @@ class TaskSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(Config)
 class ConfigsAdmin(admin.ModelAdmin):
-    list_display = ("created", "updated", "allowed_countries", "vip_users")
+    list_display = ("created", "updated", "ignored_users", "ignored_ips", "allowed_countries", "vip_users")
     search_fields = ("allowed_countries", "vip_users")
