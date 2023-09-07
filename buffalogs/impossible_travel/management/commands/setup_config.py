@@ -36,4 +36,4 @@ class Command(BaseCommand):
                 )
             )
         else:
-            self.stdout.write(self.style.ERROR("Error: Configs already exist. Use the modify_config or the clear_models commands"))
+            self.stdout.write(self.style.ERROR("Error: Configs already exist. Use the update_config or the clear_models commands"))
