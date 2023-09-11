@@ -9,6 +9,7 @@ from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
+from impossible_travel.utils.utils import check_ignored_ips
 
 logger = get_task_logger(__name__)
 
@@ -81,44 +82,50 @@ def check_fields(db_user, fields):
     new_country = login_from_new_country.Login_New_Country()
 
     for login in fields:
-        if login["lat"] and login["lon"]:
-            if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
-                agent_alert = False
-                country_alert = False
-                if login["agent"]:
-                    agent_alert = new_dev.check_new_device(db_user, login)
-                    if agent_alert:
-                        set_alert(db_user, login_alert=login, alert_info=agent_alert)
+        # exclude the detection for ips in the ignored_ips configuration
+        if not check_ignored_ips(login_ip=login["ip"]):
+            if login["lat"] and login["lon"]:
+                if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
+                    agent_alert = False
+                    country_alert = False
+                    if login["agent"]:
+                        agent_alert = new_dev.check_new_device(db_user, login)
+                        if agent_alert:
+                            set_alert(db_user, login_alert=login, alert_info=agent_alert)
 
-                if login["country"]:
-                    country_alert = new_country.check_country(db_user, login)
-                    if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
-                        set_alert(db_user, login_alert=login, alert_info=country_alert)
+                    if login["country"]:
+                        country_alert = new_country.check_country(db_user, login)
+                        if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
+                            set_alert(db_user, login_alert=login, alert_info=country_alert)
 
-                if not db_user.usersip_set.filter(ip=login["ip"]).exists():
-                    logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert, travel_vel = imp_travel.calc_distance(db_user, prev_login=db_user.login_set.latest("timestamp"), last_login_user_fields=login)
-                    if travel_alert:
-                        new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
-                        new_alert.login_raw_data["buffalogs.start_country"] = db_user.login_set.latest("timestamp").country
-                        new_alert.login_raw_data["buffalogs.avg_speed"] = travel_vel
-                        new_alert.save()
-                    #   Add the new ip address from which the login comes to the db
-                    imp_travel.add_new_user_ip(db_user, login["ip"])
+                    if not db_user.usersip_set.filter(ip=login["ip"]).exists():
+                        logger.info(f"Calculating impossible travel: {login['id']}")
+                        travel_alert, travel_vel = imp_travel.calc_distance(
+                            db_user, prev_login=db_user.login_set.latest("timestamp"), last_login_user_fields=login
+                        )
+                        if travel_alert:
+                            new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
+                            new_alert.login_raw_data["buffalogs.start_country"] = db_user.login_set.latest("timestamp").country
+                            new_alert.login_raw_data["buffalogs.avg_speed"] = travel_vel
+                            new_alert.save()
+                        #   Add the new ip address from which the login comes to the db
+                        imp_travel.add_new_user_ip(db_user, login["ip"])
 
-                if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
-                    logger.info(f"Updating login {login['id']} for user: {db_user.username}")
-                    imp_travel.update_model(db_user, login)
+                    if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
+                        logger.info(f"Updating login {login['id']} for user: {db_user.username}")
+                        imp_travel.update_model(db_user, login)
+                    else:
+                        logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
+                        imp_travel.add_new_login(db_user, login)
+
                 else:
-                    logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
+                    logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
                     imp_travel.add_new_login(db_user, login)
-
+                    imp_travel.add_new_user_ip(db_user, login["ip"])
             else:
-                logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
-                imp_travel.add_new_login(db_user, login)
-                imp_travel.add_new_user_ip(db_user, login["ip"])
+                logger.info(f"No latitude or longitude for User {db_user.username}")
         else:
-            logger.info(f"No latitude or longitude for User {db_user.username}")
+            logger.info(f"IP {login['ip']} is in the ignored_ips configuration")
 
 
 def process_user(db_user, start_date, end_date):
