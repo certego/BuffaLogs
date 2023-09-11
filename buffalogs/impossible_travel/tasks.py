@@ -133,7 +133,7 @@ def process_user(db_user, start_date, end_date):
     """
     fields = []
     s = (
-        Search(index=settings.CERTEGO_ELASTIC_INDEX)
+        Search(index=settings.CERTEGO_ELASTIC_INDEX)[0:0]
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
         .query("match", **{"event.outcome": "success"})
@@ -151,7 +151,7 @@ def process_user(db_user, start_date, end_date):
                 "_id",
             ]
         )
-        .sort("@timestamp")
+        .sort("@timestamp")  # from the oldest to the most recent login
         .extra(size=10000)
     )
     response = s.execute()
@@ -217,13 +217,16 @@ def exec_process_logs(start_date, end_date):
     :type end_date: datetime
     """
     logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
+    config, op_result = Config.objects.get_or_create()
     connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (
-        Search(index=settings.CERTEGO_ELASTIC_INDEX)
+        Search(index=settings.CERTEGO_ELASTIC_INDEX)[0:0]
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"event.category": "authentication"})
         .query("match", **{"event.outcome": "success"})
         .query("match", **{"event.type": "start"})
+        .exclude("terms", **{"user.name": config.ignored_users})
+        .exclude("terms", **{"source.ip": config.ignored_ips})
     )
     s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
     response = s.execute()

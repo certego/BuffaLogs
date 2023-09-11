@@ -4,6 +4,8 @@ from django.core.management.base import BaseCommand
 from impossible_travel.models import Config
 
 logger = logging.getLogger()
+IGNORED_USERS = ["N/A", "Not Available"]
+IGNORED_IPS = [""]
 
 
 class Command(BaseCommand):
@@ -19,21 +21,26 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Setup the configurations into the Config model"""
         logger = logging.getLogger()
-        if not Config.objects.exists():
-            Config.objects.create(
-                ignored_users=options["ignored_users"],
-                ignored_ips=options["ignored_ips"],
-                allowed_countries=options["allowed_countries"],
-                vip_users=["vip_users"],
-            )
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Configs set correctly:\
-                                                \nIgnored users: {options['ignored_users']}\
-                                                \nIgnored ips: {options['ignored_ips']}\
-                                                \nAllowed countries: {options['allowed_countries']}\
-                                                \nVip users: {options['vip_users']}"
-                )
-            )
+        print(options)
+        if not options["ignored_users"] and not options["ignored_ips"] and not options["allowed_countries"] and not options["vip_users"]:
+            # Setup default configs
+            Config.objects.update_or_create(ignored_users=IGNORED_USERS, ignored_ips=IGNORED_IPS)
         else:
-            self.stdout.write(self.style.ERROR("Error: Configs already exist. Use the update_config or the clear_models commands"))
+            if not Config.objects.exists():
+                Config.objects.create(
+                    ignored_users=options["ignored_users"],
+                    ignored_ips=options["ignored_ips"],
+                    allowed_countries=options["allowed_countries"],
+                    vip_users=["vip_users"],
+                )
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Configs set correctly:\
+                                                    \nIgnored users: {options['ignored_users']}\
+                                                    \nIgnored ips: {options['ignored_ips']}\
+                                                    \nAllowed countries: {options['allowed_countries']}\
+                                                    \nVip users: {options['vip_users']}"
+                    )
+                )
+            else:
+                self.stdout.write(self.style.ERROR("Error: Configs already exist. Use the update_config or the clear_models commands"))

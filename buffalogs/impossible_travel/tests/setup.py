@@ -43,4 +43,9 @@ class Setup:
                 ),
             ]
         )
-        Config.objects.create(allowed_countries=["Italy", "United States"], vip_users=["Asa Strickland", "Krista Moran"])
+        Config.objects.create(
+            ignored_users=["N/A", "Not Available"],
+            ignored_ips=["1.2.3.4"],
+            allowed_countries=["Italy", "United States"],
+            vip_users=["Asa Strickland", "Krista Moran"],
+        )
