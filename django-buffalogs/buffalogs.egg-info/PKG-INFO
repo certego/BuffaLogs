@@ -1,0 +1,45 @@
+Metadata-Version: 2.1
+Name: buffalogs
+Version: 1.0.0
+Summary: A Django app to detect anomaly logins.
+Home-page: UNKNOWN
+Author: Lorena Goldoni
+License: Apache-2.0
+Platform: UNKNOWN
+Classifier: Framework :: Django
+Classifier: License :: OSI Approved :: Apache-2.0 Licence
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development
+Requires-Python: >=3.8
+License-File: LICENSE.txt
+
+=========
+BuffaLogs
+=========
+
+BuffaLogs is a Django app whose main purpose is to detect anomaly logins.
+
+Detaild documentation is in the ``docs/`` directory.
+
+Quick start
+-----------
+
+1. Add "buffalogs" to your INSTALLED_APPS setting like this::
+
+    INSTALLED_APPS = [
+        ...,
+        "buffalogs",
+    ]
+
+2. Include the buffalogs URLconf in your project urls.py like this::
+
+    path("buffalogs/", include("buffalogs.urls")),
+
+3. Run ``python manage.py migrate`` to create the BuffaLogs models.
+
+4. Start the development server and visit http://127.0.0.1:8000/admin/
+   to analyze th eBuffaLogs detections (you'll need the Admin app enabled with ``python manage.py runserver``).
+
+5. Visit http://127.0.0.1:8000/ to visualize the BuffaLogs interface.
+
