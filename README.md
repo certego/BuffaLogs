@@ -81,7 +81,7 @@ After that, there are two ways of running BuffaLogs, depending on your system co
     * run `docker-compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
     * Now elasticsearch and kibana are running on the same host with Buffalogs.
 
-![buffalogs_dashboard_screenshot](https://user-images.githubusercontent.com/33703137/220879987-b6453e9d-0129-45c1-bc26-0542005e8730.png)
+![Screenshot 2023-08-09 at 6 49 41 PM](https://github.com/certego/BuffaLogs/assets/33703137/07548d33-3878-4ff3-9cb7-4a6b865d233b)
 
 *For further examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/3.-Example)*
 
@@ -91,35 +91,34 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
 
     ```
     {
-        "@timestamp" : <timestamp_isoformat>,
+        "_index": "<elastic_index>",
+        "_id": "<log_id>",
+        "@timestamp": "<log_timestamp>",
         "user": {
-            "name": <user_name>
+            "name": "<user_name>"
         },
-        "event": {
-            "outcome": <"success" OR "failure">,
-            "category" : "authentication"
-        },
-        "source" : {
-          "ip" : <source_ip_address>,
-          "geo" : {
-            "country_name" : <source_country_name>,
-            "location" : {
-              "lat" : <source_latitude>,
-              "lon" : <source_longitude>
-            }
-          }
+        "source": {
+            "geo": {
+                "country_name": "<country_origin_log>",
+                "location": {
+                    "lat": "<log_latitude>",
+                    "lon": "<log_longitude>"
+                }
+            },
+            "ip": "<log_source_ip>"
         },
         "user_agent": {
-            "original": <user_agent>
+            "original": "<log_device_user_agent>"
+        },
+        "event": {
+            "type": "start",
+            "category": "authentication",
+            "outcome": "success"
         }
     }
+
     ```
 For a basic analysis to detect only impossible travel logins, the *user_agent* field is useless.
-
-##  BuffaLogs Architecture
-![Buffalogs_Architecture](https://user-images.githubusercontent.com/33703137/220896332-4fe08f32-1879-4150-bd5d-9df9dc21a7a7.jpg)
-
-*For further details: [Wiki - Architecture](https://github.com/certego/BuffaLogs/wiki/4.-Architecture)*
 
 ##  REST APIs
 
