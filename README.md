@@ -91,28 +91,32 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
 
     ```
     {
-        "@timestamp" : <timestamp_isoformat>,
+        "_index": "<elastic_index>",
+        "_id": "<log_id>",
+        "@timestamp": "<log_timestamp>",
         "user": {
-            "name": <user_name>
+            "name": "<user_name>"
         },
-        "event": {
-            "outcome": <"success" OR "failure">,
-            "category" : "authentication"
-        },
-        "source" : {
-          "ip" : <source_ip_address>,
-          "geo" : {
-            "country_name" : <source_country_name>,
-            "location" : {
-              "lat" : <source_latitude>,
-              "lon" : <source_longitude>
-            }
-          }
+        "source": {
+            "geo": {
+                "country_name": "<country_origin_log>",
+                "location": {
+                    "lat": "<log_latitude>",
+                    "lon": "<log_longitude>"
+                }
+            },
+            "ip": "<log_source_ip>"
         },
         "user_agent": {
-            "original": <user_agent>
+            "original": "<log_device_user_agent>"
+        },
+        "event": {
+            "type": "start",
+            "category": "authentication",
+            "outcome": "success"
         }
     }
+
     ```
 For a basic analysis to detect only impossible travel logins, the *user_agent* field is useless.
 
