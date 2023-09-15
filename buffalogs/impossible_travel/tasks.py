@@ -140,7 +140,7 @@ def process_user(db_user, start_date, end_date):
     """
     fields = []
     s = (
-        Search(index=settings.CERTEGO_ELASTIC_INDEX)[0:0]
+        Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": db_user.username})
         .query("match", **{"event.outcome": "success"})
@@ -227,7 +227,7 @@ def exec_process_logs(start_date, end_date):
     config, op_result = Config.objects.get_or_create()
     connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (
-        Search(index=settings.CERTEGO_ELASTIC_INDEX)[0:0]
+        Search(index=settings.CERTEGO_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"event.category": "authentication"})
         .query("match", **{"event.outcome": "success"})
