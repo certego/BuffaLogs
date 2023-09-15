@@ -1,7 +1,10 @@
 ## 1.1.x
 ### 1.1.0
 #### Features
-* Implemented REST APIs for charts data in order to support the new interface integration
+* Added `ignored_users` and `ignored_ips` in the Config model in order to filter some useless logins
+* Added more details in the alerts
+* Built the django reusable app for the impossible_travel app
+* Creted the alerts fixture
+* Added new GUI
+* Developed some REST APIs
 
-# 1.0.0 (2023-06-16)
-To learn about the release highlights, please check out the [v1.0.0 release announcement]()
