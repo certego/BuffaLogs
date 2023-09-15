@@ -1,5 +1,13 @@
 ---
 ip: 
+    - address: 0.0.0.0
+      country_name: Test_ignored_ip
+      latitude: 0
+      longitude: 0
+    - address: 0.0.0.0/0
+      country_name: Test_ignored_ip
+      latitude: 0
+      longitude: 0
     - address: 203.0.113.2
       country_name: United States
       latitude: 39.8910
@@ -180,6 +188,8 @@ user_agent:
     - Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36
     - Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0
 user_name:
+    - Not Available
+    - N/A
     - Azaria Mack
     - Janessa Bridges
     - Tommy Wiley

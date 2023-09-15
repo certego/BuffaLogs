@@ -70,5 +70,7 @@ class TaskSettings(models.Model):
 class Config(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    allowed_countries = ArrayField(models.CharField(max_length=20), blank=True)
-    vip_users = ArrayField(models.CharField(max_length=100), blank=True)
+    ignored_users = ArrayField(models.CharField(max_length=20), blank=True, default=list)
+    ignored_ips = ArrayField(models.CharField(max_length=100), blank=True, default=list)
+    allowed_countries = ArrayField(models.CharField(max_length=20), blank=True, default=list)
+    vip_users = ArrayField(models.CharField(max_length=100), blank=True, default=list)
