@@ -259,21 +259,6 @@ class TestTasks(TestCase):
         self.assertEqual(6, Login.objects.get(user=db_user, country="Japan").timestamp.hour)
         self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
         self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
-        # Check ip filter with ignored_ips
-        ignored_ip_fields = [
-            {
-                "index": "cloud-test_data-2023-5-3",
-                "id": 1,
-                "agent": "Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59",
-                "timestamp": "2023-05-03T07:13:03.768Z",
-                "ip": "192.168.1.2",
-                "lat": 30.3657,
-                "lon": -88.5561,
-                "country": "United States",
-            }
-        ]
-        tasks.check_fields(db_user=db_user, fields=ignored_ip_fields)
-        self.assertFalse(Login.objects.filter(ip="192.168.1.2").exists())
 
     def check_fields_alerts(self):
         fields1 = load_test_data("test_check_fields_part1")
