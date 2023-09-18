@@ -1,0 +1,258 @@
+[
+  {
+    "meta": {
+      "index": "cloud-test_data-2023-9-5",
+      "id": "Abc1",
+      "score": None,
+      "sort": [
+        1693920641064
+      ],
+      "doc_type": "_doc"
+    },
+    "@timestamp": "2023-03-08T17:08:33.358Z",
+    "user": {
+      "name": "Zoey Ramirez"
+    },
+    "event": {
+      "outcome": "success",
+      "category": "authentication"
+    },
+    "source": {
+      "ip": "203.0.113.28",
+      "geo": {
+        "country_name": "India",
+        "location": {
+          "lat": 28.3618,
+          "lon": 77.2594
+        }
+      }
+    },
+    "user_agent": {
+      "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
+    }
+  },
+  {
+    "meta": {
+      "index": "cloud-test_data-2023-9-5",
+      "id": "Def2",
+      "score": None,
+      "sort": [
+        1693920641064
+      ],
+      "doc_type": "_doc"
+    },
+    "@timestamp": "2023-03-08T17:05:59.358Z",
+    "user": {
+      "name": "Zoey Ramirez"
+    },
+    "event": {
+      "outcome": "failure",
+      "category": "authentication"
+    },
+    "source": {
+      "ip": "203.0.113.16",
+      "geo": {
+        "country_name": "United States",
+        "location": {
+          "lat": 37.5252,
+          "lon": -77.3622
+        }
+      }
+    },
+    "user_agent": {
+      "original": "Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59"
+    }
+  },
+  {
+    "meta": {
+      "index": "cloud-test_data-2023-9-5",
+      "id": "Ghi3",
+      "score": None,
+      "sort": [
+        1693920641064
+      ],
+      "doc_type": "_doc"
+    },
+    "@timestamp": "2023-03-08T16:51:16.358Z",
+    "user": {
+      "name": "Zoey Ramirez"
+    },
+    "event": {
+      "outcome": "success",
+      "category": "authentication"
+    },
+    "source": {
+      "ip": "203.0.113.26",
+      "geo": {
+        "country_name": "Japan",
+        "location": {
+          "lat": 34.3883,
+          "lon": 132.4803
+        }
+      }
+    },
+    "user_agent": {
+      "original": "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+    }
+  },
+  {
+    "meta": {
+      "index": "cloud-test_data-2023-9-5",
+      "id": "Lmn4",
+      "score": None,
+      "sort": [
+        1693920641064
+      ],
+      "doc_type": "_doc"
+    },
+    "@timestamp": "2023-03-08T16:50:06.358Z",
+    "user": {
+      "name": "Zoey Ramirez"
+    },
+    "event": {
+      "outcome": "success",
+      "category": "authentication"
+    },
+    "source": {
+      "ip": "203.0.113.7",
+      "geo": {
+        "country_name": "United States",
+        "location": {
+          "lat": 40.364,
+          "lon": -79.8605
+        }
+      }
+    },
+    "user_agent": {
+      "original": "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)"
+    }
+  },
+  {
+    "meta": {
+      "index": "cloud-test_data-2023-9-5",
+      "id": "Opq5",
+      "score": None,
+      "sort": [
+        1693920641064
+      ],
+      "doc_type": "_doc"
+    },
+    "@timestamp": "2023-03-08T16:50:05.358Z",
+    "user": {
+      "name": "Zoey Ramirez"
+    },
+    "event": {
+      "outcome": "success",
+      "category": "authentication"
+    },
+    "source": {
+      "ip": "203.0.113.5",
+      "geo": {
+        "country_name": "United States",
+        "location": {
+          "lat": 39.1841,
+          "lon": -77.0242
+        }
+      }
+    },
+    "user_agent": {
+      "original": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
+    }
+  },
+  {
+    "meta": {
+      "index": "cloud-test_data-2023-9-5",
+      "id": "Rst6",
+      "score": None,
+      "sort": [
+        1693920641064
+      ],
+      "doc_type": "_doc"
+    },
+    "@timestamp": "2023-03-08T16:45:24.358Z",
+    "user": {
+      "name": "Zoey Ramirez"
+    },
+    "event": {
+      "outcome": "success",
+      "category": "authentication"
+    },
+    "source": {
+      "ip": "203.0.113.20",
+      "geo": {
+        "country_name": "Japan",
+        "location": {
+          "lat": 35.5259,
+          "lon": 139.5486
+        }
+      }
+    },
+    "user_agent": {
+      "original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"
+    }
+  },
+  {
+    "meta": {
+      "index": "cloud-test_data-2023-9-5",
+      "id": "Uvw7",
+      "score": None,
+      "sort": [
+        1693920641064
+      ],
+      "doc_type": "_doc"
+    },
+    "@timestamp": "2023-03-08T16:44:16.358Z",
+    "user": {
+      "name": "Zoey Ramirez"
+    },
+    "event": {
+      "outcome": "success",
+      "category": "authentication"
+    },
+    "source": {
+      "ip": "203.0.113.19",
+      "geo": {
+        "country_name": "Japan",
+        "location": {
+          "lat": 35.8194,
+          "lon": 139.9622
+        }
+      }
+    },
+    "user_agent": {
+      "original": "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+    }
+  },
+  {
+    "meta": {
+      "index": "cloud-test_data-2023-9-5",
+      "id": "Xyz8",
+      "score": None,
+      "sort": [
+        1693920641064
+      ],
+      "doc_type": "_doc"
+    },
+    "@timestamp": "2023-03-08T16:42:36.358Z",
+    "user": {
+      "name": "Zoey Ramirez"
+    },
+    "event": {
+      "outcome": "success",
+      "category": "authentication"
+    },
+    "source": {
+      "ip": "203.0.113.24",
+      "geo": {
+        "country_name": "Japan",
+        "location": {
+          "lat": 36.2462,
+          "lon": 138.8497
+        }
+      }
+    },
+    "user_agent": {
+      "original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"
+    }
+  }
+]

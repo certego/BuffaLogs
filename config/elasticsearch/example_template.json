@@ -1,6 +1,8 @@
 {
   "index_patterns": [
-    "cloud-*"
+    "cloud-*",
+    "weblog-*",
+    "fw-proxy-*"
   ],
   "settings": {
     "number_of_shards": 1,

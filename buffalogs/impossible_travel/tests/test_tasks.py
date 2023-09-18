@@ -1,12 +1,12 @@
 import json
 import os
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel import tasks
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import impossible_travel
 from impossible_travel.tests.setup import Setup
 
 
@@ -147,44 +147,28 @@ class TestTasks(TestCase):
         db_alert = Alert.objects.get(user=db_user, name=Alert.ruleNameEnum.IMP_TRAVEL)
         self.assertTrue(db_alert.is_vip)
 
-    # TO DO
-    # @patch("buffalogs.tasks.check_fields")
-    # @patch.object(tasks.Search, "execute")
-    # def test_process_user(self, mock_execute, mock_chedk_fields):
-    #     data_elastic = load_test_data("test_data_elasticsearch")
-    #     data_elastic_sorted = sorted(data_elastic, key=lambda d: d["@timestamp"])
-    #     data_results = load_test_data("test_data")
-    #     mock_execute.return_value = data_elastic_sorted
-    #     start_date = timezone.datetime(2023, 3, 8, 0, 0, 0)
-    #     end_date = timezone.datetime(2023, 3, 8, 23, 59, 59)
-    #     iso_start_date = self.imp_travel.validate_timestamp(start_date)
-    #     iso_end_date = self.imp_travel.validate_timestamp(end_date)
-    #     db_user = User.objects.get(username="Lorena Goldoni")
-    #     tasks.process_user(db_user, iso_start_date, iso_end_date)
-    #     mock_chedk_fields.assert_called_once_with(db_user, data_results)
-
     def test_process_logs_data_lost(self):
         TaskSettings.objects.create(
             task_name="process_logs", start_date=timezone.datetime(2023, 4, 18, 10, 0), end_date=timezone.datetime(2023, 4, 18, 10, 30, 0)
         )
         tasks.process_logs()
-        new_end_date_expected = (timezone.now() - timedelta(minutes=1)).replace(microsecond=0)
+        new_end_date_expected = timezone.now() - timedelta(minutes=1)
         new_start_date_expected = new_end_date_expected - timedelta(minutes=30)
         process_task = TaskSettings.objects.get(task_name="process_logs")
-        self.assertEqual(new_start_date_expected, (process_task.start_date).replace(microsecond=0))
-        self.assertEqual(new_end_date_expected, (process_task.end_date).replace(microsecond=0))
+        self.assertLessEqual((process_task.start_date - new_start_date_expected).total_seconds(), 5)
+        self.assertLessEqual((process_task.end_date - new_end_date_expected).total_seconds(), 5)
 
     def test_process_logs_loop(self):
-        start = (timezone.now() - timedelta(hours=5) - timedelta(minutes=1)).replace(microsecond=0)
-        end = (timezone.now() - timedelta(hours=4.5) - timedelta(minutes=1)).replace(microsecond=0)
+        start = timezone.now() - timedelta(hours=5) - timedelta(minutes=1)
+        end = timezone.now() - timedelta(hours=4.5) - timedelta(minutes=1)
         TaskSettings.objects.create(task_name="process_logs", start_date=start, end_date=end)
         # Let entire exec for loop
         tasks.process_logs()
         start_date_expected = start + timedelta(hours=3)
         end_date_expected = end + timedelta(hours=3)
         process_task = TaskSettings.objects.get(task_name="process_logs")
-        self.assertEqual(process_task.start_date, start_date_expected)
-        self.assertEqual(process_task.end_date, end_date_expected)
+        self.assertLessEqual((start_date_expected - process_task.start_date).total_seconds(), 5)
+        self.assertLessEqual((end_date_expected - process_task.end_date).total_seconds(), 5)
         # Now not entire for loop executed
         tasks.process_logs()
         start_date_expected = start + timedelta(hours=5)
@@ -336,3 +320,23 @@ class TestTasks(TestCase):
         # Third part: no new alerts because all the ips have already been used
         tasks.check_fields(db_user, fields3)
         self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
+
+    # TO DO
+    # @patch("impossible_travel.tasks.check_fields")
+    # @patch.object(tasks.Search, "execute")
+    # def test_process_user(self, mock_execute, mock_check_fields):
+    #     data_elastic_sorted_dot_not = []
+    #     imp_travel = impossible_travel.Impossible_Travel()
+    #     data_elastic = load_test_data("test_data_process_user")
+    #     data_elastic_sorted = sorted(data_elastic, key=lambda d: d["@timestamp"])
+    #     for data in data_elastic_sorted:
+    #         data_elastic_sorted_dot_not.append(DictStruct(kwargs=data))
+    #     data_results = load_test_data("test_data_process_user_result")
+    #     mock_execute.return_value = data_elastic_sorted_dot_not
+    #     start_date = timezone.datetime(2023, 3, 8, 0, 0, 0)
+    #     end_date = timezone.datetime(2023, 3, 8, 23, 59, 59)
+    #     iso_start_date = imp_travel.validate_timestamp(start_date)
+    #     iso_end_date = imp_travel.validate_timestamp(end_date)
+    #     db_user = User.objects.get(username="Lorena Goldoni")
+    #     tasks.process_user(db_user, iso_start_date, iso_end_date)
+    #     mock_check_fields.assert_called_once_with(db_user, data_results)

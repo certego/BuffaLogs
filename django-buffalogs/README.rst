@@ -1,0 +1,40 @@
+=========
+BuffaLogs
+=========
+
+BuffaLogs is a Django app whose main purpose is to detect anomaly logins.
+
+Detaild documentation is in the ``docs/`` directory.
+
+Quick start
+-----------
+
+Only the backend features have been updated to be a Django Reusable App. The BuffaLogs interface is available only in the original Django Project cloning it in local.
+
+1. Add "impossible_travel" to your INSTALLED_APPS setting like this::
+
+    INSTALLED_APPS = [
+        ...,
+        "impossible_travel",
+    ]
+
+2. Run ``python manage.py migrate`` to create the BuffaLogs models.
+
+3. Start the Django server with ``python manage.py runserver`` and visit http://127.0.0.1:8000/admin/
+   to analyze the BuffaLogs detections in the Django models.
+
+
+For Developers
+--------------
+
+After each change to the source code, please remember to:
+* update the CHANGELOG.md 
+* update the version in the ``setup.cfg`` file
+
+Now, it's possible to recreate the package with `python3 setup.py sdist` command.
+
+After that, the new package contained in the `django-buffalogs/dist` folder can be imported in other projects. 
+
+In the other projects, install the app with ``python -m pip install buffalogs-<version>.tar.gz`` command.
+
+If you want to uninstall the application, run ``python -m pip uninstall buffalogs``.

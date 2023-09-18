@@ -14,7 +14,7 @@ In detail, it sends several types of alerts:
 
     This alert is dispatched if the system is logged by a user from a country where they have never authenticated before.
 
-*For futher details: [Wiki - About](https://github.com/certego/BuffaLogs/wiki/1.-About)*
+*For further details: [Wiki - About](https://github.com/certego/BuffaLogs/wiki/1.-About)*
 
 ## BuffaLogs is participating in GSoC 2023 thanks to Honeynet project and IntelOwl!
 
@@ -78,12 +78,12 @@ After that, there are two ways of running BuffaLogs, depending on your system co
     *  set the address of the host into the `CERTEGO_ELASTICSEARCH` variable in the `buffalogs.env` file
     *  launch ` docker-compose up -d` to run the containers
 * if you have no hosts with Elasticsearch installed on it, you can run it directly with Buffalogs:
-    * run `docker-compose -f docker-compose.yml -f docker-compose.elastic.yml up -d` in order to execute all the containers, included Elasticsearch and Kibana
+    * run `docker-compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
     * Now elasticsearch and kibana are running on the same host with Buffalogs.
 
-![buffalogs_dashboard_screenshot](https://user-images.githubusercontent.com/33703137/220879987-b6453e9d-0129-45c1-bc26-0542005e8730.png)
+![Screenshot 2023-08-09 at 6 49 41 PM](https://github.com/certego/BuffaLogs/assets/33703137/07548d33-3878-4ff3-9cb7-4a6b865d233b)
 
-*For futher examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/2.-Example)*
+*For further examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/3.-Example)*
 
 ##   Logs Structure
 
@@ -91,28 +91,48 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
 
     ```
     {
+        "_index": "<elastic_index>",
+        "_id": "<log_id>",
+        "@timestamp": "<log_timestamp>",
         "user": {
-            "name": <user_name>
+            "name": "<user_name>"
         },
-        "event": {
-            "outcome": <"success" OR "failure">
-        },
-        "geoip": {
-            "latitude": <latitude>,
-            "longitude": <longitude>,
-            "country_name": <country_name>
+        "source": {
+            "geo": {
+                "country_name": "<country_origin_log>",
+                "location": {
+                    "lat": "<log_latitude>",
+                    "lon": "<log_longitude>"
+                }
+            },
+            "ip": "<log_source_ip>"
         },
         "user_agent": {
-            "original": <user_agent>
+            "original": "<log_device_user_agent>"
+        },
+        "event": {
+            "type": "start",
+            "category": "authentication",
+            "outcome": "success"
         }
     }
+
     ```
 For a basic analysis to detect only impossible travel logins, the *user_agent* field is useless.
 
-##  BuffaLogs Architecture
-![Buffalogs_Architecture](https://user-images.githubusercontent.com/33703137/220896332-4fe08f32-1879-4150-bd5d-9df9dc21a7a7.jpg)
+##  REST APIs
 
-*For futher details: [Wiki - Architecture](https://github.com/certego/BuffaLogs/wiki/3.-Architecture)*
+Five views were implemented using DRF - Django-Rest Framework, in order to provide the possible to query and produce the charts data.
+In particular, the supplied APIs are:
+| **API's name**| **API result**|
+|---|---|
+| *users_pie_chart_api* | It returns the association between the risk level and the number of users with that risk score |
+| *alerts_line_chart_api* | It provides the number of alerts triggered in a particular timeframe |
+| *world_map_chart_api* | It supplies the relation of countries and the number of alerts triggered from them |
+| *alerts_api* | It offers the details about the alerts generated in the provided interval |
+| *risk_score_api* | It provides the association between user and risk level for the users whose risk changed in the requested timeframe |
+
+*For further details: [Wiki - REST APIs](https://github.com/certego/BuffaLogs/wiki/5.-REST-APIs)*
 
 ##  Uninstall
 

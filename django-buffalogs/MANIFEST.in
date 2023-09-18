@@ -1,0 +1,6 @@
+include LICENSE
+include README.rst
+recursive-include impossible_travel/management *
+recursive-include impossible_travel/modules *
+recursive-exclude impossible_travel/dashboard *
+recursive-exclude impossible_travel/tests *

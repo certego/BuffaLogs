@@ -27,6 +27,7 @@ class Impossible_Travel:
         :rtype: dict
         """
         alert_info = {}
+        vel = 0
         distance_km = geodesic((prev_login.latitude, prev_login.longitude), (last_login_user_fields["lat"], last_login_user_fields["lon"])).km
 
         if distance_km > settings.CERTEGO_DISTANCE_KM_ACCEPTED:
@@ -47,8 +48,8 @@ class Impossible_Travel:
                 alert_info[
                     "alert_desc"
                 ] = f"{alert_info['alert_name']} for User: {db_user.username},\
-                    at: {last_timestamp_datetimeObj}, from:({last_login_user_fields['lat']}, {last_login_user_fields['lon']})"
-                return alert_info
+                    at: {last_timestamp_datetimeObj}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
+        return alert_info, int(vel)
 
     def validate_timestamp(self, time):
         """Validate timestamp format
