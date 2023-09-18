@@ -1,4 +1,8 @@
 ## 1.1.x
+### 1.1.1
+#### Bugfix
+* Fixed symbolic link of the reusable app
+
 ### 1.1.0
 #### Features
 * Added `ignored_users` and `ignored_ips` in the Config model in order to filter some useless logins
