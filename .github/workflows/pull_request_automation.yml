@@ -69,10 +69,12 @@ jobs:
 
       check_migrations: true
       check_requirements_licenses: false
-      check_dockerfile: build/Dockerfile
 
       use_postgres: true
       postgres_version: 15.4
+      postgres_db: buffalogs
+      postgres_user: default_user
+      postgres_password: password
       use_memcached: false
       use_elastic_search: true
       elasticsearch_version: 7.17.13
