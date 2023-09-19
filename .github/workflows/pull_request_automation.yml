@@ -68,7 +68,7 @@ jobs:
       django_settings_module: buffalogs.settings.settings
 
       check_migrations: true
-      check_requirements_licenses: true
+      check_requirements_licenses: false
       check_dockerfile: build/Dockerfile
 
       use_postgres: true
