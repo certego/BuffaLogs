@@ -1,19 +1,18 @@
 [flake8]
 max-line-length = 160
 ignore =
-    DJ01, # really useless and arguable
-    DJ08,
-    E121, # indentation rules
+    E121,
     E125,
-    E203, # Colons should not have any space before them.
-    E402, # module level import not at top of file
-    E501, # line too long, ignored because it could block us on pre-commit hooks
-    F401, # gives problems with wildcard import, init and similars
+    E203,
+    W504,
+    W503,
+    F401,
     F403,
     F405,
     F841,
-    W504,
-    W503, # Line break occurred before a binary operator
+    DJ08,
+    E501,
+    E402,
 
 exclude =
     */migrations/*,
