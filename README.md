@@ -144,3 +144,12 @@ Then you can safely delete this repository.
 
 ##  Contribution
 BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](docs/CONTRIBUTING.md) before making any changes to the project.
+
+## Release
+1. If needed, update the requirements in the `requirements.txt` and also into the `setup.cfg` file
+2. Add a new entry in `CHANGELOG.md` containing all the features, changes and bugfix developed
+3. Modify the **version** in the `setup.cfg`
+4. Commit a PR from the develop to the main branch with the version as a Title and the changes as a comment
+
+## Licence
+This project is protected by the Apache Licence 2.0.
