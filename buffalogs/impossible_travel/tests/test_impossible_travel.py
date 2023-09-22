@@ -26,7 +26,7 @@ class TestImpossibleTravel(TestCase):
         )
 
     def test_calc_distance(self):
-        # if distance >  settings.CERTEGO_DISTANCE_KM_ACCEPTED --> FALSE
+        # if distance >  settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED --> FALSE
         last_login_user_fields = {
             "timestamp": "2023-03-08T17:10:33.358Z",
             "lat": "40.364",
