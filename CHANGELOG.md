@@ -5,7 +5,6 @@
 #### Changes
 * Renamed the Django settings constants and the environment variables
 * Set manually the Elasticsearch port in the CI changing from 59200 to 9200
-* Added Release steps and Licence to the README
 
 ## 1.1.x
 ### 1.1.1
