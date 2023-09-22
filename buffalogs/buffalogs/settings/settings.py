@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = CERTEGO_SECRET_KEY
+SECRET_KEY = CERTEGO_BUFFALOGS_SECRET_KEY
 DEBUG = CERTEGO_DEBUG
 
 
@@ -88,7 +88,7 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "level": "DEBUG",
             "formatter": "simple",
-            "filename": os.path.join(CERTEGO_LOG_PATH, "debug.log"),
+            "filename": os.path.join(CERTEGO_BUFFALOGS_LOG_PATH, "debug.log"),
             "encoding": "utf8",
             "maxBytes": 10485760,
             "backupCount": 4,
@@ -132,11 +132,11 @@ LOGGING = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": CERTEGO_POSTGRES_DB,
-        "USER": CERTEGO_POSTGRES_USER,
-        "PASSWORD": CERTEGO_POSTGRES_PASSWORD,
-        "HOST": CERTEGO_DB_HOSTNAME,
-        "PORT": CERTEGO_POSTGRES_PORT,
+        "NAME": CERTEGO_BUFFALOGS_POSTGRES_DB,
+        "USER": CERTEGO_BUFFALOGS_POSTGRES_USER,
+        "PASSWORD": CERTEGO_BUFFALOGS_POSTGRES_PASSWORD,
+        "HOST": CERTEGO_BUFFALOGS_DB_HOSTNAME,
+        "PORT": CERTEGO_BUFFALOGS_POSTGRES_PORT,
     }
 }
 
@@ -176,7 +176,7 @@ USE_I18N = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = CERTEGO_STATIC_ROOT
+STATIC_ROOT = CERTEGO_BUFFALOGS_STATIC_ROOT
 
 SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
@@ -216,15 +216,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 # Certego settings
-CERTEGO_DISTANCE_KM_ACCEPTED = 100
-CERTEGO_VEL_TRAVEL_ACCEPTED = 300
-CERTEGO_USER_MAX_DAYS = 20
-CERTEGO_LOGIN_MAX_DAYS = 10
-CERTEGO_ALERT_MAX_DAYS = 10
-CERTEGO_IP_MAX_DAYS = 7
+CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED = 100
+CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED = 300
+CERTEGO_BUFFALOGS_USER_MAX_DAYS = 20
+CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS = 10
+CERTEGO_BUFFALOGS_ALERT_MAX_DAYS = 10
+CERTEGO_BUFFALOGS_IP_MAX_DAYS = 7
 
 # Celery config
-CELERY_BROKER_URL = CERTEGO_RABBITMQ_URI
+CELERY_BROKER_URL = CERTEGO_BUFFALOGS_RABBITMQ_URI
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = "celery.beat:PersistentScheduler"
 

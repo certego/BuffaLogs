@@ -1,7 +1,10 @@
 ## 1.2.x
 ### 1.2.0
 #### Features
-* Implemented Certego shared CI 1.3.5 
+* Implemented Certego shared CI 1.3.5
+#### Changes
+* Renamed the Django settings constants and the environment variables
+* Set manually the Elasticsearch port in the CI changing from 59200 to 9200
 
 ## 1.1.x
 ### 1.1.1

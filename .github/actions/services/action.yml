@@ -105,7 +105,7 @@ runs:
             echo "      ES_JAVA_OPTS: -Xms1g -Xmx1g" >> elastic_search.yml
             echo "      discovery.type: single-node" >> elastic_search.yml
             echo "    ports:" >> elastic_search.yml
-            echo "      - 59200:9200" >> elastic_search.yml
+            echo "      - 9200:9200" >> elastic_search.yml
             echo "    healthcheck:" >> elastic_search.yml
             echo "      test: curl -X GET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'" >> elastic_search.yml
             echo "      interval: 10s" >> elastic_search.yml
