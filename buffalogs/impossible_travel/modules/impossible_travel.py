@@ -30,7 +30,7 @@ class Impossible_Travel:
         vel = 0
         distance_km = geodesic((prev_login.latitude, prev_login.longitude), (last_login_user_fields["lat"], last_login_user_fields["lon"])).km
 
-        if distance_km > settings.CERTEGO_DISTANCE_KM_ACCEPTED:
+        if distance_km > settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED:
             last_timestamp_datetimeObj = self.validate_timestamp(last_login_user_fields["timestamp"])
             prev_timestamp_datetimeObj = timezone.make_aware(prev_login.timestamp)
 
@@ -42,7 +42,7 @@ class Impossible_Travel:
 
             vel = distance_km / diff_timestamp_hours
 
-            if vel > settings.CERTEGO_VEL_TRAVEL_ACCEPTED:
+            if vel > settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED:
                 # timestamp_validated = self.validate_timestamp(last_login_user_fields["timestamp"])
                 alert_info["alert_name"] = Alert.ruleNameEnum.IMP_TRAVEL
                 alert_info[

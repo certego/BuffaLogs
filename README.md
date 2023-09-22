@@ -75,7 +75,7 @@ Or download the application directly from the [Docker Hub](https://hub.docker.co
 
 After that, there are two ways of running BuffaLogs, depending on your system configurations:
 * if you already have an elastic cluster:
-    *  set the address of the host into the `CERTEGO_ELASTICSEARCH` variable in the `buffalogs.env` file
+    *  set the address of the host into the `CERTEGO_BUFFALOGS_ELASTICSEARCH` variable in the `buffalogs.env` file
     *  launch ` docker-compose up -d` to run the containers
 * if you have no hosts with Elasticsearch installed on it, you can run it directly with Buffalogs:
     * run `docker-compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
@@ -144,3 +144,12 @@ Then you can safely delete this repository.
 
 ##  Contribution
 BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](docs/CONTRIBUTING.md) before making any changes to the project.
+
+## Release
+1. If needed, update the requirements in the `requirements.txt` and also into the `setup.cfg` file
+2. Add a new entry in `CHANGELOG.md` containing all the features, changes and bugfix developed
+3. Modify the **version** in the `setup.cfg`
+4. Commit a PR from the develop to the main branch with the version as a Title and the changes as a comment
+
+## Licence
+This project is protected by the Apache Licence 2.0.
