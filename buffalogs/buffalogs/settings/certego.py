@@ -18,7 +18,7 @@ CERTEGO_SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-am9z-fi-x*aqx
 
 if CERTEGO_ENVIRONMENT == ENVIRONMENT_DOCKER:
 
-    CERTEGO_ELASTICSEARCH = os.environ.get("CERTEGO_ELASTICSEARCH", "http://elasticsearch:9200/")
+    CERTEGO_ELASTICSEARCH = os.environ.get("CERTEGO_ELASTICSEARCH", "http://elasticsearch:59200/")
     CERTEGO_DB_HOSTNAME = "postgres"
     CERTEGO_DEBUG = False
     CERTEGO_STATIC_ROOT = "/var/www/static/"
@@ -27,7 +27,7 @@ if CERTEGO_ENVIRONMENT == ENVIRONMENT_DOCKER:
     CERTEGO_RABBITMQ_URI = f"amqp://guest:guest@{CERTEGO_RABBITMQ_HOST}/"
 
 elif CERTEGO_ENVIRONMENT == ENVIRONMENT_DEBUG:
-    CERTEGO_ELASTICSEARCH = os.environ.get("CERTEGO_ELASTICSEARCH", "http://localhost:9200/")
+    CERTEGO_ELASTICSEARCH = os.environ.get("CERTEGO_ELASTICSEARCH", "http://localhost:59200/")
     CERTEGO_DB_HOSTNAME = "localhost"
     CERTEGO_DEBUG = True
     CERTEGO_STATIC_ROOT = "impossible_travel/static/"

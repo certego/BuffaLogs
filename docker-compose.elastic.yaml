@@ -3,7 +3,7 @@ version: '3.2'
 services:
     elasticsearch:
         container_name: buffalogs_elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.7
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.13
         hostname: elasticsearch
         environment: 
             - node.name=buffalogs_elastic
@@ -18,19 +18,19 @@ services:
                 soft: -1
                 hard: -1
         ports:
-            - "9200:9200"
+            - "59200:59200"
         volumes:
             - elasticsearch_data:/usr/share/elasticsearch/data
         healthcheck:
-            test: curl -XGET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'
+            test: curl -XGET 'localhost:59200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'
 
     kibana:
         container_name: buffalogs_kibana
         image: docker.elastic.co/kibana/kibana:7.17.7
         hostname: kibana
         environment:
-            ELASTICSEARCH_URL: http://elasticsearch:9200
-            ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+            ELASTICSEARCH_URL: http://elasticsearch:59200
+            ELASTICSEARCH_HOSTS: http://elasticsearch:59200
         links:
             - elasticsearch
         depends_on:

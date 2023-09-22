@@ -1,22 +1,19 @@
-
 repos:
 -   repo: https://github.com/pycqa/flake8
     rev: 5.0.4
     hooks:
     - id: flake8
       exclude: docs/conf.py
-      files: buffalogs
-      args: ["--config", ".github/configurations/.flake8"]
+      args: ["--config", ".github/configurations/python_linters/.flake8"]
 
 -   repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
-        files: buffalogs
-        args: ["--settings-path", ".github/configurations/.isort.cfg", "--filter-files", "--skip", "venv"]
+        args: ["--settings-path", ".github/configurations/python_linters/.isort.cfg", "--filter-files", "--skip", "venv"]
 
 -   repo: https://github.com/psf/black
     rev: 22.12.0
     hooks:
       - id: black
-        args: ["--config", ".github/configurations/.black"]
+        args: ["--config", ".github/configurations/python_linters/.black"]

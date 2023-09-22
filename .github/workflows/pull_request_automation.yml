@@ -1,102 +1,96 @@
-
-name: Tests automation
+name: CI
 
 on:
   pull_request:
+    branches:
+      - main
+      - develop
 
+# discard previous execution if you commit to a branch that is already running
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-
   detect-changes:
-    name: Detect changes
-    runs-on: ubuntu-22.04
-    outputs:
-      buffalogs_python_code: ${{steps.diff_check.outputs.buffalogs_python_code}}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.base_ref }}
-      - uses: actions/checkout@v3
-        with:
-          clean: false
-      - name: Generate diffs
-        id: diff_check
-        run: |
-          git branch -a --list | cat
-          BUFFALOGS_PYTHON_CODE_CHANGES=$(git diff --compact-summary origin/${{ github.base_ref }} -- buffalogs/* | wc -l)
-          echo "::set-output name=buffalogs_python_code::$BUFFALOGS_PYTHON_CODE_CHANGES"
-  build:
-
-    runs-on: ubuntu-22.04
-    needs: [ "detect-changes" ]
-    if: ${{ needs.detect-changes.outputs.buffalogs_python_code > 0 }}
-
-    services:
-      postgres:
-        image: library/postgres:15.1-alpine
-        env:
-          POSTGRES_DB: buffalogs
-          POSTGRES_USER: default_user
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-      elasticdb:
-        image: elasticsearch:7.17.7
-        env:
-            ES_JAVA_OPTS: -Xms1g -Xmx1g
-            discovery.type: single-node
-        ports:
-            - 9200:9200
-        options: >-
-            --health-cmd "curl -X GET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'"
-            --health-interval 10s
-            --health-timeout 180s
-            --health-retries 5
-            --user elasticsearch
+    uses: ./.github/workflows/_detect_changes.yml
+    with:
+      backend_directories: buffalogs .github build
+      frontend_directories: frontend .github
+      ubuntu_version: 22.04
 
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11
-    - name: "Cache venv"
-      id: cache_venv
-      uses: actions/cache@v3
-      with:
-        path: venv
-        key: pip-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('buffalogs/requirements.txt') }}
-    - name: "Install dependencies"
-      if: steps.cache_venv.outputs.cache-hit != 'true'
-      run: |
-        if [ -d "venv" ]; then rm -rf venv; fi
-        python3 -m venv venv
-        source venv/bin/activate
-        pip install --upgrade pip
-        if [ -f buffalogs/requirements.txt ]; then pip install -r buffalogs/requirements.txt; fi
-    - name: "Lint with black"
-      run: |
-        source venv/bin/activate
-        pip install black==22.12.0
-        black ./buffalogs --config .github/configurations/.black --check --diff
-    - name: "Lint with flake8 (PEP8 enforcer + linter)"
-      run: |
-        pip install flake8==5.0.4 flake8-django==1.1.5
-        flake8 ./buffalogs --config .github/configurations/.flake8 --show-source
-    - name: "Isort check"
-      run: |
-        pip install isort==5.12.0
-        isort ./buffalogs --sp .github/configurations/.isort.cfg --profile black --filter-files --check-only --diff
-    - name: "Test with Django"
-      run: |
-        source ../venv/bin/activate
-        pip install coverage pytest
-        coverage run manage.py test
-        coverage report
-      working-directory: ./buffalogs
+
+  # node:
+  #   needs: detect-changes
+  #   if: ${{ needs.detect-changes.outputs.frontend > 0 }}
+  #   uses: ./.github/workflows/_node.yml
+  #   with:
+  #     working_directory: .github/test/node_test
+
+  #     use_eslint: true
+  #     use_prettier: true
+  #     use_stylelint: true
+
+  #     run_codeql: true
+
+  #     custom_command: npm exec -c whoami
+
+  #     use_react: true
+  #     check_packages_licenses: true
+  #     use_jest: true
+
+  #     use_coverage: true
+  #     upload_coverage: true
+  #     max_timeout: 15
+  #     ubuntu_version: 22.04
+  #     node_versions: >-
+  #       ["18"]
+
+
+  python:
+     needs: detect-changes
+     if: ${{ needs.detect-changes.outputs.backend > 0 }}
+     uses: ./.github/workflows/_python.yml
+     secrets: inherit
+     with:
+      working_directory: buffalogs
+      use_black: true
+      use_isort: true
+      use_flake8: true
+      use_pylint: false
+      use_bandit: false
+      use_autoflake: false
+
+      run_codeql: false
+
+      requirements_path: buffalogs/requirements.txt
+      django_settings_module: buffalogs.settings.settings
+
+      check_migrations: true
+      check_requirements_licenses: false
+
+      use_postgres: true
+      postgres_version: 15.4
+      postgres_db: buffalogs
+      postgres_user: default_user
+      postgres_password: password
+      use_memcached: false
+      use_elastic_search: true
+      elasticsearch_version: 7.17.13
+      use_rabbitmq: false
+      use_mongo: false
+      use_celery: false
+
+      # celery_app: python_test.celery
+      # celery_queues: default
+
+      use_coverage: true
+      upload_coverage: false
+      # tags_for_slow_tests: main
+      # tags_for_manual_tests: manual
+
+      python_versions: >-
+        ["3.10"]
+      max_timeout: 7
+      ubuntu_version: 22.04
