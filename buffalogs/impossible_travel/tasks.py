@@ -29,7 +29,7 @@ def clear_models_periodically():
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
-@shared_task(name="UpdateRiskLevelTask")
+@shared_task(name="BuffaLogsUpdateRiskLevelTask")
 def update_risk_level():
     """Update users risk level depending on how many alerts were triggered"""
     clear_models_periodically()
@@ -218,7 +218,7 @@ def exec_process_logs(start_date, end_date):
     """
     logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
     config, op_result = Config.objects.get_or_create()
-    connections.create_connection(hosts=settings.CERTEGO_BUFFALOGS_ELASTICSEARCH, timeout=90, verify_certs=False)
+    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (
         Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
