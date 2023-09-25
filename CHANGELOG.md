@@ -1,4 +1,8 @@
 ## 1.2.x
+### 1.2.1
+#### Bugfix
+* Fixed Elasticsearch environment variable
+* Renamed shared tasks
 ### 1.2.0
 #### Features
 * Implemented Certego shared CI 1.3.5

@@ -29,7 +29,7 @@ def clear_models_periodically():
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
-@shared_task(name="BuffaLogsUpdateRiskLevelTask")
+@shared_task(name="BuffalogsUpdateRiskLevelTask")
 def update_risk_level():
     """Update users risk level depending on how many alerts were triggered"""
     clear_models_periodically()
