@@ -40,33 +40,6 @@ class Command(BaseCommand):
 
         config_obj.save()
 
-        # if Config.objects.all().exists():
-        #     config_obj = Config.objects.all()[0]
-        #     if not options["ignored_users"] and not options["ignored_ips"] and not options["allowed_countries"] and not options["vip_users"]:
-        #         # Set default values
-        #         config_obj.ignored_users = IGNORED_USERS
-        #         config_obj.ignored_ips = IGNORED_IPS
-        #     else:
-        #         for opt in options:
-        #             if options[opt] and type(options[opt]) is str:
-        #                 try:
-        #                     setattr(config_obj, opt, options[opt].split(','))
-        #                 except AttributeError:
-        #                     pass
-
-        # else:
-        #     if not options["ignored_users"] and not options["ignored_ips"] and not options["allowed_countries"] and not options["vip_users"]:
-        #         config_obj = Config.objects.create(ignored_users=IGNORED_USERS, ignored_ips=IGNORED_IPS)
-        #     else:
-        #         config_obj = Config.objects.create()
-        #         for opt in options:
-        #             if options[opt] and type(options[opt]) is str:
-        #                 try:
-        #                     setattr(config_obj, opt, options[opt].split(','))
-        #                 except AttributeError:
-        #                     pass
-        # config_obj.save()
-
         logger.info(
             f"Updated Config values - Ignored users: {config_obj.ignored_users}, Ignored IPs: {config_obj.ignored_ips}, Allowed countries: {config_obj.allowed_countries}, Vip users: {config_obj.vip_users}"
         )
