@@ -1,4 +1,7 @@
 ## 1.2.x
+### 1.2.2
+#### Bugfix
+* Updated setup_config management command in order to overwrite the configs
 ### 1.2.1
 #### Bugfix
 * Fixed Elasticsearch environment variable
