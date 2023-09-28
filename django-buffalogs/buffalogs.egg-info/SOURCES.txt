@@ -4,11 +4,13 @@ README.rst
 pyproject.toml
 setup.cfg
 setup.py
+../docs/static/cover_buffalogs.png
 buffalogs.egg-info/PKG-INFO
 buffalogs.egg-info/SOURCES.txt
 buffalogs.egg-info/dependency_links.txt
 buffalogs.egg-info/requires.txt
 buffalogs.egg-info/top_level.txt
+docs/static/cover_buffalogs.png
 impossible_travel/__init__.py
 impossible_travel/admin.py
 impossible_travel/apps.py
@@ -18,7 +20,7 @@ impossible_travel/views.py
 impossible_travel/management/commands/clear_models.py
 impossible_travel/management/commands/impossible_travel.py
 impossible_travel/management/commands/setup_config.py
-impossible_travel/management/commands/update_config.py
+impossible_travel/management/commands/__pycache__/setup_config.cpython-310.pyc
 impossible_travel/migrations/0001_initial.py
 impossible_travel/migrations/0002_alert_updated.py
 impossible_travel/migrations/0003_alter_alert_updated.py
