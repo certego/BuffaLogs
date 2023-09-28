@@ -5,11 +5,11 @@ from impossible_travel.models import Config
 
 logger = logging.getLogger()
 IGNORED_USERS = ["N/A", "Not Available"]
-IGNORED_IPS = [""]
+IGNORED_IPS = ["127.0.0.1"]
 
 
 class Command(BaseCommand):
-    help = "Command to setup configs in the Config model"
+    help = "Setup the Configs overwriting them"
 
     def add_arguments(self, parser):
         # Optional arguments
@@ -21,26 +21,38 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Setup the configurations into the Config model"""
         logger = logging.getLogger()
-        print(options)
-        if not options["ignored_users"] and not options["ignored_ips"] and not options["allowed_countries"] and not options["vip_users"]:
-            # Setup default configs
-            Config.objects.update_or_create(ignored_users=IGNORED_USERS, ignored_ips=IGNORED_IPS)
+        if Config.objects.all().exists():
+            config_obj = Config.objects.all()[0]
+            if not options["ignored_users"] and not options["ignored_ips"] and not options["allowed_countries"] and not options["vip_users"]:
+                # Set default values
+                config_obj.ignored_users = IGNORED_USERS
+                config_obj.ignored_ips = IGNORED_IPS
+            else:
+                config_obj.ignored_users = options["ignored_users"]
+                config_obj.ignored_ips = options["ignored_ips"]
+                config_obj.allowed_countries = options["allowed_countries"]
+                config_obj.vip_users = options["vip_users"]
+            config_obj.save()
         else:
-            if not Config.objects.exists():
+            if not options["ignored_users"] and not options["ignored_ips"] and not options["allowed_countries"] and not options["vip_users"]:
+                Config.objects.create(ignored_users=IGNORED_USERS, ignored_ips=IGNORED_IPS)
+            else:
                 Config.objects.create(
                     ignored_users=options["ignored_users"],
                     ignored_ips=options["ignored_ips"],
                     allowed_countries=options["allowed_countries"],
-                    vip_users=["vip_users"],
+                    vip_users=options["vip_users"],
                 )
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Configs set correctly:\
-                                                    \nIgnored users: {options['ignored_users']}\
-                                                    \nIgnored ips: {options['ignored_ips']}\
-                                                    \nAllowed countries: {options['allowed_countries']}\
-                                                    \nVip users: {options['vip_users']}"
-                    )
-                )
-            else:
-                self.stdout.write(self.style.ERROR("Error: Configs already exist. Use the update_config or the clear_models commands"))
+
+        count_config = Config.objects.all().count()
+        config = Config.objects.all()[0]
+        print(f"COUNT CONFIGS:{count_config}")
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Configs set correctly:\
+                        \nIgnored users: {config.ignored_users}\
+                        \nIgnored ips: {config.ignored_ips}\
+                        \nAllowed countries: {config.allowed_countries}\
+                        \nVip users: {config.vip_users}"
+            )
+        )
