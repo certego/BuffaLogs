@@ -1,4 +1,6 @@
-# BuffaLogs
+
+<img src="docs/static/cover_buffalogs.png" width=547 height=310 alt="BuffaLogs"/>
+
 BuffaLogs is an Open Source Django Project whose main purpose is to detect impossible travel logins.
 
 In detail, it sends several types of alerts:
@@ -153,3 +155,6 @@ BuffaLogs is an Open Source project and was developed in order to allow enrichme
 
 ## Licence
 This project is protected by the Apache Licence 2.0.
+
+
+[def]: docs/

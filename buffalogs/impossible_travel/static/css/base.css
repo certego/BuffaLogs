@@ -47,7 +47,6 @@ li a:link{
 }
 .sidebar-header::before{
   content:"";
-  background-image: url("../images/header_backg.jpg");
   opacity: 0.8;
   position: absolute;
   background-size: 100% 100%;
