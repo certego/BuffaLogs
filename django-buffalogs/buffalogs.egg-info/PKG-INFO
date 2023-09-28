@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: buffalogs
-Version: 1.2.1
+Version: 1.2.2
 Summary: A Django app to detect anomaly logins.
 Home-page: UNKNOWN
 Author: Lorena Goldoni
@@ -17,6 +17,8 @@ License-File: LICENSE.txt
 =========
 BuffaLogs
 =========
+
+.. image:: docs/static/cover_buffalogs.png
 
 BuffaLogs is a Django app whose main purpose is to detect anomaly logins.
 

@@ -2,6 +2,8 @@
 BuffaLogs
 =========
 
+.. image:: docs/static/cover_buffalogs.png
+
 BuffaLogs is a Django app whose main purpose is to detect anomaly logins.
 
 Detaild documentation is in the ``docs/`` directory.
