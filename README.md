@@ -1,5 +1,5 @@
 
-<img src="docs/static/cover_buffalogs.png" width=547 height=310 alt="BuffaLogs"/>
+<img src="docs/static/cover_buffalogs.png" width=750 height=400 alt="BuffaLogs"/>
 
 BuffaLogs is an Open Source Django Project whose main purpose is to detect impossible travel logins.
 
