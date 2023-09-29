@@ -1,4 +1,7 @@
 ## 1.2.x
+### 1.2.3
+#### Bugfix
+* Fixed KeyError('ip') in process_user function 
 ### 1.2.2
 #### Bugfix
 * Updated setup_config management command in order to overwrite the configs
