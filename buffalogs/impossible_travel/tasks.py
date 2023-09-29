@@ -138,6 +138,7 @@ def process_user(db_user, start_date, end_date):
         .query("match", **{"user.name": db_user.username})
         .query("match", **{"event.outcome": "success"})
         .query("match", **{"event.type": "start"})
+        .query("exists", field="source.ip")
         .source(
             includes=[
                 "user.name",
