@@ -226,6 +226,7 @@ def exec_process_logs(start_date, end_date):
         .query("match", **{"event.category": "authentication"})
         .query("match", **{"event.outcome": "success"})
         .query("match", **{"event.type": "start"})
+        .query("exists", field="user.name")
         .exclude("terms", **{"user.name": config.ignored_users})
         .exclude("terms", **{"source.ip": config.ignored_ips})
     )
