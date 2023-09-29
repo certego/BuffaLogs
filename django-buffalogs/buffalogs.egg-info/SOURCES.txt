@@ -4,7 +4,6 @@ README.rst
 pyproject.toml
 setup.cfg
 setup.py
-../docs/static/cover_buffalogs.png
 buffalogs.egg-info/PKG-INFO
 buffalogs.egg-info/SOURCES.txt
 buffalogs.egg-info/dependency_links.txt
