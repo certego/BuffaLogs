@@ -83,7 +83,7 @@ After that, there are two ways of running BuffaLogs, depending on your system co
     * run `docker-compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
     * Now elasticsearch and kibana are running on the same host with Buffalogs.
 
-![Screenshot 2023-08-09 at 6 49 41 PM](https://github.com/certego/BuffaLogs/assets/33703137/07548d33-3878-4ff3-9cb7-4a6b865d233b)
+<img src="docs/static/map_buffalogs.png" width=750 height=400 alt="BuffaLogs Map Page"/>
 
 *For further examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/3.-Example)*
 
