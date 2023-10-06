@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from django.conf import settings
 from django.utils import timezone
@@ -31,10 +32,10 @@ class Impossible_Travel:
         distance_km = geodesic((prev_login.latitude, prev_login.longitude), (last_login_user_fields["lat"], last_login_user_fields["lon"])).km
 
         if distance_km > settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED:
-            last_timestamp_datetimeObj = self.validate_timestamp(last_login_user_fields["timestamp"])
-            prev_timestamp_datetimeObj = timezone.make_aware(prev_login.timestamp)
+            last_timestamp_datetimeObj_aware = timezone.make_aware(datetime.strptime(last_login_user_fields["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"))
+            prev_timestamp_datetimeObj_aware = prev_login.timestamp  # already aware in the db
 
-            diff_timestamp = last_timestamp_datetimeObj - prev_timestamp_datetimeObj
+            diff_timestamp = last_timestamp_datetimeObj_aware - prev_timestamp_datetimeObj_aware
             diff_timestamp_hours = diff_timestamp.total_seconds() / 3600
 
             if diff_timestamp_hours == 0:
@@ -43,34 +44,12 @@ class Impossible_Travel:
             vel = distance_km / diff_timestamp_hours
 
             if vel > settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED:
-                # timestamp_validated = self.validate_timestamp(last_login_user_fields["timestamp"])
                 alert_info["alert_name"] = Alert.ruleNameEnum.IMP_TRAVEL
                 alert_info[
                     "alert_desc"
                 ] = f"{alert_info['alert_name']} for User: {db_user.username},\
-                    at: {last_timestamp_datetimeObj}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
+                    at: {last_timestamp_datetimeObj_aware}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
         return alert_info, int(vel)
-
-    def validate_timestamp(self, time):
-        """Validate timestamp format
-
-        :param time: time to validate
-        :type time: datetime
-        :return: timestamp validated with utc timezone aware
-        :rtype: datetime
-        """
-        try:
-            timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
-            timestamp_datetimeObj = timezone.datetime.strptime(str(time), timestamp_format)
-        except (ValueError, TypeError) as e:
-            if "decoding to str" in str(e):
-                timestamp_format = "%Y-%m-%dT%H:%M:%S.000Z"
-                timestamp_datetimeObj = timezone.datetime.strptime(time, timestamp_format)
-            if "does not match format" in str(e):
-                timestamp_format = "%Y-%m-%d %H:%M:%S"
-                timestamp_datetimeObj = timezone.datetime.strptime(str(time), timestamp_format)
-        timestamp_aware = timezone.make_aware(timestamp_datetimeObj)
-        return timestamp_aware
 
     def update_model(self, db_user, new_login):
         """Update DB entry with last login info

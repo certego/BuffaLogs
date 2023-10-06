@@ -54,36 +54,6 @@ class TestImpossibleTravel(TestCase):
         self.assertIn("from: Sudan", result["alert_desc"])
         self.assertIn("previous country: United States, distance covered at 10109599 Km/h", result["alert_desc"])
 
-    def test_validate_timestamp(self):
-        # try - format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        time = "2023-03-08T17:08:33.358Z"
-        result = self.imp_travel.validate_timestamp(time)
-        self.assertEqual(2023, result.year)
-        self.assertEqual(3, result.month)
-        self.assertEqual(8, result.day)
-        self.assertEqual(17, result.hour)
-        self.assertEqual(8, result.minute)
-        self.assertEqual(33, result.second)
-        self.assertIsNotNone("UTC", result.tzinfo)
-        self.assertIsNotNone(result.tzinfo.utcoffset(result))
-
-    def test_validate_timestamp_exceptions(self):
-        time = "2023-03-08 17:08:33"
-        result = self.imp_travel.validate_timestamp(time)
-        self.assertEqual(2023, result.year)
-        self.assertEqual(3, result.month)
-        self.assertEqual(8, result.day)
-        self.assertEqual(17, result.hour)
-        self.assertEqual(8, result.minute)
-        self.assertEqual(33, result.second)
-        self.assertIsNotNone("UTC", result.tzinfo)
-        self.assertIsNotNone(result.tzinfo.utcoffset(result))
-
-    def test_validate_timestamp_notvalid(self):
-        """Test validate_timestamp() function in case of a not valid datetime format"""
-        time = "2023-03-08"
-        self.assertRaises(ValueError, self.imp_travel.validate_timestamp, time)
-
     def test_update_model(self):
         """Test update_model() function for unique login, so with same user_agent and country"""
         user_obj = User.objects.get(username="Lorena Goldoni")
