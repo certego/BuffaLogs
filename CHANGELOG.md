@@ -1,7 +1,7 @@
 ## 1.2.x
 ### 1.2.4
 #### Bugfix
-* Fixed ValueError('make_aware expects a naive datetime') in calc_distance function
+* Fixed ValueError('make_aware expects a naive datetime') in calc_distance function setting the timezone to True in the `Login.timestamp` model field
 ### 1.2.3
 #### Bugfix
 * Fixed KeyError('ip') in process_user function 
