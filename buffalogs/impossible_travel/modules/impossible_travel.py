@@ -33,7 +33,7 @@ class Impossible_Travel:
 
         if distance_km > settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED:
             last_timestamp_datetimeObj_aware = timezone.make_aware(datetime.strptime(last_login_user_fields["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"))
-            prev_timestamp_datetimeObj_aware = timezone.make_aware(prev_login.timestamp)
+            prev_timestamp_datetimeObj_aware = prev_login.timestamp  # already aware in the db
 
             diff_timestamp = last_timestamp_datetimeObj_aware - prev_timestamp_datetimeObj_aware
             diff_timestamp_hours = diff_timestamp.total_seconds() / 3600
