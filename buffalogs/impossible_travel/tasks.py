@@ -161,7 +161,10 @@ def process_user(db_user, start_date, end_date):
         if "source" in hit:
             tmp = {"timestamp": hit["@timestamp"]}
             tmp["id"] = hit.meta["id"]
-            tmp["index"] = hit.meta["index"].split("-")[0]
+            if hit.meta["index"].split("-")[0] == "fw":
+                tmp["index"] = "fw-proxy"
+            else:
+                tmp["index"] = hit.meta["index"].split("-")[0]
             tmp["ip"] = hit["source"]["ip"]
             if "geo" in hit.source:
                 if "location" in hit.source.geo and "country_name" in hit.source.geo:
