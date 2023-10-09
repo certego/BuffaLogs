@@ -19,6 +19,8 @@ impossible_travel/views.py
 impossible_travel/management/commands/clear_models.py
 impossible_travel/management/commands/impossible_travel.py
 impossible_travel/management/commands/setup_config.py
+impossible_travel/management/commands/__pycache__/clear_models.cpython-310.pyc
+impossible_travel/management/commands/__pycache__/impossible_travel.cpython-310.pyc
 impossible_travel/management/commands/__pycache__/setup_config.cpython-310.pyc
 impossible_travel/migrations/0001_initial.py
 impossible_travel/migrations/0002_alert_updated.py

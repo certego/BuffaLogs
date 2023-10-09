@@ -1,4 +1,7 @@
 ## 1.2.x
+### 1.2.5
+#### Bugfix
+* Fixed index name from `fw` to `fw-proxy`
 ### 1.2.4
 #### Bugfix
 * Fixed ValueError('make_aware expects a naive datetime') in calc_distance function setting the timezone to True in the `Login.timestamp` model field
