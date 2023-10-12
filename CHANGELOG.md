@@ -1,8 +1,10 @@
 ## 1.2.x
+### 1.2.6
+#### Bugfix
+* Removed linters from the setup app requirements
 ### 1.2.5
 #### Bugfix
 * Fixed index name from `fw` to `fw-proxy`
-* Removed linters from the setup app requirements
 ### 1.2.4
 #### Bugfix
 * Fixed ValueError('make_aware expects a naive datetime') in calc_distance function setting the timezone to True in the `Login.timestamp` model field
