@@ -1,4 +1,7 @@
 ## 1.2.x
+### 1.2.6
+#### Bugfix
+* Removed linters from the setup app requirements
 ### 1.2.5
 #### Bugfix
 * Fixed index name from `fw` to `fw-proxy`
