@@ -1,4 +1,7 @@
 ## 1.2.x
+### 1.2.7
+#### Bugfix
+* Fixed alert description format
 ### 1.2.6
 #### Bugfix
 * Removed linters from the setup app requirements
