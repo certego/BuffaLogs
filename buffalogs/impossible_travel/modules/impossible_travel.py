@@ -47,7 +47,8 @@ class Impossible_Travel:
                 alert_info["alert_name"] = Alert.ruleNameEnum.IMP_TRAVEL
                 alert_info[
                     "alert_desc"
-                ] = f"{alert_info['alert_name']} for User: {db_user.username} at: {last_timestamp_datetimeObj_aware}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
+                ] = f"{alert_info['alert_name']} for User: {db_user.username},\
+                    at: {last_timestamp_datetimeObj_aware}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
         return alert_info, int(vel)
 
     def update_model(self, db_user, new_login):

@@ -218,8 +218,8 @@ class TestViews(APITestCase):
         start = creation_mock_time
         end = creation_mock_time + timedelta(minutes=10)
         list_expected_result = [
-            {"timestamp": "2023-06-20T10:17:33.358Z", "username": "Lorena Goldoni", "rule_name": "Impossible Travel detected"},
             {"timestamp": "2023-05-20T11:45:01.229Z", "username": "Lorena Goldoni", "rule_name": "Login from new device"},
+            {"timestamp": "2023-06-20T10:17:33.358Z", "username": "Lorena Goldoni", "rule_name": "Impossible Travel detected"},
         ]
         response = self.client.get(f"{reverse('alerts_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
