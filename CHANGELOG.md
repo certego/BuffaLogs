@@ -1,4 +1,7 @@
 ## 1.2.x
+### 1.2.8
+#### Bugfix
+* Cleared requirements
 ### 1.2.7
 #### Bugfix
 * Fixed alert description format
