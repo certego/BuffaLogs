@@ -9,8 +9,6 @@ COPY buffalogs/requirements.txt requirements.txt
 RUN sed -i 's/main/main non-free/g' /etc/apt/sources.list \
     && apt-get update \
     && apt-get -y install \
-        python3-dev \
-        libpq-dev \
         gcc
 
 RUN pip install --no-cache-dir -r requirements.txt \
