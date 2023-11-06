@@ -151,7 +151,7 @@ BuffaLogs is an Open Source project and was developed in order to allow enrichme
 1. If needed, update the requirements in the `requirements.txt` and also into the `setup.cfg` file
 2. Add a new entry in `CHANGELOG.md` containing all the features, changes and bugfix developed
 3. Modify the **version** in the `setup.cfg`
-4. Remove the previous version of the reusable app into `django-buffalogs/dist` and create the new version running `python3 setup.py sdist`
+4. Remove the previous version of the reusable app into `django-buffalogs/dist` and create the new version running `python3 setup.py sdist` from `django-buffalogs/`
 5. Commit a PR from the develop to the main branch with the version as a Title and the changes as a comment
 6. Now you can export BuffaLogs copying the `buffalogs-x.y.z.tar.gz` package into your project
 
