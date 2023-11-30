@@ -1,4 +1,7 @@
 ## 1.2.x
+### 1.2.9
+#### Bugfix
+* Fixed the connection to the buffalogs_postgres container
 ### 1.2.8
 #### Bugfix
 * Cleared requirements

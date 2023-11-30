@@ -5,8 +5,11 @@ services:
     buffalogs_postgres:
         container_name: buffalogs_postgres
         image: postgres:15.4-alpine
-        env_file:
-            - config/buffalogs/buffalogs.env
+        hostname: postgres
+        environment:
+            POSTGRES_USER: default_user
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: buffalogs
         volumes:
             - buffalogs_postgres_data:/var/lib/postgresql/data
         expose:
