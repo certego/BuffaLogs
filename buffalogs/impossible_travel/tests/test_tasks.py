@@ -150,8 +150,8 @@ class TestTasks(TestCase):
     def test_process_logs_data_lost(self):
         TaskSettings.objects.create(
             task_name="process_logs",
-            start_date=timezone.datetime(2023, 4, 18, 10, 0, tzinfo=timezone.utc),
-            end_date=timezone.datetime(2023, 4, 18, 10, 30, 0, tzinfo=timezone.utc),
+            start_date=timezone.datetime(2023, 4, 18, 10, 0),
+            end_date=timezone.datetime(2023, 4, 18, 10, 30, 0),
         )
         tasks.process_logs()
         new_end_date_expected = timezone.now() - timedelta(minutes=1)

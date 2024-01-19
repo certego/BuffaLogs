@@ -209,7 +209,7 @@ class TestViews(APITestCase):
         self.assertListEqual(list_expected_result, json.loads(response.content))
 
     def test_alerts_api(self):
-        creation_mock_time = datetime(2023, 7, 25, 12, 0, tzinfo=timezone.utc)
+        creation_mock_time = datetime(2023, 7, 25, 12, 0)
         alert = Alert.objects.get(login_raw_data__timestamp="2023-05-20T11:45:01.229Z")
         alert.created = creation_mock_time
         alert.save()

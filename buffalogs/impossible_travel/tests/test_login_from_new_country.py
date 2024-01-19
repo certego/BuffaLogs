@@ -61,7 +61,7 @@ class TestLoginFromNewCountry(TestCase):
             "country": "Italy",
             "user_agent": "Mozilla/5.0 (X11; U; Linux i686; es-AR; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8",
         }
-        creation_mock_time = timezone.datetime(2023, 7, 25, 12, 0, tzinfo=timezone.utc)
+        creation_mock_time = timezone.datetime(2023, 7, 25, 12, 0)
         login = Login.objects.create(
             user=db_user,
             timestamp=new_login["timestamp"],
