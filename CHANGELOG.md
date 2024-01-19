@@ -1,3 +1,8 @@
+## 1.3.x
+## 1.3.0
+#### Changes
+* Changed the *new_country* alert logic: previously, if the new country has already been reported, the alert wasn't triggered again; now, after *CERTEGO_BUFFALOGS_NEW_COUNTRY_ALERT_FILTER* days from the first alert, it can be triggered again
+
 ## 1.2.x
 ### 1.2.9
 #### Bugfix
