@@ -74,3 +74,13 @@ class Config(models.Model):
     ignored_ips = ArrayField(models.CharField(max_length=100), blank=True, default=list)
     allowed_countries = ArrayField(models.CharField(max_length=20), blank=True, default=list)
     vip_users = ArrayField(models.CharField(max_length=100), blank=True, default=list)
+    distance_accepted = models.PositiveIntegerField(
+        default=100, help_text="Minimum distance (in Km) between two logins after which the impossible travel detection starts"
+    )
+    vel_accepted = models.PositiveIntegerField(
+        default=300, help_text="Minimum velocity (in Km/h) between two logins after which the impossible travel detection starts"
+    )
+    user_max_days = models.PositiveIntegerField(default=60, help_text="Days after which the users will be removed from the db")
+    login_max_days = models.PositiveIntegerField(default=30, help_text="Days after which the logins will be removed from the db")
+    alert_max_days = models.PositiveIntegerField(default=30, help_text="Days after which the alerts will be removed from the db")
+    ip_max_days = models.PositiveIntegerField(default=30, help_text="Days after which the IPs will be removed from the db")

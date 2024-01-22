@@ -1,10 +1,9 @@
 import logging
 from datetime import datetime
 
-from django.conf import settings
 from django.utils import timezone
 from geopy.distance import geodesic
-from impossible_travel.models import Alert, Login, UsersIP
+from impossible_travel.models import Alert, Config, Login, UsersIP
 
 
 class Impossible_Travel:
@@ -27,11 +26,12 @@ class Impossible_Travel:
         :return: dictionary with info about the impossible travel alert
         :rtype: dict
         """
+        app_config = Config.objects.get(id=1)
         alert_info = {}
         vel = 0
         distance_km = geodesic((prev_login.latitude, prev_login.longitude), (last_login_user_fields["lat"], last_login_user_fields["lon"])).km
 
-        if distance_km > settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED:
+        if distance_km > app_config.distance_accepted:
             last_timestamp_datetimeObj_aware = timezone.make_aware(datetime.strptime(last_login_user_fields["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"))
             prev_timestamp_datetimeObj_aware = prev_login.timestamp  # already aware in the db
 
@@ -43,7 +43,7 @@ class Impossible_Travel:
 
             vel = distance_km / diff_timestamp_hours
 
-            if vel > settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED:
+            if vel > app_config.vel_accepted:
                 alert_info["alert_name"] = Alert.ruleNameEnum.IMP_TRAVEL
                 alert_info[
                     "alert_desc"

@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
-from impossible_travel.models import Login, User, UsersIP
+from impossible_travel.models import Config, Login, User, UsersIP
 from impossible_travel.modules import impossible_travel
 
 
@@ -26,7 +26,7 @@ class TestImpossibleTravel(TestCase):
         )
 
     def test_calc_distance(self):
-        # if distance >  settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED --> FALSE
+        # if distance >  Config.distance_accepted --> FALSE
         last_login_user_fields = {
             "timestamp": "2023-03-08T17:10:33.358Z",
             "lat": "40.364",
