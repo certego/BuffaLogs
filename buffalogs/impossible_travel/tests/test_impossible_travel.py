@@ -9,6 +9,13 @@ class TestImpossibleTravel(TestCase):
 
     @classmethod
     def setUpTestData(self):
+        Config.objects.create(
+            id=1,
+            ignored_users=["N/A", "Not Available"],
+            ignored_ips=["0.0.0.0", "192.168.1.0/24"],
+            allowed_countries=["Italy", "United States"],
+            vip_users=["Asa Strickland", "Krista Moran"],
+        )
         user_obj = User.objects.create(
             username="Lorena Goldoni",
             risk_score="Low",
