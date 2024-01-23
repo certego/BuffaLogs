@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from django.test import Client
 from django.urls import reverse
+from django.utils import timezone
 from impossible_travel.models import Alert, Login, User
 from rest_framework.test import APITestCase
 
