@@ -31,4 +31,4 @@ class Command(BaseCommand):
             Login.objects.all().delete()
             User.objects.all().delete()
             TaskSettings.objects.all().delete()
-            self.stdout.write(self.style.SUCCESS("All the models have been emptied, except the Config model"))
+            self.stdout.write(self.style.SUCCESS("All the models have been emptied, expect the Config model"))

@@ -9,7 +9,7 @@ NUM_LOGS = 2000
 
 
 def main():
-    es = Elasticsearch(["http://localhost:9200"])
+    es = Elasticsearch(["http://localhost:59200"])
     common_data_cloud_index = generate_common_data()
     write_bulk(es, "cloud", common_data_cloud_index)
     common_data_weblog_index = generate_common_data()
