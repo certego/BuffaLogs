@@ -44,6 +44,7 @@ class Setup:
             ]
         )
         Config.objects.create(
+            id=1,
             ignored_users=["N/A", "Not Available"],
             ignored_ips=["0.0.0.0", "192.168.1.0/24"],
             allowed_countries=["Italy", "United States"],

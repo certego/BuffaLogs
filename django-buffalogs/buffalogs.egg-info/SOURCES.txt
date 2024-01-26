@@ -31,6 +31,7 @@ impossible_travel/migrations/0006_alert_is_vip.py
 impossible_travel/migrations/0007_login_event_id_login_ip.py
 impossible_travel/migrations/0008_usersip.py
 impossible_travel/migrations/0009_config_ignored_ips_config_ignored_users_and_more.py
+impossible_travel/migrations/0010_config_alert_max_days_config_distance_accepted_and_more.py
 impossible_travel/migrations/__init__.py
 impossible_travel/modules/impossible_travel.py
 impossible_travel/modules/login_from_new_country.py

@@ -15,17 +15,18 @@ logger = get_task_logger(__name__)
 
 def clear_models_periodically():
     """Delete old data in the models"""
+    app_config = Config.objects.get(id=1)
     now = timezone.now()
-    delete_user_time = now - timedelta(days=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS)
+    delete_user_time = now - timedelta(days=app_config.user_max_days)
     User.objects.filter(updated__lte=delete_user_time).delete()
 
-    delete_login_time = now - timedelta(days=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS)
+    delete_login_time = now - timedelta(days=app_config.login_max_days)
     Login.objects.filter(updated__lte=delete_login_time).delete()
 
-    delete_alert_time = now - timedelta(days=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS)
+    delete_alert_time = now - timedelta(days=app_config.alert_max_days)
     Alert.objects.filter(updated__lte=delete_alert_time).delete()
 
-    delete_ip_time = now - timedelta(days=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS)
+    delete_ip_time = now - timedelta(days=app_config.ip_max_days)
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
