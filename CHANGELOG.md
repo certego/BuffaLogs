@@ -1,4 +1,7 @@
 ## 1.2.x
+### 1.2.10
+#### Changes
+* Added settings into the Config model (instead of into the settings.py file)
 ### 1.2.9
 #### Bugfix
 * Fixed the connection to the buffalogs_postgres container
