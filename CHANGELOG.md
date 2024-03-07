@@ -1,8 +1,4 @@
 ## 1.2.x
-### 1.2.11
-#### Bugfix
-* Fixed the update of the login.updated field
-* Added logging for the clear_models_periodically function
 ### 1.2.10
 #### Changes
 * Added settings into the Config model (instead of into the settings.py file)

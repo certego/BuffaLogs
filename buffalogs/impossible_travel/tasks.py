@@ -18,20 +18,16 @@ def clear_models_periodically():
     app_config = Config.objects.get(id=1)
     now = timezone.now()
     delete_user_time = now - timedelta(days=app_config.user_max_days)
-    deleted_users, _ = User.objects.filter(updated__lte=delete_user_time).delete()
-    logger.info(f"Deleted {deleted_users} users for periodic cleaning")
+    User.objects.filter(updated__lte=delete_user_time).delete()
 
     delete_login_time = now - timedelta(days=app_config.login_max_days)
-    deleted_logins, _ = Login.objects.filter(updated__lte=delete_login_time).delete()
-    logger.info(f"Deleted {deleted_logins} logins for periodic cleaning")
+    Login.objects.filter(updated__lte=delete_login_time).delete()
 
     delete_alert_time = now - timedelta(days=app_config.alert_max_days)
-    deleted_alerts, _ = Alert.objects.filter(updated__lte=delete_alert_time).delete()
-    logger.info(f"Deleted {deleted_alerts} alerts for periodic cleaning")
+    Alert.objects.filter(updated__lte=delete_alert_time).delete()
 
     delete_ip_time = now - timedelta(days=app_config.ip_max_days)
-    deleted_usersIP, _ = UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
-    logger.info(f"Deleted {deleted_usersIP} usersIP for periodic cleaning")
+    UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
 @shared_task(name="BuffalogsUpdateRiskLevelTask")
