@@ -88,6 +88,12 @@ class TestImpossibleTravel(TestCase):
         self.assertEqual(new_login_db.latitude, new_login_fields["lat"])
         self.assertEqual(new_login_db.longitude, new_login_fields["lon"])
         self.assertEqual(new_login_db.timestamp, new_login_fields["timestamp"])
+        self.assertEqual(new_login_db.updated.year, timezone.now().year)
+        self.assertEqual(new_login_db.updated.month, timezone.now().month)
+        self.assertEqual(new_login_db.updated.day, timezone.now().day)
+        self.assertEqual(new_login_db.updated.hour, timezone.now().hour)
+        self.assertEqual(new_login_db.updated.minute, timezone.now().minute)
+        self.assertEqual(new_login_db.updated.second, timezone.now().second)
 
     def test_add_new_login(self):
         new_time = timezone.now()
