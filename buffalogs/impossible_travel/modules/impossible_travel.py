@@ -66,13 +66,13 @@ class Impossible_Travel:
         :param new_user_agent: user_agent of last login
         :type new_user_agent: string
         """
-        db_user.login_set.filter(user_agent=new_login["agent"], country=new_login["country"], index=new_login["index"]).update(
-            timestamp=new_login["timestamp"],
-            latitude=new_login["lat"],
-            longitude=new_login["lon"],
-            event_id=new_login["id"],
-            ip=new_login["ip"],
-        )
+        login = db_user.login_set.get(user_agent=new_login["agent"], country=new_login["country"], index=new_login["index"])
+        login.timestamp = new_login["timestamp"]
+        login.latitude = new_login["lat"]
+        login.longitude = new_login["lon"]
+        login.event_id = new_login["id"]
+        login.ip = new_login["ip"]
+        login.save()
 
     def add_new_login(self, db_user, new_login_field):
         """Add new login if there isn't previous login on db relative to that user
