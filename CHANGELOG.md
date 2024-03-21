@@ -2,6 +2,8 @@
 ### 1.2.12
 #### Bugfix
 * Cleaned venv from useless packages
+* Added pytz in requirements because it's needed by celery_beat
+* Registered UserAdmin in authentication
 ### 1.2.11
 #### Bugfix
 * Fixed the update of the login.updated field
