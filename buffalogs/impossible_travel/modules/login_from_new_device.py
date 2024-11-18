@@ -1,5 +1,6 @@
 import logging
 
+from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert
 from impossible_travel.modules import impossible_travel
 
@@ -21,7 +22,7 @@ class Login_New_Device:
         alert_info = {}
         if db_user.login_set.filter(user_agent=login_field["agent"]).count() == 0:
             timestamp = login_field["timestamp"]
-            alert_info["alert_name"] = Alert.ruleNameEnum.NEW_DEVICE
+            alert_info["alert_name"] = AlertDetectionType.NEW_DEVICE.value
             alert_info[
                 "alert_desc"
             ] = f"LOGIN FROM NEW DEVICE\

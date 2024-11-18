@@ -45,4 +45,4 @@ class TestLoginFromNewCountry(TestCase):
             "user_agent": "Mozilla/5.0 (X11; U; Linux i686; es-AR; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8",
         }
         alert_result = self.new_country.check_country(db_user, last_login_user_fields)
-        self.assertEqual("Login from new country", alert_result["alert_name"].value)
+        self.assertEqual("Login from new country", alert_result["alert_name"])

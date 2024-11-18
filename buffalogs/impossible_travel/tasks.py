@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
+from impossible_travel.constants import UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 
@@ -37,18 +38,10 @@ def update_risk_level():
     with transaction.atomic():
         for u in User.objects.annotate(Count("alert")):
             alerts_num = u.alert__count
-            if alerts_num == 0:
-                tmp = User.riskScoreEnum.NO_RISK
-            elif 1 <= alerts_num <= 2:
-                tmp = User.riskScoreEnum.LOW
-            elif 3 <= alerts_num <= 4:
-                tmp = User.riskScoreEnum.MEDIUM
-            else:
-                tmp = User.riskScoreEnum.HIGH
-                if u.risk_score != tmp:
-                    # Added log only if it's updated, not always for each High risk user
-                    logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}, {alerts_num} detected")
+            tmp = UserRiskScoreType.get_risk_level(alerts_num)
             if u.risk_score != tmp:
+                # Added log only if it's updated, not always for each High risk user
+                logger.info(f"Upgraded risk level for User: {u.username}, {alerts_num} detected")
                 u.risk_score = tmp
                 u.save()
 
