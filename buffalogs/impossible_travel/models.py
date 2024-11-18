@@ -65,27 +65,43 @@ class TaskSettings(models.Model):
     end_date = models.DateTimeField()
 
 
-def config_default_ignored_users():
-    return ["Not Available", "N/A"]
+def get_default_ignored_users():
+    return list(settings.CERTEGO_BUFFALOGS_IGNORED_USERS)
+
+
+def get_default_enabled_users():
+    return list(settings.CERTEGO_BUFFALOGS_ENABLED_USERS)
+
+
+def get_default_ignored_ips():
+    return list(settings.CERTEGO_BUFFALOGS_IGNORED_IPS)
+
+
+def get_default_allowed_countries():
+    return list(settings.CERTEGO_BUFFALOGS_ALLOWED_COUNTRIES)
+
+
+def get_default_vip_users():
+    return list(settings.CERTEGO_BUFFALOGS_VIP_USERS)
 
 
 class Config(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     ignored_users = ArrayField(
-        models.CharField(max_length=50), blank=True, default=config_default_ignored_users, help_text="List of users to be ignored from the detection"
+        models.CharField(max_length=50), blank=True, default=get_default_ignored_users, help_text="List of users to be ignored from the detection"
     )
     enabled_users = ArrayField(
-        models.CharField(max_length=50), blank=True, default=list, help_text="List of selected users on which the detection will perform"
+        models.CharField(max_length=50), blank=True, default=get_default_enabled_users, help_text="List of selected users on which the detection will perform"
     )
-    ignored_ips = ArrayField(models.CharField(max_length=50), blank=True, default=list, help_text="List of IPs to remove from the detection")
+    ignored_ips = ArrayField(models.CharField(max_length=50), blank=True, default=get_default_ignored_ips, help_text="List of IPs to remove from the detection")
     allowed_countries = ArrayField(
         models.CharField(max_length=20),
         blank=True,
-        default=list,
+        default=get_default_allowed_countries,
         help_text="List of countries to exclude from the detection, because 'trusted' for the customer",
     )
-    vip_users = ArrayField(models.CharField(max_length=50), blank=True, default=list, help_text="List of users considered more sensitive")
+    vip_users = ArrayField(models.CharField(max_length=50), blank=True, default=get_default_vip_users, help_text="List of users considered more sensitive")
     alert_is_vip_only = models.BooleanField(default=False, help_text="Flag to send alert only related to the users in the vip_users list")
     alert_minimum_risk_score = models.CharField(
         choices=UserRiskScoreType.choices(),
