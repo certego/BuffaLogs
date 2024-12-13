@@ -156,7 +156,7 @@ runs:
 
         - name: Execute docker compose up
           run: |
-            CLI=docker compose
+            CLI="docker compose"
             if [[ ${{ inputs.use_postgres }} != 'false' ]]; then
               CLI="${CLI} -f postgres.yml"
             fi
