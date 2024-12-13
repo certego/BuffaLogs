@@ -55,15 +55,15 @@ How to create and submit a PR:
     If you didn't install pre-commit, it is necessary to run linters manually:
     *   Flake8
     ```bash
-        flake8 . --show-source --config ../.github/configurations/.flake8
+        flake8 . --show-source --config ../.github/configurations/python_linters/.flake8
     ```
     *   Black
     ```bash
-    black --config ../.github/configurations/.black .
+    black --config ../.github/configurations/python_linters/.black .
     ```
     *   Isort
     ```bash
-    isort --sp ../.github/configurations/.isort.cfg --profile black .
+    isort --sp ../.github/configurations/python_linters/.isort.cfg --profile black .
     ```
 
 3.  **IF** your changes include differences in the template view, **include sceenshots of the before and after**.

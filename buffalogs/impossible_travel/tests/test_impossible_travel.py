@@ -56,7 +56,7 @@ class TestImpossibleTravel(TestCase):
         db_user = User.objects.get(username="Lorena Goldoni")
         prev_login = Login.objects.get(id=db_user.id)
         result, vel = self.imp_travel.calc_distance(db_user, prev_login, last_login_user_fields)
-        self.assertEqual("Impossible Travel detected", result["alert_name"].value)
+        self.assertEqual("Impossible Travel detected", result["alert_name"])
         self.assertIn("for User: Lorena Goldoni", result["alert_desc"])
         self.assertIn("from: Sudan", result["alert_desc"])
         self.assertIn("previous country: United States, distance covered at 10109599 Km/h", result["alert_desc"])

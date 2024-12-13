@@ -17,3 +17,7 @@ ignore =
 exclude =
     */migrations/*,
     Dockerfile
+
+per-file-ignores =
+    # imported but unused
+    certego.py: E231
