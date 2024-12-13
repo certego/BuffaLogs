@@ -11,7 +11,6 @@ class User(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def get_risk_display(self):
-        # Usa il valore del campo per ottenere l'etichetta di rischio
         return AlertFilterType.get_risk_level(self.risk_level).name
 
 
