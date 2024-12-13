@@ -43,7 +43,7 @@ class Alert(models.Model):
     is_vip = models.BooleanField(default=False)
     is_filtered = models.BooleanField(default=False, help_text="Show if the alert has been filtered because of some filter (listed in the filter_type field)")
     filter_type = ArrayField(
-        models.CharField(max_length=50, choices=AlertFilterType.choices(), null=True),
+        models.CharField(max_length=50, choices=AlertFilterType.choices(), blank=True),
         blank=True,
         default=list,
         help_text="List of filters that disabled the related alert",
