@@ -1,5 +1,5 @@
-## 2.0.x
-### 2.0.0
+## 1.3.x
+### 1.3.0
 #### Feature
 * Added configuration panel in order to set custom preferences
 ### Changes
