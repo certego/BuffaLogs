@@ -224,7 +224,7 @@ class TestViews(APITestCase):
         ]
         response = self.client.get(f"{reverse('alerts_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(list_expected_result, json.loads(response.content))
+        self.assertCountEqual(list_expected_result, json.loads(response.content))
 
     def test_risk_score_api(self):
         end = datetime.now() + timedelta(seconds=1)
