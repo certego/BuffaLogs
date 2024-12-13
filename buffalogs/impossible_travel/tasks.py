@@ -57,7 +57,7 @@ def set_alert(db_user, login_alert, alert_info):
     :type alert_info: dict
     """
     logger.info(
-        f"ALERT {alert_info['alert_name']} for User:{db_user.username} at:{login_alert['timestamp']} from {login_alert['country']} from device:{login_alert['agent']}"
+        f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']} from {login_alert['country']} from device: {login_alert['agent']}"
     )
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     if Config.objects.filter(vip_users__contains=[db_user.username]):
@@ -214,7 +214,7 @@ def exec_process_logs(start_date, end_date):
     :param end_date: End datetime
     :type end_date: datetime
     """
-    logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
+    logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
     config, op_result = Config.objects.get_or_create()
     connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (

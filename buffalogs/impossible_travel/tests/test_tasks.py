@@ -119,8 +119,8 @@ class TestTasks(TestCase):
         timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
         name = AlertDetectionType.IMP_TRAVEL.value
-        desc = f"{name} for User: {db_user.username},\
-                    at: {timestamp}, from:({db_login.latitude}, {db_login.longitude})"
+        desc = f"{name} for User: {db_user.username}, \
+                    at: {timestamp}, from: ({db_login.latitude}, {db_login.longitude})"
         alert_info = {
             "alert_name": name,
             "alert_desc": desc,
@@ -138,8 +138,8 @@ class TestTasks(TestCase):
         timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
         name = AlertDetectionType.IMP_TRAVEL.value
-        desc = f"{name} for User: {db_user.username},\
-                    at: {timestamp}, from:({db_login.latitude}, {db_login.longitude})"
+        desc = f"{name} for User: {db_user.username}, \
+                    at: {timestamp}, from: ({db_login.latitude}, {db_login.longitude})"
         alert_info = {
             "alert_name": name,
             "alert_desc": desc,
