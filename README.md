@@ -68,12 +68,24 @@ BuffaLogs employs the following tools which have to be installed on the machine:
 - [Docker-compose](https://docs.docker.com/compose/install/)
 - [Python](https://www.python.org/downloads/)
 
-Then, you can clone this repository on your local computer with:
+Then, IF you'd like to develop on BuffaLogs, you can follow these steps [here](#install-buffalogs-for-developing). Otherwise, if you only want to run the BuffaLogs application, please follow the next steps [here](#run-buffalogs-application).
+
+### Install BuffaLogs for developing
+
+1. clone this repository on your local computer with:
 
 ```bash
 git clone git@github.com:certego/BuffaLogs.git
 ```
-Or download the application directly from the [Docker Hub](https://hub.docker.com/r/certego/buffalogs), with the `sudo docker pull certego/buffalogs:<release_tag>`.
+
+### Run BuffaLogs application
+
+1. Download the application directly from the [Docker Hub](https://hub.docker.com/r/certego/buffalogs), with the `> sudo docker pull certego/buffalogs:<release_tag>`.
+If you do not specify the release_tag, the "latest" version will be downloaded.
+
+2. Check the existance of the `certego/buffalogs` image running the command: `> sudo docker images --all`
+
+3. Run the application on the 8000 port (or the one you prefer) with: `> sudo docker run -d -p 8000:8000 certego/buffalogs` 
 
 After that, there are two ways of running BuffaLogs, depending on your system configurations:
 * if you already have an elastic cluster:
