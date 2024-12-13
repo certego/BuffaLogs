@@ -1,3 +1,11 @@
+## 2.0.x
+### 2.0.0
+#### Feature
+* Added configuration panel in order to set custom preferences
+### Changes
+* Set default settings values in the *settings.certego.py* file
+* Moved Enums into *costants.py* file
+
 ## 1.2.x
 ### 1.2.12
 #### Bugfix
