@@ -61,7 +61,7 @@ class AlertDetectionType(Enum):
         for item in cls:
             if item.value == value:
                 return item.name
-        return None  # Restituisce None se il valore non corrisponde a nessuna label
+        return None
 
 
 class AlertFilterType(Enum):

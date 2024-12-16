@@ -90,12 +90,16 @@ def check_fields(db_user, fields):
                         set_alert(db_user, login_alert=login, alert_info=country_alert)
 
                 if not db_user.usersip_set.filter(ip=login["ip"]).exists():
+                    last_user_login = db_user.login_set.latest("timestamp")
                     logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert, travel_vel = imp_travel.calc_distance(db_user, prev_login=db_user.login_set.latest("timestamp"), last_login_user_fields=login)
+                    travel_alert, travel_vel = imp_travel.calc_distance(db_user, prev_login=last_user_login, last_login_user_fields=login)
                     if travel_alert:
                         new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
-                        new_alert.login_raw_data["buffalogs.start_country"] = db_user.login_set.latest("timestamp").country
-                        new_alert.login_raw_data["buffalogs.avg_speed"] = travel_vel
+                        new_alert.login_raw_data["buffalogs"] = {}
+                        new_alert.login_raw_data["buffalogs"]["start_country"] = last_user_login.country
+                        new_alert.login_raw_data["buffalogs"]["avg_speed"] = travel_vel
+                        new_alert.login_raw_data["buffalogs"]["start_lat"] = last_user_login.latitude
+                        new_alert.login_raw_data["buffalogs"]["start_lon"] = last_user_login.longitude
                         new_alert.save()
                     #   Add the new ip address from which the login comes to the db
                     imp_travel.add_new_user_ip(db_user, login["ip"])
