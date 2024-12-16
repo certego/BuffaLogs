@@ -19,10 +19,15 @@ def load_test_data(name):
 
 
 class TestTasks(TestCase):
-    @classmethod
-    def setUpTestData(self):
+    def setUp(self):
+        # set DB data before each single test
         setup_obj = Setup()
         setup_obj.setup()
+
+    def tearDown(self):
+        # clean DB after each test
+        User.objects.all().delete()
+        Config.objects.get(id=1).delete()
 
     def test_clear_models_periodically(self):
         """Testing clear_models_periodically() function"""
@@ -261,7 +266,7 @@ class TestTasks(TestCase):
         self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
         self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
 
-    def check_fields_alerts(self):
+    def test_check_fields_alerts(self):
         fields1 = load_test_data("test_check_fields_part1")
         fields2 = load_test_data("test_check_fields_part2")
         db_user = User.objects.get(username="Aisha Delgado")
@@ -276,8 +281,65 @@ class TestTasks(TestCase):
         #   6. at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
         self.assertEqual(6, Alert.objects.filter(user=db_user).count())
         self.assertEqual(2, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE.value).count())
-        self.assertEqual(1, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value).count())
-        self.assertEqual(3, Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value).count())
+        new_country_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value)
+        self.assertEqual(1, new_country_alerts.count())
+        self.assertEqual(
+            new_country_alerts[0].login_raw_data,
+            {
+                "index": "cloud-test_data-2023-5-3",
+                "id": 3,
+                "agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0",
+                "timestamp": "2023-05-03T06:57:27.768Z",
+                "ip": "203.0.113.20",
+                "lat": 35.2196,
+                "lon": 137.062,
+                "country": "Japan",
+            },
+        )
+        imp_travel_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value)
+        self.assertEqual(3, imp_travel_alerts.count())
+        self.assertEqual(
+            imp_travel_alerts[0].login_raw_data,
+            {
+                "id": 2,
+                "ip": "203.0.113.17",
+                "lat": 38.8217,
+                "lon": -77.1814,
+                "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+                "index": "cloud-test_data-2023-5-3",
+                "country": "United States",
+                "buffalogs": {"avg_speed": 133973, "start_lat": 26.9411, "start_lon": 75.8773, "start_country": "India"},
+                "timestamp": "2023-05-03T06:55:31.768Z",
+            },
+        )
+        self.assertEqual(
+            imp_travel_alerts[1].login_raw_data,
+            {
+                "id": 3,
+                "ip": "203.0.113.20",
+                "lat": 35.2196,
+                "lon": 137.062,
+                "agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0",
+                "index": "cloud-test_data-2023-5-3",
+                "country": "Japan",
+                "buffalogs": {"avg_speed": 344009, "start_lat": 38.8217, "start_lon": -77.1814, "start_country": "United States"},
+                "timestamp": "2023-05-03T06:57:27.768Z",
+            },
+        )
+        self.assertEqual(
+            imp_travel_alerts[2].login_raw_data,
+            {
+                "id": 4,
+                "ip": "203.0.113.11",
+                "lat": 30.3657,
+                "lon": -88.5561,
+                "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+                "index": "cloud-test_data-2023-5-3",
+                "country": "United States",
+                "buffalogs": {"avg_speed": 52564, "start_lat": 35.2196, "start_lon": 137.062, "start_country": "Japan"},
+                "timestamp": "2023-05-03T07:10:23.154Z",
+            },
+        )
         self.assertEqual(0, Alert.objects.filter(user=db_user, is_vip=True).count())
 
         # Adding "Aisha Delgado" to vip users
@@ -292,7 +354,9 @@ class TestTasks(TestCase):
         #   11. at 2023-05-03T07:20:36.154Z alert IMP TRAVEL
         tasks.check_fields(db_user, fields2)
         self.assertEqual(4, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE.value).count())
-        self.assertEqual(1, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value).count())
+        imp_travel_alerts_part2 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value)
+        self.assertEqual(1, imp_travel_alerts_part2.count())
+        self.assertEqual(imp_travel_alerts_part2[0].login_raw_data, {"blabl2"})
         self.assertEqual(6, Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value).count())
         self.assertEqual(5, Alert.objects.filter(user=db_user, is_vip=True).count())
         self.assertEqual(11, Alert.objects.filter(user=db_user).count())
@@ -321,6 +385,35 @@ class TestTasks(TestCase):
         # Third part: no new alerts because all the ips have already been used
         tasks.check_fields(db_user, fields3)
         self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
+
+    def test_check_fields_same_devices(self):
+        # test that if the same devices is in the new logins return by the elastic search, only 1 new_device alert is set
+        db_user = User.objects.get(username="Lorena Goldoni")
+        self.assertQuerySetEqual([], db_user.alert_set.filter())
+        fields = [
+            {
+                "index": "cloud",
+                "id": 1,
+                "agent": "new_Agent1",
+                "timestamp": "2024-12-16T15:29:34.074Z",
+                "ip": "1.2.3.4",
+                "lat": 44.4937,
+                "lon": 24.3456,
+                "country": "Italy",
+            },
+            {
+                "index": "cloud",
+                "id": 2,
+                "agent": "new_Agent1",
+                "timestamp": "2024-12-16T15:29:35.074Z",
+                "ip": "1.2.3.4",
+                "lat": 44.4937,
+                "lon": 24.3456,
+                "country": "Italy",
+            },
+        ]
+        # alerts =
+        self.assertEqual(1, Alert.objects.all().count())
 
     # TO DO
     # @patch("impossible_travel.tasks.check_fields")

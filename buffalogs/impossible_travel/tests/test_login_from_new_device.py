@@ -7,8 +7,8 @@ class TestLoginFromNewdevice(TestCase):
 
     new_device = login_from_new_device.Login_New_Device()
 
-    @classmethod
-    def setUpTestData(self):
+    def setUp(self):
+        # set DB data before each single test
         user = User.objects.create(
             username="Lorena Goldoni",
             risk_score="Low",
@@ -23,6 +23,10 @@ class TestLoginFromNewdevice(TestCase):
             user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
         )
         login.save()
+
+    def tearDown(self):
+        # clean DB after each test
+        User.objects.all().delete()
 
     def test_check_new_device(self):
         db_user = User.objects.get(username="Lorena Goldoni")
