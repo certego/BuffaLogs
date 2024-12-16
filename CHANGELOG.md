@@ -2,6 +2,7 @@
 ### 1.3.0
 #### Feature
 * Added configuration panel in order to set custom preferences
+* Added more fields in the Alert.login_raw_data dict in order to have more info about previous location for imp_travel detection
 ### Changes
 * Set default settings values in the *settings.certego.py* file
 * Moved Enums into *costants.py* file
