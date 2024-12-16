@@ -56,6 +56,13 @@ class AlertDetectionType(Enum):
     def choices(cls):
         return tuple((i.name, i.value) for i in cls)
 
+    @classmethod
+    def get_label_from_value(cls, value):
+        for item in cls:
+            if item.value == value:
+                return item.name
+        return None
+
 
 class AlertFilterType(Enum):
     """Types of possible detection filter applied on alerts to be ignored
