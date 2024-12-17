@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
+from impossible_travel.constants import UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
 
@@ -37,18 +38,10 @@ def update_risk_level():
     with transaction.atomic():
         for u in User.objects.annotate(Count("alert")):
             alerts_num = u.alert__count
-            if alerts_num == 0:
-                tmp = User.riskScoreEnum.NO_RISK
-            elif 1 <= alerts_num <= 2:
-                tmp = User.riskScoreEnum.LOW
-            elif 3 <= alerts_num <= 4:
-                tmp = User.riskScoreEnum.MEDIUM
-            else:
-                tmp = User.riskScoreEnum.HIGH
-                if u.risk_score != tmp:
-                    # Added log only if it's updated, not always for each High risk user
-                    logger.info(f"{User.riskScoreEnum.HIGH} risk level for User: {u.username}, {alerts_num} detected")
+            tmp = UserRiskScoreType.get_risk_level(alerts_num)
             if u.risk_score != tmp:
+                # Added log only if it's updated, not always for each High risk user
+                logger.info(f"Upgraded risk level for User: {u.username}, {alerts_num} detected")
                 u.risk_score = tmp
                 u.save()
 
@@ -64,7 +57,7 @@ def set_alert(db_user, login_alert, alert_info):
     :type alert_info: dict
     """
     logger.info(
-        f"ALERT {alert_info['alert_name']} for User:{db_user.username} at:{login_alert['timestamp']} from {login_alert['country']} from device:{login_alert['agent']}"
+        f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']} from {login_alert['country']} from device: {login_alert['agent']}"
     )
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     if Config.objects.filter(vip_users__contains=[db_user.username]):
@@ -97,12 +90,16 @@ def check_fields(db_user, fields):
                         set_alert(db_user, login_alert=login, alert_info=country_alert)
 
                 if not db_user.usersip_set.filter(ip=login["ip"]).exists():
+                    last_user_login = db_user.login_set.latest("timestamp")
                     logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert, travel_vel = imp_travel.calc_distance(db_user, prev_login=db_user.login_set.latest("timestamp"), last_login_user_fields=login)
+                    travel_alert, travel_vel = imp_travel.calc_distance(db_user, prev_login=last_user_login, last_login_user_fields=login)
                     if travel_alert:
                         new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
-                        new_alert.login_raw_data["buffalogs.start_country"] = db_user.login_set.latest("timestamp").country
-                        new_alert.login_raw_data["buffalogs.avg_speed"] = travel_vel
+                        new_alert.login_raw_data["buffalogs"] = {}
+                        new_alert.login_raw_data["buffalogs"]["start_country"] = last_user_login.country
+                        new_alert.login_raw_data["buffalogs"]["avg_speed"] = travel_vel
+                        new_alert.login_raw_data["buffalogs"]["start_lat"] = last_user_login.latitude
+                        new_alert.login_raw_data["buffalogs"]["start_lon"] = last_user_login.longitude
                         new_alert.save()
                     #   Add the new ip address from which the login comes to the db
                     imp_travel.add_new_user_ip(db_user, login["ip"])
@@ -221,7 +218,7 @@ def exec_process_logs(start_date, end_date):
     :param end_date: End datetime
     :type end_date: datetime
     """
-    logger.info(f"Starting at:{start_date} Finishing at:{end_date}")
+    logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
     config, op_result = Config.objects.get_or_create()
     connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (

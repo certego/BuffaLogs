@@ -1,4 +1,22 @@
+## 1.3.x
+### 1.3.0
+#### Feature
+* Added configuration panel in order to set custom preferences
+* Added more fields in the Alert.login_raw_data dict in order to have more info about previous location for imp_travel detection
+### Changes
+* Set default settings values in the *settings.certego.py* file
+* Moved Enums into *costants.py* file
+
 ## 1.2.x
+### 1.2.12
+#### Bugfix
+* Cleaned venv from useless packages
+* Added pytz in requirements because it's needed by celery_beat
+* Registered UserAdmin in authentication
+### 1.2.11
+#### Bugfix
+* Fixed the update of the login.updated field
+* Added logging for the clear_models_periodically function
 ### 1.2.10
 #### Changes
 * Added settings into the Config model (instead of into the settings.py file)
