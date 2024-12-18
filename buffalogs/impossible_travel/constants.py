@@ -40,9 +40,9 @@ class AlertDetectionType(Enum):
     * NEW_DEVICE: Login from a new user-agent used by the user
     * IMP_TRAVEL: Alert if the user logs into the system from a significant distance () within a range of time that cannot be covered by conventional means of transport
     * NEW_COUNTRY: The user made a login from a country where they have never logged in before
-    * USER_RISK_THRESHOLD:
-    * LOGIN_ANONYMIZER_IP:
-    * ATYPICAL_COUNTRY
+    * USER_RISK_THRESHOLD: Login from a user with a risk score higher than the threshold.
+    * LOGIN_ANONYMIZER_IP: Login from an IP address that is used for anonymization purposes.
+    * ATYPICAL_COUNTRY: Login from a country which has not been seen for a long time.
     """
 
     NEW_DEVICE = "Login from new device"

@@ -154,7 +154,7 @@ def process_user(db_user, start_date, end_date):
         .extra(size=10000)
     )
     response = s.execute()
-    logger.info(f"Got {len(response)} logins for user {db_user.username}")
+    logger.info(f"Got {len(response)} logins for user {db_user.username} between {start_date} and {end_date}")
     for hit in response:
         if "source" in hit:
             tmp = {"timestamp": hit["@timestamp"]}
