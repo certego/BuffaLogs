@@ -138,6 +138,9 @@ class Config(models.Model):
     def clean(self):
         if not self.pk and Config.objects.exists():
             raise ValidationError("A Config object already exist - it is possible just to modify it, not to create a new one")
+        else:
+            # Config.id=1 always
+            self.pk = 1
 
     def save(self, *args, **kwargs):
         self.clean()
