@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.db import models
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
 
@@ -133,3 +134,14 @@ class Config(models.Model):
         default=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS, help_text="Days after which the alerts will be removed from the db"
     )
     ip_max_days = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS, help_text="Days after which the IPs will be removed from the db")
+
+    def clean(self):
+        if not self.pk and Config.objects.exists():
+            raise ValidationError("A Config object already exist - it is possible just to modify it, not to create a new one")
+        else:
+            # Config.id=1 always
+            self.pk = 1
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
