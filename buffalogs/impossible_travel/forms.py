@@ -61,3 +61,8 @@ class ConfigAdminForm(forms.ModelForm):
     class Meta:
         model = Config
         fields = "__all__"
+
+    class Media:
+        css = {
+            "all": ("css/custom_admin.css",),
+        }

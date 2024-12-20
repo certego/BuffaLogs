@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .forms import AlertAdminForm
+from .forms import AlertAdminForm, ConfigAdminForm
 from .models import Alert, Config, Login, TaskSettings, User, UsersIP
 
 
@@ -43,6 +43,7 @@ class TaskSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(Config)
 class ConfigsAdmin(admin.ModelAdmin):
+    form = ConfigAdminForm
     list_display = ("created", "updated", "ignored_users", "ignored_ips", "allowed_countries", "vip_users")
     search_fields = ("allowed_countries", "vip_users")
 
