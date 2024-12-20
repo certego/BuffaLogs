@@ -6,19 +6,31 @@ from .models import Alert, Config
 
 
 class MultiChoiceArrayWidget(forms.SelectMultiple):
-    """Widget per ArrayField che consente selezioni multiple con un'interfaccia user-friendly."""
+    """Widget for user-friendly interface for ArrayField with multiple choices"""
 
     def __init__(self, choices, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.choices = choices
 
+    def render(self, name, value, attrs=None, renderer=None):
+        if value is None:
+            value = []
+        elif not isinstance(value, list):
+            value = [value]
+        return super().render(name, value, attrs, renderer)
+
 
 class MultiChoiceArrayField(SimpleArrayField):
-    """Campo personalizzato per ArrayField con supporto a choices multiple."""
+    """Personalized field for ArrayField that supports multiple choices"""
 
     def __init__(self, base_field, choices, *args, **kwargs):
         self.widget = MultiChoiceArrayWidget(choices=choices)
         super().__init__(base_field, *args, **kwargs)
+
+    def prepare_value(self, value):
+        if value is None:
+            return []
+        return value
 
 
 class ShortLabelChoiceField(forms.ChoiceField):
