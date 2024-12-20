@@ -17,8 +17,12 @@ class LoginAdmin(admin.ModelAdmin):
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     form = UserAdminForm
-    list_display = ("id", "username", "created", "updated", "risk_score")
+    list_display = ("id", "username", "created", "updated", "get_risk_score_value")
     search_fields = ("id", "username", "risk_score")
+
+    @admin.display(description="risk_score")
+    def get_risk_score_value(self, obj):
+        return obj.risk_score
 
 
 @admin.register(Alert)
