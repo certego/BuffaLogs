@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
 
 
@@ -11,12 +12,24 @@ class User(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return f"User object ({self.id}) - {self.username}"
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                # Check that the User.risk_score is one of the value in the Enum UserRiskScoreType
+                check=models.Q(risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
+                name="valid_user_risk_score_choice",
+            )
+        ]
+
 
 class Login(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(default=timezone.now)
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
     country = models.TextField(blank=True)
