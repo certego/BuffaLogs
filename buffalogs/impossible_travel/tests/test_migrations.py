@@ -3,8 +3,8 @@ import json
 import os
 
 from django.core.management import call_command
-from django.db import connections
-from django.db.utils import OperationalError
+from django.db import connection
+from django.db.migrations.executor import MigrationExecutor
 from django.forms.models import model_to_dict
 from django.test import TestCase
 from impossible_travel import constants, models
@@ -22,14 +22,36 @@ class MigrationTest(TestCase):
     def test_migration_0010_to_0011(self):
         """Testing 0011 migration in order to check that values are correctly set
         for User and Alert models that have had enums changes"""
-        call_command("migrate", "impossible_travel", "0010_config_alert_max_days_config_distance_accepted_and_more")
+        self.executor = MigrationExecutor(connection)
+        self.executor.loader.build_graph()
+        self.executor.migrate([("impossible_travel", "0010_config_alert_max_days_config_distance_accepted_and_more")])
+
+        apps = self.executor.loader.project_state(("impossible_travel", "0010_config_alert_max_days_config_distance_accepted_and_more")).apps
+
+        prev_User_model = apps.get_model("impossible_travel", "User")
+        prev_Login_model = apps.get_model("impossible_travel", "Login")
+        prev_Alert_model = apps.get_model("impossible_travel", "Alert")
+
+        # load User and Login data
+        call_command("loaddata", "impossible_travel/tests/test_data/test_migration_0010_to_0011.json")
+
+        prev_users = prev_User_model.objects.all().order_by("created")
+        prev_logins = prev_Login_model.objects.all().order_by("timestamp")
+        user_for_alerts = prev_users[0]
+
+        alerts = load_test_data("test_alerts_for_migration_0010")
+        for alert in alerts:
+            prev_Alert_model.objects.create(user=user_for_alerts, **alert)
+        prev_alerts = prev_Alert_model.objects.all()
+
+        # migrate to 0011
+        self.executor.migrate([("impossible_travel", "0011_alert_filter_type_alert_is_filtered_and_more")])
+        apps = self.executor.loader.project_state(("impossible_travel", "0011_alert_filter_type_alert_is_filtered_and_more")).apps
 
         # upload data fixture
-        call_command("loaddata", "impossible_travel/tests/test_data/test_migration_0010_to_0011.json")
 
         # check initial data state - users
         # used models.UserRiskScoreType because the previous implementation used that enum defined directly in the model
-        prev_users = models.User.objects.all().order_by("created")
         self.assertEqual(4, len(prev_users))
         self.assertEqual(prev_users[0].risk_score, models.UserRiskScoreType.NO_RISK)
         self.assertEqual({"username": "user1", "risk_score": "No risk"}, model_to_dict(prev_users[0], fields=["username", "risk_score"]))
@@ -41,29 +63,25 @@ class MigrationTest(TestCase):
         self.assertEqual({"username": "user4", "risk_score": "High"}, model_to_dict(prev_users[3], fields=["username", "risk_score"]))
 
         # check initial data state - logins (no changes affected)
-        prev_logins = models.Login.objects.all().order_by("timestamp")
-        self.check_logins_no_changes(logins=prev_logins)
+        self.check_logins_no_changes(users=prev_users, logins=prev_logins)
 
         # check initial data state - alerts
-        prev_alerts = models.Alert.objects.all()
         self.assertEqual(3, len(prev_alerts))
         self.assertEqual(prev_alerts[0].user, prev_users[0])
-        self.assertEqual(prev_alerts[0].name, models.AlertDetectionType.NEW_DEVICE)
         self.assertEqual(prev_alerts[0].name, "Login from new device")
         self.assertEqual(prev_alerts[1].user, prev_users[0])
-        self.assertEqual(prev_alerts[1].name, models.AlertDetectionType.NEW_COUNTRY)
         self.assertEqual(prev_alerts[1].name, "Login from new country")
         self.assertEqual(prev_alerts[2].user, prev_users[0])
-        self.assertEqual(prev_alerts[2].name, models.AlertDetectionType.IMP_TRAVEL)
         self.assertEqual(prev_alerts[2].name, "Impossible Travel detected")
 
-        # Exec the new migration 0011
-        call_command("migrate", "impossible_travel", "0011_alert_filter_type_alert_is_filtered_and_more")
+        new_User_model = apps.get_model("impossible_travel", "User")
+        new_Login_model = apps.get_model("impossible_travel", "Login")
+        new_Alert_model = apps.get_model("impossible_travel", "Alert")
 
         # Update objects from dB
-        new_users = prev_users.refresh_from_db()
-        new_alerts = prev_alerts.refresh_from_db()
-        new_logins = prev_logins.refresh_from_db()
+        new_users = new_User_model.objects.all()
+        new_alerts = new_Login_model.objects.all()
+        new_logins = new_Alert_model.objects.all()
 
         # check post data state - users
         self.assertEqual(4, len(new_users))
@@ -77,7 +95,7 @@ class MigrationTest(TestCase):
         self.assertEqual({"username": "user4", "risk_score": "High"}, model_to_dict(new_users[3], fields=["username", "risk_score"]))
 
         # check post data state - logins (no changes affected)
-        self.check_logins_no_changes(logins=new_logins)
+        self.check_logins_no_changes(users=new_users, logins=new_logins)
 
         # check post data state - alerts
         self.assertEqual(3, len(new_alerts))
@@ -91,9 +109,9 @@ class MigrationTest(TestCase):
         self.assertEqual(new_alerts[2].name, constants.AlertDetectionType.IMP_TRAVEL)
         self.assertEqual(prev_alerts[2].name, "Imp Travel")
 
-    def check_logins_no_changes(self, logins: dict):
+    def check_logins_no_changes(self, users, logins: dict):
         self.assertEqual(3, len(logins))
-        self.assertEqual(logins[0].user, logins[0])
+        self.assertEqual(logins[0].user, users[0])
         login_timestamp = datetime.datetime(2024, 12, 20, 16, 45, 0, 904000, tzinfo=datetime.timezone.utc)
         self.assertEqual(logins[0].timestamp, login_timestamp)
         self.assertEqual(
@@ -108,7 +126,7 @@ class MigrationTest(TestCase):
             },
             model_to_dict(logins[0], fields=["latitude", "longitude", "country", "user_agent", "index", "event_id", "ip"]),
         )
-        self.assertEqual(logins[1].user, logins[0])
+        self.assertEqual(logins[1].user, users[0])
         login_timestamp = datetime.datetime(2024, 12, 20, 16, 45, 1, 904000, tzinfo=datetime.timezone.utc)
         self.assertEqual(logins[1].timestamp, login_timestamp)
         self.assertEqual(
@@ -123,7 +141,7 @@ class MigrationTest(TestCase):
             },
             model_to_dict(logins[1], fields=["latitude", "longitude", "country", "user_agent", "index", "event_id", "ip"]),
         )
-        self.assertEqual(logins[2].user, logins[1])
+        self.assertEqual(logins[2].user, users[1])
         login_timestamp = datetime.datetime(2024, 12, 20, 16, 45, 2, 904000, tzinfo=datetime.timezone.utc)
         self.assertEqual(logins[2].timestamp, login_timestamp)
         self.assertEqual(
@@ -142,3 +160,4 @@ class MigrationTest(TestCase):
     def tearDown(self):
         """Pulisci il database dopo il test."""
         models.User.objects.all().delete()
+        self.executor.migrate([("impossible_travel", "0011_alert_filter_type_alert_is_filtered_and_more")])
