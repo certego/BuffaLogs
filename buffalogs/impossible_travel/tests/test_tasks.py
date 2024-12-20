@@ -73,7 +73,7 @@ class TestTasks(TestCase):
         # 1 alert --> Low risk
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
-        Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value, login_raw_data="Test", description="Test_Description")
+        Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data="Test", description="Test_Description")
         tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("Low", db_user.risk_score)
@@ -85,9 +85,9 @@ class TestTasks(TestCase):
         db_user = User.objects.get(username="Lorena Goldoni")
         Alert.objects.bulk_create(
             [
-                Alert(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value, login_raw_data="Test1", description="Test_Description1"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_DEVICE.value, login_raw_data="Test2", description="Test_Description2"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data="Test3", description="Test_Description3"),
+                Alert(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data="Test1", description="Test_Description1"),
+                Alert(user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data="Test2", description="Test_Description2"),
+                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test3", description="Test_Description3"),
             ]
         )
         tasks.update_risk_level()
@@ -101,11 +101,11 @@ class TestTasks(TestCase):
         db_user = User.objects.get(username="Lorena Goldoni")
         Alert.objects.bulk_create(
             [
-                Alert(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value, login_raw_data="Test1", description="Test_Description1"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_DEVICE.value, login_raw_data="Test2", description="Test_Description2"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data="Test3", description="Test_Description3"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data="Test4", description="Test_Description4"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data="Test5", description="Test_Description5"),
+                Alert(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data="Test1", description="Test_Description1"),
+                Alert(user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data="Test2", description="Test_Description2"),
+                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test3", description="Test_Description3"),
+                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test4", description="Test_Description4"),
+                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test5", description="Test_Description5"),
             ]
         )
         tasks.update_risk_level()
@@ -118,7 +118,7 @@ class TestTasks(TestCase):
         db_login = Login.objects.get(user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5")
         timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
-        name = AlertDetectionType.IMP_TRAVEL.value
+        name = AlertDetectionType.IMP_TRAVEL
         desc = f"{name} for User: {db_user.username}, \
                     at: {timestamp}, from: ({db_login.latitude}, {db_login.longitude})"
         alert_info = {
@@ -126,9 +126,9 @@ class TestTasks(TestCase):
             "alert_desc": desc,
         }
         tasks.set_alert(db_user, login_data, alert_info)
-        db_alert = Alert.objects.get(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value)
+        db_alert = Alert.objects.get(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
         self.assertIsNotNone(db_alert)
-        self.assertEqual("Impossible Travel detected", db_alert.name)
+        self.assertEqual("Imp Travel", db_alert.name)
         self.assertFalse(db_alert.is_vip)
 
     def test_set_alert_vip_user(self):
@@ -137,7 +137,7 @@ class TestTasks(TestCase):
         db_login = Login.objects.filter(user=db_user).first()
         timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
-        name = AlertDetectionType.IMP_TRAVEL.value
+        name = AlertDetectionType.IMP_TRAVEL
         desc = f"{name} for User: {db_user.username}, \
                     at: {timestamp}, from: ({db_login.latitude}, {db_login.longitude})"
         alert_info = {
@@ -145,7 +145,7 @@ class TestTasks(TestCase):
             "alert_desc": desc,
         }
         tasks.set_alert(db_user, login_data, alert_info)
-        db_alert = Alert.objects.get(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value)
+        db_alert = Alert.objects.get(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
         self.assertTrue(db_alert.is_vip)
 
     def test_process_logs_data_lost(self):
@@ -275,9 +275,12 @@ class TestTasks(TestCase):
         #   5. at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
         #   6. at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
         self.assertEqual(6, Alert.objects.filter(user=db_user).count())
-        self.assertEqual(2, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE.value).count())
-        self.assertEqual(1, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value).count())
-        self.assertEqual(3, Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value).count())
+        self.assertEqual(2, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).count())
+        self.assertEqual(1, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).count())
+        imp_travel_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
+        self.assertEqual(3, imp_travel_alerts.count())
+        # check first imp_travel alert
+        imp_travel_alerts[0].name
         self.assertEqual(0, Alert.objects.filter(user=db_user, is_vip=True).count())
 
         # Adding "Aisha Delgado" to vip users
@@ -291,9 +294,9 @@ class TestTasks(TestCase):
         #   10. at 2023-05-03T07:18:38.768Z alert IMP TRAVEL
         #   11. at 2023-05-03T07:20:36.154Z alert IMP TRAVEL
         tasks.check_fields(db_user, fields2)
-        self.assertEqual(4, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE.value).count())
-        self.assertEqual(1, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY.value).count())
-        self.assertEqual(6, Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value).count())
+        self.assertEqual(4, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).count())
+        self.assertEqual(1, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).count())
+        self.assertEqual(6, Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL).count())
         self.assertEqual(5, Alert.objects.filter(user=db_user, is_vip=True).count())
         self.assertEqual(11, Alert.objects.filter(user=db_user).count())
 

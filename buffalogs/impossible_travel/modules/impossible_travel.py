@@ -45,7 +45,7 @@ class Impossible_Travel:
             vel = distance_km / diff_timestamp_hours
 
             if vel > app_config.vel_accepted:
-                alert_info["alert_name"] = AlertDetectionType.IMP_TRAVEL.value
+                alert_info["alert_name"] = AlertDetectionType.IMP_TRAVEL
                 alert_info[
                     "alert_desc"
                 ] = f"{alert_info['alert_name']} for User: {db_user.username}, at: {last_timestamp_datetimeObj_aware}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"

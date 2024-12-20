@@ -22,6 +22,6 @@ class Login_New_Device:
         alert_info = {}
         if db_user.login_set.filter(user_agent=login_field["agent"]).count() == 0:
             timestamp = login_field["timestamp"]
-            alert_info["alert_name"] = AlertDetectionType.NEW_DEVICE.value
+            alert_info["alert_name"] = AlertDetectionType.NEW_DEVICE
             alert_info["alert_desc"] = f"LOGIN FROM NEW DEVICE for User: {db_user.username}, at: {timestamp}"
             return alert_info
