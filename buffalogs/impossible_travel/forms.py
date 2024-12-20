@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.postgres.forms import SimpleArrayField
 
-from .constants import AlertDetectionType
-from .models import Alert, Config
+from .constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
+from .models import Alert, Config, TaskSettings, User, UsersIP
 
 
 class MultiChoiceArrayWidget(forms.SelectMultiple):
@@ -42,8 +42,17 @@ class ShortLabelChoiceField(forms.ChoiceField):
         super().__init__(*args, choices=formatted_choices, **kwargs)
 
 
+class UserAdminForm(forms.ModelForm):
+    risk_score = ShortLabelChoiceField(choices=UserRiskScoreType.choices)
+
+    class Meta:
+        model = User
+        fields = "__all__"
+
+
 class AlertAdminForm(forms.ModelForm):
     name = ShortLabelChoiceField(choices=AlertDetectionType.choices)
+    filter_type = ShortLabelChoiceField(choices=AlertFilterType.choices)
 
     class Meta:
         model = Alert
@@ -57,6 +66,7 @@ class ConfigAdminForm(forms.ModelForm):
         required=False,
         help_text="Hold down “Control”, or “Command” on a Mac, to select more than one.",
     )
+    alert_minimum_risk_score = ShortLabelChoiceField(choices=UserRiskScoreType.choices)
 
     class Meta:
         model = Config

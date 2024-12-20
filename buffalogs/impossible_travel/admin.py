@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .forms import AlertAdminForm, ConfigAdminForm
+from .forms import AlertAdminForm, ConfigAdminForm, UserAdminForm
 from .models import Alert, Config, Login, TaskSettings, User, UsersIP
 
 
@@ -16,6 +16,7 @@ class LoginAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
+    form = UserAdminForm
     list_display = ("id", "username", "created", "updated", "risk_score")
     search_fields = ("id", "username", "risk_score")
 
