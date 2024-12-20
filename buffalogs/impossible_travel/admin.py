@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils import timezone
 
 from .forms import AlertAdminForm, ConfigAdminForm, UserAdminForm
 from .models import Alert, Config, Login, TaskSettings, User, UsersIP
@@ -6,12 +7,29 @@ from .models import Alert, Config, Login, TaskSettings, User, UsersIP
 
 @admin.register(Login)
 class LoginAdmin(admin.ModelAdmin):
-    list_display = ("id", "created", "updated", "get_username", "timestamp", "latitude", "longitude", "country", "user_agent", "index", "ip", "event_id")
+    list_display = (
+        "id",
+        "created",
+        "updated",
+        "get_username",
+        "timestamp_display",
+        "latitude",
+        "longitude",
+        "country",
+        "user_agent",
+        "index",
+        "ip",
+        "event_id",
+    )
     search_fields = ("id", "user__username", "user_agent", "index", "event_id", "ip")
 
     @admin.display(description="username")
     def get_username(self, obj):
         return obj.user.username
+
+    def timestamp_display(self, obj):
+        # Usa strftime per personalizzare il formato
+        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime("%b %d, %Y, %I:%M:%S %p %Z")
 
 
 @admin.register(User)
