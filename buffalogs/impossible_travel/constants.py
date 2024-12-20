@@ -4,20 +4,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-class ChoicesEnum(Enum):
-    """Base class for creating enumerations compatible with Django choices."""
-
-    def __new__(cls, value, label):
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj.label = label
-        return obj
-
-    @classmethod
-    def choices(cls):
-        return tuple([(k.name, k.value) for k in cls])
-
-
 class UserRiskScoreType(models.TextChoices):
     """Possible types of user risk scores, based on number of alerts that they have triggered
 
