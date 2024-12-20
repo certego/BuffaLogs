@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from .forms import AlertAdminForm
 from .models import Alert, Config, Login, TaskSettings, User, UsersIP
 
 
@@ -21,6 +22,7 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
+    form = AlertAdminForm
     list_display = ("id", "created", "updated", "get_username", "get_alert_value", "description", "login_raw_data", "is_vip")
     search_fields = ("user__username", "name", "is_vip")
 
@@ -28,7 +30,7 @@ class AlertAdmin(admin.ModelAdmin):
     def get_username(self, obj):
         return obj.user.username
 
-    @admin.display(description="alert_value")
+    @admin.display(description="name")
     def get_alert_value(self, obj):
         return obj.name
 
