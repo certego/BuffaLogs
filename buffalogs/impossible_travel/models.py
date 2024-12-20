@@ -6,13 +6,10 @@ from impossible_travel.constants import AlertDetectionType, AlertFilterType, Use
 
 
 class User(models.Model):
-    risk_score = models.CharField(choices=UserRiskScoreType.choices, max_length=30, null=False, default=UserRiskScoreType.NO_RISK.value)
+    risk_score = models.CharField(choices=UserRiskScoreType.choices, max_length=30, null=False, default=UserRiskScoreType.NO_RISK)
     username = models.TextField(unique=True, db_index=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
-    def get_risk_display(self):
-        return AlertFilterType.get_risk_level(self.risk_level).name
 
 
 class Login(models.Model):
@@ -48,6 +45,20 @@ class Alert(models.Model):
         default=list,
         help_text="List of filters that disabled the related alert",
     )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                # Check that the Alert.name is one of the value in the Enum AlertDetectionType
+                check=models.Q(name__in=[choice[0] for choice in AlertDetectionType.choices]),
+                name="valid_alert_name_choice",
+            ),
+            models.CheckConstraint(
+                # Check that each element in the Alert.filter_type is in the Enum AlertFilterType
+                check=models.Q(filter_type__contained_by=AlertFilterType.choices),
+                name="valid_alert_filter_type_choices",
+            ),
+        ]
 
 
 class UsersIP(models.Model):
@@ -107,12 +118,13 @@ class Config(models.Model):
         choices=UserRiskScoreType.choices,
         max_length=30,
         blank=False,
-        default=UserRiskScoreType.NO_RISK.value,
+        default=UserRiskScoreType.NO_RISK,
         help_text="Select the risk_score that users should have at least to send alert",
     )
     filtered_alerts_types = ArrayField(
         models.CharField(max_length=50, choices=AlertDetectionType.choices, blank=True),
         default=list,
+        blank=True,
         help_text="List of alerts' types to exclude from the alerting",
     )
     ignore_mobile_logins = models.BooleanField(default=False, help_text="Flag to ignore mobile devices from the detection")
@@ -145,3 +157,17 @@ class Config(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                # Check that the Config.alert_minimum_risk_score is one of the value in the Enum UserRiskScoreType
+                check=models.Q(alert_minimum_risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
+                name="valid_config_alert_minimum_risk_score_choice",
+            ),
+            models.CheckConstraint(
+                # Check that each element in the Config.filtered_alerts_types is in the Enum AlertFilterType
+                check=models.Q(filtered_alerts_types__contained_by=AlertFilterType.choices),
+                name="valid_alert_filters_choices",
+            ),
+        ]
