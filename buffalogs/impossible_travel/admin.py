@@ -21,12 +21,16 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
-    list_display = ("id", "created", "updated", "get_username", "name", "description", "login_raw_data", "is_vip")
+    list_display = ("id", "created", "updated", "get_username", "get_alert_value", "description", "login_raw_data", "is_vip")
     search_fields = ("user__username", "name", "is_vip")
 
     @admin.display(description="username")
     def get_username(self, obj):
         return obj.user.username
+
+    @admin.display(description="alert_value")
+    def get_alert_value(self, obj):
+        return obj.name
 
 
 @admin.register(TaskSettings)

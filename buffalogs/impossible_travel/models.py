@@ -6,7 +6,7 @@ from impossible_travel.constants import AlertDetectionType, AlertFilterType, Use
 
 
 class User(models.Model):
-    risk_score = models.CharField(choices=UserRiskScoreType.choices(), max_length=30, null=False, default=UserRiskScoreType.NO_RISK.value)
+    risk_score = models.CharField(choices=UserRiskScoreType.choices, max_length=30, null=False, default=UserRiskScoreType.NO_RISK.value)
     username = models.TextField(unique=True, db_index=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -31,7 +31,7 @@ class Login(models.Model):
 
 class Alert(models.Model):
     name = models.CharField(
-        choices=AlertDetectionType.choices(),
+        choices=AlertDetectionType.choices,
         max_length=30,
         null=False,
     )
@@ -43,7 +43,7 @@ class Alert(models.Model):
     is_vip = models.BooleanField(default=False)
     is_filtered = models.BooleanField(default=False, help_text="Show if the alert has been filtered because of some filter (listed in the filter_type field)")
     filter_type = ArrayField(
-        models.CharField(max_length=50, choices=AlertFilterType.choices(), blank=True),
+        models.CharField(max_length=50, choices=AlertFilterType.choices, blank=True),
         blank=True,
         default=list,
         help_text="List of filters that disabled the related alert",
@@ -104,14 +104,14 @@ class Config(models.Model):
     vip_users = ArrayField(models.CharField(max_length=50), blank=True, default=get_default_vip_users, help_text="List of users considered more sensitive")
     alert_is_vip_only = models.BooleanField(default=False, help_text="Flag to send alert only related to the users in the vip_users list")
     alert_minimum_risk_score = models.CharField(
-        choices=UserRiskScoreType.choices(),
+        choices=UserRiskScoreType.choices,
         max_length=30,
         blank=False,
         default=UserRiskScoreType.NO_RISK.value,
         help_text="Select the risk_score that users should have at least to send alert",
     )
     filtered_alerts_types = ArrayField(
-        models.CharField(max_length=50, choices=AlertDetectionType.choices(), blank=True),
+        models.CharField(max_length=50, choices=AlertDetectionType.choices, blank=True),
         default=list,
         help_text="List of alerts' types to exclude from the alerting",
     )

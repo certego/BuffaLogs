@@ -2,6 +2,8 @@
 ### 1.3.1
 ### Changes
 * Forced the existence of only 1 Config object with id=1
+#### Bugfix
+* Fixed alert.name representation enums
 ### 1.3.0
 #### Feature
 * Added configuration panel in order to set custom preferences
