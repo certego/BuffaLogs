@@ -40,11 +40,7 @@ class Login(models.Model):
 
 
 class Alert(models.Model):
-    name = models.CharField(
-        choices=AlertDetectionType.choices,
-        max_length=30,
-        null=False,
-    )
+    name = models.CharField(choices=AlertDetectionType.choices, max_length=30, null=False, blank=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     login_raw_data = models.JSONField()
     created = models.DateTimeField(auto_now_add=True)

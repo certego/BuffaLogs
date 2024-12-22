@@ -20,6 +20,6 @@ class Login_New_Country:
         new_country = login_field["country"]
         if db_user.login_set.filter(country=new_country).count() == 0:
             time = login_field["timestamp"]
-            alert_info["alert_name"] = AlertDetectionType.NEW_COUNTRY
-            alert_info["alert_desc"] = f"{alert_info['alert_name']} for User: {db_user.username}, at: {time}, from: {new_country}"
+            alert_info["alert_name"] = AlertDetectionType.NEW_COUNTRY.value
+            alert_info["alert_desc"] = f"{AlertDetectionType.NEW_COUNTRY.label} for User: {db_user.username}, at: {time}, from: {new_country}"
             return alert_info

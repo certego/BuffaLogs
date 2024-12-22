@@ -39,7 +39,7 @@ class TestTasks(TestCase):
             "timestamp": "2023-04-03T14:01:47.907Z",
         }
         UsersIP.objects.create(user=user_obj, ip=raw_data["ip"])
-        Alert.objects.create(user=user_obj, login_raw_data=raw_data)
+        Alert.objects.create(user=user_obj, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data=raw_data)
         self.assertTrue(User.objects.filter(username="Lorena").exists())
         self.assertTrue(Login.objects.filter(user=user_obj).exists())
         self.assertTrue(Alert.objects.filter(user=user_obj).exists())
@@ -73,7 +73,7 @@ class TestTasks(TestCase):
         # 1 alert --> Low risk
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
-        Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data="Test", description="Test_Description")
+        Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value, login_raw_data="Test", description="Test_Description")
         tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("Low", db_user.risk_score)
