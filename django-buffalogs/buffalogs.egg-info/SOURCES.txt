@@ -14,12 +14,14 @@ impossible_travel/__init__.py
 impossible_travel/admin.py
 impossible_travel/apps.py
 impossible_travel/constants.py
+impossible_travel/forms.py
 impossible_travel/models.py
 impossible_travel/tasks.py
 impossible_travel/views.py
 impossible_travel/management/commands/clear_models.py
 impossible_travel/management/commands/impossible_travel.py
 impossible_travel/management/commands/setup_config.py
+impossible_travel/management/commands/__pycache__/setup_config.cpython-312.pyc
 impossible_travel/migrations/0001_initial.py
 impossible_travel/migrations/0002_alert_updated.py
 impossible_travel/migrations/0003_alter_alert_updated.py
@@ -31,6 +33,7 @@ impossible_travel/migrations/0008_usersip.py
 impossible_travel/migrations/0009_config_ignored_ips_config_ignored_users_and_more.py
 impossible_travel/migrations/0010_config_alert_max_days_config_distance_accepted_and_more.py
 impossible_travel/migrations/0011_alert_filter_type_alert_is_filtered_and_more.py
+impossible_travel/migrations/0012_remove_alert_valid_alert_filter_type_choices_and_more.py
 impossible_travel/migrations/__init__.py
 impossible_travel/modules/impossible_travel.py
 impossible_travel/modules/login_from_new_country.py

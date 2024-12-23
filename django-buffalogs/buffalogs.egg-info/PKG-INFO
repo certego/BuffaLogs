@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: buffalogs
-Version: 1.3.0
+Version: 1.3.1
 Summary: A Django app to detect anomaly logins.
 Author: Lorena Goldoni
 License: Apache-2.0
