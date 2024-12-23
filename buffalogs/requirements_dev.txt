@@ -1,4 +1,4 @@
-pre-commit~=3.8.0
+pre-commit>=3.8.0
 mypy-extensions>=0.4.3
 ipython>=8.30.0
-pipdeptree~=2.23.1
+pipdeptree>=2.23.1
