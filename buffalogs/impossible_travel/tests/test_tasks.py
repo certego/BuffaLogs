@@ -261,7 +261,7 @@ class TestTasks(TestCase):
         self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
         self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
 
-    def check_fields_alerts(self):
+    def test_check_fields_alerts(self):
         fields1 = load_test_data("test_check_fields_part1")
         fields2 = load_test_data("test_check_fields_part2")
         db_user = User.objects.get(username="Aisha Delgado")
@@ -275,12 +275,36 @@ class TestTasks(TestCase):
         #   5. at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
         #   6. at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
         self.assertEqual(6, Alert.objects.filter(user=db_user).count())
-        self.assertEqual(2, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).count())
-        self.assertEqual(1, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).count())
-        imp_travel_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
-        self.assertEqual(3, imp_travel_alerts.count())
-        # check first imp_travel alert
-        imp_travel_alerts[0].name
+        new_device_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE)
+        self.assertEqual(2, new_device_alerts_fields1.count())
+        new_country_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY)
+        self.assertEqual(1, new_country_alerts_fields1.count())
+        imp_travel_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
+        self.assertEqual(3, imp_travel_alerts_fields1.count())
+        # check new_device alerts for fields1 logins
+        self.assertEqual("New Device", new_device_alerts_fields1[0].name)
+        self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z", new_device_alerts_fields1[0].description)
+        self.assertEqual("New Device", new_device_alerts_fields1[1].name)
+        self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z", new_device_alerts_fields1[1].description)
+        # check new_country alerts for fields1 logins
+        self.assertEqual("New Country", new_country_alerts_fields1[0].name)
+        self.assertEqual("Login from new country for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z, from: Japan", new_country_alerts_fields1[0].description)
+        # check imp_travel alerts for fields1 logins
+        self.assertEqual("Imp Travel", imp_travel_alerts_fields1[0].name)
+        self.assertEqual(
+            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z, from: United States, previous country: India, distance covered at 133973 Km/h",
+            imp_travel_alerts_fields1[0].description,
+        )
+        self.assertEqual("Imp Travel", imp_travel_alerts_fields1[1].name)
+        self.assertEqual(
+            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z, from: Japan, previous country: United States, distance covered at 344009 Km/h",
+            imp_travel_alerts_fields1[1].description,
+        )
+        self.assertEqual("Imp Travel", imp_travel_alerts_fields1[2].name)
+        self.assertEqual(
+            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T07:10:23.154Z, from: United States, previous country: Japan, distance covered at 52564 Km/h",
+            imp_travel_alerts_fields1[2].description,
+        )
         self.assertEqual(0, Alert.objects.filter(user=db_user, is_vip=True).count())
 
         # Adding "Aisha Delgado" to vip users
@@ -293,12 +317,28 @@ class TestTasks(TestCase):
         #   9. at 2023-05-03T07:18:38.768Z alert NEW DEVICE
         #   10. at 2023-05-03T07:18:38.768Z alert IMP TRAVEL
         #   11. at 2023-05-03T07:20:36.154Z alert IMP TRAVEL
+
+        # get IDs of old alerts to check the new alerts
+        new_device_alerts_fields1_ids = list(new_device_alerts_fields1.values_list("id", flat=True))
+
         tasks.check_fields(db_user, fields2)
-        self.assertEqual(4, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).count())
+        self.assertEqual(11, Alert.objects.filter(user=db_user).count())
+        # get new_device alerts relating to fields2 making query all_new_device_alerts - new_device_alerts_fields1
+        all_new_device_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE)
+        self.assertEqual(4, all_new_device_alerts.count())
+        new_device_alerts_fields2 = all_new_device_alerts.exclude(id__in=new_device_alerts_fields1_ids)
+        self.assertEqual(2, new_device_alerts_fields2.count())
+        # check new_device alerts for fields2
+        self.assertEqual("New Device", new_device_alerts_fields2[0].name)
+        self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T07:14:22.768Z", new_device_alerts_fields2[0].description)
+        self.assertEqual("New Device", new_device_alerts_fields2[1].name)
+        self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T07:18:38.768Z", new_device_alerts_fields2[1].description)
+
+        # same old new_country alert relating to fields1 logins
         self.assertEqual(1, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).count())
+
         self.assertEqual(6, Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL).count())
         self.assertEqual(5, Alert.objects.filter(user=db_user, is_vip=True).count())
-        self.assertEqual(11, Alert.objects.filter(user=db_user).count())
 
     def test_check_fields_usersip(self):
         db_user = User.objects.get(username="Aisha Delgado")
