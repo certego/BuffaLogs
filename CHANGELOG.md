@@ -2,6 +2,11 @@
 ### 1.3.1
 ### Changes
 * Forced the existence of only 1 Config object with id=1
+* Added Config.ignored_ISPs field for filtering known ISPs IPs
+* Added forms: UserAdminForm, AlertAdminForm and ConfigAdminForm
+* Added ShortLabelChoiceField to customize ChoiceField in order to show the short_value as label on DjangoValue
+* Added MultiChoiceArrayField to customize ArrayField in order to support multiple choices
+* Created MultiChoiceArrayWidget widget for user-friendly interface for ArrayField with multiple choices on Django Admin
 #### Bugfix
 * Fixed alert.name representation enums
 ### 1.3.0
