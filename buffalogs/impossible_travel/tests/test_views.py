@@ -13,11 +13,11 @@ class TestViews(APITestCase):
         self.client = Client()
         User.objects.bulk_create(
             [
-                User(username="Lorena Goldoni", risk_score=UserRiskScoreType.NO_RISK.value),
-                User(username="Lorygold", risk_score=UserRiskScoreType.LOW.value),
-                User(username="Lory", risk_score=UserRiskScoreType.LOW.value),
-                User(username="Lor", risk_score=UserRiskScoreType.LOW.value),
-                User(username="Loryg", risk_score=UserRiskScoreType.MEDIUM.value),
+                User(username="Lorena Goldoni", risk_score=UserRiskScoreType.NO_RISK),
+                User(username="Lorygold", risk_score=UserRiskScoreType.LOW),
+                User(username="Lory", risk_score=UserRiskScoreType.LOW),
+                User(username="Lor", risk_score=UserRiskScoreType.LOW),
+                User(username="Loryg", risk_score=UserRiskScoreType.MEDIUM),
             ]
         )
         db_user = User.objects.get(username="Lorena Goldoni")
@@ -73,7 +73,7 @@ class TestViews(APITestCase):
             [
                 Alert(
                     user=db_user,
-                    name=AlertDetectionType.NEW_DEVICE.value,
+                    name=AlertDetectionType.NEW_DEVICE,
                     login_raw_data={
                         "id": "ht9DEIgBnkLiMp6r-SG-",
                         "ip": "203.0.113.24",
@@ -88,7 +88,7 @@ class TestViews(APITestCase):
                 ),
                 Alert(
                     user=db_user,
-                    name=AlertDetectionType.IMP_TRAVEL.value,
+                    name=AlertDetectionType.IMP_TRAVEL,
                     login_raw_data={
                         "id": "vfraw14gw",
                         "ip": "1.2.3.4",
@@ -103,7 +103,7 @@ class TestViews(APITestCase):
                 ),
                 Alert(
                     user=db_user,
-                    name=AlertDetectionType.IMP_TRAVEL.value,
+                    name=AlertDetectionType.IMP_TRAVEL,
                     login_raw_data={
                         "id": "vfraw14gw",
                         "ip": "1.2.3.4",
@@ -118,7 +118,7 @@ class TestViews(APITestCase):
                 ),
                 Alert(
                     user=db_user,
-                    name=AlertDetectionType.IMP_TRAVEL.value,
+                    name=AlertDetectionType.IMP_TRAVEL,
                     login_raw_data={
                         "id": "vfraw14gw",
                         "ip": "1.2.3.4",
@@ -133,7 +133,7 @@ class TestViews(APITestCase):
                 ),
                 Alert(
                     user=db_user,
-                    name=AlertDetectionType.NEW_DEVICE.value,
+                    name=AlertDetectionType.NEW_DEVICE,
                     login_raw_data={
                         "id": "ht9DEIgBnkLiMp6r-SG-",
                         "ip": "203.0.113.24",
@@ -148,7 +148,7 @@ class TestViews(APITestCase):
                 ),
                 Alert(
                     user=db_user,
-                    name=AlertDetectionType.NEW_DEVICE.value,
+                    name=AlertDetectionType.NEW_DEVICE,
                     login_raw_data={
                         "id": "ht9DEIgBnkLiMp6r-SG-",
                         "ip": "203.0.113.24",
@@ -219,8 +219,8 @@ class TestViews(APITestCase):
         start = creation_mock_time
         end = creation_mock_time + timedelta(minutes=10)
         list_expected_result = [
-            {"timestamp": "2023-06-20T10:17:33.358Z", "username": "Lorena Goldoni", "rule_name": "Impossible Travel detected"},
-            {"timestamp": "2023-05-20T11:45:01.229Z", "username": "Lorena Goldoni", "rule_name": "Login from new device"},
+            {"timestamp": "2023-06-20T10:17:33.358Z", "username": "Lorena Goldoni", "rule_name": "Imp Travel"},
+            {"timestamp": "2023-05-20T11:45:01.229Z", "username": "Lorena Goldoni", "rule_name": "New Device"},
         ]
         response = self.client.get(f"{reverse('alerts_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
