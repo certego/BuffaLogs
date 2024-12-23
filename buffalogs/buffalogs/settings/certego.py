@@ -45,7 +45,7 @@ elif CERTEGO_BUFFALOGS_ENVIRONMENT == ENVIRONMENT_DEBUG:
     CERTEGO_BUFFALOGS_STATIC_ROOT = "impossible_travel/static/"
     CERTEGO_BUFFALOGS_LOG_PATH = "../logs"
     CERTEGO_BUFFALOGS_RABBITMQ_HOST = "localhost"
-    CERTEGO_BUFFALOGS_RABBITMQ_URI = f"amqp://guest:guest@{CERTEGO_BUFFALOGS_RABBITMQ_HOST}//"  # noqa: E231
+    CERTEGO_BUFFALOGS_RABBITMQ_URI = f"amqp://guest:guest@{CERTEGO_BUFFALOGS_RABBITMQ_HOST}/"  # noqa: E231
 
 else:
     raise ValueError(f"Environment not supported: {CERTEGO_BUFFALOGS_ENVIRONMENT}")
