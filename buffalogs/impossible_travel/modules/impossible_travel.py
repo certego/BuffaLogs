@@ -48,7 +48,7 @@ class Impossible_Travel:
                 alert_info["alert_name"] = AlertDetectionType.IMP_TRAVEL.value
                 alert_info[
                     "alert_desc"
-                ] = f"{alert_info['alert_name']} for User: {db_user.username}, at: {last_timestamp_datetimeObj_aware}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
+                ] = f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
         return alert_info, int(vel)
 
     def update_model(self, db_user, new_login):

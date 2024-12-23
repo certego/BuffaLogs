@@ -14,12 +14,14 @@ impossible_travel/__init__.py
 impossible_travel/admin.py
 impossible_travel/apps.py
 impossible_travel/constants.py
+impossible_travel/forms.py
 impossible_travel/models.py
 impossible_travel/tasks.py
 impossible_travel/views.py
 impossible_travel/management/commands/clear_models.py
 impossible_travel/management/commands/impossible_travel.py
 impossible_travel/management/commands/setup_config.py
+impossible_travel/management/commands/__pycache__/setup_config.cpython-312.pyc
 impossible_travel/migrations/0001_initial.py
 impossible_travel/migrations/0002_alert_updated.py
 impossible_travel/migrations/0003_alter_alert_updated.py
