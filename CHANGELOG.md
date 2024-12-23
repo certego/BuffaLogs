@@ -7,7 +7,7 @@
 * Added ShortLabelChoiceField to customize ChoiceField in order to show the short_value as label on DjangoValue
 * Added MultiChoiceArrayField to customize ArrayField in order to support multiple choices
 * Created MultiChoiceArrayWidget widget for user-friendly interface for ArrayField with multiple choices on Django Admin
-* Updated some Python dependecies
+* Updated some Python dependencies
 #### Bugfix
 * Fixed alert.name representation enums
 ### 1.3.0
