@@ -62,19 +62,31 @@ class AlertDetectionType(models.TextChoices):
 class AlertFilterType(models.TextChoices):
     """Types of possible detection filter applied on alerts to be ignored
 
-    * ISP_FILTER: exclude from the detection a list of whitelisted ISP
-    * IS_MOBILE_FILTER: if Config.ignore_mobile_logins flag is checked, exclude from the detection the mobile devices
-    * IS_VIP_FILTER: if Config.alert_is_vip_only flag is checked, only the vip users (in the Config.vip_users list) send alerts
-    * ALLOWED_COUNTRY_FILTER: if the country of the login is in the Config.allowed_countries list, the alert isn't sent
-    * IGNORED_USER_FILTER: if the user is in the Config.ignored_users list OR the user is not in the Config.enabled_users list, the alert isn't sent
-    * ALERT_MINIMUM_RISK_SCORE_FILTER: if the user hasn't, at least, a User.risk_score equals to the one sets in Config.alert_minimum_risk_score,
-    * FILTERED_ALERTS: if the alert type (AlertDetectionType) is in the Config.filtered_alerts, the alert isn't sent
+    * IGNORED_USER_FILTER: Alert filtered because the user is ignored - the user is in the Config.ignored_users list or Config.enabled_users list is populated
+    * IGNORED_IP_FILTER: Alert filtered because the IP is ignored - the ip is in the Config.ignored_ips list
+    * ALLOWED_COUNTRY_FILTER: Alert filtered because the country is whitelisted - the country is in the Config.allowed_countries list
+    * IS_VIP_FILTER: Alert filtered because the user is not vip - Config.alert_is_vip_only is True and the usre is not in the Config.vip_users list
+    * ALERT_MINIMUM_RISK_SCORE_FILTER: Alert filtered because the User.risk_score is lower than the threshold set in Config.alert_minimum_risk_score
+    * FILTERED_ALERTS: Alert filtered because this detection type is excluded - the Alert.name detection type is in the Config.filtered_alerts_types list
+    * IS_MOBILE_FILTER: Alert filtered because the login is from a mobile device - Config.ignore_mobile_logins is True
+    * IGNORED_ISP_FILTER: Alert filtered because the ISP is whitelisted - The ISP is in the Config.ignored_ISPs list
     """
 
-    ISP_FILTER = "isp_filter", _("Alert filtered because the ISP is whitelisted")
-    IS_MOBILE_FILTER = "is_mobile_filter", _("Alert filtered because login from a mobile device")
-    IS_VIP_FILTER = "is_vip_filter", _("Alert filtered because the user is not vip")
-    ALLOWED_COUNTRY_FILTER = "allowed_country_filter", _("Alert filtered because the country is whitelisted")
-    IGNORED_USER_FILTER = "ignored_user_filter", _("Alert filtered because the user is ignored")
-    ALERT_MINIMUM_RISK_SCORE_FILTER = "alert_minimum_risk_score_filter", _("Alert filtered because the risk_score is lower than the threshold")
-    FILTERED_ALERTS = "filtered_alerts", _("Alert filtered because this detection type is excluded")
+    IGNORED_USER_FILTER = "ignored_users filter", _(
+        "Alert filtered because the user is ignored - the user is in the Config.ignored_users list or Config.enabled_users list is populated"
+    )
+    IGNORED_IP_FILTER = "ignored_ips filter", _("Alert filtered because the IP is ignored - the ip is in the Config.ignored_ips list")
+    ALLOWED_COUNTRY_FILTER = "allowed_countries filter", _(
+        "Alert filtered because the country is whitelisted - the country is in the Config.allowed_countries list"
+    )
+    IS_VIP_FILTER = "is_vip_filter", _(
+        "Alert filtered because the user is not vip - Config.alert_is_vip_only is True and the usre is not in the Config.vip_users list"
+    )
+    ALERT_MINIMUM_RISK_SCORE_FILTER = "alert_minimum_risk_score filter", _(
+        "Alert filtered because the User.risk_score is lower than the threshold set in Config.alert_minimum_risk_score"
+    )
+    FILTERED_ALERTS = "filtered_alerts_types filter", _(
+        "Alert filtered because this detection type is excluded - the Alert.name detection type is in the Config.filtered_alerts_types list"
+    )
+    IS_MOBILE_FILTER = "ignore_mobile_logins filter", _("Alert filtered because the login is from a mobile device - Config.ignore_mobile_logins is True")
+    IGNORED_ISP_FILTER = "ignored_ISPs filter", _("Alert filtered because the ISP is whitelisted - The ISP is in the Config.ignored_ISPs list")

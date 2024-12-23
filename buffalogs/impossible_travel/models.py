@@ -97,6 +97,10 @@ def get_default_ignored_ips():
     return list(settings.CERTEGO_BUFFALOGS_IGNORED_IPS)
 
 
+def get_default_ignored_ISPs():
+    return list(settings.CERTEGO_BUFFALOGS_IGNORED_ISPS)
+
+
 def get_default_allowed_countries():
     return list(settings.CERTEGO_BUFFALOGS_ALLOWED_COUNTRIES)
 
@@ -115,6 +119,9 @@ class Config(models.Model):
         models.CharField(max_length=50), blank=True, default=get_default_enabled_users, help_text="List of selected users on which the detection will perform"
     )
     ignored_ips = ArrayField(models.CharField(max_length=50), blank=True, default=get_default_ignored_ips, help_text="List of IPs to remove from the detection")
+    ignored_ISPs = ArrayField(
+        models.CharField(max_length=50), blank=True, default=get_default_ignored_ISPs, help_text="List of ISPs names to remove from the detection"
+    )
     allowed_countries = ArrayField(
         models.CharField(max_length=20),
         blank=True,
