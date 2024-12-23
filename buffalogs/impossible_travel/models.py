@@ -113,22 +113,31 @@ class Config(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     ignored_users = ArrayField(
-        models.CharField(max_length=50), blank=True, default=get_default_ignored_users, help_text="List of users to be ignored from the detection"
+        models.CharField(max_length=50), blank=True, null=True, default=get_default_ignored_users, help_text="List of users to be ignored from the detection"
     )
     enabled_users = ArrayField(
-        models.CharField(max_length=50), blank=True, default=get_default_enabled_users, help_text="List of selected users on which the detection will perform"
+        models.CharField(max_length=50),
+        blank=True,
+        null=True,
+        default=get_default_enabled_users,
+        help_text="List of selected users on which the detection will perform",
     )
-    ignored_ips = ArrayField(models.CharField(max_length=50), blank=True, default=get_default_ignored_ips, help_text="List of IPs to remove from the detection")
+    ignored_ips = ArrayField(
+        models.CharField(max_length=50), blank=True, null=True, default=get_default_ignored_ips, help_text="List of IPs to remove from the detection"
+    )
     ignored_ISPs = ArrayField(
-        models.CharField(max_length=50), blank=True, default=get_default_ignored_ISPs, help_text="List of ISPs names to remove from the detection"
+        models.CharField(max_length=50), blank=True, null=True, default=get_default_ignored_ISPs, help_text="List of ISPs names to remove from the detection"
     )
     allowed_countries = ArrayField(
         models.CharField(max_length=20),
         blank=True,
+        null=True,
         default=get_default_allowed_countries,
         help_text="List of countries to exclude from the detection, because 'trusted' for the customer",
     )
-    vip_users = ArrayField(models.CharField(max_length=50), blank=True, default=get_default_vip_users, help_text="List of users considered more sensitive")
+    vip_users = ArrayField(
+        models.CharField(max_length=50), blank=True, null=True, default=get_default_vip_users, help_text="List of users considered more sensitive"
+    )
     alert_is_vip_only = models.BooleanField(default=False, help_text="Flag to send alert only related to the users in the vip_users list")
     alert_minimum_risk_score = models.CharField(
         choices=UserRiskScoreType.choices,
@@ -141,6 +150,7 @@ class Config(models.Model):
         models.CharField(max_length=50, choices=AlertDetectionType.choices, blank=True),
         default=list,
         blank=True,
+        null=True,
         help_text="List of alerts' types to exclude from the alerting",
     )
     ignore_mobile_logins = models.BooleanField(default=False, help_text="Flag to ignore mobile devices from the detection")
