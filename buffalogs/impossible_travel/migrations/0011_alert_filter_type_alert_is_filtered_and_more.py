@@ -34,6 +34,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(update_alert_name, migrations.RunPython.noop),
         migrations.AddField(
             model_name="alert",
             name="filter_type",
@@ -381,5 +382,4 @@ class Migration(migrations.Migration):
                 name="valid_user_risk_score_choice",
             ),
         ),
-        migrations.RunPython(update_alert_name, migrations.RunPython.noop),
     ]
