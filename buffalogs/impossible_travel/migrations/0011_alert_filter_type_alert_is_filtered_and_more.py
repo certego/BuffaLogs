@@ -158,7 +158,6 @@ class Migration(migrations.Migration):
                 default=impossible_travel.models.get_default_enabled_users,
                 help_text="List of selected users on which the detection will perform",
                 null=True,
-                null=True,
                 size=None,
             ),
         ),
