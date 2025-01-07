@@ -1,5 +1,3 @@
-version: '3.2'
-
 services:
     elasticsearch:
         container_name: buffalogs_elasticsearch

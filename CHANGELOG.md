@@ -1,4 +1,9 @@
 ## 1.3.x
+### 1.3.2
+### Changes
+* Removed "version" property from docker-compose files because it is obsolete now
+#### Bugfix
+* Fixed migration 0011
 ### 1.3.1
 ### Changes
 * Forced the existence of only 1 Config object with id=1
