@@ -51,6 +51,7 @@ class Alert(models.Model):
     filter_type = ArrayField(
         models.CharField(max_length=50, choices=AlertFilterType.choices, blank=True),
         blank=True,
+        null=True,
         default=list,
         help_text="List of filters that disabled the related alert",
     )
@@ -63,11 +64,30 @@ class Alert(models.Model):
                 name="valid_alert_name_choice",
             ),
             models.CheckConstraint(
-                # Check that each element in the Alert.filter_type is in the Enum AlertFilterType
-                check=models.Q(filter_type__contained_by=AlertFilterType.choices),
+                # Check the 2 possibilities:
+                # is_filtered=True and filtered_type=AlertFilterType.choices
+                # or is_filtered=False and filtered_type=null
+                check=(models.Q(is_filtered=True, filter_type__isnull=False) & ~models.Q(filter_type=[]) | models.Q(is_filtered=False, filter_type=[])),
                 name="valid_alert_filter_type_choices",
             ),
         ]
+
+    def clean(self):
+        super().clean()
+        self._check_valid_alert_name_choice_constraint()
+        self._check_valid_alert_filter_type_choices_constraint()
+
+    def _check_valid_alert_name_choice_constraint(self):
+        """Method to validate the 'valid_alert_name_choice' constraint also at the application level, for a more descriptive message"""
+        if self.name not in [choice[0] for choice in AlertDetectionType.choices]:
+            raise ValidationError(f"The alert name must be one of the following value: {AlertDetectionType.choices()}")
+
+    def _check_valid_alert_filter_type_choices_constraint(self):
+        """Method to validate the 'valid_alert_filter_type_choices' constraint also at the application level, for a more descriptive message"""
+        if self.is_filtered and (not self.filter_type or self.filter_type == []):
+            raise ValidationError("If 'is_filtered' is True, 'filter_type' cannot be empty.")
+        if not self.is_filtered and self.filter_type not in [None, []]:
+            raise ValidationError("If 'is_filtered' is False, 'filter_type' must be empty.")
 
 
 class UsersIP(models.Model):
