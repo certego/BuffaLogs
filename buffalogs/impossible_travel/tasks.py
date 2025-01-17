@@ -10,6 +10,7 @@ from elasticsearch_dsl import Search, connections
 from impossible_travel.constants import UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
+from impossible_travel.modules.alert_filter import AlertFilter
 
 logger = get_task_logger(__name__)
 
@@ -61,7 +62,8 @@ def set_alert(db_user, login_alert, alert_info):
     )
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     # check filters
-    # TODO
+    alert_filter_obj = AlertFilter(alert=alert)
+    alert_filter_obj.match_filters()
     alert.save()
     return alert
 
