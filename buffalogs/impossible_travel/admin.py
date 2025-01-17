@@ -67,6 +67,14 @@ class TaskSettingsAdmin(admin.ModelAdmin):
 @admin.register(Config)
 class ConfigsAdmin(admin.ModelAdmin):
     form = ConfigAdminForm
+    fieldsets = [
+        ("Detection filters - users", {"fields": ("ignored_users", "enabled_users", "vip_users", "alert_is_vip_only", "alert_minimum_risk_score")}),
+        ("Detection filters - location", {"fields": ("ignored_ips", "allowed_countries")}),
+        ("Detection filters - devices", {"fields": ("ignored_ISPs", "ignore_mobile_logins")}),
+        ("Detection filters - alerts", {"fields": ("filtered_alerts_types",)}),
+        ("Detection setup - Impossible Travel alerts", {"fields": ("distance_accepted", "vel_accepted")}),
+        ("Detection setup - Clean models", {"fields": ("user_max_days", "login_max_days", "alert_max_days", "ip_max_days")}),
+    ]
     list_display = ("created", "updated", "ignored_users", "ignored_ips", "ignored_ISPs", "allowed_countries", "vip_users")
     search_fields = ("allowed_countries", "vip_users")
 

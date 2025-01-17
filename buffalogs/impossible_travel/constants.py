@@ -31,9 +31,9 @@ class UserRiskScoreType(models.TextChoices):
             raise ValueError("Risk value not valid")
 
     @classmethod
-    def is_higher(cls, threshold, value):
-        # check if the value is higher than the threshold
-        if UserRiskScoreType.values.index(value) > UserRiskScoreType.values.index(threshold):
+    def is_equal_or_higher(cls, threshold, value):
+        # check if the value is equal or higher than the threshold
+        if UserRiskScoreType.values.index(value) >= UserRiskScoreType.values.index(threshold):
             return True
         return False
 
