@@ -64,7 +64,7 @@ class Alert(models.Model):
             ),
             models.CheckConstraint(
                 # Check that each element in the Alert.filter_type is in the Enum AlertFilterType
-                check=models.Q(filter_type__contained_by=AlertFilterType.choices),
+                check=models.Q(filter_type__contains=list(AlertFilterType.choices)) | models.Q(filter_type=[]),
                 name="valid_alert_filter_type_choices",
             ),
         ]
