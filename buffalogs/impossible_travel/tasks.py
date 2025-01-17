@@ -60,9 +60,9 @@ def set_alert(db_user, login_alert, alert_info):
         f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']} from {login_alert['country']} from device: {login_alert['agent']}"
     )
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
-    if Config.objects.filter(vip_users__contains=[db_user.username]):
-        alert.is_vip = True
-        alert.save()
+    # check filters
+    # TODO
+    alert.save()
     return alert
 
 
@@ -86,7 +86,7 @@ def check_fields(db_user, fields):
 
                 if login["country"]:
                     country_alert = new_country.check_country(db_user, login)
-                    if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
+                    if country_alert:
                         set_alert(db_user, login_alert=login, alert_info=country_alert)
 
                 if not db_user.usersip_set.filter(ip=login["ip"]).exists():
@@ -219,7 +219,6 @@ def exec_process_logs(start_date, end_date):
     :type end_date: datetime
     """
     logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
-    config, op_result = Config.objects.get_or_create()
     connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (
         Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
@@ -228,8 +227,6 @@ def exec_process_logs(start_date, end_date):
         .query("match", **{"event.outcome": "success"})
         .query("match", **{"event.type": "start"})
         .query("exists", field="user.name")
-        .exclude("terms", **{"user.name": config.ignored_users})
-        .exclude("terms", **{"source.ip": config.ignored_ips})
     )
     s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
     response = s.execute()
