@@ -1,5 +1,3 @@
-from enum import Enum
-
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -19,7 +17,7 @@ class UserRiskScoreType(models.TextChoices):
     HIGH = "High", _("User has a high risk")
 
     @classmethod
-    def get_risk_level(cls, value):
+    def get_risk_level(cls, value: int):
         # map risk value
         if value == 0:
             return cls.NO_RISK.value
@@ -31,6 +29,13 @@ class UserRiskScoreType(models.TextChoices):
             return cls.HIGH.value
         else:
             raise ValueError("Risk value not valid")
+
+    @classmethod
+    def is_higher(cls, threshold, value):
+        # check if the value is higher than the threshold
+        if UserRiskScoreType.values.index(value) > UserRiskScoreType.values.index(threshold):
+            return True
+        return False
 
 
 class AlertDetectionType(models.TextChoices):
