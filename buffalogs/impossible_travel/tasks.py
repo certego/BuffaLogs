@@ -146,6 +146,7 @@ def process_user(db_user, start_date, end_date):
                 "source.geo.location.lat",
                 "source.geo.location.lon",
                 "source.geo.country_name",
+                "source.as.organization.name",
                 "user_agent.original",
                 "_index",
                 "source.ip",
@@ -166,6 +167,12 @@ def process_user(db_user, start_date, end_date):
             else:
                 tmp["index"] = hit.meta["index"].split("-")[0]
             tmp["ip"] = hit["source"]["ip"]
+            if "user_agent" in hit:
+                tmp["agent"] = hit["user_agent"]["original"]
+            else:
+                tmp["agent"] = ""
+            if "as" in hit.source:
+                tmp["organization"] = hit["source"]["as"]["organization"]["name"]
             if "geo" in hit.source:
                 if "location" in hit.source.geo and "country_name" in hit.source.geo:
                     tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
@@ -175,11 +182,7 @@ def process_user(db_user, start_date, end_date):
                     tmp["lat"] = None
                     tmp["lon"] = None
                     tmp["country"] = ""
-                if "user_agent" in hit:
-                    tmp["agent"] = hit["user_agent"]["original"]
-                else:
-                    tmp["agent"] = ""
-                fields.append(tmp)
+                fields.append(tmp)  # up to now: no geo info --> login discard
     check_fields(db_user, fields)
 
 
