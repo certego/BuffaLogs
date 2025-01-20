@@ -1,8 +1,10 @@
 import logging
 from typing import Optional
 
+from django.conf import settings
 from impossible_travel.constants import AlertFilterType, UserRiskScoreType
 from impossible_travel.models import Alert, Config
+from ua_parser import parse
 
 
 class AlertFilter:
@@ -26,8 +28,18 @@ class AlertFilter:
             self.alert.filter_type.append(AlertFilterType.IGNORED_IP_FILTER)  # alert filtered because the ip is in the ignored_ips list
         if self.alert.login_raw_data.get("country", "") in self.app_config.allowed_countries:
             self.alert.filter_type.append(AlertFilterType.ALLOWED_COUNTRY_FILTER)  # alert filtered because the country is in the allowed_countries list
+        # Detection filters - devices
+        if self.alert.login_raw_data.get("organization", "") in self.app_config.ignored_ISPs:
+            self.alert.filter_type.append(AlertFilterType.IGNORED_ISP_FILTER)
+        if self.app_config.ignore_mobile_logins:
+            ua_parsed = parse(self.alert.login_raw_data["agent"])
+            if ua_parsed in settings.CERTEGO_BUFFALOGS_MOBILE_DEVICES:
+                self.alert.filter_type.append(AlertFilterType.IS_MOBILE_FILTER)
+        # Detection filters - alerts
+        if self.alert.name in self.app_config.filtered_alerts_types:
+            self.alert.filter_type.append(AlertFilterType.FILTERED_ALERTS)
 
-        # last, set alert.is_filtered
+        # last, set alert.is_filtered if alert.filter_type not empty
         if self.alert.filter_type:
             self.alert.is_filtered = True
         return self.alert
