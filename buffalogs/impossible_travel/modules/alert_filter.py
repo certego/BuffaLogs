@@ -33,7 +33,7 @@ class AlertFilter:
             self.alert.filter_type.append(AlertFilterType.IGNORED_ISP_FILTER)
         if self.app_config.ignore_mobile_logins:
             ua_parsed = parse(self.alert.login_raw_data["agent"])
-            if ua_parsed in settings.CERTEGO_BUFFALOGS_MOBILE_DEVICES:
+            if ua_parsed.os.family in settings.CERTEGO_BUFFALOGS_MOBILE_DEVICES:
                 self.alert.filter_type.append(AlertFilterType.IS_MOBILE_FILTER)
         # Detection filters - alerts
         if self.alert.name in self.app_config.filtered_alerts_types:
@@ -45,9 +45,14 @@ class AlertFilter:
         return self.alert
 
     def _check_users_filters(self):
-        """Check all the filters relative to users"""
+        """Check all the filters relative to users.
+        Rules:
+        1. if ignored_users != [] and enabled_users != [] --> enabled_users wins
+        2. if ignored_users != [] and enabled_users != [] and vip_users != [] but alert_is_vip_only = False --> enabled_users wins
+        3. if ignored_users != [] and enabled_users != [] and vip_users != [] but alert_is_vip_only = True --> vip_users wins, BUT only for vip_users also in the enabled_users list"""
         if self.app_config.alert_is_vip_only:
-            if self.user.username not in self.app_config.vip_users:
+            if self.user.username not in self.app_config.vip_users or self.user.username not in self.app_config.enabled_users:
+                self.logger.debug(f"Alert: {self.alert.id} filtered because user: {self.user.id} not in vip_users and enabled-users Config lists")
                 self.alert.filter_type.append(AlertFilterType.IS_VIP_FILTER)  # alert filtered because alert_is_vip_only=True but username not in vip_users list
         else:
             # if alert_is_vip_only=False, check the other users constraints
