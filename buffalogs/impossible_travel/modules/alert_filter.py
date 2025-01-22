@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Optional
 
 from django.conf import settings
@@ -56,14 +57,13 @@ class AlertFilter:
                 self.alert.filter_type.append(AlertFilterType.IS_VIP_FILTER)  # alert filtered because alert_is_vip_only=True but username not in vip_users list
         else:
             # if alert_is_vip_only=False, check the other users constraints
-            if self.app_config.enabled_users:
-                if self.user.username not in self.app_config.enabled_users:
-                    self.alert.filter_type.append(
-                        AlertFilterType.IGNORED_USER_FILTER
-                    )  # alert filtered because enabled_users is not empty list and the username is not in that list
+            if self.app_config.enabled_users and not self._check_username_list_regex(word=self.user.username, values_list=self.app_config.enabled_users):
+                self.alert.filter_type.append(
+                    AlertFilterType.IGNORED_USER_FILTER
+                )  # alert filtered because enabled_users is not empty list and the username is not in that list
                 # if enabled_users list is not empty, the ignored_users list will be ignored
             else:
-                if self.user.username in self.app_config.ignored_users:
+                if self._check_username_list_regex(word=self.user.username, values_list=self.app_config.ignored_users):
                     self.alert.filter_type.append(
                         AlertFilterType.IGNORED_USER_FILTER
                     )  # alert filtered because enabled_users is empty, but the username is in the ignored_users list
@@ -71,3 +71,16 @@ class AlertFilter:
             self.alert.filter_type.append(
                 AlertFilterType.ALERT_MINIMUM_RISK_SCORE_FILTER
             )  # alert filtered because the user.risk_score level is lower than the config.alert_minimum_risk_score value
+
+    def _check_username_list_regex(self, word: str, values_list: list):
+        """Function to check if a string value is inside a list of string or match a regex in the list"""
+        for item in values_list:
+            if word == item:
+                # check if the word is exacly a value in the list
+                return True
+            else:
+                # else, check if the item in the list is a regex that matches the word
+                regexp = re.compile(item)
+                if regexp.search(word):
+                    return True
+        return False

@@ -92,6 +92,37 @@ class TestAlertFilter(TestCase):
         self.assertFalse(res_alert.is_filtered)
         self.assertListEqual([], res_alert.filter_type)
 
+    def test_match_filters_users_ignored_regex(self):
+        # test with: Config.ignored_users = ["^[\w.-]+@stores\.company\.com$"]
+        db_config = Config.objects.create(id=1, ignored_users=[r"^[\w.-]+@stores\.company\.com$", "Lorena Goldoni"])
+        db_user = User.objects.create(id=3, username="h.hesse@stores.company.com")
+        db_alert = Alert.objects.create(id=3, user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data={"test": "ok"})
+        alert_filter = AlertFilter(alert=db_alert, app_config=db_config)
+        res_alert = alert_filter.match_filters()
+        self.assertTrue(res_alert.is_filtered)
+        self.assertListEqual(["ignored_users filter"], res_alert.filter_type)
+        db_user = User.objects.create(id=4, username="test-user123@stores.company.com")
+        db_alert = Alert.objects.create(id=4, user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data={"test": "ok"})
+        alert_filter = AlertFilter(alert=db_alert, app_config=db_config)
+        res_alert = alert_filter.match_filters()
+        self.assertTrue(res_alert.is_filtered)
+        db_user = User.objects.create(id=5, username="hermann@company.com")
+        db_alert = Alert.objects.create(id=5, user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data={"test": "ok"})
+        alert_filter = AlertFilter(alert=db_alert, app_config=db_config)
+        res_alert = alert_filter.match_filters()
+        self.assertFalse(res_alert.is_filtered)
+        self.assertListEqual([], res_alert.filter_type)
+        db_alert = Alert.objects.get(user__username="Lorena Goldoni")
+        alert_filter = AlertFilter(alert=db_alert, app_config=db_config)
+        res_alert = alert_filter.match_filters()
+        self.assertTrue(res_alert.is_filtered)
+        self.assertListEqual(["ignored_users filter"], res_alert.filter_type)
+        db_alert = Alert.objects.get(user__username="Lorygold")
+        alert_filter = AlertFilter(alert=db_alert, app_config=db_config)
+        res_alert = alert_filter.match_filters()
+        self.assertFalse(res_alert.is_filtered)
+        self.assertListEqual([], res_alert.filter_type)
+
     def test_match_filters_users_enabled_ignored(self):
         # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"] + Config.enabled_users = ["Lorygold"]
         db_config = Config.objects.create(id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"])
