@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
+from impossible_travel.validators import StringOrRegexValidator
 
 
 class User(models.Model):
@@ -113,14 +114,20 @@ class Config(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     ignored_users = ArrayField(
-        models.CharField(max_length=50), blank=True, null=True, default=get_default_ignored_users, help_text="List of users to be ignored from the detection"
+        models.CharField(max_length=50),
+        blank=True,
+        null=True,
+        default=get_default_ignored_users,
+        validators=[StringOrRegexValidator()],
+        help_text="List of users (strings or regex patterns) to be ignored from the detection",
     )
     enabled_users = ArrayField(
         models.CharField(max_length=50),
         blank=True,
         null=True,
         default=get_default_enabled_users,
-        help_text="List of selected users on which the detection will perform",
+        validators=[StringOrRegexValidator()],
+        help_text="List of selected users (strings or regex patterns) on which the detection will perform - If this field is not empty, the ignored_users field is ignored",
     )
     ignored_ips = ArrayField(
         models.CharField(max_length=50), blank=True, null=True, default=get_default_ignored_ips, help_text="List of IPs to remove from the detection"
