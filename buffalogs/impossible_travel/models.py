@@ -18,7 +18,7 @@ class User(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                # Check that the User.risk_score is one of the value in the Enum UserRiskScoreType
+                # Check that the User.risk_score is one of the value in the Enum UserRiskScoreType --> ['No risk', 'Low', 'Medium', 'High']
                 check=models.Q(risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
                 name="valid_user_risk_score_choice",
             )
@@ -58,12 +58,12 @@ class Alert(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                # Check that the Alert.name is one of the value in the Enum AlertDetectionType
+                # Check that the Alert.name is one of the value in the Enum AlertDetectionType --> ['New Device', 'Imp Travel', 'New Country', 'User Risk Threshold', 'Login Anonymizer Ip', 'Atypical Country']
                 check=models.Q(name__in=[choice[0] for choice in AlertDetectionType.choices]),
                 name="valid_alert_name_choice",
             ),
             models.CheckConstraint(
-                # Check that each element in the Alert.filter_type is in the Enum AlertFilterType
+                # Check that each element in the Alert.filter_type is in the Enum AlertFilterType --> ['ignored_users filter', 'ignored_ips filter', 'allowed_countries filter', 'is_vip_filter', 'alert_minimum_risk_score filter', 'filtered_alerts_types filter', 'ignore_mobile_logins filter', 'ignored_ISPs filter']
                 check=models.Q(filter_type__contained_by=[choice[0] for choice in AlertFilterType.choices]) | models.Q(filter_type=[]),
                 name="valid_alert_filter_type_choices",
             ),
@@ -187,13 +187,14 @@ class Config(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                # Check that the Config.alert_minimum_risk_score is one of the value in the Enum UserRiskScoreType
+                # Check that the Config.alert_minimum_risk_score is one of the value in the Enum UserRiskScoreType --> ['No risk', 'Low', 'Medium', 'High']
                 check=models.Q(alert_minimum_risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
                 name="valid_config_alert_minimum_risk_score_choice",
             ),
             models.CheckConstraint(
-                # Check that each element in the Config.filtered_alerts_types is in the Enum AlertFilterType
-                check=models.Q(filtered_alerts_types__contained_by=AlertFilterType.choices),
+                # Check that each element in the Config.filtered_alerts_types is blank or it's in the Enum AlertFilterType --> ['New Device', 'Imp Travel', 'New Country', 'User Risk Threshold', 'Login Anonymizer Ip', 'Atypical Country']
+                check=models.Q(filtered_alerts_types__contained_by=[choice[0] for choice in AlertDetectionType.choices])
+                | models.Q(filtered_alerts_types__isnull=True),
                 name="valid_alert_filters_choices",
             ),
         ]
