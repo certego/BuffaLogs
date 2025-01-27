@@ -1,7 +1,7 @@
 
 <img src="docs/static/cover_buffalogs.png" width=750 height=400 alt="BuffaLogs"/>
 
-BuffaLogs is an Open Source Django Project whose main purpose is to detect impossible travel logins.
+BuffaLogs is an Open Source Django Project whose main purpose is to detect anomalous logins.
 
 In detail, it sends several types of alerts:
 1.  **Impossible Travel**
@@ -16,7 +16,32 @@ In detail, it sends several types of alerts:
 
     This alert is dispatched if the system is logged by a user from a country where they have never authenticated before.
 
+4. **Atypical country**
+
+   This type of alert is triggered when the country from which the user logged in is not new, but unusual because not recent.
+
+5. **User risk threshold**
+
+   This alert is triggered every time that the risk_score of a user increases.
+
+6. **Anonymous IP Login**
+
+   This alert occurs to signal a login made with an anonymous IP.
+
+7. **Stale account**
+
+   The idea is to compare the logins provided by the internal authentication service of the company with the logins collected by BuffaLogs and alert in case of significant inconsistencies.
+
 *For further details: [Wiki - About](https://github.com/certego/BuffaLogs/wiki/1.-About)*
+
+## BuffaLogs is participating in FOSDEM 2025 Conference!
+
+[FOSDEM](https://fosdem.org/) is a free event for software developers to meet, share ideas and collaborate. Every year, thousands of developers of free and open source software from all over the world gather at the event in Brussels.
+
+| FOSDEM | An overview on detecting Login Anomalies with BuffaLogs |
+|------|-----|
+|<img style="border: 0.2px solid black" width=660 height=150 src="https://github.com/user-attachments/assets/f9866bac-ef69-4c99-8df8-69ae26bbdad4" alt="fosdem.org logo"> | [Our Talk:](https://fosdem.org/2025/schedule/event/fosdem-2025-5623-an-overview-on-detecting-login-anomalies-with-buffalogs/) The infosec industry has seen a big growth in recent years, with a plethora of mostly closed-source solutions such as Endpoint Detection and Response (EDR), Security Information and Event Management (SIEM), and Security Orchestration, Automation, and Response (SOAR) marketed as indispensable tools for defending organizations. These solutions often emphasize protection against sophisticated adversaries, zero-day exploits, and malicious insiders. However, our real-world experience reveals that the majority of initial compromises occur through simpler approaches, such as stolen credentials and phishing attacks. In this talk, we introduce Buffalogs, an open-source solution designed to detect and alert on anomalous login behaviors. Adhering to the Unix philosophy of "do one thing and do it well," Buffalogs offers a way to analyze common application logs (ssh, Apache, Microsoft Entra ID, etc) and detect credential misuse. Attendees will gain insights into the challenges of login anomaly detection, the development of Buffalogs and the differences between our solution and other commercial alternatives. |
+
 
 ## BuffaLogs is participating in GSoC 2023 thanks to Honeynet project and IntelOwl!
 
@@ -93,9 +118,9 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
 
     ```
     {
-        "_index": "<elastic_index>",
-        "_id": "<log_id>",
-        "@timestamp": "<log_timestamp>",
+        "index": "<elastic_index>",
+        "id": "<log_id>",
+        "timestamp": "<log_timestamp>",
         "user": {
             "name": "<user_name>"
         },
@@ -105,6 +130,11 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
                 "location": {
                     "lat": "<log_latitude>",
                     "lon": "<log_longitude>"
+                }
+            },
+            "as": {
+                "organization": {
+                    "name": "<ISP_name>"
                 }
             },
             "ip": "<log_source_ip>"
@@ -120,7 +150,6 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
     }
 
     ```
-For a basic analysis to detect only impossible travel logins, the *user_agent* field is useless.
 
 ##  REST APIs
 
