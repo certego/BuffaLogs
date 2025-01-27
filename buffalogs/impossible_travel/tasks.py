@@ -9,7 +9,7 @@ from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.constants import UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import impossible_travel, login_from_new_country, login_from_new_device
+from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
 
 logger = get_task_logger(__name__)
 
@@ -60,9 +60,9 @@ def set_alert(db_user, login_alert, alert_info):
         f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']} from {login_alert['country']} from device: {login_alert['agent']}"
     )
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
-    if Config.objects.filter(vip_users__contains=[db_user.username]):
-        alert.is_vip = True
-        alert.save()
+    # check filters
+    alert_filter.match_filters(alert=alert)
+    alert.save()
     return alert
 
 
@@ -86,7 +86,7 @@ def check_fields(db_user, fields):
 
                 if login["country"]:
                     country_alert = new_country.check_country(db_user, login)
-                    if country_alert and not Config.objects.filter(allowed_countries__contains=[login["country"]]):
+                    if country_alert:
                         set_alert(db_user, login_alert=login, alert_info=country_alert)
 
                 if not db_user.usersip_set.filter(ip=login["ip"]).exists():
@@ -144,6 +144,7 @@ def process_user(db_user, start_date, end_date):
                 "source.geo.location.lat",
                 "source.geo.location.lon",
                 "source.geo.country_name",
+                "source.as.organization.name",
                 "user_agent.original",
                 "_index",
                 "source.ip",
@@ -164,6 +165,12 @@ def process_user(db_user, start_date, end_date):
             else:
                 tmp["index"] = hit.meta["index"].split("-")[0]
             tmp["ip"] = hit["source"]["ip"]
+            if "user_agent" in hit:
+                tmp["agent"] = hit["user_agent"]["original"]
+            else:
+                tmp["agent"] = ""
+            if "as" in hit.source:
+                tmp["organization"] = hit["source"]["as"]["organization"]["name"]
             if "geo" in hit.source:
                 if "location" in hit.source.geo and "country_name" in hit.source.geo:
                     tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
@@ -173,11 +180,7 @@ def process_user(db_user, start_date, end_date):
                     tmp["lat"] = None
                     tmp["lon"] = None
                     tmp["country"] = ""
-                if "user_agent" in hit:
-                    tmp["agent"] = hit["user_agent"]["original"]
-                else:
-                    tmp["agent"] = ""
-                fields.append(tmp)
+                fields.append(tmp)  # up to now: no geo info --> login discard
     check_fields(db_user, fields)
 
 
@@ -219,7 +222,6 @@ def exec_process_logs(start_date, end_date):
     :type end_date: datetime
     """
     logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
-    config, op_result = Config.objects.get_or_create()
     connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
     s = (
         Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
@@ -228,8 +230,6 @@ def exec_process_logs(start_date, end_date):
         .query("match", **{"event.outcome": "success"})
         .query("match", **{"event.type": "start"})
         .query("exists", field="user.name")
-        .exclude("terms", **{"user.name": config.ignored_users})
-        .exclude("terms", **{"source.ip": config.ignored_ips})
     )
     s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
     response = s.execute()
