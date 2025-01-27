@@ -75,7 +75,7 @@ class ConfigsAdmin(admin.ModelAdmin):
         ("Detection filters - location", {"fields": ("ignored_ips", "allowed_countries")}),
         ("Detection filters - devices", {"fields": ("ignored_ISPs", "ignore_mobile_logins")}),
         ("Detection filters - alerts", {"fields": ("filtered_alerts_types",)}),
-        ("Detection setup - Impossible Travel alerts", {"fields": ("distance_accepted", "vel_accepted")}),
+        ("Detection setup - Alerts", {"fields": ("distance_accepted", "vel_accepted", "atypical_country_days")}),
         ("Detection setup - Clean models", {"fields": ("user_max_days", "login_max_days", "alert_max_days", "ip_max_days")}),
     ]
     list_display = (

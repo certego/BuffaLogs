@@ -54,7 +54,7 @@ class AlertDetectionType(models.TextChoices):
     NEW_COUNTRY = "New Country", _("Login from new country")
     USER_RISK_THRESHOLD = "User Risk Threshold", _("User risk higher than threshold")
     LOGIN_ANONYMIZER_IP = "Login Anonymizer Ip", _("Login from an anonymizer IP")
-    ATYPICAL_COUNTRY = "Atypical Country", _("Login from a country not visited recently")
+    ATYPICAL_COUNTRY = "Atypical Country", _("Login from an atypical country")
 
     @classmethod
     def get_label_from_value(cls, value):

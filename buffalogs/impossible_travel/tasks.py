@@ -74,6 +74,8 @@ def check_fields(db_user, fields):
     new_dev = login_from_new_device.Login_New_Device()
     new_country = login_from_new_country.Login_New_Country()
 
+    app_config, _ = Config.objects.get_or_create(id=1)
+
     for login in fields:
         if login["lat"] and login["lon"]:
             if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
@@ -85,7 +87,7 @@ def check_fields(db_user, fields):
                         set_alert(db_user, login_alert=login, alert_info=agent_alert)
 
                 if login["country"]:
-                    country_alert = new_country.check_country(db_user, login)
+                    country_alert = new_country.check_country(db_user, login, app_config)
                     if country_alert:
                         set_alert(db_user, login_alert=login, alert_info=country_alert)
 

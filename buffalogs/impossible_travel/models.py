@@ -174,6 +174,9 @@ class Config(models.Model):
         default=settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED,
         help_text="Minimum velocity (in Km/h) between two logins after which the impossible travel detection starts",
     )
+    atypical_country_days = models.PositiveIntegerField(
+        default=settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS, help_text="Days after which a login from a country is considered atypical"
+    )
     user_max_days = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS, help_text="Days after which the users will be removed from the db"
     )
