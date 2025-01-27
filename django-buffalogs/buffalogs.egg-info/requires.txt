@@ -23,6 +23,7 @@ pygal-maps-world>=1.0.2
 python-dateutil>=2.8.2
 python-dotenv>=0.21.0
 PyYAML>=6.0
+ua-parser>=1.0.0
 urllib3>=1.26.12
 uWSGI>=2.0.28
 virtualenv>=20.17.1
