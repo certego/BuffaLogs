@@ -1,3 +1,8 @@
+## 1.4.x
+### 1.4.0
+#### Features
+* Implemented filter logic (*AlertFilter* class) based on the custom Config set
+
 ## 1.3.x
 ### 1.3.2
 ### Changes
