@@ -14,7 +14,8 @@ from impossible_travel.modules import alert_filter, impossible_travel, login_fro
 logger = get_task_logger(__name__)
 
 
-def clear_models_periodically():
+@shared_task(name="BuffalogsCleanModelsPeriodicallyTask")
+def clean_models_periodically():
     """Delete old data in the models"""
     app_config = Config.objects.get(id=1)
     now = timezone.now()
@@ -31,19 +32,15 @@ def clear_models_periodically():
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
-@shared_task(name="BuffalogsUpdateRiskLevelTask")
-def update_risk_level():
-    """Update users risk level depending on how many alerts were triggered"""
-    clear_models_periodically()
+def update_risk_level(db_user: User):
+    """Update user risk level depending on how many alerts were triggered"""
     with transaction.atomic():
-        for u in User.objects.annotate(Count("alert")):
-            alerts_num = u.alert__count
-            tmp = UserRiskScoreType.get_risk_level(alerts_num)
-            if u.risk_score != tmp:
-                # Added log only if it's updated, not always for each High risk user
-                logger.info(f"Upgraded risk level for User: {u.username}, {alerts_num} detected")
-                u.risk_score = tmp
-                u.save()
+        new_risk_level = UserRiskScoreType.get_risk_level(db_user.alert_set.count())
+        # if the new_risk_level is higher than the current one,
+        if UserRiskScoreType.is_equal_or_higher(threshold=db_user.risk_score, value=new_risk_level, strict_higher=True):
+            db_user.risk_score = new_risk_level
+            db_user.save()
+            logger.info(f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, detected {db_user.alert_set.count()} alerts")
 
 
 def set_alert(db_user, login_alert, alert_info):
@@ -60,6 +57,8 @@ def set_alert(db_user, login_alert, alert_info):
         f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']} from {login_alert['country']} from device: {login_alert['agent']}"
     )
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    # update user.risk_score if necessary
+    update_risk_level(db_user=alert.user)
     # check filters
     alert_filter.match_filters(alert=alert)
     alert.save()

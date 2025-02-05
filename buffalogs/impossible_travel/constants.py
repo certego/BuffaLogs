@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -31,11 +33,20 @@ class UserRiskScoreType(models.TextChoices):
             raise ValueError("Risk value not valid")
 
     @classmethod
-    def is_equal_or_higher(cls, threshold, value):
-        # check if the value is equal or higher than the threshold
-        if UserRiskScoreType.values.index(value) >= UserRiskScoreType.values.index(threshold):
-            return True
-        return False
+    def is_equal_or_higher(cls, threshold, value, strict_higher: Optional[bool] = False) -> bool:
+        """Function to check if the given value (risk_score in string)
+
+        :param threshold: the threshold to exceed
+        :type threshold: UserRiskScoreType.value (str)
+        :param value: the value to check
+        :type value: UserRiskScoreType.value (str)
+        :param strict_higher (optional): indicates that the equal is not included
+        :type strict_higher: bool
+        """
+        if strict_higher:
+            return UserRiskScoreType.values.index(value) > UserRiskScoreType.values.index(threshold)
+        else:
+            return UserRiskScoreType.values.index(value) >= UserRiskScoreType.values.index(threshold)
 
 
 class AlertDetectionType(models.TextChoices):

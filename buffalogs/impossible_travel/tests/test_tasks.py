@@ -65,8 +65,8 @@ class TestTasks(TestCase):
         """Test update_risk_level() function for no_risk user"""
         # 0 alert --> no risk
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
-        tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
+        tasks.update_risk_level(db_user)
         self.assertEqual("No risk", db_user.risk_score)
 
     def test_update_risk_level_low(self):
@@ -75,8 +75,7 @@ class TestTasks(TestCase):
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
         Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value, login_raw_data="Test", description="Test_Description")
-        tasks.update_risk_level()
-        db_user = User.objects.get(username="Lorena Goldoni")
+        tasks.update_risk_level(db_user)
         self.assertEqual("Low", db_user.risk_score)
 
     def test_update_risk_level_medium(self):
@@ -91,8 +90,7 @@ class TestTasks(TestCase):
                 Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test3", description="Test_Description3"),
             ]
         )
-        tasks.update_risk_level()
-        db_user = User.objects.get(username="Lorena Goldoni")
+        tasks.update_risk_level(db_user)
         self.assertEqual("Medium", db_user.risk_score)
 
     def test_update_risk_level_high(self):
@@ -109,8 +107,7 @@ class TestTasks(TestCase):
                 Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test5", description="Test_Description5"),
             ]
         )
-        tasks.update_risk_level()
-        db_user = User.objects.get(username="Lorena Goldoni")
+        tasks.update_risk_level(db_user)
         self.assertEqual("High", db_user.risk_score)
 
     def test_set_alert(self):
