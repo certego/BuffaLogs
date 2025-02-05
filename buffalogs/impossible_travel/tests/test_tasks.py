@@ -51,7 +51,7 @@ class TestTasks(TestCase):
         Login.objects.filter(user=user_obj).update(updated=old_date)
         Alert.objects.filter(user=user_obj).update(updated=old_date)
         UsersIP.objects.filter(user=user_obj).update(updated=old_date)
-        tasks.clear_models_periodically()
+        tasks.clean_models_periodically()
         with self.assertRaises(User.DoesNotExist):
             User.objects.get(username="Lorena")
         with self.assertRaises(Login.DoesNotExist):
