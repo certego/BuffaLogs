@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -23,30 +21,32 @@ class UserRiskScoreType(models.TextChoices):
         # map risk value
         if value == 0:
             return cls.NO_RISK.value
-        elif 1 <= value <= 2:
+        elif 1 <= value <= 3:
             return cls.LOW.value
-        elif 3 <= value <= 4:
+        elif 4 <= value <= 6:
             return cls.MEDIUM.value
-        elif value >= 5:
+        elif value >= 7:
             return cls.HIGH.value
         else:
             raise ValueError("Risk value not valid")
 
     @classmethod
-    def is_equal_or_higher(cls, threshold, value, strict_higher: Optional[bool] = False) -> bool:
-        """Function to check if the given value (risk_score in string)
+    def compare_risk(cls, threshold, value) -> str:
+        """Function to check if the given value (risk_score in string) is lower, equal or higher than a given threshold
 
         :param threshold: the threshold to exceed
         :type threshold: UserRiskScoreType.value (str)
         :param value: the value to check
         :type value: UserRiskScoreType.value (str)
-        :param strict_higher (optional): indicates that the equal is not included
-        :type strict_higher: bool
+
+        :return : "lower", "equal" or "higher"
+        :rtype: str
         """
-        if strict_higher:
-            return UserRiskScoreType.values.index(value) > UserRiskScoreType.values.index(threshold)
-        else:
-            return UserRiskScoreType.values.index(value) >= UserRiskScoreType.values.index(threshold)
+        if UserRiskScoreType.values.index(value) < UserRiskScoreType.values.index(threshold):
+            return "lower"
+        elif UserRiskScoreType.values.index(value) == UserRiskScoreType.values.index(threshold):
+            return "equal"
+        return "higher"
 
 
 class AlertDetectionType(models.TextChoices):
@@ -63,7 +63,7 @@ class AlertDetectionType(models.TextChoices):
     NEW_DEVICE = "New Device", _("Login from new device")
     IMP_TRAVEL = "Imp Travel", _("Impossible Travel detected")
     NEW_COUNTRY = "New Country", _("Login from new country")
-    USER_RISK_THRESHOLD = "User Risk Threshold", _("User risk higher than threshold")
+    USER_RISK_THRESHOLD = "User Risk Threshold", _("User risk_score increased")
     LOGIN_ANONYMIZER_IP = "Login Anonymizer Ip", _("Login from an anonymizer IP")
     ATYPICAL_COUNTRY = "Atypical Country", _("Login from an atypical country")
 

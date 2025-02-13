@@ -81,7 +81,7 @@ def _check_users_filters(db_alert: Alert, app_config: Config, db_user: User) -> 
                 db_alert.filter_type.append(
                     AlertFilterType.IGNORED_USER_FILTER
                 )  # alert filtered because enabled_users is empty, but the username is in the ignored_users list
-    if not UserRiskScoreType.is_equal_or_higher(threshold=app_config.alert_minimum_risk_score, value=db_user.risk_score):
+    if UserRiskScoreType.compare_risk(threshold=app_config.alert_minimum_risk_score, value=db_user.risk_score) == "lower":
         logger.debug(
             f"Alert: {db_alert.id} filtered because user: {db_user.username} hsa risk_score: {db_user.risk_score}, but Config.alert_minimum_risk_score is set to {app_config.alert_minimum_risk_score}"
         )

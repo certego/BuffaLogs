@@ -53,10 +53,10 @@ def update_risk_level(db_user: User, triggered_alert: Alert):
             return False  # risk_score doesn't increased, so no USER_RISK_THRESHOLD alert
 
         # if the new_risk_level is higher than the current one
-        # and the new_risk_level is higher or equal than the threshold set in the config.threshold_USER_RISK_THRESHOLD_alert
+        # and the new_risk_level is higher or equal than the threshold set in the config.threshold_user_risk_alert
         # send the USER_RISK_THRESHOLD alert
         app_config = Config.objects.get(id=1)
-        config_threshold_comparison = UserRiskScoreType.compare_risk(app_config.threshold_USER_RISK_THRESHOLD_alert, new_risk_level)
+        config_threshold_comparison = UserRiskScoreType.compare_risk(app_config.threshold_user_risk_alert, new_risk_level)
 
         if config_threshold_comparison in ["equal", "higher"]:
             alert_info = {
