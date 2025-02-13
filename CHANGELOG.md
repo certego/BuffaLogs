@@ -1,3 +1,17 @@
+## 2.x.x
+### 2.0.0
+#### Features
+* Added `Atypical Country` alert, with the addition of the customizable field: **Config.atypical_country_days** in order to set from how many days a login from a Country is considered "Atypical"
+* Added `User Risk Threshold` alert, with the customizable field: **Config.threshold_user_risk_alert** in order to set which level the user must have to trigger the "USER_RISK_THRESHOLD" alert
+### Changes
+* Changed the **UserRiskScoreType.is_equal_or_higher(...)** method with the **UserRiskScoreType.compare_risk(...)** function
+* Changed users risk_level ranges: [1,3] alerts = "Low" level, [4,6] alerts = "Medium" level, >= 7 alerts = "High" level
+* Added debug logs for the Filter logic
+* Removed the `update_risk_level()` function from the `BuffalogsCleanModelsPeriodicallyTask` periodic task. Now, the new risk_score is calculated as soon as an alert is triggered
+### Bugfix
+* Fixed elasticsearch port in *load_templates.sh* script
+
+
 ## 1.4.x
 ### 1.4.0
 #### Features
