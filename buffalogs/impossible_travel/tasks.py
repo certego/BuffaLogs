@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
-from impossible_travel.constants import UserRiskScoreType
+from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
 
@@ -32,18 +32,45 @@ def clean_models_periodically():
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
-def update_risk_level(db_user: User):
-    """Update user risk level depending on how many alerts were triggered"""
+def update_risk_level(db_user: User, triggered_alert: Alert):
+    """Update user risk level depending on how many alerts were triggered
+
+    :param db_user: user from DB
+    :type db_user: User object
+    :param triggered_alert: alert that has just been triggered
+    :type alert: Alert object
+    """
     with transaction.atomic():
+        current_risk_score = db_user.risk_score
         new_risk_level = UserRiskScoreType.get_risk_level(db_user.alert_set.count())
-        # if the new_risk_level is higher than the current one,
-        if UserRiskScoreType.is_equal_or_higher(threshold=db_user.risk_score, value=new_risk_level, strict_higher=True):
-            db_user.risk_score = new_risk_level
-            db_user.save()
-            logger.info(f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, detected {db_user.alert_set.count()} alerts")
+
+        # update the risk_score anyway in order to keep the users up-to-date each time they are seen by the system
+        db_user.risk_score = new_risk_level
+        db_user.save()
+
+        risk_comparison = UserRiskScoreType.compare_risk(current_risk_score, new_risk_level)
+        if risk_comparison in ["lower", "equal"]:
+            return False  # risk_score doesn't increased, so no USER_RISK_THRESHOLD alert
+
+        # if the new_risk_level is higher than the current one
+        # and the new_risk_level is higher or equal than the threshold set in the config.threshold_USER_RISK_THRESHOLD_alert
+        # send the USER_RISK_THRESHOLD alert
+        app_config = Config.objects.get(id=1)
+        config_threshold_comparison = UserRiskScoreType.compare_risk(app_config.threshold_USER_RISK_THRESHOLD_alert, new_risk_level)
+
+        if config_threshold_comparison in ["equal", "higher"]:
+            alert_info = {
+                "alert_name": AlertDetectionType.USER_RISK_THRESHOLD.value,
+                "alert_desc": f"{AlertDetectionType.USER_RISK_THRESHOLD.label} for User: {db_user.username}, "
+                f"who changed risk_score from {current_risk_score} to {new_risk_level}",
+            }
+            logger.info(f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, " f"detected {db_user.alert_set.count()} alerts")
+            set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info)
+
+            return True
 
 
-def set_alert(db_user, login_alert, alert_info):
+def set_alert(db_user: User, login_alert: dict, alert_info: dict):
     """Save the alert on db and logs it
 
     :param db_user: user from db
@@ -53,12 +80,10 @@ def set_alert(db_user, login_alert, alert_info):
     :param alert_info: dictionary with alert info
     :type alert_info: dict
     """
-    logger.info(
-        f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']} from {login_alert['country']} from device: {login_alert['agent']}"
-    )
+    logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     # update user.risk_score if necessary
-    update_risk_level(db_user=alert.user)
+    update_risk_level(db_user=alert.user, triggered_alert=alert)
     # check filters
     alert_filter.match_filters(alert=alert)
     alert.save()
