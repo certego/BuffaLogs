@@ -90,9 +90,14 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict):
     return alert
 
 
-def check_fields(db_user, fields):
+def check_fields(db_user: User, fields: list):
     """
-    Call the relative function if user_agents and/or geoip exist
+    Call the relative function to check the different types of alerts, based on the existing fields
+
+    :param db_user: user from DB
+    :type db_user: User object
+    :param fields: list of login data of the user
+    :type fields: list
     """
     imp_travel = impossible_travel.Impossible_Travel()
     new_dev = login_from_new_device.Login_New_Device()
@@ -101,6 +106,12 @@ def check_fields(db_user, fields):
     app_config, _ = Config.objects.get_or_create(id=1)
 
     for login in fields:
+        if login.get("intelligence_category", None) == "anonymizer":
+            alert_info = {
+                "alert_name": AlertDetectionType.ANONYMOUS_IP_LOGIN.value,
+                "alert_desc": f"{AlertDetectionType.ANONYMOUS_IP_LOGIN.label} from IP: {login['ip']} by User: {db_user.username}",
+            }
+            set_alert(db_user, login_alert=login, alert_info=alert_info)
         if login["lat"] and login["lon"]:
             if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
                 agent_alert = False
@@ -175,6 +186,7 @@ def process_user(db_user, start_date, end_date):
                 "_index",
                 "source.ip",
                 "_id",
+                "source.intelligence_category",
             ]
         )
         .sort("@timestamp")  # from the oldest to the most recent login

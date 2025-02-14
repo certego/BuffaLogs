@@ -56,7 +56,7 @@ class AlertDetectionType(models.TextChoices):
     * IMP_TRAVEL: Alert if the user logs into the system from a significant distance () within a range of time that cannot be covered by conventional means of transport
     * NEW_COUNTRY: The user made a login from a country where they have never logged in before
     * USER_RISK_THRESHOLD: Alert if the user.risk_score value is equal or higher than the Config.alert_minimum_risk_score
-    * LOGIN_ANONYMIZER_IP: Alert if the login has been made from an anonymizer IP
+    * ANONYMOUS_IP_LOGIN: Alert if the login has been made from an anonymous IP
     * ATYPICAL_COUNTRY: Alert if the login has been made from a country not visited recently
     """
 
@@ -64,7 +64,7 @@ class AlertDetectionType(models.TextChoices):
     IMP_TRAVEL = "Imp Travel", _("Impossible Travel detected")
     NEW_COUNTRY = "New Country", _("Login from new country")
     USER_RISK_THRESHOLD = "User Risk Threshold", _("User risk_score increased")
-    LOGIN_ANONYMIZER_IP = "Login Anonymizer Ip", _("Login from an anonymizer IP")
+    ANONYMOUS_IP_LOGIN = "Anonymous IP Login", _("Login from an anonymous IP")
     ATYPICAL_COUNTRY = "Atypical Country", _("Login from an atypical country")
 
     @classmethod
