@@ -137,7 +137,8 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
                     "name": "<ISP_name>"
                 }
             },
-            "ip": "<log_source_ip>"
+            "ip": "<log_source_ip>",
+            "intelligence_category": "<intelligence_category>"
         },
         "user_agent": {
             "original": "<log_device_user_agent>"
