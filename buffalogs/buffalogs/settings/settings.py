@@ -229,3 +229,13 @@ CELERY_BEAT_SCHEDULE = {
     },
     "update_risk_level": {"task": "UpdateRiskLevelTask", "schedule": crontab(minute=10)},
 }
+
+
+## SMTP info for email alerts
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"  
+EMAIL_PORT = 587  # Use 465 for SSL
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "EMAIL_ADDRESS"
+EMAIL_HOST_PASSWORD = "APP_PASSWORD"
+DEFAULT_FROM_EMAIL = "BuffaLogs Alerts EMAIL_ADDRESS"

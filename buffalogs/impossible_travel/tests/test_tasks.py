@@ -6,6 +6,8 @@ from unittest.mock import patch
 from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
+from django.test import override_settings
+from django.core import mail
 from impossible_travel import tasks
 from impossible_travel.constants import AlertDetectionType, AlertFilterType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
@@ -112,7 +114,9 @@ class TestTasks(TestCase):
         tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("High", db_user.risk_score)
-
+    
+    #uncomment this to actually send the mail
+    #@override_settings(EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend")
     def test_set_alert(self):
         # Add an alert and check if it is correctly inserted in the Alert Model
         db_user = User.objects.get(username="Lorena Goldoni")
@@ -128,6 +132,8 @@ class TestTasks(TestCase):
         }
         tasks.set_alert(db_user, login_data, alert_info)
         db_alert = Alert.objects.get(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
+        # Check if one email was sent
+        self.assertEqual(len(mail.outbox), 1)
         self.assertIsNotNone(db_alert)
         self.assertEqual("Imp Travel", db_alert.name)
         self.assertTrue(db_alert.is_filtered)
