@@ -55,9 +55,16 @@ class Ingestion(ABC):
         """
         raise NotImplementedError
 
-    def normalize_response_data(self, db_user: User, response: dict):
+    def normalize_response_data(self, db_user: User, user_logins: list):
+        """General function that normalizes the list of logins got
+
+        :param db_user: User that has made the logins
+        :type db_user: User object
+        :param user_logins: list of all the logins made by the user
+        :type user_logins: list of dicts
+        """
         fields = []
-        for hit in response:
+        for hit in user_logins:
             if "source" in hit:
                 tmp = {"timestamp": hit["@timestamp"]}
                 tmp["id"] = hit.meta["id"]
@@ -114,7 +121,7 @@ class ElasticsearchIngestion(Ingestion):
                 if not created:
                     # Saving user to update updated_at field
                     db_user.save()
-                self.process_user(db_user, start_date, end_date)
+                self._process_user(db_user, start_date, end_date)
         except AttributeError:
             self.logger.info("No users login aggregation found")
 
@@ -154,3 +161,11 @@ class ElasticsearchIngestion(Ingestion):
         )
         response = s.execute()
         self.logger.info(f"Got {len(response)} logins for user {db_user.username}")
+        self._parse_elasticsearch_response(db_user, response)
+
+    def _parse_elasticsearch_response(self, db_user, response):
+        user_logins = []
+        # transform data from the Elasticsearch "Hit" objects to a list of dicts of the logins made by the user considered
+        for hit in response:
+            user_logins.append(hit.to_dict())
+        self.normalize_response_data(db_user=db_user, user_logins=user_logins)
