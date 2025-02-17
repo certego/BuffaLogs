@@ -119,3 +119,12 @@ class ComparisonType(models.TextChoices):
     LOWER = "lower", _("The value is lower than the given threshold")
     EQUAL = "equal", _("The value and the given threshold are equal")
     HIGHER = "higher", _("The value is higher than the given threshold")
+
+
+class IngestionSourceType(models.TextChoices):
+    """Types of possible data ingestion sources
+
+    * ELASTICSEARCH: The login data is extracted from Elasticsearch
+    """
+
+    ELASTICSEARCH = "Elasticsearch", _("Data Ingestion from Elasticsearch")
