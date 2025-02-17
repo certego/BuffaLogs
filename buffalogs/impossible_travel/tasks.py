@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
-from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
+from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
 
@@ -49,7 +49,7 @@ def update_risk_level(db_user: User, triggered_alert: Alert):
         db_user.save()
 
         risk_comparison = UserRiskScoreType.compare_risk(current_risk_score, new_risk_level)
-        if risk_comparison in ["lower", "equal"]:
+        if risk_comparison in [ComparisonType.LOWER, ComparisonType.EQUAL]:
             return False  # risk_score doesn't increased, so no USER_RISK_THRESHOLD alert
 
         # if the new_risk_level is higher than the current one
@@ -58,7 +58,7 @@ def update_risk_level(db_user: User, triggered_alert: Alert):
         app_config = Config.objects.get(id=1)
         config_threshold_comparison = UserRiskScoreType.compare_risk(app_config.threshold_user_risk_alert, new_risk_level)
 
-        if config_threshold_comparison in ["equal", "higher"]:
+        if config_threshold_comparison in [ComparisonType.EQUAL, ComparisonType.HIGHER]:
             alert_info = {
                 "alert_name": AlertDetectionType.USER_RISK_THRESHOLD.value,
                 "alert_desc": f"{AlertDetectionType.USER_RISK_THRESHOLD.label} for User: {db_user.username}, "

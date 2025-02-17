@@ -3,7 +3,7 @@ import re
 from typing import Optional
 
 from django.conf import settings
-from impossible_travel.constants import AlertFilterType, UserRiskScoreType
+from impossible_travel.constants import AlertFilterType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, User
 from ua_parser import parse
 
@@ -81,7 +81,7 @@ def _check_users_filters(db_alert: Alert, app_config: Config, db_user: User) -> 
                 db_alert.filter_type.append(
                     AlertFilterType.IGNORED_USER_FILTER
                 )  # alert filtered because enabled_users is empty, but the username is in the ignored_users list
-    if UserRiskScoreType.compare_risk(threshold=app_config.alert_minimum_risk_score, value=db_user.risk_score) == "lower":
+    if UserRiskScoreType.compare_risk(threshold=app_config.alert_minimum_risk_score, value=db_user.risk_score) == ComparisonType.LOWER:
         logger.debug(
             f"Alert: {db_alert.id} filtered because user: {db_user.username} hsa risk_score: {db_user.risk_score}, but Config.alert_minimum_risk_score is set to {app_config.alert_minimum_risk_score}"
         )

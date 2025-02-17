@@ -40,13 +40,13 @@ class UserRiskScoreType(models.TextChoices):
         :type value: UserRiskScoreType.value (str)
 
         :return : "lower", "equal" or "higher"
-        :rtype: str
+        :rtype: RiskComparisonType Enum
         """
         if UserRiskScoreType.values.index(value) < UserRiskScoreType.values.index(threshold):
-            return "lower"
+            return ComparisonType.LOWER
         elif UserRiskScoreType.values.index(value) == UserRiskScoreType.values.index(threshold):
-            return "equal"
-        return "higher"
+            return ComparisonType.EQUAL
+        return ComparisonType.HIGHER
 
 
 class AlertDetectionType(models.TextChoices):
@@ -106,3 +106,16 @@ class AlertFilterType(models.TextChoices):
     )
     IS_MOBILE_FILTER = "ignore_mobile_logins filter", _("Alert filtered because the login is from a mobile device - Config.ignore_mobile_logins is True")
     IGNORED_ISP_FILTER = "ignored_ISPs filter", _("Alert filtered because the ISP is whitelisted - The ISP is in the Config.ignored_ISPs list")
+
+
+class ComparisonType(models.TextChoices):
+    """Types of possible results in some comparisons
+
+    * LOWER: the value is lower than the given threshold
+    * EQUAL: the value and the given threshold are equal
+    * HIGHER: the value is higher than the given threshold
+    """
+
+    LOWER = "lower", _("The value is lower than the given threshold")
+    EQUAL = "equal", _("The value and the given threshold are equal")
+    HIGHER = "higher", _("The value is higher than the given threshold")
