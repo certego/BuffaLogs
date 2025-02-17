@@ -21,21 +21,32 @@ class UserRiskScoreType(models.TextChoices):
         # map risk value
         if value == 0:
             return cls.NO_RISK.value
-        elif 1 <= value <= 2:
+        elif 1 <= value <= 3:
             return cls.LOW.value
-        elif 3 <= value <= 4:
+        elif 4 <= value <= 6:
             return cls.MEDIUM.value
-        elif value >= 5:
+        elif value >= 7:
             return cls.HIGH.value
         else:
             raise ValueError("Risk value not valid")
 
     @classmethod
-    def is_equal_or_higher(cls, threshold, value):
-        # check if the value is equal or higher than the threshold
-        if UserRiskScoreType.values.index(value) >= UserRiskScoreType.values.index(threshold):
-            return True
-        return False
+    def compare_risk(cls, threshold, value) -> str:
+        """Function to check if the given value (risk_score in string) is lower, equal or higher than a given threshold
+
+        :param threshold: the threshold to exceed
+        :type threshold: UserRiskScoreType.value (str)
+        :param value: the value to check
+        :type value: UserRiskScoreType.value (str)
+
+        :return : "lower", "equal" or "higher"
+        :rtype: RiskComparisonType Enum
+        """
+        if UserRiskScoreType.values.index(value) < UserRiskScoreType.values.index(threshold):
+            return ComparisonType.LOWER
+        elif UserRiskScoreType.values.index(value) == UserRiskScoreType.values.index(threshold):
+            return ComparisonType.EQUAL
+        return ComparisonType.HIGHER
 
 
 class AlertDetectionType(models.TextChoices):
@@ -45,16 +56,16 @@ class AlertDetectionType(models.TextChoices):
     * IMP_TRAVEL: Alert if the user logs into the system from a significant distance () within a range of time that cannot be covered by conventional means of transport
     * NEW_COUNTRY: The user made a login from a country where they have never logged in before
     * USER_RISK_THRESHOLD: Alert if the user.risk_score value is equal or higher than the Config.alert_minimum_risk_score
-    * LOGIN_ANONYMIZER_IP: Alert if the login has been made from an anonymizer IP
+    * ANONYMOUS_IP_LOGIN: Alert if the login has been made from an anonymous IP
     * ATYPICAL_COUNTRY: Alert if the login has been made from a country not visited recently
     """
 
     NEW_DEVICE = "New Device", _("Login from new device")
     IMP_TRAVEL = "Imp Travel", _("Impossible Travel detected")
     NEW_COUNTRY = "New Country", _("Login from new country")
-    USER_RISK_THRESHOLD = "User Risk Threshold", _("User risk higher than threshold")
-    LOGIN_ANONYMIZER_IP = "Login Anonymizer Ip", _("Login from an anonymizer IP")
-    ATYPICAL_COUNTRY = "Atypical Country", _("Login from a country not visited recently")
+    USER_RISK_THRESHOLD = "User Risk Threshold", _("User risk_score increased")
+    ANONYMOUS_IP_LOGIN = "Anonymous IP Login", _("Login from an anonymous IP")
+    ATYPICAL_COUNTRY = "Atypical Country", _("Login from an atypical country")
 
     @classmethod
     def get_label_from_value(cls, value):
@@ -95,3 +106,16 @@ class AlertFilterType(models.TextChoices):
     )
     IS_MOBILE_FILTER = "ignore_mobile_logins filter", _("Alert filtered because the login is from a mobile device - Config.ignore_mobile_logins is True")
     IGNORED_ISP_FILTER = "ignored_ISPs filter", _("Alert filtered because the ISP is whitelisted - The ISP is in the Config.ignored_ISPs list")
+
+
+class ComparisonType(models.TextChoices):
+    """Types of possible results in some comparisons
+
+    * LOWER: the value is lower than the given threshold
+    * EQUAL: the value and the given threshold are equal
+    * HIGHER: the value is higher than the given threshold
+    """
+
+    LOWER = "lower", _("The value is lower than the given threshold")
+    EQUAL = "equal", _("The value and the given threshold are equal")
+    HIGHER = "higher", _("The value is higher than the given threshold")
