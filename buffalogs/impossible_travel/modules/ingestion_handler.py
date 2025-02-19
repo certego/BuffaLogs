@@ -1,4 +1,6 @@
+import json
 import logging
+import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -15,18 +17,30 @@ class Ingestion(ABC):
         self.task_settings = task_settings
 
     @staticmethod
-    def get_ingestion_source(task_settings: TaskSettings):
-        """Static method to get the Ingestion type, based on the TaskSettings.ingestion_source value
+    def load_ingestion_sources():
+        """Load the configuration ingestion JSON file in order to create the istances for the active ingestion sources"""
+        file_path = settings.CERTEGO_BUFFALOGS_CONFIG_INGESTION_FILE
 
-        :param task_settings: TaskSettings object to get the ingestion source
-        :type: TaskSettings object
-        """
-        match task_settings.ingestion_source:
-            case IngestionSourceType.ELASTICSEARCH:
-                return ElasticsearchIngestion(task_settings)
-            # add here the future sources
-            case _:
-                raise TypeError(f"Ingestion source: {task_settings.ingestion_source} is not supported")
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Error: The configuration file for the Ingestion: '{file_path}' doesn't exist")
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                config_data = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Error in the parsing of the json configuration file: '{file_path}': {e}")
+
+        active_sources = config_data.get("active_ingestion_sources", [])
+        ingestion_instances = []
+
+        for source in active_sources:
+            ingestion_class = INGESTION_SOURCES.get(source)
+            if ingestion_class:
+                ingestion_instances.append(ingestion_class(config_data[source]))
+            else:
+                raise TypeError(f"Ingestion source {source} is not supported")
+
+        return ingestion_instances  # return the list of instances of the active ingestion sources
 
     @abstractmethod
     def _exec_process_logs(self, start_date: datetime, end_date: datetime):
@@ -169,3 +183,9 @@ class ElasticsearchIngestion(Ingestion):
         for hit in response:
             user_logins.append(hit.to_dict())
         self.normalize_response_data(db_user=db_user, user_logins=user_logins)
+
+
+# Map of the available ingestion_source instances
+INGESTION_SOURCES = {
+    "elasticsearch": ElasticsearchIngestion,
+}

@@ -84,7 +84,7 @@ class TaskSettings(models.Model):
     updated = models.DateTimeField(auto_now=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    ingestion_source = models.CharField(choices=IngestionSourceType.choices, max_length=30, null=False, default=IngestionSourceType.ELASTICSEARCH)
+    ingestion_source = models.CharField(choices=IngestionSourceType.choices, max_length=30, null=False, blank=False, default=IngestionSourceType.ELASTICSEARCH)
 
     class Meta:
         constraints = [
