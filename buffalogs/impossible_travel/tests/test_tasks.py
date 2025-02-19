@@ -4,12 +4,12 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from django.db import connection
-from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel import tasks
-from impossible_travel.constants import AlertDetectionType, AlertFilterType
-from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
+from impossible_travel.constants import AlertDetectionType, IngestionSourceType
+from impossible_travel.models import Alert, Login, TaskSettings, User, UsersIP
+from impossible_travel.modules.ingestion_handler import ElasticsearchIngestion, Ingestion
 from impossible_travel.tests.setup import Setup
 
 
@@ -81,36 +81,55 @@ class TestTasks(TestCase):
         with self.assertRaises(UsersIP.DoesNotExist):
             UsersIP.objects.get(user__username="Lorena")
 
-    def test_update_risk_level_norisk(self):
-        """Test default no_risk level user"""
-        # 0 alert --> no risk
-        self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
-        db_user = User.objects.get(username="Lorena Goldoni")
-        self.assertEqual("No risk", db_user.risk_score)
-
-    def test_process_logs_data_lost(self):
-        TaskSettings.objects.create(
+    @patch.object(ElasticsearchIngestion, "_exec_process_logs")
+    def test_process_logs_data_lost(self, mock_exec_process_logs):
+        # testing the data lost flow
+        process_task = TaskSettings.objects.create(
             task_name="process_logs", start_date=timezone.datetime(2023, 4, 18, 10, 0), end_date=timezone.datetime(2023, 4, 18, 10, 30, 0)
         )
+        self.assertEqual("elasticsearch", process_task.ingestion_source)
         tasks.process_logs()
+        process_task = TaskSettings.objects.get(task_name="process_logs", ingestion_source="elasticsearch")
         new_end_date_expected = timezone.now() - timedelta(minutes=1)
         new_start_date_expected = new_end_date_expected - timedelta(minutes=30)
-        process_task = TaskSettings.objects.get(task_name="process_logs")
+        # data have been lost and start_date and end_date updated to now
         self.assertLessEqual((process_task.start_date - new_start_date_expected).total_seconds(), 5)
         self.assertLessEqual((process_task.end_date - new_end_date_expected).total_seconds(), 5)
+        mock_exec_process_logs.assert_called_once()
 
-    def test_process_logs_loop(self):
-        start = timezone.now() - timedelta(hours=5) - timedelta(minutes=1)
-        end = timezone.now() - timedelta(hours=4.5) - timedelta(minutes=1)
-        TaskSettings.objects.create(task_name="process_logs", start_date=start, end_date=end)
+    @patch("django.utils.timezone.now", return_value=datetime(2025, 2, 19, 12, 0, tzinfo=timezone.utc))
+    @patch.object(ElasticsearchIngestion, "_exec_process_logs")
+    def test_process_logs_default(self, mock_exec_process_logs, mock_now):
+        # test no execution - break
+        tasks.process_logs()
+        process_task = TaskSettings.objects.get(ingestion_source="elasticsearch")
+        self.assertEqual(datetime(2025, 2, 19, 11, 30, tzinfo=timezone.utc), process_task.start_date)
+        self.assertEqual(datetime(2025, 2, 19, 11, 59, tzinfo=timezone.utc), process_task.end_date)
+        self.assertEqual(mock_exec_process_logs.call_count, 0)
+
+    @patch("django.utils.timezone.now", return_value=datetime(2025, 2, 19, 12, 0, tzinfo=timezone.utc))
+    @patch.object(ElasticsearchIngestion, "_exec_process_logs")
+    def test_process_logs_loop(self, mock_exec_process_logs, mock_now):
+        # fix the "timezone.now()" to test better the execution
+        fixed_now = mock_now.return_value
+        # test the loop data execution (6 times)
+        start = fixed_now - timedelta(hours=5)
+        end = fixed_now - timedelta(hours=4.5) - timedelta(minutes=1)
+        process_task = TaskSettings.objects.create(task_name="process_logs", start_date=start, end_date=end)
+        # check the initial saved datetimes
+        self.assertEqual(datetime(2025, 2, 19, 7, 0, tzinfo=timezone.utc), process_task.start_date)
+        self.assertEqual(datetime(2025, 2, 19, 7, 29, tzinfo=timezone.utc), process_task.end_date)
         # Let entire exec for loop
         tasks.process_logs()
-        start_date_expected = start + timedelta(hours=3)
-        end_date_expected = end + timedelta(hours=3)
-        process_task = TaskSettings.objects.get(task_name="process_logs")
-        self.assertLessEqual((start_date_expected - process_task.start_date).total_seconds(), 5)
-        self.assertLessEqual((end_date_expected - process_task.end_date).total_seconds(), 5)
-        # Now not entire for loop executed
+        self.assertEqual(mock_exec_process_logs.call_count, 6)
+        process_task.refresh_from_db()
+        # check the final datetimes after the loop
+        self.assertEqual(datetime(2025, 2, 19, 9, 59, tzinfo=timezone.utc), process_task.start_date)
+        self.assertEqual(datetime(2025, 2, 19, 10, 29, tzinfo=timezone.utc), process_task.end_date)
+        # Now the loop is not executed all the 6 times, just 3 --> total 9 times
         tasks.process_logs()
-        start_date_expected = start + timedelta(hours=5)
-        end_date_expected = end + timedelta(hours=4.5)
+        process_task.refresh_from_db()
+        self.assertEqual(mock_exec_process_logs.call_count, 9)
+        # check the final datetimes after the second "partial" loop
+        self.assertEqual(datetime(2025, 2, 19, 11, 29, tzinfo=timezone.utc), process_task.start_date)
+        self.assertEqual(datetime(2025, 2, 19, 11, 59, tzinfo=timezone.utc), process_task.end_date)
