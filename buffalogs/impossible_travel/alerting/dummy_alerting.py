@@ -17,7 +17,7 @@ class DummyAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.where(notified=False).update(notified=True)
+        alerts = Alert.objects.filter(notified=False)
         for a in alerts:
             #in a real alerters, this would be the place to send the alert
             self.logger.info("Alerting %s", a.name)

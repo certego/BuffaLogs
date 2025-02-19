@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
+import logging
 
 class BaseAlerting(ABC):
     """

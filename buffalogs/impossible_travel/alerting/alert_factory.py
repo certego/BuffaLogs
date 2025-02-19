@@ -11,14 +11,14 @@ class AlertFactory():
 
         config = self._read_config()
 
-        self.active_alerter = config["active_alerter"]
-        self.alert_config = config[self.active_alerter]
+        self.active_alerter = BaseAlerting.SupportedAlerters(config["active_alerter"])
+        self.alert_config = config[config["active_alerter"]]
 
     def _read_config(self) -> dict:
         """
         Read the configuration file.
         """
-        with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "alerting.json")) as f:
+        with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"), mode="r") as f:
             config = json.load(f)
 
         # Validate configuration
