@@ -1,7 +1,9 @@
+import datetime
+import os
 import random
-from datetime import datetime, timedelta
 
 import yaml
+from django.utils import timezone
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
@@ -24,13 +26,13 @@ def generate_common_data():
     event_category = ["threat"] * 2 + ["session"] * 2 + ["malware"] * 6 + ["authentication"] * 90
     event_type = ["start"] * 80 + ["end"] * 20
 
-    with open("random_data.yaml", "r") as info:
-        read_data = yaml.load(info, Loader=yaml.FullLoader)
+    with open(os.path.join("../examples/random_data.yaml")) as file:
+        read_data = yaml.load(file, Loader=yaml.FullLoader)
 
     for i in range(0, NUM_LOGS):
         tmp = {}
         ip = random.choice(read_data["ip"])
-        now = datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc)
         str_time = now.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         head = str_time[:-4]
         tail = str_time[-1:]
@@ -47,7 +49,7 @@ def generate_common_data():
         tmp["source"]["geo"]["location"] = {"lat": ip["latitude"], "lon": ip["longitude"]}
         tmp["user_agent"] = {"original": random.choice(read_data["user_agent"])}
 
-        now = now + timedelta(seconds=1)
+        now = now + datetime.timedelta(seconds=1)
         fields.append(tmp)
     return fields
 
@@ -58,7 +60,7 @@ def write_bulk(es, index, msg_list):
     :param msg_list: a list of messages to save
     :type msg_list: list
     """
-    now = datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc)
     bulk(es, _bulk_gendata(f"{index}-test_data-{str(now.year)}-{str(now.month)}-{str(now.day)}", msg_list))
 
 
