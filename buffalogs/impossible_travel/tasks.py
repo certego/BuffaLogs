@@ -10,6 +10,7 @@ from elasticsearch_dsl import Search, connections
 from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
+from impossible_travel.modules import alert_email
 
 logger = get_task_logger(__name__)
 
@@ -80,13 +81,23 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict):
     :param alert_info: dictionary with alert info
     :type alert_info: dict
     """
-    logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
+    alert_message = f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']} from {login_alert['country']} from device: {login_alert['agent']}"
+    logger.info(
+        alert_message
+    )
     alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     # update user.risk_score if necessary
     update_risk_level(db_user=alert.user, triggered_alert=alert)
     # check filters
     alert_filter.match_filters(alert=alert)
     alert.save()
+
+    #sends an alert email
+    try:
+        alert_email.send_alert_email('SEND_ALERT_TO_THIS_ADDRESS',alert_message)
+        logger.info(f"Email alert sent to {'SEND_ALERT_TO_THIS_ADDRESS'} for {alert_info['alert_name']}")
+    except Exception as e:
+        logger.error(f"Failed to send email alert to {'SEND_ALERT_TO_THIS_ADDRESS'}: {str(e)}")
     return alert
 
 
