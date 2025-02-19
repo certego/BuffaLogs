@@ -55,6 +55,7 @@ class Alert(models.Model):
         default=list,
         help_text="List of filters that disabled the related alert",
     )
+    notified = models.BooleanField(help_text="True when the alert has been notified by alerter", default=False)
 
     class Meta:
         constraints = [

@@ -1,0 +1,6 @@
+{
+    "active_alerter": "dummy",
+    "dummy": {
+        "config_field_example": "value_example"
+    }
+}
