@@ -3,10 +3,15 @@ from datetime import datetime, timedelta
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.utils import timezone
+from impossible_travel.constants import IngestionSourceType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules.ingestion_handler import Ingestion
 
 logger = get_task_logger(__name__)
+
+CLASS_NAME_TO_TASK_SETTING_SOURCE = {
+    "ElasticsearchIngestion": IngestionSourceType.ELASTICSEARCH.value,
+}
 
 
 @shared_task(name="BuffalogsCleanModelsPeriodicallyTask")
@@ -30,10 +35,11 @@ def clean_models_periodically():
 def validate_datetime(value):
     if not isinstance(value, datetime) or value.tzinfo is None:
         raise ValueError("start_date and end_date must be timezone-aware datetime objects")
+    return value
 
 
 @shared_task(name="BuffalogsProcessLogsTask")
-def process_logs(start_date: datetime = None, end_date: datetime = None):
+def process_logs(given_start_date: datetime = None, given_end_date: datetime = None):
     """Process logs in a given date range, or default to the last 30 minutes.
 
     :param start_date: datetime from which to start the detection
@@ -41,34 +47,43 @@ def process_logs(start_date: datetime = None, end_date: datetime = None):
     :param end_date: datetime up to which to carry out the detection
     :type end_date: timezone-aware datetime object
     """
+    # validate the datetimes if start_date and end_date are passed by the mgmt command
     now = timezone.now()
     try:
-        if start_date and end_date:
-            validate_datetime(start_date)
-            validate_datetime(end_date)
-        else:
-            process_task, _ = TaskSettings.objects.get_or_create(
-                task_name=process_logs.__name__, defaults={"end_date": now - timedelta(minutes=1), "start_date": now - timedelta(minutes=30)}
-            )
-            start_date, end_date = process_task.end_date, process_task.end_date + timedelta(minutes=30)
+        if given_start_date and given_end_date:
+            start_date = validate_datetime(given_start_date)
+            end_date = validate_datetime(given_end_date)
     except ValueError as e:
-        logger.error(f"Invalid datetime format: {e}")
+        logger.error(f"The datetime given has an invalid datetime format: {e}")
         return
 
-    process_task, _ = TaskSettings.objects.get_or_create(task_name=process_logs.__name__, defaults={"start_date": start_date, "end_date": end_date})
+    # get all the active ingestion sources
+    ingestion_instances = Ingestion.load_ingestion_sources()
+    if not ingestion_instances:
+        logger.error("No active ingestion source has been found")
+        return
 
-    for _ in range(6):
-        if (now - process_task.end_date).days >= 1:
-            logger.info(f"Data lost from {process_task.end_date} to now")
-            start_date = now - timedelta(minutes=31)
-            end_date = now - timedelta(minutes=1)
-        else:
-            start_date = process_task.end_date
-            end_date = process_task.end_date + timedelta(minutes=30)
+    # get or create a TaskSetting object for each active ingestion source in order to keep track of the execution times of each job
+    for ingestion in ingestion_instances:
+        current_source_name = CLASS_NAME_TO_TASK_SETTING_SOURCE[ingestion.__class__.__name__]
+        process_task, _ = TaskSettings.objects.get_or_create(
+            task_name=process_logs.__name__,
+            ingestion_source=current_source_name,
+            defaults={"start_date": now - timedelta(minutes=30), "end_date": now - timedelta(minutes=1)},
+        )
 
-        if end_date > now:
-            break
+        for _ in range(6):
+            if (now - process_task.end_date).days >= 1:
+                logger.info(f"Data lost from {process_task.end_date} to now")
+                start_date = now - timedelta(minutes=31)
+                end_date = now - timedelta(minutes=1)
+            else:
+                start_date = process_task.end_date
+                end_date = process_task.end_date + timedelta(minutes=30)
 
-        process_task.start_date, process_task.end_date = start_date, end_date
-        process_task.save()
-        Ingestion.get_ingestion_source(task_settings=process_task)._exec_process_logs(start_date, end_date)
+            if end_date > now:
+                break
+
+            process_task.start_date, process_task.end_date = start_date, end_date
+            process_task.save()
+            ingestion._exec_process_logs(start_date, end_date)
