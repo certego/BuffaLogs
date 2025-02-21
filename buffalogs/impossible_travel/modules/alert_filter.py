@@ -46,7 +46,8 @@ def _check_users_filters(db_alert: Alert, app_config: Config, db_user: User) -> 
     Rules:
     1. if ignored_users != [] and enabled_users != [] --> enabled_users wins
     2. if ignored_users != [] and enabled_users != [] and vip_users != [] but alert_is_vip_only = False --> enabled_users wins
-    3. if ignored_users != [] and enabled_users != [] and vip_users != [] but alert_is_vip_only = True --> vip_users wins, BUT only for vip_users also in the enabled_users list"""
+    3. if ignored_users != [] and enabled_users != [] and vip_users != [] but alert_is_vip_only = True --> vip_users wins, BUT only for vip_users also in the enabled_users list
+    """
     if app_config.alert_is_vip_only:
         if db_user.username not in app_config.vip_users or db_user.username not in app_config.enabled_users:
             logger.debug(f"Alert: {db_alert.id} filtered because user: {db_user.id} not in vip_users and enabled-users Config lists")

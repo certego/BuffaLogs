@@ -10,6 +10,7 @@ from elasticsearch_dsl import Search, connections
 from impossible_travel.constants import UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
+from impossible_travel.alerting.alert_factory import AlertFactory
 
 logger = get_task_logger(__name__)
 
@@ -211,6 +212,12 @@ def process_logs():
         process_task.end_date = end_date
         process_task.save()
         exec_process_logs(start_date, end_date)
+
+
+@shared_task(name="NotifyAlertsTask")
+def notify_alerts():
+    alert = AlertFactory().get_alert_class()
+    alert.notify_alerts()
 
 
 def exec_process_logs(start_date, end_date):
