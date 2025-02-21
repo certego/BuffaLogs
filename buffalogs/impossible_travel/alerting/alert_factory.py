@@ -4,7 +4,8 @@ import os
 import json
 from django.conf import settings
 
-class AlertFactory():
+
+class AlertFactory:
 
     def __init__(self) -> None:
         """pet_factory is our abstract factory.  We can set it at will."""
