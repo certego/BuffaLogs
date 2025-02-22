@@ -24,3 +24,4 @@ class DummyAlerting(BaseAlerting):
             self.logger.info("Alerting %s", a.name)
             a.notified = True
             a.save()
+            
