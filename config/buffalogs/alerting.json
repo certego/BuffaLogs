@@ -1,15 +1,5 @@
 {
-    "active_alerter": "email",
-    "email": {
-        "host": "smtp.example.com",
-        "port": 587,
-        "use_tls": true,
-        "use_ssl": false,
-        "username": "username",
-        "password": "password",
-        "sender": "alerts@buffalogs.com",
-        "recipient": "security-team@example.com"
-    },
+    "active_alerter": "dummy",
     "dummy": {
         "config_field_example": "value_example"
     }

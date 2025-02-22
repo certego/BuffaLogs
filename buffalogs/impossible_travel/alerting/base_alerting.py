@@ -10,7 +10,6 @@ class BaseAlerting(ABC):
 
     class SupportedAlerters(Enum):
         DUMMY = "dummy"
-        EMAIL = "email"
 
     def __init__(self):
         super().__init__()
