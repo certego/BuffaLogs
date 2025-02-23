@@ -1,3 +1,4 @@
+from buffalogs.impossible_travel.alerting.email_alerting import EmailAlerting
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
 import os
@@ -37,7 +38,9 @@ class AlertFactory:
         alerter_class = None
         match self.active_alerter:
             case BaseAlerting.SupportedAlerters.DUMMY:
-                alerter_class = DummyAlerting(self.alert_config)
+                alerter_class = DummyAlerting(self.alert_config)        
+            case BaseAlerting.SupportedAlerters.EMAIL: 
+                alerter_class = EmailAlerting(self.alert_config)
             case _:
                 raise ValueError(f"Unsupported alerter: {self.active_alerter}")
         return alerter_class

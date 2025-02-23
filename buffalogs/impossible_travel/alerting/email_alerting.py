@@ -7,7 +7,7 @@ from email.message import EmailMessage
 class EmailAlerting(BaseAlerting):
     def __init__(self, alert_config: dict):
         super().__init__()
-        self.config = alert_config.get("email", {})
+        self.config = alert_config
         self.validate_config()
 
     def validate_config(self):
