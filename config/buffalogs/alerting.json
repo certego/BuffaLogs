@@ -2,5 +2,18 @@
     "active_alerter": "dummy",
     "dummy": {
         "config_field_example": "value_example"
-    }
+    },
+
+    "webhooks_alerter" : {
+    	"recipients" : [{
+		"name" : "",
+		"endpoint" : "",
+		"options" : {
+			"issuer_name" : "",
+			"token_expiration_seconds" : "", 
+			"alert_types" : [],
+			"fields" : [],
+			"login_data" : []
+    		}
+	}]
 }
