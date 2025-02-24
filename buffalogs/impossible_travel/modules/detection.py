@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from celery.utils.log import get_task_logger
-from django.db import transaction
+from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 from geopy.distance import geodesic
 from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
@@ -60,7 +60,7 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict):
     :type alert_info: dict
     """
     logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
-    alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    alert = Alert.objects.create(user=db_user, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     # update user.risk_score if necessary
     update_risk_level(db_user=alert.user, triggered_alert=alert)
     # check filters
@@ -197,13 +197,26 @@ def update_model(db_user, new_login):
     :param new_login: new login info to update in to the DB
     :type new_login: dict
     """
-    db_user.login_set.filter(user_agent=new_login["agent"], country=new_login["country"], index=new_login["index"]).update(
-        timestamp=new_login["timestamp"],
-        latitude=new_login["lat"],
-        longitude=new_login["lon"],
-        event_id=new_login["id"],
-        ip=new_login["ip"],
-    )
+    try:
+        db_user.login_set.filter(user_agent=new_login["agent"], country=new_login["country"], index=new_login["index"]).update(
+            timestamp=new_login["timestamp"],
+            latitude=new_login["lat"],
+            longitude=new_login["lon"],
+            event_id=new_login["id"],
+            ip=new_login["ip"],
+        )
+    except IntegrityError as e:
+        logger.error(
+            f"Can't update a previous login in the DB for the User: {db_user.username} with the new login (event_id: {new_login['id']}) for an Integrity error: {e}"
+        )
+    except DatabaseError as e:
+        logger.error(
+            f"Can't update a previous login in the DB for the User: {db_user.username} with the new login (event_id: {new_login['id']}) for a Database error: {e}"
+        )
+    except Exception as e:
+        logger.error(
+            f"Unexpected error while updating a previous login in the DB for the User: {db_user.username} with the new login (event_id: {new_login['id']}): {e}"
+        )
 
 
 def calc_distance_impossible_travel(db_user, prev_login, last_login_user_fields):

@@ -10,7 +10,6 @@ from impossible_travel import tasks
 from impossible_travel.constants import AlertDetectionType, IngestionSourceType
 from impossible_travel.models import Alert, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules.ingestion_handler import ElasticsearchIngestion, Ingestion
-from impossible_travel.tests.setup import Setup
 
 
 def load_test_data(name):
@@ -21,6 +20,7 @@ def load_test_data(name):
 
 
 class TestTasks(TestCase):
+    fixtures = ["tests-fixture"]
     raw_data_NEW_COUNTRY = {
         "id": "orig_id_2",
         "index": "cloud",
@@ -32,11 +32,6 @@ class TestTasks(TestCase):
         "timestamp": "2025-02-13T09:16:25.000Z",
         "organization": "ISP2",
     }
-
-    @classmethod
-    def setUpTestData(self):
-        setup_obj = Setup()
-        setup_obj.setup()
 
     def reset_auto_increment(self, model):
         # reset the id number sequence after each tearDown
