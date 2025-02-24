@@ -1,6 +1,15 @@
 {
-    "active_alerter": "dummy",
+    "active_alerter": "email",
     "dummy": {
         "config_field_example": "value_example"
+    },
+    "email": {
+        "email_server": "smtp.gmail.com",
+        "email_port": 587,
+        "email_use_tls": true,
+        "email_host_user": "user@example.com",
+        "email_host_password": "password",
+        "default_from_email": "alerts@example.com",
+        "recipient_list": ["admin@example.com"]
     }
 }
