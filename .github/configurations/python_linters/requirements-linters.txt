@@ -1,7 +1,7 @@
 autoflake==2.3.1
-bandit==1.7.9
-pylint==3.2.6
-pylint-django==2.5.5
+bandit==1.8.3
+pylint==3.3.4
+pylint-django==2.6.1
 black>=25.1.0
 flake8>=7.1.2
 isort>=6.0.0
