@@ -6,7 +6,8 @@
         "url": "http://elasticsearch:9200/",
         "username": "foobar",
         "password": "bar",
-        "indexes": "weblog-*,cloud-*,fw-proxy-*,filebeat-*",
+        "timeout": 90,
+        "indexes": "cloud-*,fw-proxy-*",
         "custom_mapping": {
             "timestamp": "@timestamp",
             "id": "id",
@@ -21,7 +22,7 @@
         }
     },
     "splunk": {
-        "url": "localhost:9200",
+        "url": "localhost:9201",
         "username": "foobar",
         "password": "bar",
         "custom_mapping": {}

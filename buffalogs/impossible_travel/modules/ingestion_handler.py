@@ -6,15 +6,13 @@ from datetime import datetime
 
 from django.conf import settings
 from elasticsearch_dsl import Search, connections
-from impossible_travel.constants import IngestionSourceType
-from impossible_travel.models import TaskSettings, User
+from impossible_travel.models import User
 from impossible_travel.modules import detection
 
 
 class Ingestion(ABC):
-    def __init__(self, task_settings: TaskSettings):
+    def __init__(self):
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        self.task_settings = task_settings
 
     @staticmethod
     def load_ingestion_sources():
@@ -43,7 +41,7 @@ class Ingestion(ABC):
         return ingestion_instances  # return the list of instances of the active ingestion sources
 
     @abstractmethod
-    def _exec_process_logs(self, start_date: datetime, end_date: datetime):
+    def _exec_process_logs(self, start_date: datetime, end_date: datetime, ingestion_config: dict = None):
         """Starting the execution for the given time range
 
         :param start_date: Start datetime
@@ -108,18 +106,35 @@ class Ingestion(ABC):
 
 
 class ElasticsearchIngestion(Ingestion):
-    def _exec_process_logs(self, start_date: datetime, end_date: datetime):
-        """Starting the execution for the given time range
+    def _exec_process_logs(self, start_date: datetime, end_date: datetime, ingestion_config: dict = None) -> list:
+        """Starting the execution for the given time range, in order to take all the users that have logged in to the system in that time range
 
         :param start_date: Start datetime
         :type start_date: datetime
         :param end_date: End datetime
         :type end_date: datetime
+
+        :return: the list of User objects
+        :rtype: list
         """
+        logged_users_objects = []
         self.logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
-        connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
+
+        # Load ingestion configuration if not provided
+        if ingestion_config is None:
+            config_path = os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_INGESTION_FILE)
+            try:
+                with open(config_path, "r") as file:
+                    ingestion_config = json.load(file)
+            except (FileNotFoundError, json.JSONDecodeError) as e:
+                self.logger.error(f"Error loading ingestion configuration file: {e}")
+                return
+
+        # elasticsearch connection
+        connections.create_connection(hosts=ingestion_config["elasticsearch"]["url"], timeout=90, verify_certs=False)
+        # elasticsaerch query to get the logged users
         s = (
-            Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
+            Search(index=ingestion_config["elasticsearch"]["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
             .query("match", **{"event.category": "authentication"})
             .query("match", **{"event.outcome": "success"})
@@ -131,13 +146,15 @@ class ElasticsearchIngestion(Ingestion):
         try:
             self.logger.info(f"Successfully got {len(response.aggregations.login_user.buckets)} users")
             for user in response.aggregations.login_user.buckets:
-                db_user, created = User.objects.get_or_create(username=user.key)
-                if not created:
-                    # Saving user to update updated_at field
-                    db_user.save()
-                self._process_user(db_user, start_date, end_date)
+                if user.key:  # to discard a not well-defined user, for example: "user":{"name": ""}
+                    db_user, created = User.objects.get_or_create(username=user.key)
+                    if not created:
+                        # Saving user to update the "updated_at" field
+                        db_user.save()
+                # self._process_user(db_user, start_date, end_date)
         except AttributeError:
-            self.logger.info("No users login aggregation found")
+            self.logger.info("No users logged in found")
+        return logged_users_objects
 
     def _process_user(self, db_user: User, start_date: datetime, end_date: datetime):
         """Get info for each user login and normalization
@@ -173,6 +190,7 @@ class ElasticsearchIngestion(Ingestion):
             .sort("@timestamp")  # from the oldest to the most recent login
             .extra(size=10000)
         )
+        # the returned timestamp got by Elastic is in the isoformat: '2025-02-24T09:45:10.930Z'
         response = s.execute()
         self.logger.info(f"Got {len(response)} logins for user {db_user.username}")
         self._parse_elasticsearch_response(db_user, response)

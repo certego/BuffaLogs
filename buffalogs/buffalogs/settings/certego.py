@@ -14,8 +14,10 @@ CERTEGO_BUFFALOGS_POSTGRES_USER = os.environ.get("BUFFALOGS_POSTGRES_USER", "def
 CERTEGO_BUFFALOGS_POSTGRES_PASSWORD = os.environ.get("BUFFALOGS_POSTGRES_PASSWORD", "password")
 CERTEGO_BUFFALOGS_POSTGRES_PORT = os.environ.get("BUFFALOGS_POSTGRES_PORT", "5432")
 CERTEGO_BUFFALOGS_SECRET_KEY = os.environ.get("BUFFALOGS_SECRET_KEY", "django-insecure-am9z-fi-x*aqxlb-@abkhb@pu!0da%0a77h%-8d(dwzrrktwhu")
+# Config path
+CERTEGO_BUFFALOGS_CONFIG_PATH = os.path.join(CERTEGO_DJANGO_PROJ_BASE_DIR, "../config/")
 # Config file for source ingestion process (ingestion.py)
-CERTEGO_BUFFALOGS_CONFIG_INGESTION_FILE = "../config/buffalogs/ingestion.json"
+CERTEGO_BUFFALOGS_CONFIG_INGESTION_PATH = os.path.join(CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/")
 
 # For alert_filter.py in Config model
 CERTEGO_BUFFALOGS_IGNORED_USERS = ["Not Available", "N/A"]
@@ -34,7 +36,7 @@ CERTEGO_BUFFALOGS_IP_MAX_DAYS = 45
 CERTEGO_BUFFALOGS_MOBILE_DEVICES = ["iOS", "Android", "Windows Phone"]
 
 if CERTEGO_BUFFALOGS_ENVIRONMENT == ENVIRONMENT_DOCKER:
-
+    CERTEGO_ELASTICSEARCH = os.environ.get("CERTEGO_ELASTICSEARCH", "http://elasticsearch:9200")
     CERTEGO_BUFFALOGS_DB_HOSTNAME = "postgres"
     CERTEGO_DEBUG = False
     CERTEGO_BUFFALOGS_STATIC_ROOT = "/var/www/static/"
@@ -43,6 +45,7 @@ if CERTEGO_BUFFALOGS_ENVIRONMENT == ENVIRONMENT_DOCKER:
     CERTEGO_BUFFALOGS_RABBITMQ_URI = f"amqp://guest:guest@{CERTEGO_BUFFALOGS_RABBITMQ_HOST}/"  # noqa: E231
 
 elif CERTEGO_BUFFALOGS_ENVIRONMENT == ENVIRONMENT_DEBUG:
+    CERTEGO_ELASTICSEARCH = os.environ.get("CERTEGO_ELASTICSEARCH", "http://localhost:9200")
     CERTEGO_BUFFALOGS_DB_HOSTNAME = "localhost"
     CERTEGO_DEBUG = True
     CERTEGO_BUFFALOGS_STATIC_ROOT = "impossible_travel/static/"
