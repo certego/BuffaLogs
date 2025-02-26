@@ -1,5 +1,5 @@
-from django.core.mail import send_mail
 from django.conf import settings
+from django.core.mail import send_mail
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -14,9 +14,9 @@ class EmailAlerting(BaseAlerting):
         Initialize the Email Alerting class with email settings.
         """
         super().__init__()
+        self.recipient_list = ["RECIVER_EMAIL_ADDRESS"]
         self.email_config = alert_config
         self._configure_email_settings()
-        self.recipient_email = "RECIEVER_EMAIL"
 
     def _configure_email_settings(self):
         """Dynamically set Django email settings without reconfiguring."""
@@ -49,8 +49,9 @@ class EmailAlerting(BaseAlerting):
             for alert in alerts:
                 subject = f"Login Anomaly Alert: {alert.name}"
                 body = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
-                send_mail(subject, body,"SENDER_EMAIL", [self.recipient_email]) #1 if sent,0 if not
-                self.logger.info(f"Email Alert Sent: {alert.name} to {self.recipient_email}")
+
+                send_mail(subject, body,self.email_config.get("DEFAULT_FROM_EMAIL"), self.recipient_list) #1 if sent,0 if not
+                self.logger.info(f"Email Alert Sent: {alert.name} to {self.recipient_list}")
                 alert.notified = True
                 alert.save()
 

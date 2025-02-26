@@ -1,8 +1,7 @@
-from django.test import TestCase
-from unittest.mock import patch
+from django.core import mail
+from django.test import TestCase, override_settings
 from impossible_travel.alerting.email_alerting import EmailAlerting
-from impossible_travel.models import Alert, User, Login
-from django.core.mail import send_mail
+from impossible_travel.models import Alert, Login, User
 
 
 class TestEmailAlerting(TestCase):
@@ -10,12 +9,13 @@ class TestEmailAlerting(TestCase):
     def setUp(self):
         """Set up test data before running tests."""
         self.email_config = {
+            "email_backend" : "django.core.mail.backends.locmem.EmailBackend",
             "email_server": "smtp.gmail.com",
             "email_port": 587,
             "email_use_tls": True,
-            "email_host_user": "SENDER_EMAIL",
-            "email_host_password": "APP_PASSWORD",
-            "default_from_email": "BuffaLogs Alerts SENDER_EMAIL"
+            "email_host_user": "SENDER_EMAIL_ADDRESS",
+            "email_host_password": "SENDER_APP_PASSWORD",
+            "default_from_email": "BuffaLogs Alerts SENDER_EMAIL_ADRESS"
         }
         self.email_alerting = EmailAlerting(self.email_config)
 
@@ -31,18 +31,25 @@ class TestEmailAlerting(TestCase):
             description="Impossible travel detected",
             login_raw_data={}
         )
-
-    @patch("django.core.mail.send_mail") 
-    def test_notify_alerts_sends_email(self, mock_send_mail):
-        """Test if notify_alerts() calls send_mail and updates the alert."""
-
-        # Allow the actual function to run while tracking its calls
-        mock_send_mail.side_effect = send_mail  # This lets it actually send emails
-
+ 
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_email_args(self):
+        """Not sending the email actually,testing it in django's environment only"""
         self.email_alerting.notify_alerts()
 
-        # Debugging output
-        print("Mock call count:", mock_send_mail.call_count)
+        # Verify that an email was sent
+        self.assertEqual(len(mail.outbox), 1)
 
-        # Ensure send_mail was called at least once
-        self.assertGreater(mock_send_mail.call_count, 0, "Email was not sent.")
+        # Verify email content
+        email = mail.outbox[0]
+
+        self.assertEqual(email.subject, "Login Anomaly Alert: Imp Travel")
+        self.assertEqual(email.body, "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs")
+        self.assertEqual(email.from_email, "BuffaLogs Alerts SENDER_EMAIL_ADDRESS")
+        self.assertEqual(email.to, ["RECIEVER_EMAIL_ADDRESS"])
+    
+    def test_send_email(self):
+        """Actually sending the email to the recepient's address."""
+        self.email_alerting.notify_alerts()
+
+    
