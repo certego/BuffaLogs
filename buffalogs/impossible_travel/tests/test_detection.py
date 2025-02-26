@@ -112,20 +112,20 @@ class DetectionTestCase(TestCase):
     def test_update_model(self):
         # Test update_model() function for unique login, so if a login has the same [user_agent, country and index], the other fields shuld be updated to the new fields values
         user_obj = User.objects.get(username="Lorena Goldoni")
-        old_login = Login.objects.get(user=user_obj, event_id="event_id_1")
+        old_login = Login.objects.get(user=user_obj, event_id="event_id_2")
         new_time = timezone.now()
         new_login_fields = {
-            "id": "test1",
+            "id": "test2",
             "index": "cloud",
             "ip": "1.2.3.4",
             "lat": 39.1841,
             "lon": -77.0242,
             "country": "Italy",
-            "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+            "agent": "Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5",
             "timestamp": new_time,
         }
         detection.update_model(user_obj, new_login_fields)
-        new_login_db = Login.objects.get(user=user_obj, event_id="test1")
+        new_login_db = Login.objects.get(user=user_obj, event_id="test2")
         # Index, country and user_agent fields must not change
         self.assertEqual(new_login_db.index, old_login.index)
         self.assertEqual(new_login_db.country, old_login.country)
@@ -166,10 +166,10 @@ class DetectionTestCase(TestCase):
         app_config = Config.objects.get(id=1)
         db_user = User.objects.get(username="Lorena Goldoni")
         last_login_user_fields = {
-            "timestamp": "2023-03-08T17:10:33.358Z",
+            "timestamp": "2025-02-26T17:10:33.358Z",
             "lat": 14.9876,
             "lon": 24.3456,
-            "country": "Sudan",
+            "country": "Italy",
             "user_agent": "Mozilla/5.0 (X11; U; Linux i686; es-AR; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8",
         }
         self.assertDictEqual({}, detection.check_country(db_user, last_login_user_fields, app_config))
@@ -188,16 +188,16 @@ class DetectionTestCase(TestCase):
         app_config = Config.objects.get(id=1)
         db_user = User.objects.get(username="Lorena Goldoni")
         last_login_user_fields = {
-            "timestamp": "2023-04-18T17:10:33.358Z",
+            "timestamp": "2025-02-26T17:10:33.358Z",
             "lat": 44.4937,
-            "lon": 11.3430,
-            "country": "Sudan",
+            "lon": 24.3456,
+            "country": "Germany",
             "user_agent": "Mozilla/5.0 (X11; U; Linux i686; es-AR; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8",
         }
         alert_result = detection.check_country(db_user, last_login_user_fields, app_config)
         self.assertEqual("Atypical Country", alert_result["alert_name"])
         self.assertEqual(AlertDetectionType.ATYPICAL_COUNTRY.value, alert_result["alert_name"])
-        self.assertEqual("Login from an atypical country for User: Lorena Goldoni, at: 2023-04-18T17:10:33.358Z, from: Sudan", alert_result["alert_desc"])
+        self.assertEqual("Login from an atypical country for User: Lorena Goldoni, at: 2025-02-26T17:10:33.358Z, from: Germany", alert_result["alert_desc"])
 
     def test_check_new_device(self):
         # Test to check the the NEW_DEVICE alert has not been triggered
