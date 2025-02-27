@@ -2,8 +2,7 @@ import os
 from functools import partial
 
 import requests
-from django.conf.settings import HTTP_ALERT_TOKENS
-from impossible_travel.alerting.base_alerter import BaseAlerting
+from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert
 
@@ -12,17 +11,19 @@ PERMITTED_LOGIN_FIELD_LIST = ["index", "lat", "lon", "country", "timestamp"]
 ALERT_TYPE_LIST = [item.value for item in AlertDetectionType]
 
 
-def parse_fields_value(field_value: str | list, field_name: str, supported_values: list):
+def parse_fields_value(field_value: str | list, field_name: str, supported_values: list, default: list | None = None):
     """
     Parse and validate a field value against a list of supported values.
 
     This function validates the provided field value against a predefined list of supported values.
-    - If the field value is a string, it checks the following special cases:
-        - If the value is '_all_' (case-insensitive), it returns the full list of supported values.
-        - If the value is '_empty_' (case-insensitive), it returns an empty list.
-        - Otherwise, it raises a ValueError.
-    - If the field value is a list, each element is checked to ensure it exists in the supported values list.
-        - If any element is not permitted, a ValueError is raised.
+    If the given option contains an invalid option, it is simply bypassed and the default is selected
+
+    Valid options:
+        - string : specifies if all or non of the supported_values should be returned
+            - '_all_' (case-insensitive) : returns the full list of supported values.
+            - '_empty_' (case-insensitive) : returns an empty list.
+        - list : specifies a subset of supported_values to return, if an element is not in the supported_values
+                 it is skipped.
 
     Args:
         field_name (str): The name of the field being parsed (used for error messages).
@@ -30,20 +31,28 @@ def parse_fields_value(field_value: str | list, field_name: str, supported_value
         supported_values (list): The list of allowed values for this field.
 
     Returns:
-        A list of validated values corresponding to the field.
-
-    Raises:
-        ValueError: If the field value is unrecognized or contains elements not present in supported_values.
+        tuple - of a string for logging and a list of validated values of the field.
     """
+    if default is None:
+        default = supported_values
     if isinstance(field_name, str):
         if field_value.lower() == "_all_":
-            return supported_values
+            return None, supported_values
         if field_value.lower() == "_empty_":
-            return []
-        raise ValueError(f"Unkown option {field_value} for {field_name}")
-    for _ in field_value:
-        if _ not in supported_values:
-            raise ValueError(f"{field_name} value {_} is not permitted or does not exists")
+            return None, []
+        return f"Unsupported value: {field_value} for {field_name}, using defaults", default
+    invalid_values = []
+    # using copy to allow modification
+    # of field_value during iteration
+    value_iterator = iter(field_value[:])
+    for value in value_iterator:
+        if value not in supported_values:
+            invalid_values.append(field_value)
+            field_value.remove(value)
+
+    if invalid_values:
+        msg = f"Unsupported values {','.join(invalid_values)} in {field_name}"
+        return msg, field_value
 
 
 def get_alerts(names: list = [], get_all: bool = False):
@@ -70,6 +79,15 @@ def get_alerts(names: list = [], get_all: bool = False):
     return alerts
 
 
+def check_variable_exists(variable_name):
+    if not variable_name:
+        return None, ""
+    elif variable_name not in os.environ:
+        return None, os.environ[variable_name]
+    else:
+        return "Variable name {variable_name} is not set as Environment variable", ""
+
+
 def generate_batch(items: list, batch_size: int):
     """
     Return list elements in batches.
@@ -87,74 +105,6 @@ def generate_batch(items: list, batch_size: int):
             temp.clear()
 
 
-class Option:
-    "A class to parse and manage user options from alerter configuration."
-
-    defaults = {"alert_types": "_all_", "fields": ["name", "user", "description"], "login_data": "_all_", "batch_size": 10}
-
-    parsers = {
-        "alert_types": partial(parse_fields_value, field_name="alert_types", supported_values=ALERT_TYPE_LIST),
-        "fields": partial(parse_fields_value, field_name="fields", supported_values=PERMITTED_ALERT_FIELD_LIST),
-        "login_data": partial(parse_fields_value, field_name="login_data", supported_values=PERMITTED_LOGIN_FIELD_LIST),
-    }
-
-    @classmethod
-    def set_default(cls, option_name, default_value, parse_func: callable = None):
-        """
-        Add or update existing key in default dictionary.
-        Sets the parse function if provided.
-
-        Args:
-            option_name (str) : Name of option to add or updated
-            default_value (any): Value to be added as option
-        """
-        cls.default_dict[option_name] = default_value
-        if parse_func:
-            cls.parsers[option_name] = parse_func
-
-    @classmethod
-    def set_parser(cls, option_name: str, parse_func: callable):
-        """
-        Add or update existing key in parsers.
-
-        Args:
-            option_name(callable) : Name of option
-            parse_func(callable) : A callable that takes the value of `option_name` as the only required parameter
-                                    and returns a value to be set as the option for `option_name` or raises a ValueError
-                                    which will be logged.
-        """
-        cls.parsers[option_name] = parse_func
-
-    @classmethod
-    def configure_from_dict(cls, name, option_dict):
-        """
-        Configure an Option instance from a dictionary.
-
-        Args:
-            name (str): The identifier for the options instance.
-            option_dict (dict): A dictionary containing option values keyed by option names.
-
-        Returns:
-            obj: A configured instance of the Option class with attributes set based on the provided dictionary.
-        """
-        obj = cls()
-        obj.name = name
-        # get all configuration keys
-        # using set to avoid duplicate keys
-        # dictionary keys are hash-able
-        keys = set(cls.defaults.keys()).union(set(option_dict.keys()))
-        for key in keys:
-            if key in option_dict:
-                value = option_dict[key]
-            else:
-                value = cls.defaults[key]
-
-            parser_func = cls.parsers.get(key, lambda value: value)
-            value = parser_func(option_dict[key])
-            setattr(obj, key, value)
-        return obj
-
-
 class HTTPRequestAlerting(BaseAlerting):
     """
     Concrete implementation of the BaseAlerting class
@@ -162,12 +112,67 @@ class HTTPRequestAlerting(BaseAlerting):
     """
 
     required_fields = ["name", "endpoint"]
-    Option = Option
+
+    extra_parsers = {"token_variable_name": check_variable_exists}
+
+    option_parsers = {
+        "alert_types": partial(parse_fields_value, field_name="alert_types", supported_values=ALERT_TYPE_LIST),
+        "fields": partial(parse_fields_value, field_name="fields", supported_values=PERMITTED_ALERT_FIELD_LIST, default=["user", "description", "created"]),
+        "login_data": partial(parse_fields_value, field_name="login_data", supported_values=PERMITTED_LOGIN_FIELD_LIST),
+    }
 
     def __init__(self, alert_config: dict):
         """Initialize HTTPRequestAlerter object."""
         super().__init__(self)
-        self.alert_config = alert_config
+        self.configure(alert_config)
+        if self.extra_parsers:
+            self.option_parsers.update(self.extra_parsers)
+
+    def parse_option(self, key: str, value: str | list):
+        def fake_parser(value):
+            return None, value
+
+        if key in self.option_parsers:
+            parser = self.option_parsers[key]
+        else:
+            parser = fake_parser
+        msg, value = parser(value)
+        if msg:
+            self.logger.debug(msg)
+        return value
+
+    def get_valid_options(self, options: dict):
+        if options is None:
+            self.logger.debug("config is missing 'options', using defaults.")
+            return self.default_options
+
+        #
+        all_options = set(options.keys()).union(set(self.default_options.keys()))
+        for key in all_options:
+            value = options.get(key)
+            if value is None:
+                value = self.default_options.get(key)
+            options[key] = self.parse_option(key, value)
+        return options
+
+    def configure(self, config: dict):
+        """
+        Validate and set alert configuration
+
+        Args:
+            config (dict): A dictionary representing the recipient configuration.
+        """
+        # check for required fileds
+        missing_required_fields = [field for field in self.required_fields if field not in config]
+        if missing_required_fields:
+            self.logger.error(f"Improperly configuration: missing required fields: {','.join(missing_required_fields)}")
+            raise ValueError("Missing required values for {','.join(missing_required_fields)}")
+        self.alert_config = dict((field, config[field]) for field in self.required_fields)
+
+        # check for optional fields
+        options = config.get("options", None)
+        options = self.get_valid_options(options)
+        self.alert_config.update(options)
 
     def serialize_alerts(self, alerts: list[Alert], fields: list, login_data_fields: list):
         """
@@ -199,7 +204,7 @@ class HTTPRequestAlerting(BaseAlerting):
             data.append(serialized_data)
         return data
 
-    def get_token(self, token_variable_name: str):
+    def get_token(self):
         """
         Get token from environment variable.
 
@@ -208,35 +213,32 @@ class HTTPRequestAlerting(BaseAlerting):
         Args:
             token_variable_name (str) : Name of environment variable
         """
-        return os.environ.get(token_variable_name, None)
+        token_variable_name = self.alert_config["token_variable_name"]
+        return os.environ.get(token_variable_name)
 
-    def send_notification(self, recipient_name: str, endpoint: str, data: dict, options: Option):
+    def send_notification(self, recipient_name: str, endpoint: str, data: dict):
         """
         Send a notification to a specified endpoint using an HTTP POST request.
 
-        This method retrieves the authentication token for recipient from `settings` HTTP_ALERT_TOKENS
-        dictionary with `recipient_name` as the lookup key. If no token is found, request is sent without
-        an authorization header.
+        This method retrieves the authentication token from environment variable.
+        If no token is found, request is sent without an authorization header.
 
         Args:
             recipient_name (str): The name of the recipient
             endpoint (str): The URL endpoint
             data (dict): serialized alert data
-            options (Option): An instance of Option containing additional configuration for the notification.
 
         Returns:
             Response: The HTTP response object returned from the POST request.
         """
 
-        token = self.get_token(options.token_variable_name)
+        token = self.get_token()
         headers = {"Content-Type": "application/json"}
         if token:
             headers["Authorization"] = f"Bearer {token}"
-        else:
-            self.logger.debug("Token not found for: {recipient_name}")
-        return requests.post(endpoint, json=data, headers=headers)
+        return requests.post(endpoint, data=data, headers=headers)
 
-    def send_alert(self, recipient_name: str, endpoint: str, alerts: list[Alert], options: Option):
+    def send_alert(self, recipient_name: str, endpoint: str, alerts: list[Alert]):
         """
         Send an alert notification.
 
@@ -248,14 +250,15 @@ class HTTPRequestAlerting(BaseAlerting):
             recipient_name (str): The name of the recipient for the alert.
             endpoint (str): The URL endpoint to which the alert should be sent.
             token (str): The authentication token used for sending the alert.
-            data (list): List of dictionary containing the alert data payload.
-            options (Option): An instance of Option containing configuration options.
-
+            alerts (list): List of Alert objects.
         """
-        for alert_batch in generate_batch(alerts, batch_size=options.batch_size):
-            data = self.serialize_alerts(alert_batch, fields=options.fields, login_data=options.login_data)
+        batch_size = self.alert_config["batch_size"]
+        fields = self.alert_config["fields"]
+        login_data = self.alert_config["login_data"]
+        for alert_batch in generate_batch(alerts, batch_size):
+            data = self.serialize_alerts(alert_batch, fields=fields, login_data=login_data)
             try:
-                resp = self.send_notification(recipient_name, endpoint, data, options)
+                resp = self.send_notification(recipient_name, endpoint, data)
             except Exception as e:
                 resp = None
                 error_msg = str(e)
@@ -273,39 +276,11 @@ class HTTPRequestAlerting(BaseAlerting):
                     # Log error message for alerts in the batch
                     self.logger.error("Alerting Failed: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status}")
 
-    def validate_recipient(self, recipient: dict):
-        """
-        Validate that a recipient configuration contains all required fields.
-
-        Checks if recipient dictionary has the all `required_fields`
-
-        Args:
-            recipient (dict): A dictionary representing the recipient configuration.
-
-        Returns:
-            bool: True if the recipient contains all required fields; False if any are missing.
-        """
-        missing_required_fields = [field for field in self.required_fields if field not in recipient]
-        if missing_required_fields:
-            name = recipient.get("name", "")
-            self.logger.error(f"Improperly configured recipient: {name} missing required fields: {','.join(missing_required_fields)}")
-            return False
-        return True
-
     def notify_alerts(self):
         """Send notification to recipients specified in alert_config."""
-        recipient_list = self.alert_config["recipients"]
-        for recipient in recipient_list:
-            if not self.validate_recipient(recipient):
-                continue
-
-            endpoint = recipient.get("endpoint")
-            recipient_name = recipient.get("name")
-            try:
-                options = self.Option.configure_from_dict(recipient["options"])
-            except ValueError as err:
-                self.logger.error(f"Invalid Option For Recipient: {recipient_name} error: str(err)")
-                continue
-            alerts = get_alerts(options.alert_types, recipient_name)
-            self.logger.info(f"Sending alert to: {recipient_name}")
-            self.send_alert(recipient_name, endpoint, alerts, options)
+        endpoint = self.alert_config.get("endpoint")
+        recipient_name = self.alert_config.get("name")
+        alert_types = self.alert_config["alert_types"]
+        alerts = get_alerts(alert_types, recipient_name)
+        self.logger.info(f"Sending alert to: {recipient_name}")
+        self.send_alert(recipient_name, endpoint, alerts)

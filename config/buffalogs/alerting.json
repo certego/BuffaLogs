@@ -5,31 +5,27 @@
     },
 
     "http_request" : {
-     	"recipients" : [{
-		"name" : "",
-		"endpoint" : "",
-		"options" : {
-			"token_variable_name" : "", 
-			"alert_types" : [],
-			"fields" : [],
-			"login_data" : []
-    		}
-	}]
-
+	"name" : "",
+	"endpoint" : "",
+	"options" : {
+		"token_variable_name" : "", 
+		"alert_types" : [],
+		"fields" : [],
+		"login_data" : []
+    	}
     },
 
     "webhooks" : {
-    	"recipients" : [{
-		"name" : "",
-		"endpoint" : "",
-		"options" : {
-			"issuer_variable_name" : "",
-			"token_expiration_seconds" : "", 
-			"algorithm_variable_name" : "",
-			"secret_key_variable_name" : "",
-			"alert_types" : [],
-			"fields" : [],
-			"login_data" : []
-    		}
-	}]
+	"name" : "",
+	"endpoint" : "",
+	"secret_key_variable_name" : "",
+	"options" : {
+		"issuer_variable_name" : "",
+		"token_expiration_seconds" : "", 
+		"algorithm_variable_name" : "",
+		"alert_types" : [],
+		"fields" : [],
+		"login_data" : []
+	}
+    }
 }
