@@ -23,7 +23,15 @@ class LoginAdmin(admin.ModelAdmin):
         "event_id",
         "index",
     )
-    search_fields = ("id", "user__username", "user_agent", "index", "event_id", "ip", "country")
+    search_fields = (
+        "id",
+        "user__username",
+        "user_agent",
+        "index",
+        "event_id",
+        "ip",
+        "country",
+    )
 
     @admin.display(description="username")
     def get_username(self, obj):
@@ -32,7 +40,9 @@ class LoginAdmin(admin.ModelAdmin):
     @admin.display(description="timestamp")
     def timestamp_display(self, obj):
         # Usa strftime per personalizzare il formato
-        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime("%b %d, %Y, %I:%M:%S %p %Z")
+        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime(
+            "%b %d, %Y, %I:%M:%S %p %Z"
+        )
 
 
 @admin.register(User)
@@ -49,7 +59,17 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
     form = AlertAdminForm
-    list_display = ("id", "created", "updated", "get_username", "get_alert_value", "description", "login_raw_data", "is_vip", "is_filtered")
+    list_display = (
+        "id",
+        "created",
+        "updated",
+        "get_username",
+        "get_alert_value",
+        "description",
+        "login_raw_data",
+        "is_vip",
+        "is_filtered",
+    )
     search_fields = ("id", "user__username", "name", "is_filtered")
 
     @admin.display(description="username")
@@ -71,12 +91,42 @@ class TaskSettingsAdmin(admin.ModelAdmin):
 class ConfigsAdmin(admin.ModelAdmin):
     form = ConfigAdminForm
     fieldsets = [
-        ("Detection filters - users", {"fields": ("ignored_users", "enabled_users", "vip_users", "alert_is_vip_only", "alert_minimum_risk_score")}),
-        ("Detection filters - location", {"fields": ("ignored_ips", "allowed_countries")}),
-        ("Detection filters - devices", {"fields": ("ignored_ISPs", "ignore_mobile_logins")}),
+        (
+            "Detection filters - users",
+            {
+                "fields": (
+                    "ignored_users",
+                    "enabled_users",
+                    "vip_users",
+                    "alert_is_vip_only",
+                    "alert_minimum_risk_score",
+                )
+            },
+        ),
+        (
+            "Detection filters - location",
+            {"fields": ("ignored_ips", "allowed_countries")},
+        ),
+        (
+            "Detection filters - devices",
+            {"fields": ("ignored_ISPs", "ignore_mobile_logins")},
+        ),
         ("Detection filters - alerts", {"fields": ("filtered_alerts_types",)}),
-        ("Detection setup - Impossible Travel alerts", {"fields": ("distance_accepted", "vel_accepted")}),
-        ("Detection setup - Clean models", {"fields": ("user_max_days", "login_max_days", "alert_max_days", "ip_max_days")}),
+        (
+            "Detection setup - Impossible Travel alerts",
+            {"fields": ("distance_accepted", "vel_accepted")},
+        ),
+        (
+            "Detection setup - Clean models",
+            {
+                "fields": (
+                    "user_max_days",
+                    "login_max_days",
+                    "alert_max_days",
+                    "ip_max_days",
+                )
+            },
+        ),
     ]
     list_display = (
         "id",

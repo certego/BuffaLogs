@@ -11,12 +11,16 @@ def validate_string_or_regex(value):
 
     for item in value:
         if not isinstance(item, str):
-            raise ValidationError(f"The single element '{item}' in the '{value}' list field must be a string")
+            raise ValidationError(
+                f"The single element '{item}' in the '{value}' list field must be a string"
+            )
 
         try:
             re.compile(item)
         except re.error:
-            raise ValidationError(f"The single element '{item}' in the '{value}' list field is not a valid regex pattern")
+            raise ValidationError(
+                f"The single element '{item}' in the '{value}' list field is not a valid regex pattern"
+            )
 
 
 def validate_ips_or_network(value):

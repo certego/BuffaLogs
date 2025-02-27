@@ -36,10 +36,22 @@ def users_pie_chart(start, end):
     )
     users_pie_chart = pygal.Pie(style=custom_style, width=1000, height=650)
 
-    users_pie_chart.add("No risk", User.objects.filter(updated__range=(start, end), risk_score="No risk").count())
-    users_pie_chart.add("Low", User.objects.filter(updated__range=(start, end), risk_score="Low").count())
-    users_pie_chart.add("Medium", User.objects.filter(updated__range=(start, end), risk_score="Medium").count())
-    users_pie_chart.add("High", User.objects.filter(updated__range=(start, end), risk_score="High").count())
+    users_pie_chart.add(
+        "No risk",
+        User.objects.filter(updated__range=(start, end), risk_score="No risk").count(),
+    )
+    users_pie_chart.add(
+        "Low",
+        User.objects.filter(updated__range=(start, end), risk_score="Low").count(),
+    )
+    users_pie_chart.add(
+        "Medium",
+        User.objects.filter(updated__range=(start, end), risk_score="Medium").count(),
+    )
+    users_pie_chart.add(
+        "High",
+        User.objects.filter(updated__range=(start, end), risk_score="High").count(),
+    )
     return users_pie_chart.render(disable_xml_declaration=True)
 
 
@@ -57,7 +69,14 @@ def alerts_line_chart(start, end):
         tooltip_font_size=20,
         x_labels_font_size=20,
     )
-    alerts_line_chart = pygal.StackedBar(fill=True, show_legend=False, style=custom_style, width=1200, height=550, x_label_rotation=20)
+    alerts_line_chart = pygal.StackedBar(
+        fill=True,
+        show_legend=False,
+        style=custom_style,
+        width=1200,
+        height=550,
+        x_label_rotation=20,
+    )
     date_range = []
     alerts_in_range = []
     date_str = []
@@ -72,7 +91,10 @@ def alerts_line_chart(start, end):
         for i in range(0, len(date_range) - 2, 2):
             alerts_in_range.append(
                 Alert.objects.filter(
-                    login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+                    login_raw_data__timestamp__range=(
+                        date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                 ).count()
             )
     elif delta_timestamp.days >= 1 and delta_timestamp.days <= 31:
@@ -85,7 +107,10 @@ def alerts_line_chart(start, end):
         for i in range(0, len(date_range) - 2, 2):
             alerts_in_range.append(
                 Alert.objects.filter(
-                    login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+                    login_raw_data__timestamp__range=(
+                        date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                 ).count()
             )
     else:
@@ -99,7 +124,10 @@ def alerts_line_chart(start, end):
         for i in range(0, len(date_range) - 2, 2):
             alerts_in_range.append(
                 Alert.objects.filter(
-                    login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+                    login_raw_data__timestamp__range=(
+                        date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                 ).count()
             )
     alerts_line_chart.x_labels = map(str, date_str)
@@ -134,7 +162,11 @@ def world_map_chart(start, end):
     tmp = {}
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
-            login_raw_data__timestamp__range=(start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end.strftime("%Y-%m-%dT%H:%M:%S.%fZ")), login_raw_data__country=value
+            login_raw_data__timestamp__range=(
+                start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            ),
+            login_raw_data__country=value,
         ).count()
         if country_alerts == 0:
             tmp[key] = None

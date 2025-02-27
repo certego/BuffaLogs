@@ -17,7 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from impossible_travel import views
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 urlpatterns = [
     path("", views.homepage, name="homepage"),
@@ -26,14 +30,28 @@ urlpatterns = [
     path("users/", views.users, name="users"),
     path("get_users/", views.get_users, name="get_users"),
     path("get_last_alerts/", views.get_last_alerts, name="get_last_alerts"),
-    path("users/<int:pk_user>/unique_logins/get_unique_logins", views.get_unique_logins, name="get_unique_logins"),
-    path("users/<int:pk_user>/unique_logins", views.unique_logins, name="unique_logins"),
-    path("users/<int:pk_user>/all_logins/get_all_logins", views.get_all_logins, name="get_all_logins"),
+    path(
+        "users/<int:pk_user>/unique_logins/get_unique_logins",
+        views.get_unique_logins,
+        name="get_unique_logins",
+    ),
+    path(
+        "users/<int:pk_user>/unique_logins", views.unique_logins, name="unique_logins"
+    ),
+    path(
+        "users/<int:pk_user>/all_logins/get_all_logins",
+        views.get_all_logins,
+        name="get_all_logins",
+    ),
     path("users/<int:pk_user>/all_logins", views.all_logins, name="all_logins"),
     path("users/<int:pk_user>/alerts/get_alerts", views.get_alerts, name="get_alerts"),
     path("users/<int:pk_user>/alerts", views.alerts, name="alerts"),
     path("users_pie_chart_api/", views.users_pie_chart_api, name="users_pie_chart_api"),
-    path("alerts_line_chart_api/", views.alerts_line_chart_api, name="alerts_line_chart_api"),
+    path(
+        "alerts_line_chart_api/",
+        views.alerts_line_chart_api,
+        name="alerts_line_chart_api",
+    ),
     path("world_map_chart_api/", views.world_map_chart_api, name="world_map_chart_api"),
     path("alerts_api/", views.alerts_api, name="alerts_api"),
     path("risk_score_api/", views.risk_score_api, name="risk_score_api"),

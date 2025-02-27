@@ -30,13 +30,24 @@ class Impossible_Travel:
         app_config = Config.objects.get(id=1)
         alert_info = {}
         vel = 0
-        distance_km = geodesic((prev_login.latitude, prev_login.longitude), (last_login_user_fields["lat"], last_login_user_fields["lon"])).km
+        distance_km = geodesic(
+            (prev_login.latitude, prev_login.longitude),
+            (last_login_user_fields["lat"], last_login_user_fields["lon"]),
+        ).km
 
         if distance_km > app_config.distance_accepted:
-            last_timestamp_datetimeObj_aware = timezone.make_aware(datetime.strptime(last_login_user_fields["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"))
-            prev_timestamp_datetimeObj_aware = prev_login.timestamp  # already aware in the db
+            last_timestamp_datetimeObj_aware = timezone.make_aware(
+                datetime.strptime(
+                    last_login_user_fields["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                )
+            )
+            prev_timestamp_datetimeObj_aware = (
+                prev_login.timestamp
+            )  # already aware in the db
 
-            diff_timestamp = last_timestamp_datetimeObj_aware - prev_timestamp_datetimeObj_aware
+            diff_timestamp = (
+                last_timestamp_datetimeObj_aware - prev_timestamp_datetimeObj_aware
+            )
             diff_timestamp_hours = diff_timestamp.total_seconds() / 3600
 
             if diff_timestamp_hours == 0:
@@ -46,9 +57,9 @@ class Impossible_Travel:
 
             if vel > app_config.vel_accepted:
                 alert_info["alert_name"] = AlertDetectionType.IMP_TRAVEL.value
-                alert_info[
-                    "alert_desc"
-                    ] = (f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h")
+                alert_info["alert_desc"] = (
+                    f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
+                )
         return alert_info, int(vel)
 
     def update_model(self, db_user, new_login):
@@ -67,7 +78,11 @@ class Impossible_Travel:
         :param new_user_agent: user_agent of last login
         :type new_user_agent: string
         """
-        db_user.login_set.filter(user_agent=new_login["agent"], country=new_login["country"], index=new_login["index"]).update(
+        db_user.login_set.filter(
+            user_agent=new_login["agent"],
+            country=new_login["country"],
+            index=new_login["index"],
+        ).update(
             timestamp=new_login["timestamp"],
             latitude=new_login["lat"],
             longitude=new_login["lon"],

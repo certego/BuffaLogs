@@ -3,12 +3,24 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
-from impossible_travel.validators import validate_ips_or_network, validate_string_or_regex
+from impossible_travel.constants import (
+    AlertDetectionType,
+    AlertFilterType,
+    UserRiskScoreType,
+)
+from impossible_travel.validators import (
+    validate_ips_or_network,
+    validate_string_or_regex,
+)
 
 
 class User(models.Model):
-    risk_score = models.CharField(choices=UserRiskScoreType.choices, max_length=30, null=False, default=UserRiskScoreType.NO_RISK)
+    risk_score = models.CharField(
+        choices=UserRiskScoreType.choices,
+        max_length=30,
+        null=False,
+        default=UserRiskScoreType.NO_RISK,
+    )
     username = models.TextField(unique=True, db_index=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -20,7 +32,9 @@ class User(models.Model):
         constraints = [
             models.CheckConstraint(
                 # Check that the User.risk_score is one of the value in the Enum UserRiskScoreType --> ['No risk', 'Low', 'Medium', 'High']
-                check=models.Q(risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
+                check=models.Q(
+                    risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]
+                ),
                 name="valid_user_risk_score_choice",
             )
         ]
@@ -41,32 +55,46 @@ class Login(models.Model):
 
 
 class Alert(models.Model):
-    name = models.CharField(choices=AlertDetectionType.choices, max_length=30, null=False, blank=False)
+    name = models.CharField(
+        choices=AlertDetectionType.choices, max_length=30, null=False, blank=False
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     login_raw_data = models.JSONField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     description = models.TextField()
     is_vip = models.BooleanField(default=False)
-    is_filtered = models.BooleanField(default=False, help_text="Show if the alert has been filtered because of some filter (listed in the filter_type field)")
+    is_filtered = models.BooleanField(
+        default=False,
+        help_text="Show if the alert has been filtered because of some filter (listed in the filter_type field)",
+    )
     filter_type = ArrayField(
         models.CharField(max_length=50, choices=AlertFilterType.choices, blank=True),
         blank=True,
         default=list,
         help_text="List of filters that disabled the related alert",
     )
-    notified = models.BooleanField(help_text="True when the alert has been notified by alerter", default=False)
+    notified = models.BooleanField(
+        help_text="True when the alert has been notified by alerter", default=False
+    )
 
     class Meta:
         constraints = [
             models.CheckConstraint(
                 # Check that the Alert.name is one of the value in the Enum AlertDetectionType --> ['New Device', 'Imp Travel', 'New Country', 'User Risk Threshold', 'Login Anonymizer Ip', 'Atypical Country']
-                check=models.Q(name__in=[choice[0] for choice in AlertDetectionType.choices]),
+                check=models.Q(
+                    name__in=[choice[0] for choice in AlertDetectionType.choices]
+                ),
                 name="valid_alert_name_choice",
             ),
             models.CheckConstraint(
                 # Check that each element in the Alert.filter_type is in the Enum AlertFilterType --> ['ignored_users filter', 'ignored_ips filter', 'allowed_countries filter', 'is_vip_filter', 'alert_minimum_risk_score filter', 'filtered_alerts_types filter', 'ignore_mobile_logins filter', 'ignored_ISPs filter']
-                check=models.Q(filter_type__contained_by=[choice[0] for choice in AlertFilterType.choices]) | models.Q(filter_type=[]),
+                check=models.Q(
+                    filter_type__contained_by=[
+                        choice[0] for choice in AlertFilterType.choices
+                    ]
+                )
+                | models.Q(filter_type=[]),
                 name="valid_alert_filter_type_choices",
             ),
         ]
@@ -139,7 +167,11 @@ class Config(models.Model):
         help_text="List of IPs to remove from the detection",
     )
     ignored_ISPs = ArrayField(
-        models.CharField(max_length=50), blank=True, null=True, default=get_default_ignored_ISPs, help_text="List of ISPs names to remove from the detection"
+        models.CharField(max_length=50),
+        blank=True,
+        null=True,
+        default=get_default_ignored_ISPs,
+        help_text="List of ISPs names to remove from the detection",
     )
     allowed_countries = ArrayField(
         models.CharField(max_length=20),
@@ -149,9 +181,16 @@ class Config(models.Model):
         help_text="List of countries to exclude from the detection, because 'trusted' for the customer",
     )
     vip_users = ArrayField(
-        models.CharField(max_length=50), blank=True, null=True, default=get_default_vip_users, help_text="List of users considered more sensitive"
+        models.CharField(max_length=50),
+        blank=True,
+        null=True,
+        default=get_default_vip_users,
+        help_text="List of users considered more sensitive",
     )
-    alert_is_vip_only = models.BooleanField(default=False, help_text="Flag to send alert only related to the users in the vip_users list")
+    alert_is_vip_only = models.BooleanField(
+        default=False,
+        help_text="Flag to send alert only related to the users in the vip_users list",
+    )
     alert_minimum_risk_score = models.CharField(
         choices=UserRiskScoreType.choices,
         max_length=30,
@@ -166,7 +205,9 @@ class Config(models.Model):
         null=True,
         help_text="List of alerts' types to exclude from the alerting",
     )
-    ignore_mobile_logins = models.BooleanField(default=False, help_text="Flag to ignore mobile devices from the detection")
+    ignore_mobile_logins = models.BooleanField(
+        default=False, help_text="Flag to ignore mobile devices from the detection"
+    )
     distance_accepted = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED,
         help_text="Minimum distance (in Km) between two logins after which the impossible travel detection starts",
@@ -176,19 +217,27 @@ class Config(models.Model):
         help_text="Minimum velocity (in Km/h) between two logins after which the impossible travel detection starts",
     )
     user_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS, help_text="Days after which the users will be removed from the db"
+        default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS,
+        help_text="Days after which the users will be removed from the db",
     )
     login_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS, help_text="Days after which the logins will be removed from the db"
+        default=settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS,
+        help_text="Days after which the logins will be removed from the db",
     )
     alert_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS, help_text="Days after which the alerts will be removed from the db"
+        default=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS,
+        help_text="Days after which the alerts will be removed from the db",
     )
-    ip_max_days = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS, help_text="Days after which the IPs will be removed from the db")
+    ip_max_days = models.PositiveIntegerField(
+        default=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS,
+        help_text="Days after which the IPs will be removed from the db",
+    )
 
     def clean(self):
         if not self.pk and Config.objects.exists():
-            raise ValidationError("A Config object already exist - it is possible just to modify it, not to create a new one")
+            raise ValidationError(
+                "A Config object already exist - it is possible just to modify it, not to create a new one"
+            )
         else:
             # Config.id=1 always
             self.pk = 1
@@ -201,12 +250,20 @@ class Config(models.Model):
         constraints = [
             models.CheckConstraint(
                 # Check that the Config.alert_minimum_risk_score is one of the value in the Enum UserRiskScoreType --> ['No risk', 'Low', 'Medium', 'High']
-                check=models.Q(alert_minimum_risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
+                check=models.Q(
+                    alert_minimum_risk_score__in=[
+                        choice[0] for choice in UserRiskScoreType.choices
+                    ]
+                ),
                 name="valid_config_alert_minimum_risk_score_choice",
             ),
             models.CheckConstraint(
                 # Check that each element in the Config.filtered_alerts_types is blank or it's in the Enum AlertFilterType --> ['New Device', 'Imp Travel', 'New Country', 'User Risk Threshold', 'Login Anonymizer Ip', 'Atypical Country']
-                check=models.Q(filtered_alerts_types__contained_by=[choice[0] for choice in AlertDetectionType.choices])
+                check=models.Q(
+                    filtered_alerts_types__contained_by=[
+                        choice[0] for choice in AlertDetectionType.choices
+                    ]
+                )
                 | models.Q(filtered_alerts_types__isnull=True),
                 name="valid_alert_filters_choices",
             ),

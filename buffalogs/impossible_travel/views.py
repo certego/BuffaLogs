@@ -12,7 +12,11 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.http import require_http_methods
 from elasticsearch_dsl import Search, connections
-from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
+from impossible_travel.dashboard.charts import (
+    alerts_line_chart,
+    users_pie_chart,
+    world_map_chart,
+)
 from impossible_travel.models import Alert, Login, User
 
 
@@ -28,7 +32,9 @@ def homepage(request):
         date_range = []
         now = timezone.now()
         end_str = now.strftime("%B %-d, %Y")
-        start = now + timedelta(hours=-now.hour, minutes=-now.minute, seconds=-now.second)
+        start = now + timedelta(
+            hours=-now.hour, minutes=-now.minute, seconds=-now.second
+        )
         start_str = start.strftime("%B %-d, %Y")
         date_range.append(start)
         date_range.append(now)
@@ -105,7 +111,11 @@ def get_alerts(request, pk_user):
     context = []
     alerts = Alert.objects.filter(user_id=pk_user).values()
     for raw in range(len(alerts) - 1, -1, -1):
-        tmp = {"timestamp": alerts[raw]["login_raw_data"]["timestamp"], "rule_name": alerts[raw]["name"], "rule_desc": alerts[raw]["description"]}
+        tmp = {
+            "timestamp": alerts[raw]["login_raw_data"]["timestamp"],
+            "rule_name": alerts[raw]["name"],
+            "rule_desc": alerts[raw]["description"],
+        }
         context.append(tmp)
     return JsonResponse(json.dumps(context, default=str), safe=False)
 
@@ -113,7 +123,9 @@ def get_alerts(request, pk_user):
 def get_users(request):
     context = []
     users_list = User.objects.all().annotate(
-        login_count=Count("login", distinct=True), alert_count=Count("alert", distinct=True), last_login=Max("login__timestamp")
+        login_count=Count("login", distinct=True),
+        alert_count=Count("alert", distinct=True),
+        last_login=Max("login__timestamp"),
     )
     for user in users_list:
         tmp = {
@@ -141,7 +153,16 @@ def get_all_logins(request, pk_user):
         .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
         .query("match", **{"user.name": username})
         .exclude("match", **{"event.outcome": "failure"})
-        .source(includes=["user.name", "@timestamp", "geoip.latitude", "geoip.longitude", "geoip.country_name", "user_agent.original"])
+        .source(
+            includes=[
+                "user.name",
+                "@timestamp",
+                "geoip.latitude",
+                "geoip.longitude",
+                "geoip.country_name",
+                "user_agent.original",
+            ]
+        )
         .sort("-@timestamp")
         .extra(size=10000)
     )
@@ -172,10 +193,18 @@ def users_pie_chart_api(request):
     start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
     end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
     result = {
-        "no_risk": User.objects.filter(updated__range=(start_date, end_date), risk_score="No risk").count(),
-        "low": User.objects.filter(updated__range=(start_date, end_date), risk_score="Low").count(),
-        "medium": User.objects.filter(updated__range=(start_date, end_date), risk_score="Medium").count(),
-        "high": User.objects.filter(updated__range=(start_date, end_date), risk_score="High").count(),
+        "no_risk": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="No risk"
+        ).count(),
+        "low": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="Low"
+        ).count(),
+        "medium": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="Medium"
+        ).count(),
+        "high": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="High"
+        ).count(),
     }
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
@@ -199,11 +228,15 @@ def alerts_line_chart_api(request):
             date_range.append(start_date)
             start_date = start_date + timedelta(seconds=1)
         for i in range(0, len(date_str) - 1, 1):
-            result[date_str[i]] = Alert.objects.filter(login_raw_data__timestamp__range=(date_str[i], date_str[i + 1])).count()
+            result[date_str[i]] = Alert.objects.filter(
+                login_raw_data__timestamp__range=(date_str[i], date_str[i + 1])
+            ).count()
     elif delta_timestamp.days >= 1 and delta_timestamp.days <= 31:
         result["Timeframe"] = "day"
         while start_date.day < end_date.day:
-            start_date = datetime(start_date.year, start_date.month, start_date.day, 0, 0)
+            start_date = datetime(
+                start_date.year, start_date.month, start_date.day, 0, 0
+            )
             date_range.append(start_date)
             start_date = start_date + timedelta(hours=23, minutes=59, seconds=59)
             date_range.append(start_date)
@@ -212,19 +245,41 @@ def alerts_line_chart_api(request):
         date_range.append(start_date)
         date_range.append(end_date)
         for i in range(0, len(date_range) - 1, 2):
-            date = str(date_range[i].year) + "-" + str(date_range[i].month) + "-" + str(date_range[i].day)
-            result[date] = Alert.objects.filter(login_raw_data__timestamp__range=(date_range[i].isoformat(), date_range[i + 1].isoformat())).count()
+            date = (
+                str(date_range[i].year)
+                + "-"
+                + str(date_range[i].month)
+                + "-"
+                + str(date_range[i].day)
+            )
+            result[date] = Alert.objects.filter(
+                login_raw_data__timestamp__range=(
+                    date_range[i].isoformat(),
+                    date_range[i + 1].isoformat(),
+                )
+            ).count()
     else:
         result["Timeframe"] = "month"
         start_date = timezone.datetime(start_date.year, start_date.month, 1)
         while start_date <= end_date:
             date_range.append(datetime(start_date.year, start_date.month, 1))
-            date_range.append(datetime(start_date.year, start_date.month, calendar.monthrange(start_date.year, start_date.month)[1]))
+            date_range.append(
+                datetime(
+                    start_date.year,
+                    start_date.month,
+                    calendar.monthrange(start_date.year, start_date.month)[1],
+                )
+            )
             date_str.append(start_date.strftime("%Y-%m"))
             start_date = start_date + relativedelta(months=1)
         for i in range(0, len(date_range) - 1, 2):
             date = str(date_range[i].year) + "-" + str(date_range[i].month)
-            result[date] = Alert.objects.filter(login_raw_data__timestamp__range=(date_range[i].isoformat(), date_range[i + 1].isoformat())).count()
+            result[date] = Alert.objects.filter(
+                login_raw_data__timestamp__range=(
+                    date_range[i].isoformat(),
+                    date_range[i + 1].isoformat(),
+                )
+            ).count()
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
 
@@ -239,20 +294,35 @@ def world_map_chart_api(request):
     tmp = []
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
-            login_raw_data__timestamp__range=(start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")),
+            login_raw_data__timestamp__range=(
+                start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            ),
             login_raw_data__country=value,
         )
         if country_alerts:
             for alert in country_alerts:
-                if [alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]] not in tmp:
-                    tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
+                if [
+                    alert.login_raw_data["country"],
+                    alert.login_raw_data["lat"],
+                    alert.login_raw_data["lon"],
+                ] not in tmp:
+                    tmp.append(
+                        [
+                            alert.login_raw_data["country"],
+                            alert.login_raw_data["lat"],
+                            alert.login_raw_data["lon"],
+                        ]
+                    )
                     result.append(
                         {
                             "country": key,
                             "lat": alert.login_raw_data["lat"],
                             "lon": alert.login_raw_data["lon"],
                             "alerts": Alert.objects.filter(
-                                login_raw_data__country=value, login_raw_data__lat=alert.login_raw_data["lat"], login_raw_data__lon=alert.login_raw_data["lon"]
+                                login_raw_data__country=value,
+                                login_raw_data__lat=alert.login_raw_data["lat"],
+                                login_raw_data__lon=alert.login_raw_data["lon"],
                             ).count(),
                         }
                     )
@@ -268,7 +338,11 @@ def alerts_api(request):
     end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
     alerts_list = Alert.objects.filter(created__range=(start_date, end_date))
     for alert in alerts_list:
-        tmp = {"timestamp": alert.login_raw_data["timestamp"], "username": User.objects.get(id=alert.user_id).username, "rule_name": alert.name}
+        tmp = {
+            "timestamp": alert.login_raw_data["timestamp"],
+            "username": User.objects.get(id=alert.user_id).username,
+            "rule_name": alert.name,
+        }
         result.append(tmp)
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")

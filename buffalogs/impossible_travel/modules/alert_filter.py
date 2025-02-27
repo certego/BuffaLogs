@@ -21,9 +21,13 @@ def match_filters(alert: Alert, app_config: Optional[Config] = None) -> Alert:
     alert = _check_users_filters(db_alert=alert, app_config=app_config, db_user=db_user)
     # Detection filters - location
     if alert.login_raw_data.get("ip", "") in app_config.ignored_ips:
-        alert.filter_type.append(AlertFilterType.IGNORED_IP_FILTER)  # alert filtered because the ip is in the ignored_ips list
+        alert.filter_type.append(
+            AlertFilterType.IGNORED_IP_FILTER
+        )  # alert filtered because the ip is in the ignored_ips list
     if alert.login_raw_data.get("country", "") in app_config.allowed_countries:
-        alert.filter_type.append(AlertFilterType.ALLOWED_COUNTRY_FILTER)  # alert filtered because the country is in the allowed_countries list
+        alert.filter_type.append(
+            AlertFilterType.ALLOWED_COUNTRY_FILTER
+        )  # alert filtered because the country is in the allowed_countries list
     # Detection filters - devices
     if alert.login_raw_data.get("organization", "") in app_config.ignored_ISPs:
         alert.filter_type.append(AlertFilterType.IGNORED_ISP_FILTER)
@@ -49,22 +53,35 @@ def _check_users_filters(db_alert: Alert, app_config: Config, db_user: User) -> 
     3. if ignored_users != [] and enabled_users != [] and vip_users != [] but alert_is_vip_only = True --> vip_users wins, BUT only for vip_users also in the enabled_users list
     """
     if app_config.alert_is_vip_only:
-        if db_user.username not in app_config.vip_users or db_user.username not in app_config.enabled_users:
-            logger.debug(f"Alert: {db_alert.id} filtered because user: {db_user.id} not in vip_users and enabled-users Config lists")
-            db_alert.filter_type.append(AlertFilterType.IS_VIP_FILTER)  # alert filtered because alert_is_vip_only=True but username not in vip_users list
+        if (
+            db_user.username not in app_config.vip_users
+            or db_user.username not in app_config.enabled_users
+        ):
+            logger.debug(
+                f"Alert: {db_alert.id} filtered because user: {db_user.id} not in vip_users and enabled-users Config lists"
+            )
+            db_alert.filter_type.append(
+                AlertFilterType.IS_VIP_FILTER
+            )  # alert filtered because alert_is_vip_only=True but username not in vip_users list
     else:
         # if alert_is_vip_only=False, check the other users constraints
-        if app_config.enabled_users and not _check_username_list_regex(word=db_user.username, values_list=app_config.enabled_users):
+        if app_config.enabled_users and not _check_username_list_regex(
+            word=db_user.username, values_list=app_config.enabled_users
+        ):
             db_alert.filter_type.append(
                 AlertFilterType.IGNORED_USER_FILTER
             )  # alert filtered because enabled_users is not empty list and the username is not in that list
         # if enabled_users list is not empty, the ignored_users list will be ignored
         else:
-            if _check_username_list_regex(word=db_user.username, values_list=app_config.ignored_users):
+            if _check_username_list_regex(
+                word=db_user.username, values_list=app_config.ignored_users
+            ):
                 db_alert.filter_type.append(
                     AlertFilterType.IGNORED_USER_FILTER
                 )  # alert filtered because enabled_users is empty, but the username is in the ignored_users list
-    if not UserRiskScoreType.is_equal_or_higher(threshold=app_config.alert_minimum_risk_score, value=db_user.risk_score):
+    if not UserRiskScoreType.is_equal_or_higher(
+        threshold=app_config.alert_minimum_risk_score, value=db_user.risk_score
+    ):
         db_alert.filter_type.append(
             AlertFilterType.ALERT_MINIMUM_RISK_SCORE_FILTER
         )  # alert filtered because the user.risk_score level is lower than the config.alert_minimum_risk_score value

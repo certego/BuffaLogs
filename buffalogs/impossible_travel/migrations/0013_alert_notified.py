@@ -6,13 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('impossible_travel', '0012_remove_alert_valid_alert_filter_type_choices_and_more'),
+        (
+            "impossible_travel",
+            "0012_remove_alert_valid_alert_filter_type_choices_and_more",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='alert',
-            name='notified',
-            field=models.BooleanField(default=False, help_text='True when the alert has been notified by alerter'),
+            model_name="alert",
+            name="notified",
+            field=models.BooleanField(
+                default=False,
+                help_text="True when the alert has been notified by alerter",
+            ),
         ),
     ]

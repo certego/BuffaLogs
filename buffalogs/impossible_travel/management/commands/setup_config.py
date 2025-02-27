@@ -13,10 +13,30 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # Optional arguments
-        parser.add_argument("--ignored_users", nargs="?", default=[], help="List of users to filter and to not consider in the detection")
-        parser.add_argument("--ignored_ips", nargs="?", default=[], help="List of ips or subnets to not consider in the detection")
-        parser.add_argument("--allowed_countries", nargs="?", default=[], help="List of countries from which the logins are always allowed")
-        parser.add_argument("--vip_users", nargs="?", default=[], help="List of users to which pay particular attention")
+        parser.add_argument(
+            "--ignored_users",
+            nargs="?",
+            default=[],
+            help="List of users to filter and to not consider in the detection",
+        )
+        parser.add_argument(
+            "--ignored_ips",
+            nargs="?",
+            default=[],
+            help="List of ips or subnets to not consider in the detection",
+        )
+        parser.add_argument(
+            "--allowed_countries",
+            nargs="?",
+            default=[],
+            help="List of countries from which the logins are always allowed",
+        )
+        parser.add_argument(
+            "--vip_users",
+            nargs="?",
+            default=[],
+            help="List of users to which pay particular attention",
+        )
 
     def handle(self, *args, **options):
         """Setup the configurations into the Config model"""
@@ -26,13 +46,23 @@ class Command(BaseCommand):
             config_obj = Config.objects.all()[0]
         else:
             config_obj = Config.objects.create()
-        if not options["ignored_users"] and not options["ignored_ips"] and not options["allowed_countries"] and not options["vip_users"]:
+        if (
+            not options["ignored_users"]
+            and not options["ignored_ips"]
+            and not options["allowed_countries"]
+            and not options["vip_users"]
+        ):
             # Set default values
             config_obj.ignored_users = IGNORED_USERS
             config_obj.ignored_ips = IGNORED_IPS
         else:
             for opt in options:
-                if opt in ["ignored_users", "ignored_ips", "allowed_countries", "vip_users"]:
+                if opt in [
+                    "ignored_users",
+                    "ignored_ips",
+                    "allowed_countries",
+                    "vip_users",
+                ]:
                     if not options[opt]:
                         setattr(config_obj, opt, [])
                     else:

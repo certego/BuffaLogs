@@ -79,7 +79,12 @@ WSGI_APPLICATION = "buffalogs.wsgi.application"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"simple": {"format": "%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s"}, "reader_alert": {"format": "%(message)s"}},
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s"
+        },
+        "reader_alert": {"format": "%(message)s"},
+    },
     "handlers": {
         "null": {
             "level": "DEBUG",
@@ -227,6 +232,9 @@ CELERY_BEAT_SCHEDULE = {
         "task": "ProcessLogsTask",
         "schedule": crontab(minute=30),
     },
-    "update_risk_level": {"task": "UpdateRiskLevelTask", "schedule": crontab(minute=10)},
+    "update_risk_level": {
+        "task": "UpdateRiskLevelTask",
+        "schedule": crontab(minute=10),
+    },
     "notify_alerts": {"task": "NotifyAlertsTask", "schedule": crontab(minute=5)},
 }
