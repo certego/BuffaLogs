@@ -33,7 +33,9 @@ class TestLoginFromNewdevice(TestCase):
             "country": "Sudan",
             "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
         }
-        self.assertIsNone(self.new_device.check_new_device(db_user, last_login_user_fields))
+        self.assertIsNone(
+            self.new_device.check_new_device(db_user, last_login_user_fields)
+        )
 
     def test_check_new_device_alert(self):
         db_user = User.objects.get(username="Lorena Goldoni")
@@ -46,4 +48,7 @@ class TestLoginFromNewdevice(TestCase):
         }
         alert_result = self.new_device.check_new_device(db_user, last_login_user_fields)
         self.assertEqual("New Device", alert_result["alert_name"])
-        self.assertEqual("Login from new device for User: Lorena Goldoni, at: 2023-03-08T17:10:33.358Z", alert_result["alert_desc"])
+        self.assertEqual(
+            "Login from new device for User: Lorena Goldoni, at: 2023-03-08T17:10:33.358Z",
+            alert_result["alert_desc"],
+        )

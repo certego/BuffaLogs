@@ -16,13 +16,19 @@ class ValidatorsTest(TestCase):
         """Testing the function validate_string_or_regex with no string values"""
         with self.assertRaises(ValidationError) as context:
             validate_string_or_regex(["Hermann Hesse", 123])
-        self.assertIn("The single element '123' in the '['Hermann Hesse', 123]' list field must be a string", str(context.exception))
+        self.assertIn(
+            "The single element '123' in the '['Hermann Hesse', 123]' list field must be a string",
+            str(context.exception),
+        )
 
     def test_validate_string_or_regex_invalid_regex(self):
         """Testing the function validate_string_or_regex with invalid regex"""
         with self.assertRaises(ValidationError) as context:
             validate_string_or_regex(["Hermann Hesse", "[a-z"])
-        self.assertIn("The single element '[a-z' in the '['Hermann Hesse', '[a-z']' list field is not a valid regex pattern", str(context.exception))
+        self.assertIn(
+            "The single element '[a-z' in the '['Hermann Hesse', '[a-z']' list field is not a valid regex pattern",
+            str(context.exception),
+        )
 
     def test_validate_string_or_regex_empty_list(self):
         """Testing the function validate_string_or_regex with empty default list"""

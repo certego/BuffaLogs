@@ -1,6 +1,10 @@
 from django.conf import settings
 from django.test import TestCase
-from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
+from impossible_travel.constants import (
+    AlertDetectionType,
+    AlertFilterType,
+    UserRiskScoreType,
+)
 from impossible_travel.models import Alert, Config, User
 from impossible_travel.modules import alert_filter
 
@@ -79,7 +83,9 @@ class TestAlertFilter(TestCase):
 
     def test_match_filters_users_ignored(self):
         # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"]
-        db_config = Config.objects.create(id=1, ignored_users=["Lorena Goldoni", "Lorena"])
+        db_config = Config.objects.create(
+            id=1, ignored_users=["Lorena Goldoni", "Lorena"]
+        )
         db_alert = Alert.objects.get(user__username="Lorena Goldoni")
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertTrue(res_alert.is_filtered)
@@ -91,18 +97,35 @@ class TestAlertFilter(TestCase):
 
     def test_match_filters_users_ignored_regex(self):
         # test with: Config.ignored_users = ["^[\w.-]+@stores\.company\.com$"]
-        db_config = Config.objects.create(id=1, ignored_users=[r"^[\w.-]+@stores\.company\.com$", "Lorena Goldoni"])
+        db_config = Config.objects.create(
+            id=1, ignored_users=[r"^[\w.-]+@stores\.company\.com$", "Lorena Goldoni"]
+        )
         db_user = User.objects.create(id=3, username="h.hesse@stores.company.com")
-        db_alert = Alert.objects.create(id=3, user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data={"test": "ok"})
+        db_alert = Alert.objects.create(
+            id=3,
+            user=db_user,
+            name=AlertDetectionType.NEW_DEVICE,
+            login_raw_data={"test": "ok"},
+        )
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertTrue(res_alert.is_filtered)
         self.assertListEqual(["ignored_users filter"], res_alert.filter_type)
         db_user = User.objects.create(id=4, username="test-user123@stores.company.com")
-        db_alert = Alert.objects.create(id=4, user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data={"test": "ok"})
+        db_alert = Alert.objects.create(
+            id=4,
+            user=db_user,
+            name=AlertDetectionType.NEW_DEVICE,
+            login_raw_data={"test": "ok"},
+        )
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertTrue(res_alert.is_filtered)
         db_user = User.objects.create(id=5, username="hermann@company.com")
-        db_alert = Alert.objects.create(id=5, user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data={"test": "ok"})
+        db_alert = Alert.objects.create(
+            id=5,
+            user=db_user,
+            name=AlertDetectionType.NEW_DEVICE,
+            login_raw_data={"test": "ok"},
+        )
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertFalse(res_alert.is_filtered)
         self.assertListEqual([], res_alert.filter_type)
@@ -117,7 +140,9 @@ class TestAlertFilter(TestCase):
 
     def test_match_filters_users_enabled_ignored(self):
         # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"] + Config.enabled_users = ["Lorygold"]
-        db_config = Config.objects.create(id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"])
+        db_config = Config.objects.create(
+            id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"]
+        )
         # alert filtered because user not in enabled_users
         db_alert = Alert.objects.get(user__username="Lorena Goldoni")
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
@@ -131,7 +156,12 @@ class TestAlertFilter(TestCase):
 
     def test_match_filters_users_enabled_ignored_vip_false(self):
         # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"] + Config.enabled_users = ["Lorygold"], Config.vip_users = ["Lorena Goldoni"] (but Config.alert_is_vip_only=False)
-        db_config = Config.objects.create(id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"])
+        db_config = Config.objects.create(
+            id=1,
+            ignored_users=["Lorena Goldoni", "Lorena"],
+            enabled_users=["Lorygold"],
+            vip_users=["Lorena Goldoni"],
+        )
         # alert filtered because user is not in the enabled_users
         db_alert = Alert.objects.get(user__username="Lorena Goldoni")
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
@@ -146,7 +176,11 @@ class TestAlertFilter(TestCase):
     def test_match_filters_users_enabled_ignored_vip_true_wrong(self):
         # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"], Config.enabled_users = ["Lorygold"], Config.vip_users = ["Lorena Goldoni"] + Config.alert_is_vip_only=True (BUT enabled_users != vip_users)
         db_config = Config.objects.create(
-            id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"], alert_is_vip_only=True
+            id=1,
+            ignored_users=["Lorena Goldoni", "Lorena"],
+            enabled_users=["Lorygold"],
+            vip_users=["Lorena Goldoni"],
+            alert_is_vip_only=True,
         )
         # alert filtered because user is in vip_users but not in enabled_users
         db_alert1 = Alert.objects.get(user__username="Lorena Goldoni")
@@ -162,7 +196,11 @@ class TestAlertFilter(TestCase):
     def test_match_filters_users_enabled_ignored_vip_true_correct1(self):
         # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"], Config.enabled_users = ["Lorygold"], Config.vip_users = ["Lorena Goldoni", "Lorygold"] + Config.alert_is_vip_only=True (with enabled_users <= vip_users)
         db_config = Config.objects.create(
-            id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"], alert_is_vip_only=True
+            id=1,
+            ignored_users=["Lorena Goldoni", "Lorena"],
+            enabled_users=["Lorygold"],
+            vip_users=["Lorena Goldoni"],
+            alert_is_vip_only=True,
         )
         db_config.vip_users.append("Lorygold")
         # alert filtered because user is in vip_users but not in enabled_users
@@ -179,7 +217,11 @@ class TestAlertFilter(TestCase):
     def test_match_filters_users_enabled_ignored_vip_true_correct2(self):
         # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"], Config.enabled_users = ["Lorygold", "Lorena Goldoni"], Config.vip_users = ["Lorena Goldoni", "Lorygold"] + Config.alert_is_vip_only=True (with enabled_users == vip_users)
         db_config = Config.objects.create(
-            id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"], alert_is_vip_only=True
+            id=1,
+            ignored_users=["Lorena Goldoni", "Lorena"],
+            enabled_users=["Lorygold"],
+            vip_users=["Lorena Goldoni"],
+            alert_is_vip_only=True,
         )
         db_config.vip_users.append("Lorygold")
         db_config.enabled_users.append("Lorena Goldoni")
@@ -197,7 +239,11 @@ class TestAlertFilter(TestCase):
     def test_match_filters_users_enabled_ignored_vip_true_correct3(self):
         # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"], Config.enabled_users = ["Lorygold", "Lorena Goldoni", "Lore"], Config.vip_users = ["Lorena Goldoni", "Lorygold"] + Config.alert_is_vip_only=True (with enabled_users >= vip_users)
         db_config = Config.objects.create(
-            id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"], alert_is_vip_only=True
+            id=1,
+            ignored_users=["Lorena Goldoni", "Lorena"],
+            enabled_users=["Lorygold"],
+            vip_users=["Lorena Goldoni"],
+            alert_is_vip_only=True,
         )
         db_config.vip_users.append("Lorygold")
         db_config.enabled_users.extend(["Lorena Goldoni", "Lore"])
@@ -232,7 +278,9 @@ class TestAlertFilter(TestCase):
         db_alert = Alert.objects.get(user__username="Lorygold")
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertTrue(res_alert.is_filtered)
-        self.assertListEqual(["is_vip_filter", "alert_minimum_risk_score filter"], res_alert.filter_type)
+        self.assertListEqual(
+            ["is_vip_filter", "alert_minimum_risk_score filter"], res_alert.filter_type
+        )
 
     def test_match_filters_location_ignored_ips(self):
         # test filter with: ignored_ips = ["1.2.3.4"]
@@ -292,7 +340,9 @@ class TestAlertFilter(TestCase):
 
     def test_match_filters_alerts_filtered_alerts_types(self):
         # test filter with: filtered_alerts_types = ["Imp Travel", "New Device"]
-        db_config = Config.objects.create(id=1, filtered_alerts_types=["Imp Travel", "New Device"])
+        db_config = Config.objects.create(
+            id=1, filtered_alerts_types=["Imp Travel", "New Device"]
+        )
         # alert filtered because the alert name type is "New Device"
         db_alert = Alert.objects.get(user__username="Lorena Goldoni")
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
@@ -325,7 +375,13 @@ class TestAlertFilter(TestCase):
         self.assertTrue(res_alert.is_filtered)
         # both lists are correct
         self.assertCountEqual(
-            ["is_vip_filter", "alert_minimum_risk_score filter", "allowed_countries filter", "ignored_ISPs filter", "filtered_alerts_types filter"],
+            [
+                "is_vip_filter",
+                "alert_minimum_risk_score filter",
+                "allowed_countries filter",
+                "ignored_ISPs filter",
+                "filtered_alerts_types filter",
+            ],
             res_alert.filter_type,
         )
         self.assertCountEqual(
@@ -343,7 +399,13 @@ class TestAlertFilter(TestCase):
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
         # both lists are correct
         self.assertCountEqual(
-            ["alert_minimum_risk_score filter", "ignored_ips filter", "ignored_ISPs filter", "ignore_mobile_logins filter"], res_alert.filter_type
+            [
+                "alert_minimum_risk_score filter",
+                "ignored_ips filter",
+                "ignored_ISPs filter",
+                "ignore_mobile_logins filter",
+            ],
+            res_alert.filter_type,
         )
         self.assertCountEqual(
             [

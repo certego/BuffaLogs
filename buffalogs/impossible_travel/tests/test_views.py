@@ -168,15 +168,23 @@ class TestViews(APITestCase):
         end = datetime.now() + timedelta(minutes=1)
         start = end - timedelta(hours=3)
         dict_expected_result = {"no_risk": 1, "low": 3, "medium": 1, "high": 0}
-        response = self.client.get(f"{reverse('users_pie_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        response = self.client.get(
+            f"{reverse('users_pie_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+        )
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
     def test_alerts_line_chart_api_hour(self):
         start = datetime(2023, 6, 20, 10, 0)
         end = datetime(2023, 6, 20, 12, 0)
-        dict_expected_result = {"Timeframe": "hour", "2023-06-20T10:00:00Z": 1, "2023-06-20T11:00:00Z": 2}
-        response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        dict_expected_result = {
+            "Timeframe": "hour",
+            "2023-06-20T10:00:00Z": 1,
+            "2023-06-20T11:00:00Z": 2,
+        }
+        response = self.client.get(
+            f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+        )
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
@@ -184,7 +192,9 @@ class TestViews(APITestCase):
         start = datetime(2023, 6, 19, 0, 0)
         end = datetime(2023, 6, 20, 23, 59, 59)
         dict_expected_result = {"Timeframe": "day", "2023-6-19": 2, "2023-6-20": 3}
-        response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        response = self.client.get(
+            f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+        )
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
@@ -192,7 +202,9 @@ class TestViews(APITestCase):
         start = datetime(2023, 5, 1, 0, 0)
         end = datetime(2023, 6, 30, 23, 59, 59)
         dict_expected_result = {"Timeframe": "month", "2023-5": 1, "2023-6": 5}
-        response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        response = self.client.get(
+            f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+        )
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
@@ -200,8 +212,13 @@ class TestViews(APITestCase):
         start = datetime(2023, 5, 1, 0, 0)
         end = datetime(2023, 6, 30, 23, 59, 59)
         num_alerts = 0
-        list_expected_result = [{"country": "jp", "lat": 36.2462, "lon": 138.8497, "alerts": 3}, {"country": "us", "lat": 40.364, "lon": -79.8605, "alerts": 3}]
-        response = self.client.get(f"{reverse('world_map_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        list_expected_result = [
+            {"country": "jp", "lat": 36.2462, "lon": 138.8497, "alerts": 3},
+            {"country": "us", "lat": 40.364, "lon": -79.8605, "alerts": 3},
+        ]
+        response = self.client.get(
+            f"{reverse('world_map_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+        )
         for elem in list_expected_result:
             num_alerts += elem["alerts"]
         self.assertEqual(response.status_code, 200)
@@ -219,17 +236,35 @@ class TestViews(APITestCase):
         start = creation_mock_time
         end = creation_mock_time + timedelta(minutes=10)
         list_expected_result = [
-            {"timestamp": "2023-06-20T10:17:33.358Z", "username": "Lorena Goldoni", "rule_name": "Imp Travel"},
-            {"timestamp": "2023-05-20T11:45:01.229Z", "username": "Lorena Goldoni", "rule_name": "New Device"},
+            {
+                "timestamp": "2023-06-20T10:17:33.358Z",
+                "username": "Lorena Goldoni",
+                "rule_name": "Imp Travel",
+            },
+            {
+                "timestamp": "2023-05-20T11:45:01.229Z",
+                "username": "Lorena Goldoni",
+                "rule_name": "New Device",
+            },
         ]
-        response = self.client.get(f"{reverse('alerts_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        response = self.client.get(
+            f"{reverse('alerts_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+        )
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(list_expected_result, json.loads(response.content))
 
     def test_risk_score_api(self):
         end = datetime.now() + timedelta(seconds=1)
         start = end - timedelta(minutes=1)
-        dict_expected_result = {"Lorena Goldoni": "No risk", "Lorygold": "Low", "Lory": "Low", "Lor": "Low", "Loryg": "Medium"}
-        response = self.client.get(f"{reverse('risk_score_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        dict_expected_result = {
+            "Lorena Goldoni": "No risk",
+            "Lorygold": "Low",
+            "Lory": "Low",
+            "Lor": "Low",
+            "Loryg": "Medium",
+        }
+        response = self.client.get(
+            f"{reverse('risk_score_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+        )
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))

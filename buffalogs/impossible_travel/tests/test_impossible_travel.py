@@ -42,7 +42,9 @@ class TestImpossibleTravel(TestCase):
         }
         db_user = User.objects.get(username="Lorena Goldoni")
         prev_login = Login.objects.get(user_id=db_user.id)
-        result, vel = self.imp_travel.calc_distance(db_user, prev_login, last_login_user_fields)
+        result, vel = self.imp_travel.calc_distance(
+            db_user, prev_login, last_login_user_fields
+        )
         self.assertEqual({}, result)
         self.assertEqual(0, vel)
 
@@ -55,7 +57,9 @@ class TestImpossibleTravel(TestCase):
         }
         db_user = User.objects.get(username="Lorena Goldoni")
         prev_login = Login.objects.get(id=db_user.id)
-        result, vel = self.imp_travel.calc_distance(db_user, prev_login, last_login_user_fields)
+        result, vel = self.imp_travel.calc_distance(
+            db_user, prev_login, last_login_user_fields
+        )
         self.assertEqual("Imp Travel", result["alert_name"])
         self.assertEqual(
             f"Impossible Travel detected for User: Lorena Goldoni, at: 2023-03-08T17:08:33.358Z, from: Sudan, previous country: United States, distance covered at {vel} Km/h",  # noqa: E231
@@ -104,7 +108,11 @@ class TestImpossibleTravel(TestCase):
             "timestamp": new_time,
         }
         self.imp_travel.add_new_login(user_obj, new_login_fields)
-        self.assertTrue(Login.objects.filter(user=user_obj, event_id=new_login_fields["id"]).exists())
+        self.assertTrue(
+            Login.objects.filter(
+                user=user_obj, event_id=new_login_fields["id"]
+            ).exists()
+        )
         new_login = Login.objects.get(user=user_obj, event_id=new_login_fields["id"])
         self.assertEqual(new_login.index, new_login_fields["index"])
         self.assertEqual(new_login.ip, new_login_fields["ip"])
