@@ -1,6 +1,6 @@
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-import logging
 
 
 class BaseAlerting(ABC):
@@ -10,6 +10,7 @@ class BaseAlerting(ABC):
 
     class SupportedAlerters(Enum):
         DUMMY = "dummy"
+        TELEGRAM = "telegram"
 
     def __init__(self):
         super().__init__()
