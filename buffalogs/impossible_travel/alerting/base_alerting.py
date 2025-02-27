@@ -9,7 +9,8 @@ class BaseAlerting(ABC):
     """
 
     class SupportedAlerters(Enum):
-        DUMMY = "dummy"
+        DUMMY =   "dummy"
+        TELEGRAM= "telegram"
 
     def __init__(self):
         super().__init__()
