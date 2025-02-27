@@ -2,5 +2,8 @@
     "active_alerter": "dummy",
     "dummy": {
         "config_field_example": "value_example"
+    },
+    "slack":{
+        "webhook_url":"YOUR_WEBHOOK_URL"
     }
 }

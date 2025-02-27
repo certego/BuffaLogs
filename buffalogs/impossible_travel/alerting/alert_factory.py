@@ -1,8 +1,10 @@
+import json
+import os
+
+from django.conf import settings
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
-import os
-import json
-from django.conf import settings
+from impossible_travel.alerting.slack_alerting import SlackAlerting
 
 
 class AlertFactory:
@@ -38,6 +40,8 @@ class AlertFactory:
         match self.active_alerter:
             case BaseAlerting.SupportedAlerters.DUMMY:
                 alerter_class = DummyAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.SLACK:
+                alerter_class = SlackAlerting(self.alert_config)
             case _:
                 raise ValueError(f"Unsupported alerter: {self.active_alerter}")
         return alerter_class
