@@ -44,7 +44,7 @@ class TestTelegramAlerting(TestCase):
             f"{self.alert_config['api_base_url']}/bot"
             f"{self.alert_config['bot_token']}/sendMessage"
         )
-        print(expected_url)
+        
         mock_post.assert_called_once_with(
             expected_url,
             json={
