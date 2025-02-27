@@ -20,21 +20,20 @@ class EmailAlerting(BaseAlerting):
 
     def _configure_email_settings(self):
         """Dynamically set Django email settings without reconfiguring."""
-        
+
         email_settings = {
-            "EMAIL_BACKEND" : "django.core.mail.backends.smtp.EmailBackend",
-            "EMAIL_HOST" : self.email_config.get("email_server"),
-            "EMAIL_PORT" : self.email_config.get("email_port"),
-            "EMAIL_USE_TLS" : self.email_config.get("email_use_tls"),
-            "EMAIL_HOST_USER" : self.email_config.get("email_host_user"),
-            "EMAIL_HOST_PASSWORD" : self.email_config.get("email_host_password"),
-            "DEFAULT_FROM_EMAIL" : self.email_config.get("default_from_email")
+            "EMAIL_BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+            "EMAIL_HOST": self.email_config.get("email_server"),
+            "EMAIL_PORT": self.email_config.get("email_port"),
+            "EMAIL_USE_TLS": self.email_config.get("email_use_tls"),
+            "EMAIL_HOST_USER": self.email_config.get("email_host_user"),
+            "EMAIL_HOST_PASSWORD": self.email_config.get("email_host_password"),
+            "DEFAULT_FROM_EMAIL": self.email_config.get("default_from_email"),
         }
 
         # Apply each setting dynamically
         for key, value in email_settings.items():
             setattr(settings, key, value)
-
 
     def notify_alerts(self):
         """
@@ -50,7 +49,7 @@ class EmailAlerting(BaseAlerting):
                 subject = f"Login Anomaly Alert: {alert.name}"
                 body = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
 
-                send_mail(subject, body,self.email_config.get("DEFAULT_FROM_EMAIL"), self.recipient_list) #1 if sent,0 if not
+                send_mail(subject, body, self.email_config.get("DEFAULT_FROM_EMAIL"), self.recipient_list)  # 1 if sent,0 if not
                 self.logger.info(f"Email Alert Sent: {alert.name} to {self.recipient_list}")
                 alert.notified = True
                 alert.save()
