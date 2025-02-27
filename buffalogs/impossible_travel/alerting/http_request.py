@@ -6,7 +6,7 @@ from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert
 
-PERMITTED_ALERT_FIELD_LIST = ["user", "created", "description", "is_vip", "is_filtered", "filter_type"]
+PERMITTED_ALERT_FIELD_LIST = ["name", "user", "created", "description", "is_vip", "is_filtered", "filter_type"]
 PERMITTED_LOGIN_FIELD_LIST = ["index", "lat", "lon", "country", "timestamp"]
 ALERT_TYPE_LIST = [item.value for item in AlertDetectionType]
 
@@ -35,24 +35,25 @@ def parse_fields_value(field_value: str | list, field_name: str, supported_value
     """
     if default is None:
         default = supported_values
-    if isinstance(field_name, str):
+    if isinstance(field_value, str):
         if field_value.lower() == "_all_":
             return None, supported_values
         if field_value.lower() == "_empty_":
             return None, []
         return f"Unsupported value: {field_value} for {field_name}, using defaults", default
     invalid_values = []
+    msg = None
     # using copy to allow modification
     # of field_value during iteration
     value_iterator = iter(field_value[:])
     for value in value_iterator:
         if value not in supported_values:
-            invalid_values.append(field_value)
+            invalid_values.append(value)
             field_value.remove(value)
 
     if invalid_values:
-        msg = f"Unsupported values {','.join(invalid_values)} in {field_name}"
-        return msg, field_value
+        msg = f"Unsupported values {', '.join(invalid_values)} in {field_name}"
+    return msg, field_value
 
 
 def get_alerts(names: list = [], get_all: bool = False):
@@ -97,12 +98,12 @@ def generate_batch(items: list, batch_size: int):
         items (list) : list object to batch
         batch_size (int) : Max number of elements in a single batch
     """
-    temp = []
-    for item in items:
-        temp.append(item)
-        if len(temp) == batch_size:
-            yield temp
-            temp.clear()
+    start = 0
+    window = start + batch_size
+    end = len(items)
+    while start < end:
+        yield items[start : start + batch_size]
+        start += batch_size
 
 
 class HTTPRequestAlerting(BaseAlerting):
@@ -115,15 +116,20 @@ class HTTPRequestAlerting(BaseAlerting):
 
     extra_parsers = {"token_variable_name": check_variable_exists}
 
+    default_options = {"alert_types": "_all_", "fields": ["name", "user", "description", "created"], "login_data": "_all_", "token_variable_name": ""}
+
     option_parsers = {
         "alert_types": partial(parse_fields_value, field_name="alert_types", supported_values=ALERT_TYPE_LIST),
-        "fields": partial(parse_fields_value, field_name="fields", supported_values=PERMITTED_ALERT_FIELD_LIST, default=["user", "description", "created"]),
+        "fields": partial(
+            parse_fields_value, field_name="fields", supported_values=PERMITTED_ALERT_FIELD_LIST, default=["name", "user", "description", "created"]
+        ),
         "login_data": partial(parse_fields_value, field_name="login_data", supported_values=PERMITTED_LOGIN_FIELD_LIST),
+        "token_variable_name": check_variable_exists,
     }
 
     def __init__(self, alert_config: dict):
         """Initialize HTTPRequestAlerter object."""
-        super().__init__(self)
+        super().__init__()
         self.configure(alert_config)
         if self.extra_parsers:
             self.option_parsers.update(self.extra_parsers)
@@ -144,7 +150,7 @@ class HTTPRequestAlerting(BaseAlerting):
     def get_valid_options(self, options: dict):
         if options is None:
             self.logger.debug("config is missing 'options', using defaults.")
-            return self.default_options
+            options = self.default_options.copy()
 
         #
         all_options = set(options.keys()).union(set(self.default_options.keys()))
@@ -195,8 +201,7 @@ class HTTPRequestAlerting(BaseAlerting):
             serialized_data = {}
             if "user" in fields:
                 serialized_data["user"] = alert.user.username
-                fields.remove("user")
-            serialized_data.update(dict((field_name, getattr(alert, field_name)) for field_name in fields))
+            serialized_data.update(dict((field_name, getattr(alert, field_name)) for field_name in fields if field_name != "user"))
             if login_data_fields:
                 alert_login_raw = alert.login_raw_data
                 login = dict((field_name, alert_login_raw[field_name]) for field_name in login_data_fields)
@@ -236,7 +241,7 @@ class HTTPRequestAlerting(BaseAlerting):
         headers = {"Content-Type": "application/json"}
         if token:
             headers["Authorization"] = f"Bearer {token}"
-        return requests.post(endpoint, data=data, headers=headers)
+        return requests.post(endpoint, json=data, headers=headers)
 
     def send_alert(self, recipient_name: str, endpoint: str, alerts: list[Alert]):
         """
@@ -256,7 +261,7 @@ class HTTPRequestAlerting(BaseAlerting):
         fields = self.alert_config["fields"]
         login_data = self.alert_config["login_data"]
         for alert_batch in generate_batch(alerts, batch_size):
-            data = self.serialize_alerts(alert_batch, fields=fields, login_data=login_data)
+            data = self.serialize_alerts(alert_batch, fields=fields, login_data_fields=login_data)
             try:
                 resp = self.send_notification(recipient_name, endpoint, data)
             except Exception as e:
@@ -271,16 +276,16 @@ class HTTPRequestAlerting(BaseAlerting):
                     # Mark alerts as notified
                     alert.notified = True
                     alert.save()
-                    self.logger.info(f"Notification sent: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status}")
+                    self.logger.info(f"Notification sent: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status_code}")
                 else:
                     # Log error message for alerts in the batch
-                    self.logger.error("Alerting Failed: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status}")
+                    self.logger.error("Alerting Failed: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status_code}")
 
     def notify_alerts(self):
         """Send notification to recipients specified in alert_config."""
         endpoint = self.alert_config.get("endpoint")
         recipient_name = self.alert_config.get("name")
         alert_types = self.alert_config["alert_types"]
-        alerts = get_alerts(alert_types, recipient_name)
+        alerts = get_alerts(alert_types)
         self.logger.info(f"Sending alert to: {recipient_name}")
         self.send_alert(recipient_name, endpoint, alerts)
