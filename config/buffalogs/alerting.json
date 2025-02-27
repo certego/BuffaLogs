@@ -1,6 +1,12 @@
 {
-    "active_alerter": "dummy",
+    "active_alerter": "telegram",
     "dummy": {
         "config_field_example": "value_example"
+    },
+    "telegram":{
+        "bot_name":"Buffalogs Alerter Bot",
+        "bot_username":"buffalogs_alerter_bot",
+        "bot_token":"BOT_TOKEN",
+        "chat_ids" : ["CHAT_ID"]
     }
 }
