@@ -114,6 +114,7 @@ def get_default_vip_users():
 class Config(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    # Detection filters - users
     ignored_users = ArrayField(
         models.CharField(max_length=50),
         blank=True,
@@ -130,24 +131,6 @@ class Config(models.Model):
         validators=[validate_string_or_regex],
         help_text="List of selected users (strings or regex patterns) on which the detection will perform - If this field is not empty, the ignored_users field is ignored",
     )
-    ignored_ips = ArrayField(
-        models.CharField(max_length=50),
-        blank=True,
-        null=True,
-        default=get_default_ignored_ips,
-        validators=[validate_ips_or_network],
-        help_text="List of IPs to remove from the detection",
-    )
-    ignored_ISPs = ArrayField(
-        models.CharField(max_length=50), blank=True, null=True, default=get_default_ignored_ISPs, help_text="List of ISPs names to remove from the detection"
-    )
-    allowed_countries = ArrayField(
-        models.CharField(max_length=20),
-        blank=True,
-        null=True,
-        default=get_default_allowed_countries,
-        help_text="List of countries to exclude from the detection, because 'trusted' for the customer",
-    )
     vip_users = ArrayField(
         models.CharField(max_length=50), blank=True, null=True, default=get_default_vip_users, help_text="List of users considered more sensitive"
     )
@@ -157,8 +140,33 @@ class Config(models.Model):
         max_length=30,
         blank=False,
         default=UserRiskScoreType.NO_RISK,
-        help_text="Select the risk_score that users should have at least to send alert",
+        help_text="Select the risk_score that users should have at least to send the alerts",
     )
+
+    # Detection filters - location
+    ignored_ips = ArrayField(
+        models.CharField(max_length=50),
+        blank=True,
+        null=True,
+        default=get_default_ignored_ips,
+        validators=[validate_ips_or_network],
+        help_text="List of IPs to remove from the detection",
+    )
+    allowed_countries = ArrayField(
+        models.CharField(max_length=20),
+        blank=True,
+        null=True,
+        default=get_default_allowed_countries,
+        help_text="List of countries to exclude from the detection, because 'trusted' for the customer",
+    )
+
+    # Detection filters - devices
+    ignored_ISPs = ArrayField(
+        models.CharField(max_length=50), blank=True, null=True, default=get_default_ignored_ISPs, help_text="List of ISPs names to remove from the detection"
+    )
+    ignore_mobile_logins = models.BooleanField(default=False, help_text="Flag to ignore mobile devices from the detection")
+
+    # Detection filters - alerts
     filtered_alerts_types = ArrayField(
         models.CharField(max_length=50, choices=AlertDetectionType.choices, blank=True),
         default=list,
@@ -166,7 +174,14 @@ class Config(models.Model):
         null=True,
         help_text="List of alerts' types to exclude from the alerting",
     )
-    ignore_mobile_logins = models.BooleanField(default=False, help_text="Flag to ignore mobile devices from the detection")
+    threshold_user_risk_alert = models.CharField(
+        choices=UserRiskScoreType.choices,
+        max_length=30,
+        blank=False,
+        default=UserRiskScoreType.NO_RISK,
+        help_text="Select the risk_score that a user should overcome to send the 'USER_RISK_THRESHOLD' alert",
+    )
+
     distance_accepted = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED,
         help_text="Minimum distance (in Km) between two logins after which the impossible travel detection starts",
@@ -174,6 +189,9 @@ class Config(models.Model):
     vel_accepted = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED,
         help_text="Minimum velocity (in Km/h) between two logins after which the impossible travel detection starts",
+    )
+    atypical_country_days = models.PositiveIntegerField(
+        default=settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS, help_text="Days after which a login from a country is considered atypical"
     )
     user_max_days = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS, help_text="Days after which the users will be removed from the db"

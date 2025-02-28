@@ -24,6 +24,7 @@ class Impossible_Travel:
         :type prev_login: object
         :param last_login_user_fields: dictionary login from elastic
         :type last_login_user_fields: dict
+
         :return: dictionary with info about the impossible travel alert
         :rtype: dict
         """
