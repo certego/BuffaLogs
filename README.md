@@ -43,7 +43,7 @@ In detail, it sends several types of alerts:
 |<img style="border: 0.2px solid black" width=660 height=150 src="https://github.com/user-attachments/assets/f9866bac-ef69-4c99-8df8-69ae26bbdad4" alt="fosdem.org logo"> | [Our Talk:](https://fosdem.org/2025/schedule/event/fosdem-2025-5623-an-overview-on-detecting-login-anomalies-with-buffalogs/) The infosec industry has seen a big growth in recent years, with a plethora of mostly closed-source solutions such as Endpoint Detection and Response (EDR), Security Information and Event Management (SIEM), and Security Orchestration, Automation, and Response (SOAR) marketed as indispensable tools for defending organizations. These solutions often emphasize protection against sophisticated adversaries, zero-day exploits, and malicious insiders. However, our real-world experience reveals that the majority of initial compromises occur through simpler approaches, such as stolen credentials and phishing attacks. In this talk, we introduce Buffalogs, an open-source solution designed to detect and alert on anomalous login behaviors. Adhering to the Unix philosophy of "do one thing and do it well," Buffalogs offers a way to analyze common application logs (ssh, Apache, Microsoft Entra ID, etc) and detect credential misuse. Attendees will gain insights into the challenges of login anomaly detection, the development of Buffalogs and the differences between our solution and other commercial alternatives. |
 
 
-## BuffaLogs is participating in GSoC 2023 thanks to Honeynet project and IntelOwl!
+## BuffaLogs is participating in GSoC 2025 thanks to Honeynet project and IntelOwl!
 
 | Honeynet | IntelOwl|
 |------|-----|
@@ -51,41 +51,10 @@ In detail, it sends several types of alerts:
 
 ### Google Summer Of Code
 
-Since its birth, this project has been participating in the GSoC under the Honeynet Project!
+STAY TUNED!
 
-* 2023: [Project available](https://github.com/intelowlproject/gsoc/tree/main/2023#4-buffalogs-login-monitoring-and-alerting-project)
+As soon as Google will confirm our partecipation we are going to add all the information you need!
 
-Stay tuned for the upcoming GSoC! Join the [Honeynet Slack chat](https://gsoc-slack.honeynet.org/) for more info.
-
-### GSoC Application process
-
-#### 0. Get familiar with GSoC
-
-First of all, and if you have not done that yet, read [the contributor guide](https://google.github.io/gsocguides/student/) which will allow you to understand all this process and how the program works overall. Refer to its left side menu to quick access sections that may interest you the most, although we recommend you to read everything.  
-  
-#### 1. Discuss the project idea with the mentor(s)
-
-This is a required step and you can use the current issues as a start to propose your idea.
-
-We are not limited to what is listed right now, if you want to propose a new idea, please discuss it with the mentors in Honeynet [slack](https://gsoc-slack.honeynet.org/) channel `#2023-buffalogs`. We're always open to new ideas and won't hesitate on choosing them if you demonstrate to be a good candidate!  
-  
-#### 2. Understand that
-
-- You're committing to a project and we ask you to publicly publish your weekly progress on it in Github.
-- We will ask you to give feedback on our mentorship and management continuously. Communication is key to the success of the project.
-- You wholeheartedly agree with the [code of conduct](https://github.com/intelowlproject/IntelOwl/blob/master/CODE_OF_CONDUCT.md).
-- You must tell us if there's any proposed idea that you don't think would fit the timeline or could be boring (yes, we're asking for feedback).
-  
-#### 3. Fill out the application form
-
-We recommend you to follow [Google's guide to Writing a Proposal](https://google.github.io/gsocguides/student/writing-a-proposal).
-
-Once you have a draft proposal please share it with us via gsoc [slack](https://gsoc-slack.honeynet.org/) channel `#2023-buffalogs`.
-
-You can also ask for a review anytime to the community or mentor candidates before the contributor application deadline. It's much easier if you get feedback early than to wait for the last moment.
-
-### Official communication channels
-* [Slack chat](https://gsoc-slack.honeynet.org/)
 
 ##  Installation & Running
 BuffaLogs employs the following tools which have to be installed on the machine:
@@ -103,9 +72,9 @@ Or download the application directly from the [Docker Hub](https://hub.docker.co
 After that, there are two ways of running BuffaLogs, depending on your system configurations:
 * if you already have an elastic cluster:
     *  set the address of the host into the `CERTEGO_ELASTICSEARCH` variable in the `buffalogs.env` file
-    *  launch ` docker-compose up -d` to run the containers
+    *  launch ` docker compose up -d` to run the containers
 * if you have no hosts with Elasticsearch installed on it, you can run it directly with Buffalogs:
-    * run `docker-compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
+    * run `docker compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
     * Now elasticsearch and kibana are running on the same host with Buffalogs.
 
 <img src="docs/static/map_buffalogs.png" width=750 height=400 alt="BuffaLogs Map Page"/>
