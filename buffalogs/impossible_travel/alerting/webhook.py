@@ -1,10 +1,16 @@
+import os
 import time
+from functools import partial
 
 import jwt
 import requests
-from django.conf.settings import WEBHOOKS_DEFAULT_ALGORITHM, WEBHOOKS_DEFAULT_ISSUER_ID, WEBHOOKS_DEFAULT_TOKEN_EXPIRATION
 
 from .http_request import HTTPRequestAlerting
+
+WEBHOOKS_ALGORITHM_LIST = jwt.algorithms.get_default_algorithms()
+WEBHOOKS_DEFAULT_ALGORITHM = "HS256"
+WEBHOOKS_DEFAULT_ISSUER_ID = "buffalogs_webhook"
+WEBHOOKS_DEFAULT_TOKEN_EXPIRATION = 60 * 5  # Token expiration time in seconds (5 minutes)
 
 
 def validate_token_expiration_value(value):
@@ -13,18 +19,36 @@ def validate_token_expiration_value(value):
     return None, value
 
 
+def parse_hash_algorithm(value):
+    if value in WEBHOOKS_ALGORITHM_LIST:
+        return "", value
+    return f"Algorithm option {value} is not supported", WEBHOOKS_DEFAULT_ALGORITHM
+
+
 class WebHookAlerting(HTTPRequestAlerting):
 
-    option_parsers = {"token_expiration_seconds": validate_token_expiration_value}
     required_fields = ["name", "endpoint", "secret_key_variable_name"]
+    extra_option_parsers = {
+        "token_expiration_seconds": validate_token_expiration_value,
+        "algorithm": parse_hash_algorithm,
+    }
+    extra_options = {
+        "token_expiration_seconds": WEBHOOKS_DEFAULT_TOKEN_EXPIRATION,
+        "algorithm": WEBHOOKS_DEFAULT_ALGORITHM,
+        "issuer": WEBHOOKS_DEFAULT_ISSUER_ID,
+    }
+
+    def get_secret_key(self, key_name: str):
+        return os.environ[key_name]
 
     def generate_jwt(self):
         """Generate a JWT token with standard claims."""
         current_time = int(time.time())
         token_expiration_seconds = self.alert_config["token_expiration_seconds"]
-        secret_key = self.alert_config["secret_key"]
+        secret_key_name = self.alert_config["secret_key_variable_name"]
+        secret_key = self.get_secret_key(secret_key_name)
         algorithm = self.alert_config["algorithm"]
-        issuer_id = self.alert_config["issuer_id"]
+        issuer_id = self.alert_config["issuer"]
         recipient_name = self.alert_config["name"]
         payload = {
             "iss": issuer_id,
@@ -40,5 +64,5 @@ class WebHookAlerting(HTTPRequestAlerting):
         """Send a webhook notification with a JWT Bearer token."""
         token = self.generate_jwt()
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-        response = requests.post(endpoint, data=data, headers=headers)
+        response = requests.post(endpoint, json=data, headers=headers)
         return response

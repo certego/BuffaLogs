@@ -80,13 +80,13 @@ def get_alerts(names: list = [], get_all: bool = False):
     return alerts
 
 
-def check_variable_exists(variable_name):
+def check_variable_exists(variable_name: str, default: str = ""):
     if not variable_name:
-        return None, ""
+        return None, default
     elif variable_name not in os.environ:
         return None, os.environ[variable_name]
     else:
-        return "Variable name {variable_name} is not set as Environment variable", ""
+        return "Variable name {variable_name} is not set as Environment variable", default
 
 
 def generate_batch(items: list, batch_size: int):
@@ -114,8 +114,8 @@ class HTTPRequestAlerting(BaseAlerting):
 
     required_fields = ["name", "endpoint"]
 
-    extra_parsers = {"token_variable_name": check_variable_exists}
-
+    extra_option_parsers = {"token_variable_name": check_variable_exists}
+    extra_options = {"token_variable_name": ""}
     default_options = {"alert_types": "_all_", "fields": ["name", "user", "description", "created"], "login_data": "_all_", "token_variable_name": ""}
 
     option_parsers = {
@@ -124,15 +124,16 @@ class HTTPRequestAlerting(BaseAlerting):
             parse_fields_value, field_name="fields", supported_values=PERMITTED_ALERT_FIELD_LIST, default=["name", "user", "description", "created"]
         ),
         "login_data": partial(parse_fields_value, field_name="login_data", supported_values=PERMITTED_LOGIN_FIELD_LIST),
-        "token_variable_name": check_variable_exists,
     }
 
     def __init__(self, alert_config: dict):
         """Initialize HTTPRequestAlerter object."""
         super().__init__()
+        if self.extra_options:
+            self.default_options.update(self.extra_options)
+        if self.extra_option_parsers:
+            self.option_parsers.update(self.extra_option_parsers)
         self.configure(alert_config)
-        if self.extra_parsers:
-            self.option_parsers.update(self.extra_parsers)
 
     def parse_option(self, key: str, value: str | list):
         def fake_parser(value):
@@ -279,7 +280,9 @@ class HTTPRequestAlerting(BaseAlerting):
                     self.logger.info(f"Notification sent: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status_code}")
                 else:
                     # Log error message for alerts in the batch
-                    self.logger.error("Alerting Failed: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status_code}")
+                    self.logger.error(
+                        f"Alerting Failed: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status_code} message: {resp.content}"
+                    )
 
     def notify_alerts(self):
         """Send notification to recipients specified in alert_config."""

@@ -17,6 +17,7 @@ def mocked_requests_post_success(endpoint, json, headers):
         def __init__(self):
             self.status_code = 200
             self.ok = True
+            self.content = "Successful"
 
     return MockResponse()
 
@@ -28,6 +29,7 @@ def mocked_request_post_failure(endpoint, json, headers):
         def __init__(self):
             self.status_code = 400
             self.ok = False
+            self.content = "Unsuccessful"
 
     return MockResponse()
 
@@ -41,7 +43,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             json_data = json.loads(post_data)
             self.server.received_data = json_data
         except json.JSONDecodeError:
-            print("[TEST SERVER] DECODE ERROR")
+            print("[HTTP TEST SERVER] DECODE ERROR")
             self.send_response(400)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
@@ -70,14 +72,14 @@ def get_test_server():
 
 
 def run_test_server(server):
-    print(f"[TEST SERVER] STARTUP server started on {server.server_address[0]}:{server.server_address[1]}")  # noqa: E231
+    print(f"[HTTP TEST SERVER] STARTUP server started on {server.server_address[0]}:{server.server_address[1]}")  # noqa: E231
     server.serve_forever()
 
 
 class TestHTTPRequestAlerting(TestCase):
     @classmethod
     def setUpClass(cls):
-        print("[TEST SERVER] SETUP")
+        print("[HTTP TEST SERVER] SETUP")
         cls.test_server = get_test_server()
         if cls.test_server:
             cls.server_thread = threading.Thread(target=run_test_server, args=(cls.test_server,), daemon=True)
@@ -257,10 +259,10 @@ class TestHTTPRequestAlerting(TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls.test_server is not None:
-            print("\n[TEST SERVER] SHUTDOWN...")
+            print("\n[HTTP TEST SERVER] SHUTDOWN")
             try:
                 cls.test_server.shutdown()
                 cls.test_server.server_close()
             except Exception as e:
-                print(f"[TEST SERVER] ERROR: {e}")
+                print(f"[HTTP TEST SERVER] ERROR: {e}")
         super().tearDownClass()

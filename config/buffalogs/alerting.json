@@ -20,9 +20,9 @@
 	"endpoint" : "",
 	"secret_key_variable_name" : "",
 	"options" : {
-		"issuer_variable_name" : "",
-		"token_expiration_seconds" : "", 
-		"algorithm_variable_name" : "",
+		"issuer" : "",
+		"token_expiration_seconds" : "",
+		"algorithm" : "",
 		"alert_types" : [],
 		"fields" : [],
 		"login_data" : []
