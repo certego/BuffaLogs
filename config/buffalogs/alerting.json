@@ -1,5 +1,13 @@
 {
-    "active_alerter": "dummy",
+    "active_alerter": "http",
+    "http": {
+        "endpoint_url": "http://api.example.com/alerts",
+        "headers": {
+            "Authorization": "Bearer YOUR_TOKEN",
+            "Content-Type": "application/json"
+        },
+        "timeout": 10
+    },
     "dummy": {
         "config_field_example": "value_example"
     }
