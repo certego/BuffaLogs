@@ -4,13 +4,12 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
+from impossible_travel.alerting.alert_factory import AlertFactory
 from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
-from impossible_travel.alerting.alert_factory import AlertFactory
 
 logger = get_task_logger(__name__)
 
@@ -69,6 +68,7 @@ def update_risk_level(db_user: User, triggered_alert: Alert):
             set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info)
 
             return True
+    return False
 
 
 def set_alert(db_user: User, login_alert: dict, alert_info: dict):
@@ -227,7 +227,7 @@ def process_user(db_user, start_date, end_date):
 def process_logs():
     """Find all user logged in between that time range"""
     now = timezone.now()
-    process_task, op_result = TaskSettings.objects.get_or_create(
+    process_task, _ = TaskSettings.objects.get_or_create(
         task_name=process_logs.__name__, defaults={"end_date": timezone.now() - timedelta(minutes=1), "start_date": timezone.now() - timedelta(minutes=30)}
     )
     if (now - process_task.end_date).days < 1:

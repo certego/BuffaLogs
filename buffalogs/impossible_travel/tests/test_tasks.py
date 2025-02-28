@@ -1,7 +1,6 @@
 import json
 import os
 from datetime import datetime, timedelta
-from unittest.mock import patch
 
 from django.db import connection
 from django.db.models import Q
@@ -14,8 +13,8 @@ from impossible_travel.tests.setup import Setup
 
 
 def load_test_data(name):
-    DATA_PATH = "impossible_travel/tests/test_data"
-    with open(os.path.join(DATA_PATH, name + ".json")) as file:
+    DATA_PATH = "impossible_travel/tests/test_data"  # pylint: disable=invalid-name
+    with open(os.path.join(DATA_PATH, name + ".json"), encoding="utf-8") as file:
         data = json.load(file)
     return data
 
@@ -58,7 +57,7 @@ class TestTasks(TestCase):
     }
 
     @classmethod
-    def setUpTestData(self):
+    def setUpTestData(cls):
         setup_obj = Setup()
         setup_obj.setup()
 
@@ -113,7 +112,7 @@ class TestTasks(TestCase):
         self.assertEqual("No risk", db_user.risk_score)
 
     def test_update_risk_level_low(self):
-        """Test update_risk_level() function for low risk user, step-by-step alerts because every time both functions set_alert() and update_risk_level() are called and the "USER_RISK_THRESHOLD" alert could be triggered"""
+        # test update_risk_level() function for low risk user
         # 2 alerts --> Low risk
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
@@ -132,7 +131,7 @@ class TestTasks(TestCase):
         )
 
     def test_update_risk_level_medium(self):
-        """Test update_risk_level() function for medium risk user, step-by-step alerts because every time both functions set_alert() and update_risk_level() are called and the "USER_RISK_THRESHOLD" alert could be triggered"""
+        # test update_risk_level() function for medium risk user
         #   4 alerts --> Medium risk
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
@@ -205,7 +204,7 @@ class TestTasks(TestCase):
         self.assertEqual(AlertDetectionType.IMP_TRAVEL, db_user.alert_set.get(id=6).name)
 
     def test_update_risk_level_high(self):
-        """Test update_risk_level() function for high risk user, step-by-step alerts because every time both functions set_alert() and update_risk_level() are called and the "USER_RISK_THRESHOLD" alert could be triggered"""
+        # test update_risk_level() function for high risk user
         #   5 alerts --> High risk
         self.test_update_risk_level_medium()
         db_user = User.objects.get(username="Lorena Goldoni")
@@ -434,17 +433,20 @@ class TestTasks(TestCase):
         # check imp_travel alerts for fields1 logins
         self.assertEqual("Imp Travel", imp_travel_alerts_fields1[0].name)
         self.assertEqual(
-            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z, from: United States, previous country: India, distance covered at 133973 Km/h",
+            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z, "
+            + "from: United States, previous country: India, distance covered at 133973 Km/h",
             imp_travel_alerts_fields1[0].description,
         )
         self.assertEqual("Imp Travel", imp_travel_alerts_fields1[1].name)
         self.assertEqual(
-            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z, from: Japan, previous country: United States, distance covered at 344009 Km/h",
+            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z, from: Japan, "
+            + "previous country: United States, distance covered at 344009 Km/h",
             imp_travel_alerts_fields1[1].description,
         )
         self.assertEqual("Imp Travel", imp_travel_alerts_fields1[2].name)
         self.assertEqual(
-            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T07:10:23.154Z, from: United States, previous country: Japan, distance covered at 52564 Km/h",
+            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T07:10:23.154Z, "
+            + "from: United States, previous country: Japan, distance covered at 52564 Km/h",
             imp_travel_alerts_fields1[2].description,
         )
         # check user_risk_threshold alerts for fields1 logins

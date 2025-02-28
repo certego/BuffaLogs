@@ -16,7 +16,18 @@ from pathlib import Path
 
 from celery.schedules import crontab
 
-from .certego import *
+from .certego import (
+    CERTEGO_BUFFALOGS_DB_HOSTNAME,
+    CERTEGO_BUFFALOGS_LOG_PATH,
+    CERTEGO_BUFFALOGS_POSTGRES_DB,
+    CERTEGO_BUFFALOGS_POSTGRES_PASSWORD,
+    CERTEGO_BUFFALOGS_POSTGRES_PORT,
+    CERTEGO_BUFFALOGS_POSTGRES_USER,
+    CERTEGO_BUFFALOGS_RABBITMQ_URI,
+    CERTEGO_BUFFALOGS_SECRET_KEY,
+    CERTEGO_BUFFALOGS_STATIC_ROOT,
+    CERTEGO_DEBUG,
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

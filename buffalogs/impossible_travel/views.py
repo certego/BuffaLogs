@@ -17,18 +17,23 @@ from impossible_travel.models import Alert, Login, User
 
 
 def _load_data(name):
-    DATA_PATH = "impossible_travel/dashboard/"
-    with open(os.path.join(DATA_PATH, name + ".json")) as file:
+    DATA_PATH = "impossible_travel/dashboard/"  # pylint: disable=invalid-name
+    with open(os.path.join(DATA_PATH, name + ".json"), encoding="utf-8") as file:
         data = json.load(file)
     return data
 
 
 def homepage(request):
+    end_str = timezone.now()
+    start_str = end_str - timedelta(days=1)
+    users_pie_context = None
+    world_map_context = None
+    alerts_line_context = None
     if request.method == "GET":
         date_range = []
         now = timezone.now()
         end_str = now.strftime("%B %-d, %Y")
-        start = now + timedelta(hours=-now.hour, minutes=-now.minute, seconds=-now.second)
+        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         start_str = start.strftime("%B %-d, %Y")
         date_range.append(start)
         date_range.append(now)
@@ -63,15 +68,15 @@ def users(request):
     return render(request, "impossible_travel/users.html")
 
 
-def unique_logins(request, pk_user):
+def unique_logins(request):
     return render(request, "impossible_travel/unique_logins.html")
 
 
-def all_logins(request, pk_user):
+def all_logins(request):
     return render(request, "impossible_travel/all_logins.html")
 
 
-def alerts(request, pk_user):
+def alerts(request):
     return render(request, "impossible_travel/alerts.html")
 
 
@@ -103,9 +108,13 @@ def get_unique_logins(request, pk_user):
 
 def get_alerts(request, pk_user):
     context = []
-    alerts = Alert.objects.filter(user_id=pk_user).values()
-    for raw in range(len(alerts) - 1, -1, -1):
-        tmp = {"timestamp": alerts[raw]["login_raw_data"]["timestamp"], "rule_name": alerts[raw]["name"], "rule_desc": alerts[raw]["description"]}
+    alerts_data = Alert.objects.filter(user_id=pk_user).values()
+    for raw in range(len(alerts_data) - 1, -1, -1):
+        tmp = {
+            "timestamp": alerts_data[raw]["login_raw_data"]["timestamp"],
+            "rule_name": alerts_data[raw]["name"],
+            "rule_desc": alerts_data[raw]["description"],
+        }
         context.append(tmp)
     return JsonResponse(json.dumps(context, default=str), safe=False)
 

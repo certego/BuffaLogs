@@ -24,10 +24,10 @@ def generate_common_data():
     event_category = ["threat"] * 2 + ["session"] * 2 + ["malware"] * 6 + ["authentication"] * 90
     event_type = ["start"] * 80 + ["end"] * 20
 
-    with open("random_data.yaml", "r") as info:
+    with open("random_data.yaml", "r", encoding="utf-8") as info:
         read_data = yaml.load(info, Loader=yaml.FullLoader)
 
-    for i in range(0, NUM_LOGS):
+    for _ in range(0, NUM_LOGS):
         tmp = {}
         ip = random.choice(read_data["ip"])
         now = datetime.utcnow()

@@ -153,8 +153,6 @@ disable=abstract-method,
         hard-coded-auth-user,
         import-outside-toplevel,
         imported-auth-user,
-        invalid-name,
-        line-too-long,        # usually real user-agents are used for tests and they create noise with this pylint rule
         locally-disabled,
         logging-format-interpolation,
         logging-fstring-interpolation,
