@@ -13,13 +13,15 @@ WEBHOOKS_DEFAULT_ISSUER_ID = "buffalogs_webhook"
 WEBHOOKS_DEFAULT_TOKEN_EXPIRATION = 60 * 5  # Token expiration time in seconds (5 minutes)
 
 
-def validate_token_expiration_value(value):
+def validate_token_expiration_value(value: int):
+    """Check that value is an int object."""
     if not isinstance(value, int):
         return f"{repr(value)} must be an integer.", WEBHOOKS_DEFAULT_TOKEN_EXPIRATION
     return None, value
 
 
-def parse_hash_algorithm(value):
+def parse_hash_algorithm(value: str):
+    """Check that value is one of the supported webhooks algorithms."""
     if value in WEBHOOKS_ALGORITHM_LIST:
         return "", value
     return f"Algorithm option {value} is not supported", WEBHOOKS_DEFAULT_ALGORITHM
@@ -39,6 +41,11 @@ class WebHookAlerting(HTTPRequestAlerting):
     }
 
     def get_secret_key(self, key_name: str):
+        """
+        Get secret_key.
+
+        key_name : Environment variable name storing secret key.
+        """
         return os.environ[key_name]
 
     def generate_jwt(self):

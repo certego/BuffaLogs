@@ -136,6 +136,10 @@ class TestHTTPRequestAlerting(TestCase):
         expected_batches = [["alert1", "alert2"], ["alert3", "alert4"], ["alert5"]]
         self.assertEqual(batches, expected_batches)
 
+        batches = list(generate_batch(alerts, -1))
+        expected_batches = alerts[:]
+        self.assertEqual(batches, expected_batches)
+
     def test_serialize_alerts(self):
         """Test that alert serialization works with configured fields."""
         fields = ["name", "user", "description"]

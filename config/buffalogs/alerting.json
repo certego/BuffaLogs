@@ -16,7 +16,8 @@
 		"token_variable_name" : "", 
 		"alert_types" : [],
 		"fields" : [],
-		"login_data" : []
+		"login_data" : [],
+		"batch_size" : -1
     	}
     },
 
@@ -30,7 +31,8 @@
 		"algorithm" : "",
 		"alert_types" : [],
 		"fields" : [],
-		"login_data" : []
+		"login_data" : [],
+		"batch_size" : -1
 	}
     }
 }

@@ -81,6 +81,13 @@ def get_alerts(names: list = [], get_all: bool = False):
 
 
 def check_variable_exists(variable_name: str, default: str = ""):
+    """
+    Check if variable is an environment variable.
+
+    Args:
+        variable_name : name to look up
+        default : value to return if name is not a environment variable
+    """
     if not variable_name:
         return None, default
     elif variable_name not in os.environ:
@@ -98,6 +105,9 @@ def generate_batch(items: list, batch_size: int):
         items (list) : list object to batch
         batch_size (int) : Max number of elements in a single batch
     """
+    if batch_size == -1:
+        yield from items
+        return
     start = 0
     window = start + batch_size
     end = len(items)
@@ -116,8 +126,13 @@ class HTTPRequestAlerting(BaseAlerting):
 
     extra_option_parsers = {"token_variable_name": check_variable_exists}
     extra_options = {"token_variable_name": ""}
-    default_options = {"alert_types": "_all_", "fields": ["name", "user", "description", "created"], "login_data": "_all_", "token_variable_name": ""}
-
+    default_options = {
+        "alert_types": "_all_",
+        "fields": ["name", "user", "description", "created"],
+        "login_data": "_all_",
+        "token_variable_name": "",
+        "batch_size": -1,
+    }
     option_parsers = {
         "alert_types": partial(parse_fields_value, field_name="alert_types", supported_values=ALERT_TYPE_LIST),
         "fields": partial(
