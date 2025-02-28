@@ -17,7 +17,7 @@ jobs:
     with:
       backend_directories: buffalogs .github build
       frontend_directories: frontend .github
-      ubuntu_version: 22.04
+      ubuntu_version: 24.04
 
 
 
@@ -43,7 +43,7 @@ jobs:
   #     use_coverage: true
   #     upload_coverage: true
   #     max_timeout: 15
-  #     ubuntu_version: 22.04
+  #     ubuntu_version: 24.04
   #     node_versions: >-
   #       ["18"]
 
@@ -71,13 +71,13 @@ jobs:
       check_requirements_licenses: false
 
       use_postgres: true
-      postgres_version: 15.4
+      postgres_version: 15
       postgres_db: buffalogs
       postgres_user: default_user
       postgres_password: password
       use_memcached: false
       use_elastic_search: true
-      elasticsearch_version: 7.17.13
+      elasticsearch_version: 7.17.27
       use_rabbitmq: false
       use_mongo: false
       use_celery: false
@@ -91,6 +91,6 @@ jobs:
       # tags_for_manual_tests: manual
 
       python_versions: >-
-        ["3.10"]
+        ["3.12"]
       max_timeout: 7
-      ubuntu_version: 22.04
+      ubuntu_version: 24.04

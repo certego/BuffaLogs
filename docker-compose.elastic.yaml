@@ -1,7 +1,7 @@
 services:
     elasticsearch:
         container_name: buffalogs_elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.13
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.27
         hostname: elasticsearch
         environment: 
             - node.name=buffalogs_elastic
@@ -24,7 +24,7 @@ services:
 
     kibana:
         container_name: buffalogs_kibana
-        image: docker.elastic.co/kibana/kibana:7.17.7
+        image: docker.elastic.co/kibana/kibana:7.17.27
         hostname: kibana
         environment:
             ELASTICSEARCH_URL: http://elasticsearch:9200
