@@ -1,14 +1,14 @@
 from impossible_travel.alerting.base_alerting import BaseAlerting
+
+
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
 from impossible_travel.alerting.http_alerting import HttpAlerting
-
+from impossible_travel.alerting.telegram_alerting import TelegramAlerting
 import os
 import json
 from django.conf import settings
 
-
 class AlertFactory:
-
     def __init__(self) -> None:
         """pet_factory is our abstract factory.  We can set it at will."""
 
@@ -41,7 +41,9 @@ class AlertFactory:
             case BaseAlerting.SupportedAlerters.DUMMY:
                 alerter_class = DummyAlerting(self.alert_config)
             case BaseAlerting.SupportedAlerters.HTTP:
-                alerter_class = HttpAlerting(self.alert_config) 
+                alerter_class = HttpAlerting(self.alert_config) "
+            case BaseAlerting.SupportedAlerters.TELEGRAM:
+                alerter_class = TelegramAlerting(self.alert_config)
             case _:
                 raise ValueError(f"Unsupported alerter: {self.active_alerter}")
         return alerter_class
