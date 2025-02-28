@@ -1,7 +1,8 @@
-from django.test import TestCase
 from unittest import mock
-from impossible_travel.models import Alert, User
+
+from django.test import TestCase
 from impossible_travel.alerting.http_alerting import HttpAlerting
+from impossible_travel.models import Alert, User
 from requests.exceptions import HTTPError
 
 

@@ -1,7 +1,6 @@
+import requests
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
-
-import requests
 
 
 class HttpAlerting(BaseAlerting):
