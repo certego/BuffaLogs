@@ -21,15 +21,15 @@ class Login_New_Country:
         # check "New Country" alert
         if db_user.login_set.filter(country=login_field["country"]).count() == 0:
             alert_info["alert_name"] = AlertDetectionType.NEW_COUNTRY.value
-            alert_info[
-                "alert_desc"
-            ] = f"{AlertDetectionType.NEW_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
+            alert_info["alert_desc"] = (
+                f"{AlertDetectionType.NEW_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
+            )
         # check "Atypical Country" alert
         elif (
             datetime.fromisoformat(login_field["timestamp"]) - db_user.login_set.filter(country=login_field["country"]).last().timestamp
         ).days >= app_config.atypical_country_days:
             alert_info["alert_name"] = AlertDetectionType.ATYPICAL_COUNTRY.value
-            alert_info[
-                "alert_desc"
-            ] = f"{AlertDetectionType.ATYPICAL_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
+            alert_info["alert_desc"] = (
+                f"{AlertDetectionType.ATYPICAL_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
+            )
         return alert_info
