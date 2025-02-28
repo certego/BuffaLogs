@@ -309,28 +309,28 @@ jobs:
           fi
 
           if [[ '${{ inputs.use_isort}}' != 'false' ]]; then
-            echo "isort==6.0.0" >> requirements-linters.txt
+            echo "isort==5.13.2" >> requirements-linters.txt
           fi
 
           if [[ '${{ inputs.use_flake8}}' != 'false' ]]; then
-            echo "flake8==7.1.2" >> requirements-linters.txt
+            echo "flake8==7.1.1" >> requirements-linters.txt
             if [[ -n '${{ inputs.django_settings_module }}' ]]; then
-              echo "flake8-django==1.1.5" >> requirements-linters.txt
+              echo "flake8-django==1.4" >> requirements-linters.txt
             fi
           fi
 
           if [[ '${{ inputs.use_pylint}}' != 'false' ]]; then
-            echo "pylint==2.14.3" >> requirements-linters.txt
+            echo "pylint==3.2.6" >> requirements-linters.txt
             if [[ -n '${{ inputs.django_settings_module }}' ]]; then
-              echo "pylint-django==2.5.3" >> requirements-linters.txt
+              echo "pylint-django==2.5.5" >> requirements-linters.txt
             fi
           fi
 
           if [[ '${{ inputs.use_bandit}}' != 'false' ]]; then
-            echo "bandit==1.7.4" >> requirements-linters.txt
+            echo "bandit==1.7.9" >> requirements-linters.txt
           fi
           if [[ '${{ inputs.use_autoflake}}' != 'false' ]]; then
-            echo "autoflake==1.7.7" >> requirements-linters.txt
+            echo "autoflake==2.3.1" >> requirements-linters.txt
           fi
           cat $(echo ${{ inputs.requirements_path }} | sed -e 's/.txt/-linter.txt/') >> requirements-linters.txt 2>/dev/null || exit 0
         shell: bash

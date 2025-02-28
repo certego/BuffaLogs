@@ -12,6 +12,7 @@
 * Removed the `update_risk_level()` function from the `BuffalogsCleanModelsPeriodicallyTask` periodic task. Now, the new risk_score is calculated as soon as an alert is triggered
 ### Bugfix
 * Fixed elasticsearch port in *load_templates.sh* script
+* Updated linters to solve conclicts
 
 
 ## 1.4.x

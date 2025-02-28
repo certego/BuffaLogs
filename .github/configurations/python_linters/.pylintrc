@@ -153,6 +153,8 @@ disable=abstract-method,
         hard-coded-auth-user,
         import-outside-toplevel,
         imported-auth-user,
+        invalid-name,
+        line-too-long,        # usually real user-agents are used for tests and they create noise with this pylint rule
         locally-disabled,
         logging-format-interpolation,
         logging-fstring-interpolation,
@@ -457,8 +459,8 @@ min-public-methods=2
 [EXCEPTIONS]
 
 # Exceptions that will emit a warning when caught.
-overgeneral-exceptions=BaseException,
-                       Exception
+overgeneral-exceptions=builtins.BaseException,
+                       builtins.Exception
 
 
 [CLASSES]
