@@ -10,6 +10,7 @@ class BaseAlerting(ABC):
 
     class SupportedAlerters(Enum):
         DUMMY = "dummy"
+        HTTP = "http"
 
     def __init__(self):
         super().__init__()
