@@ -313,10 +313,10 @@ jobs:
           fi
 
           if [[ '${{ inputs.use_flake8}}' != 'false' ]]; then
-            echo "flake8==7.1.1" >> requirements-linters.txt
-            if [[ -n '${{ inputs.django_settings_module }}' ]]; then
-              echo "flake8-django==1.4" >> requirements-linters.txt
-            fi
+            echo "flake8==7.1.2" >> requirements-linters.txt
+            #if [[ -n '${{ inputs.django_settings_module }}' ]]; then
+              #echo "flake8-django==1.4" >> requirements-linters.txt
+            #fi
           fi
 
           if [[ '${{ inputs.use_pylint}}' != 'false' ]]; then
