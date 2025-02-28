@@ -1,5 +1,10 @@
 {
-    "active_alerter": "dummy",
+    "active_alerter": "telegram",
+    "telegram": {
+        "api_base_url": "https://api.telegram.org",
+        "bot_token": "your_bot_token",
+        "chat_id": "your_chat_id"
+    },
     "dummy": {
         "config_field_example": "value_example"
     },

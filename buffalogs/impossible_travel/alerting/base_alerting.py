@@ -12,6 +12,7 @@ class BaseAlerting(ABC):
         DUMMY = "dummy"
         WEBHOOKS = "webhooks"
         HTTPREQUEST = "http_request"
+        TELEGRAM = "telegram"
 
     def __init__(self):
         super().__init__()
