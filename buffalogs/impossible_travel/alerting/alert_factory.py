@@ -1,6 +1,4 @@
 from impossible_travel.alerting.base_alerting import BaseAlerting
-
-
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
 from impossible_travel.alerting.http_alerting import HttpAlerting
 from impossible_travel.alerting.telegram_alerting import TelegramAlerting
@@ -41,7 +39,7 @@ class AlertFactory:
             case BaseAlerting.SupportedAlerters.DUMMY:
                 alerter_class = DummyAlerting(self.alert_config)
             case BaseAlerting.SupportedAlerters.HTTP:
-                alerter_class = HttpAlerting(self.alert_config) "
+                alerter_class = HttpAlerting(self.alert_config) 
             case BaseAlerting.SupportedAlerters.TELEGRAM:
                 alerter_class = TelegramAlerting(self.alert_config)
             case _:
