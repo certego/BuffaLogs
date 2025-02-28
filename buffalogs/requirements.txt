@@ -19,6 +19,7 @@ prompt-toolkit>=3.0.33
 psycopg[binary]>=3.2.3
 pygal>=3.0.0
 pygal-maps-world>=1.0.2
+PyJWT>=2.10.1
 python-dateutil>=2.8.2
 python-dotenv>=0.21.0
 pytz>=2024.1
