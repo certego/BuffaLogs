@@ -51,7 +51,7 @@ jobs:
       - name: Create Tag and Release
         id: create-release
         if: steps.check-tag.outputs.match == 'true'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.pull_request.title }}
           name: Version ${{ github.event.pull_request.title }}
