@@ -9,6 +9,7 @@ from django.utils import timezone
 from impossible_travel import tasks
 from impossible_travel.constants import AlertDetectionType, AlertFilterType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
+from impossible_travel.tasks import check_blocklisted_logins
 from impossible_travel.tests.setup import Setup
 
 
@@ -24,6 +25,15 @@ class TestTasks(TestCase):
     def setUpTestData(self):
         setup_obj = Setup()
         setup_obj.setup()
+        self.user = User.objects.create(username="blocklist_user")
+        # self.setUpBlocklist(self)
+        """Clear alerts before each test"""
+        Alert.objects.all().delete()
+
+        # Prepare the blocklist file with a known blocklisted IP
+        self.blocklist_file = "/home/kali/Desktop/gsoc/BuffaLogs/config/buffalogs/blocklisted_ips.txt"
+        with open(self.blocklist_file, "w") as f:
+            f.write("203.0.113.50\n")
 
     def test_clear_models_periodically(self):
         """Testing clear_models_periodically() function"""
@@ -378,6 +388,36 @@ class TestTasks(TestCase):
         # Third part: no new alerts because all the ips have already been used
         tasks.check_fields(db_user, fields3)
         self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
+
+    # For blocklist detection
+    def setUpBlocklist(self):
+        """Clear alerts before each test"""
+        Alert.objects.all().delete()
+
+        # Prepare the blocklist file with a known blocklisted IP
+        self.blocklist_file = "/home/kali/Desktop/gsoc/BuffaLogs/config/buffalogs/blocklisted_ips.txt"
+
+    def test_login_from_blocklisted_ip_creates_alert(self):
+        # Confirm blocklist file exists
+        print(f"Creating blocklist file at: {self.blocklist_file}")
+        self.assertTrue(os.path.exists(self.blocklist_file))
+
+        # Create login event from blocklisted IP (recent timestamp)
+        login = Login.objects.create(user=self.user, ip="203.0.113.50", timestamp=timezone.now())
+
+        # Run task directly
+        check_blocklisted_logins()
+
+        # Check if alert was created
+        print(f"Total alerts after task run: {Alert.objects.count()}")
+        self.assertEqual(Alert.objects.count(), 1)
+
+        alert = Alert.objects.first()
+        print(f"Alert created: {alert.name} - {alert.description}")
+
+        self.assertEqual(alert.name, "Imp Travel")
+        self.assertIn("203.0.113.50", alert.description)
+        self.assertIn(self.user.username, alert.description)
 
     # TO DO
     # @patch("impossible_travel.tasks.check_fields")

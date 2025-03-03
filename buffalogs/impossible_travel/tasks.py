@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 from celery import shared_task
@@ -7,12 +8,14 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
-from impossible_travel.constants import UserRiskScoreType
+from impossible_travel.alerting.alert_factory import AlertFactory
+from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
-from impossible_travel.alerting.alert_factory import AlertFactory
 
 logger = get_task_logger(__name__)
+
+BLOCKLIST_PATH = "/home/kali/Desktop/gsoc/BuffaLogs/config/buffalogs/blocklisted_ips.txt"
 
 
 def clear_models_periodically():
@@ -250,3 +253,57 @@ def exec_process_logs(start_date, end_date):
             process_user(db_user, start_date, end_date)
     except AttributeError:
         logger.info("No users login aggregation found")
+
+
+# Handles Blocklisted IPs
+def load_blocklisted_ips():
+    """Load blocklisted IPs from a local file."""
+    if not os.path.exists(BLOCKLIST_PATH):
+        logger.warning(f"Blocklist file not found at {BLOCKLIST_PATH}")
+        return set()
+
+    with open(BLOCKLIST_PATH, "r") as f:
+        return set(line.strip() for line in f.readlines() if line.strip())
+
+
+@shared_task(name="BuffalogsCheckBlocklistedLoginsTask")
+def check_blocklisted_logins():
+    """
+    Periodic task to check successful logins against a list of blocklisted IPs.
+    This task should run every 30 minutes via celery_beat.
+    """
+    logger.info("Starting blocklisted IP check task...")
+
+    blocklisted_ips = load_blocklisted_ips()
+    if not blocklisted_ips:
+        logger.info("No blocklisted IPs found, skipping task.")
+        return
+
+    lookback_time = timezone.now() - timedelta(hours=24)
+    successful_logins = Login.objects.filter(timestamp__gte=lookback_time)
+
+    for login in successful_logins:
+        if login.ip in blocklisted_ips:
+            logger.warning(f"Blocklisted IP detected: {login.ip} for user {login.user.username}")
+            create_blocklist_alert(login)
+
+
+def create_blocklist_alert(login):
+    """
+    Creates an alert when a successful login is detected from a blocklisted IP.
+    """
+    alert_info = {
+        "alert_name": "Imp Travel",
+        "alert_desc": (f"Successful login detected from blocklisted IP: {login.ip} " f"for User: {login.user.username} at {login.timestamp}"),
+    }
+
+    set_alert(
+        db_user=login.user,
+        login_alert={
+            "timestamp": str(login.timestamp),
+            "ip": login.ip,
+            "country": "",  # Country can be omitted or enriched if available
+            "agent": "",  # Agent can also be omitted or enriched
+        },
+        alert_info=alert_info,
+    )

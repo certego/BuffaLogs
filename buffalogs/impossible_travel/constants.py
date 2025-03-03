@@ -47,6 +47,7 @@ class AlertDetectionType(models.TextChoices):
     * USER_RISK_THRESHOLD: Alert if the user.risk_score value is equal or higher than the Config.alert_minimum_risk_score
     * LOGIN_ANONYMIZER_IP: Alert if the login has been made from an anonymizer IP
     * ATYPICAL_COUNTRY: Alert if the login has been made from a country not visited recently
+    * BLOCKLISTED_IP_LOGIN : Alert if the login has been made from a blocklisted IP
     """
 
     NEW_DEVICE = "New Device", _("Login from new device")
@@ -55,6 +56,7 @@ class AlertDetectionType(models.TextChoices):
     USER_RISK_THRESHOLD = "User Risk Threshold", _("User risk higher than threshold")
     LOGIN_ANONYMIZER_IP = "Login Anonymizer Ip", _("Login from an anonymizer IP")
     ATYPICAL_COUNTRY = "Atypical Country", _("Login from a country not visited recently")
+    BLOCKLISTED_IP_LOGIN = "Blocklisted IP", _("Blocklisted IP Login")
 
     @classmethod
     def get_label_from_value(cls, value):
