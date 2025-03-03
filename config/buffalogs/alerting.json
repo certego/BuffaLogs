@@ -7,5 +7,32 @@
     },
     "dummy": {
         "config_field_example": "value_example"
+    },
+
+    "http_request" : {
+	"name" : "",
+	"endpoint" : "",
+	"options" : {
+		"token_variable_name" : "", 
+		"alert_types" : [],
+		"fields" : [],
+		"login_data" : [],
+		"batch_size" : -1
+    	}
+    },
+
+    "webhooks" : {
+	"name" : "",
+	"endpoint" : "",
+	"secret_key_variable_name" : "",
+	"options" : {
+		"issuer" : "",
+		"token_expiration_seconds" : "",
+		"algorithm" : "",
+		"alert_types" : [],
+		"fields" : [],
+		"login_data" : [],
+		"batch_size" : -1
+	}
     }
 }
