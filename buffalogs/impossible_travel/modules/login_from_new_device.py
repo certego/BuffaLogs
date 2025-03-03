@@ -1,7 +1,6 @@
 import logging
 
 from impossible_travel.constants import AlertDetectionType
-from impossible_travel.models import Alert
 from impossible_travel.modules import impossible_travel
 
 imp_travel = impossible_travel.Impossible_Travel()

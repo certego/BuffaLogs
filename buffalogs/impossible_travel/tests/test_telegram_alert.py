@@ -40,16 +40,13 @@ class TestTelegramAlerting(TestCase):
         self.assertTrue(self.alert.notified)
 
         # Verify the correct API endpoint and parameters were used
-        expected_url = (
-            f"{self.alert_config['api_base_url']}/bot"
-            f"{self.alert_config['bot_token']}/sendMessage"
-        )
-        
+        expected_url = f"{self.alert_config['api_base_url']}/bot" f"{self.alert_config['bot_token']}/sendMessage"
+
         mock_post.assert_called_once_with(
             expected_url,
             json={
                 "chat_id": self.alert_config["chat_id"],
-                "text": alerter._format_message(self.alert),
+                "text": alerter._format_message(self.alert),  # pylint: disable=protected-access
                 "parse_mode": "Markdown",
             },
             timeout=10,
@@ -70,15 +67,12 @@ class TestTelegramAlerting(TestCase):
         self.assertFalse(self.alert.notified)
 
         # Verify the API was called (even though it failed)
-        expected_url = (
-            f"{self.alert_config['api_base_url']}/bot"
-            f"{self.alert_config['bot_token']}/sendMessage"
-        )
+        expected_url = f"{self.alert_config['api_base_url']}/bot" f"{self.alert_config['bot_token']}/sendMessage"
         mock_post.assert_called_once_with(
             expected_url,
             json={
                 "chat_id": self.alert_config["chat_id"],
-                "text": alerter._format_message(self.alert),
+                "text": alerter._format_message(self.alert),  # pylint: disable=protected-access
                 "parse_mode": "Markdown",
             },
             timeout=10,

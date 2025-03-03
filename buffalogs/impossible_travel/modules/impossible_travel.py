@@ -3,8 +3,8 @@ from datetime import datetime
 
 from django.utils import timezone
 from geopy.distance import geodesic
-from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
-from impossible_travel.models import Alert, Config, Login, UsersIP
+from impossible_travel.constants import AlertDetectionType
+from impossible_travel.models import Config, Login, UsersIP
 
 
 class Impossible_Travel:
