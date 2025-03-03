@@ -23,7 +23,7 @@ const Barchart: React.FC = () => {
             const date = key;
             const value = updateData[key];
             const type = updateData['Timeframe'];
-      
+
             const newDataItem = {
               date: date,
               value: value,

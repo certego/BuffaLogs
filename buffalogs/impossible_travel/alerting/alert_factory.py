@@ -41,6 +41,8 @@ class AlertFactory:
                 alerter_class = DummyAlerting(self.alert_config)
             case BaseAlerting.SupportedAlerters.TELEGRAM:
                 alerter_class = TelegramAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.EMAIL:
+                alerter_class = EmailAlerting(self.alert_config)
             case _:
                 raise ValueError(f"Unsupported alerter: {self.active_alerter}")
         return alerter_class

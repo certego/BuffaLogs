@@ -7,5 +7,13 @@
     },
     "dummy": {
         "config_field_example": "value_example"
+    },
+    "email": {
+        "smtp_server": "smtp.example.com",
+        "smtp_port": 587,
+        "username": "your_username",
+        "password": "your_password",
+        "from_addr": "from@example.com",
+        "to_addrs": ["to1@example.com", "to2@example.com"]
     }
 }
