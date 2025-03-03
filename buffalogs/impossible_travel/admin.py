@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
-from impossible_travel.constants import UserRiskScoreType
 from impossible_travel.forms import AlertAdminForm, ConfigAdminForm, UserAdminForm
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 

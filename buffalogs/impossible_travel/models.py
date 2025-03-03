@@ -60,12 +60,12 @@ class Alert(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                # Check that the Alert.name is one of the value in the Enum AlertDetectionType --> ['New Device', 'Imp Travel', 'New Country', 'User Risk Threshold', 'Login Anonymizer Ip', 'Atypical Country']
+                # Check that the Alert.name is one of the value in the Enum AlertDetectionType
                 check=models.Q(name__in=[choice[0] for choice in AlertDetectionType.choices]),
                 name="valid_alert_name_choice",
             ),
             models.CheckConstraint(
-                # Check that each element in the Alert.filter_type is in the Enum AlertFilterType --> ['ignored_users filter', 'ignored_ips filter', 'allowed_countries filter', 'is_vip_filter', 'alert_minimum_risk_score filter', 'filtered_alerts_types filter', 'ignore_mobile_logins filter', 'ignored_ISPs filter']
+                # Check that each element in the Alert.filter_type is in the Enum AlertFilterType
                 check=models.Q(filter_type__contained_by=[choice[0] for choice in AlertFilterType.choices]) | models.Q(filter_type=[]),
                 name="valid_alert_filter_type_choices",
             ),
@@ -99,7 +99,7 @@ def get_default_ignored_ips():
     return list(settings.CERTEGO_BUFFALOGS_IGNORED_IPS)
 
 
-def get_default_ignored_ISPs():
+def get_default_ignored_ISPs():  # pylint: disable=invalid-name
     return list(settings.CERTEGO_BUFFALOGS_IGNORED_ISPS)
 
 
@@ -129,7 +129,7 @@ class Config(models.Model):
         null=True,
         default=get_default_enabled_users,
         validators=[validate_string_or_regex],
-        help_text="List of selected users (strings or regex patterns) on which the detection will perform - If this field is not empty, the ignored_users field is ignored",
+        help_text="List of selected users (strings or regex patterns) on which the detection will perform",
     )
     vip_users = ArrayField(
         models.CharField(max_length=50), blank=True, null=True, default=get_default_vip_users, help_text="List of users considered more sensitive"
@@ -207,9 +207,8 @@ class Config(models.Model):
     def clean(self):
         if not self.pk and Config.objects.exists():
             raise ValidationError("A Config object already exist - it is possible just to modify it, not to create a new one")
-        else:
-            # Config.id=1 always
-            self.pk = 1
+        # Config.id=1 always
+        self.pk = 1
 
     def save(self, *args, **kwargs):
         self.clean()
@@ -218,12 +217,12 @@ class Config(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                # Check that the Config.alert_minimum_risk_score is one of the value in the Enum UserRiskScoreType --> ['No risk', 'Low', 'Medium', 'High']
+                # Check that the Config.alert_minimum_risk_score is one of the value in the Enum UserRiskScoreType
                 check=models.Q(alert_minimum_risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
                 name="valid_config_alert_minimum_risk_score_choice",
             ),
             models.CheckConstraint(
-                # Check that each element in the Config.filtered_alerts_types is blank or it's in the Enum AlertFilterType --> ['New Device', 'Imp Travel', 'New Country', 'User Risk Threshold', 'Login Anonymizer Ip', 'Atypical Country']
+                # Check that each element in the Config.filtered_alerts_types is blank or it's in the Enum AlertFilterType
                 check=models.Q(filtered_alerts_types__contained_by=[choice[0] for choice in AlertDetectionType.choices])
                 | models.Q(filtered_alerts_types__isnull=True),
                 name="valid_alert_filters_choices",

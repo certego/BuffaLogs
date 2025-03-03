@@ -9,7 +9,7 @@ class TestLoginFromNewCountry(TestCase):
     new_country = login_from_new_country.Login_New_Country()
 
     @classmethod
-    def setUpTestData(self):
+    def setUpTestData(cls):
         user = User.objects.create(
             username="Lorena Goldoni",
             risk_score="Low",
@@ -21,7 +21,7 @@ class TestLoginFromNewCountry(TestCase):
             latitude=14.5632,
             longitude=24.6542,
             country="Sudan",
-            user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+            user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",  # pylint: disable=line-too-long
         )
         Config.objects.create(id=1)
         login.save()

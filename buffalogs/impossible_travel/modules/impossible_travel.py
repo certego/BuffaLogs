@@ -3,8 +3,8 @@ from datetime import datetime
 
 from django.utils import timezone
 from geopy.distance import geodesic
-from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
-from impossible_travel.models import Alert, Config, Login, UsersIP
+from impossible_travel.constants import AlertDetectionType
+from impossible_travel.models import Config, Login, UsersIP
 
 
 class Impossible_Travel:
@@ -47,9 +47,9 @@ class Impossible_Travel:
 
             if vel > app_config.vel_accepted:
                 alert_info["alert_name"] = AlertDetectionType.IMP_TRAVEL.value
-                alert_info[
-                    "alert_desc"
-                    ] = (f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h")
+                alert_info["alert_desc"] = (
+                    f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
+                )
         return alert_info, int(vel)
 
     def update_model(self, db_user, new_login):

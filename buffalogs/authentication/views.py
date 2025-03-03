@@ -3,9 +3,7 @@ import os
 
 from django.contrib.auth import get_user_model
 from django.http import HttpResponsePermanentRedirect
-from django.shortcuts import render
 from rest_framework import generics, permissions, status
-from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 
 from .serializers import LoginSerializer, LogoutSerializer, RegisterSerializer, UserSerializer

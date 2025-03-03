@@ -21,14 +21,13 @@ class UserRiskScoreType(models.TextChoices):
         # map risk value
         if value == 0:
             return cls.NO_RISK.value
-        elif 1 <= value <= 3:
+        if 1 <= value <= 3:
             return cls.LOW.value
-        elif 4 <= value <= 6:
+        if 4 <= value <= 6:
             return cls.MEDIUM.value
-        elif value >= 7:
+        if value >= 7:
             return cls.HIGH.value
-        else:
-            raise ValueError("Risk value not valid")
+        raise ValueError("Risk value not valid")
 
     @classmethod
     def compare_risk(cls, threshold, value) -> str:
@@ -44,7 +43,7 @@ class UserRiskScoreType(models.TextChoices):
         """
         if UserRiskScoreType.values.index(value) < UserRiskScoreType.values.index(threshold):
             return ComparisonType.LOWER
-        elif UserRiskScoreType.values.index(value) == UserRiskScoreType.values.index(threshold):
+        if UserRiskScoreType.values.index(value) == UserRiskScoreType.values.index(threshold):
             return ComparisonType.EQUAL
         return ComparisonType.HIGHER
 
@@ -53,7 +52,7 @@ class AlertDetectionType(models.TextChoices):
     """Types of possible alert detections in the format (name=value,label)
 
     * NEW_DEVICE: Login from a new user-agent used by the user
-    * IMP_TRAVEL: Alert if the user logs into the system from a significant distance () within a range of time that cannot be covered by conventional means of transport
+    * IMP_TRAVEL: Alert if the user logs into the system from a significant distance in a short time
     * NEW_COUNTRY: The user made a login from a country where they have never logged in before
     * USER_RISK_THRESHOLD: Alert if the user.risk_score value is equal or higher than the Config.alert_minimum_risk_score
     * ANONYMOUS_IP_LOGIN: Alert if the login has been made from an anonymous IP
