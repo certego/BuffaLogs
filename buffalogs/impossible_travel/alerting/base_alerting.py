@@ -24,4 +24,4 @@ class BaseAlerting(ABC):
         Execute the query operation.
         Must be implemented by concrete classes.
         """
-        pass
+        raise NotImplementedError

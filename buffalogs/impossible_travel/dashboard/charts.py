@@ -13,8 +13,8 @@ imp_travel = impossible_travel.Impossible_Travel()
 
 
 def _load_data(name):
-    DATA_PATH = "impossible_travel/dashboard/"
-    with open(os.path.join(DATA_PATH, name + ".json")) as file:
+    DATA_PATH = "impossible_travel/dashboard/"  # pylint: disable=invalid-name
+    with open(os.path.join(DATA_PATH, name + ".json"), encoding="utf-8") as file:
         data = json.load(file)
     return data
 
@@ -34,13 +34,13 @@ def users_pie_chart(start, end):
         legend_font_size=25,
         tooltip_font_size=25,
     )
-    users_pie_chart = pygal.Pie(style=custom_style, width=1000, height=650)
+    pie_chart = pygal.Pie(style=custom_style, width=1000, height=650)
 
-    users_pie_chart.add("No risk", User.objects.filter(updated__range=(start, end), risk_score="No risk").count())
-    users_pie_chart.add("Low", User.objects.filter(updated__range=(start, end), risk_score="Low").count())
-    users_pie_chart.add("Medium", User.objects.filter(updated__range=(start, end), risk_score="Medium").count())
-    users_pie_chart.add("High", User.objects.filter(updated__range=(start, end), risk_score="High").count())
-    return users_pie_chart.render(disable_xml_declaration=True)
+    pie_chart.add("No risk", User.objects.filter(updated__range=(start, end), risk_score="No risk").count())
+    pie_chart.add("Low", User.objects.filter(updated__range=(start, end), risk_score="Low").count())
+    pie_chart.add("Medium", User.objects.filter(updated__range=(start, end), risk_score="Medium").count())
+    pie_chart.add("High", User.objects.filter(updated__range=(start, end), risk_score="High").count())
+    return pie_chart.render(disable_xml_declaration=True)
 
 
 def alerts_line_chart(start, end):
@@ -57,7 +57,7 @@ def alerts_line_chart(start, end):
         tooltip_font_size=20,
         x_labels_font_size=20,
     )
-    alerts_line_chart = pygal.StackedBar(fill=True, show_legend=False, style=custom_style, width=1200, height=550, x_label_rotation=20)
+    line_chart = pygal.StackedBar(fill=True, show_legend=False, style=custom_style, width=1200, height=550, x_label_rotation=20)
     date_range = []
     alerts_in_range = []
     date_str = []
@@ -102,9 +102,9 @@ def alerts_line_chart(start, end):
                     login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
                 ).count()
             )
-    alerts_line_chart.x_labels = map(str, date_str)
-    alerts_line_chart.add("", alerts_in_range)
-    return alerts_line_chart.render(disable_xml_declaration=True)
+    line_chart.x_labels = map(str, date_str)
+    line_chart.add("", alerts_in_range)
+    return line_chart.render(disable_xml_declaration=True)
 
 
 def world_map_chart(start, end):
@@ -124,7 +124,7 @@ def world_map_chart(start, end):
         label_font_size=1,
         value_label_font_size=4,
     )
-    world_map_chart = pygal.maps.world.World(
+    map_chart = pygal.maps.world.World(  # pylint: disable=no-member
         style=custom_style,
         width=380,
         height=130,
@@ -140,5 +140,5 @@ def world_map_chart(start, end):
             tmp[key] = None
         else:
             tmp[key] = country_alerts
-    world_map_chart.add("Alerts", tmp)
-    return world_map_chart.render_data_uri()
+    map_chart.add("Alerts", tmp)
+    return map_chart.render_data_uri()

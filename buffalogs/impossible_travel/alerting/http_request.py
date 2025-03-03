@@ -22,8 +22,7 @@ def parse_fields_value(field_value: str | list, field_name: str, supported_value
         - string : specifies if all or non of the supported_values should be returned
             - '_all_' (case-insensitive) : returns the full list of supported values.
             - '_empty_' (case-insensitive) : returns an empty list.
-        - list : specifies a subset of supported_values to return, if an element is not in the supported_values
-                 it is skipped.
+        - list : specifies a subset of supported_values to return, if an element is not in the supported_values it is skipped.
 
     Args:
         field_name (str): The name of the field being parsed (used for error messages).
@@ -109,7 +108,6 @@ def generate_batch(items: list, batch_size: int):
         yield from items
         return
     start = 0
-    window = start + batch_size
     end = len(items)
     while start < end:
         yield items[start : start + batch_size]
@@ -168,7 +166,6 @@ class HTTPRequestAlerting(BaseAlerting):
             self.logger.debug("config is missing 'options', using defaults.")
             options = self.default_options.copy()
 
-        #
         all_options = set(options.keys()).union(set(self.default_options.keys()))
         for key in all_options:
             value = options.get(key)

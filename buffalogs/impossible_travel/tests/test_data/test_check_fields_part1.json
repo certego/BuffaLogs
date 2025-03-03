@@ -7,7 +7,8 @@
         "ip": "203.0.113.37",
         "lat": 26.9411,
         "lon":  75.8773,
-        "country": "India"
+        "country": "India",
+        "intelligence_category": "not_anonymizer_test"
     },
     {
         "index": "cloud-test_data-2023-5-3",
@@ -27,7 +28,8 @@
         "ip": "203.0.113.20",
         "lat": 35.2196,
         "lon": 137.062,
-        "country": "Japan"
+        "country": "Japan",
+        "intelligence_category": "anonymizer"
     },
     {
         "index": "cloud-test_data-2023-5-3",

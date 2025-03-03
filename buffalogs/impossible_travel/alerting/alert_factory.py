@@ -22,7 +22,7 @@ class AlertFactory:
         """
         Read the configuration file.
         """
-        with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"), mode="r") as f:
+        with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"), mode="r", encoding="utf-8") as f:
             config = json.load(f)
 
         # Validate configuration

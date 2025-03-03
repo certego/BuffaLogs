@@ -2,7 +2,7 @@ services:
 
     buffalogs_postgres:
         container_name: buffalogs_postgres
-        image: postgres:15.4-alpine
+        image: postgres:15-alpine
         hostname: postgres
         environment:
             POSTGRES_USER: default_user
@@ -33,7 +33,7 @@ services:
         build:
             context: .
             dockerfile: build/Dockerfile
-        image: certego/buffalogs:1.0.0
+        image: certego/buffalogs
         hostname: buffalogs
         env_file:
             -  config/buffalogs/buffalogs.env
@@ -48,7 +48,7 @@ services:
 
     buffalogs_rabbitmq:
         container_name: buffalogs_rabbitmq
-        image: rabbitmq:3.11-management-alpine
+        image: rabbitmq:3.13-management-alpine
         hostname: rabbitmq
         volumes:
             - ./config/rabbitmq:/etc/rabbitmq:ro

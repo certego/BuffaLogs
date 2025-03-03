@@ -183,33 +183,38 @@ on:
         description: Postgres service version. Requires use_postgres to be true
         type: string
         required: false
-        default: 10.14
+        default: latest
 
       mongo_version:
         description: Mongo container version
         type: string
         required: false
-        default: 4.4
+        default: latest
       elasticsearch_version:
         description: Elasticsearch container version
         type: string
         required: false
-        default: 7.10.1
+        default: 8.11.1
+      elasticsearch_port:
+        description: Elasticsearch container port
+        type: string
+        required: false
+        default: 9200
       memcached_version:
         description: Memcached alpine container version
         type: string
         required: false
-        default: 1.6.9
+        default: latest
       redis_version:
         description: Redis alpine container version
         type: string
         required: false
-        default: 5.0.9
+        default: latest
       rabbitmq_version:
         description: RabbitMQ management-alpine container version
         type: string
         required: false
-        default: 3.9
+        default: 3
 
       celery_app:
         description: Celery app name. Requires use_celery to be true
@@ -281,7 +286,7 @@ jobs:
         if: inputs.check_requirements_licenses && steps.cache-virtualenv.outputs.cache-hit != 'true'
         id: license_check_report
         continue-on-error: true
-        uses: pilosus/action-pip-license-checker@v0.7.1
+        uses: pilosus/action-pip-license-checker@v2
         with:
           requirements: ${{ inputs.install_from }}/${{ inputs.requirements_path }}
           exclude: ${{ inputs.ignore_requirements_licenses_regex }}
@@ -305,32 +310,32 @@ jobs:
           echo > requirements-linters.txt
 
           if [[ '${{ inputs.use_black}}' != 'false' ]]; then
-            echo "black==25.1.0" >> requirements-linters.txt
+            echo "black==24.8.0" >> requirements-linters.txt
           fi
 
           if [[ '${{ inputs.use_isort}}' != 'false' ]]; then
-            echo "isort==6.0.0" >> requirements-linters.txt
+            echo "isort==5.13.2" >> requirements-linters.txt
           fi
 
           if [[ '${{ inputs.use_flake8}}' != 'false' ]]; then
-            echo "flake8==7.1.2" >> requirements-linters.txt
-            if [[ -n '${{ inputs.django_settings_module }}' ]]; then
-              echo "flake8-django==1.1.5" >> requirements-linters.txt
-            fi
+            echo "flake8==7.1.1" >> requirements-linters.txt
+            #if [[ -n '${{ inputs.django_settings_module }}' ]]; then
+              #echo "flake8-django==1.4" >> requirements-linters.txt
+            #fi
           fi
 
           if [[ '${{ inputs.use_pylint}}' != 'false' ]]; then
-            echo "pylint==2.14.3" >> requirements-linters.txt
+            echo "pylint==3.2.6" >> requirements-linters.txt
             if [[ -n '${{ inputs.django_settings_module }}' ]]; then
-              echo "pylint-django==2.5.3" >> requirements-linters.txt
+              echo "pylint-django==2.5.5" >> requirements-linters.txt
             fi
           fi
 
           if [[ '${{ inputs.use_bandit}}' != 'false' ]]; then
-            echo "bandit==1.7.4" >> requirements-linters.txt
+            echo "bandit==1.7.9" >> requirements-linters.txt
           fi
           if [[ '${{ inputs.use_autoflake}}' != 'false' ]]; then
-            echo "autoflake==1.7.7" >> requirements-linters.txt
+            echo "autoflake==2.3.1" >> requirements-linters.txt
           fi
           cat $(echo ${{ inputs.requirements_path }} | sed -e 's/.txt/-linter.txt/') >> requirements-linters.txt 2>/dev/null || exit 0
         shell: bash
@@ -340,7 +345,7 @@ jobs:
         run: |
           echo > requirements-dev.txt
           if [[ '${{ inputs.use_coverage }}' != 'false' ]]; then
-            echo "coverage>=7.0.1" >> requirements-dev.txt
+            echo "coverage>=7.3.2" >> requirements-dev.txt
           fi
           cat $(echo ${{ inputs.requirements_path }} | sed -e 's/.txt/-dev.txt/') >> requirements-dev.txt 2>/dev/null || exit 0
         shell: bash
@@ -351,11 +356,11 @@ jobs:
           echo > requirements-docs.txt
           if [[ -n '${{ inputs.check_docs_directory }}' ]]; then
             echo "rstcheck[sphinx]" >> requirements-docs.txt 
-            echo "sphinx==4.5.0" >> requirements-docs.txt
-            echo "sphinx_rtd_theme==1.0.0" >> requirements-docs.txt
-            echo "sphinxcontrib-spelling==7.2.1" >> requirements-docs.txt
+            echo "sphinx==7.2.6" >> requirements-docs.txt
+            echo "sphinx_rtd_theme==1.3.0" >> requirements-docs.txt
+            echo "sphinxcontrib-spelling==8.0.0" >> requirements-docs.txt
             if [[ -n '${{ inputs.django_settings_module }}' ]]; then
-              echo "sphinxcontrib-django2==1.1.1" >> requirements-docs.txt
+              echo "sphinxcontrib-django2==1.9" >> requirements-docs.txt
             fi
             cat $(echo ${{ inputs.requirements_path }} | sed -e 's/.txt/-docs.txt/') >> requirements-docs.txt 2>/dev/null || exit 0 
           fi
@@ -441,6 +446,7 @@ jobs:
           postgres_version: ${{ inputs.postgres_version }}
           mongo_version: ${{ inputs.mongo_version }}
           elasticsearch_version:  ${{ inputs.elasticsearch_version }}
+          elasticsearch_port: ${{ inputs.elasticsearch_port }}
           memcached_version:  ${{ inputs.memcached_version }}
           redis_version:  ${{ inputs.redis_version }}
           rabbitmq_version:  ${{ inputs.rabbitmq_version }}
