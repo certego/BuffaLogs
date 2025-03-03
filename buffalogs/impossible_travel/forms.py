@@ -52,7 +52,7 @@ class UserAdminForm(forms.ModelForm):
 
 class AlertAdminForm(forms.ModelForm):
     name = ShortLabelChoiceField(choices=AlertDetectionType.choices)
-    filter_type = ShortLabelChoiceField(choices=AlertFilterType.choices)
+    filter_type = ShortLabelChoiceField(choices=[("", "---------")] + AlertFilterType.choices, required=False)
 
     class Meta:
         model = Alert
