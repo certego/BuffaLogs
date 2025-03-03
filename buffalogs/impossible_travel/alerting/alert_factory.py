@@ -1,5 +1,6 @@
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
+from impossible_travel.alerting.telegram_alerting import TelegramAlerting
 import os
 import json
 from django.conf import settings
@@ -38,6 +39,8 @@ class AlertFactory:
         match self.active_alerter:
             case BaseAlerting.SupportedAlerters.DUMMY:
                 alerter_class = DummyAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.TELEGRAM:
+                alerter_class = TelegramAlerting(self.alert_config)
             case _:
                 raise ValueError(f"Unsupported alerter: {self.active_alerter}")
         return alerter_class
