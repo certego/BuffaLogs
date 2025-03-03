@@ -15,7 +15,7 @@ from impossible_travel.modules import alert_filter, impossible_travel, login_fro
 
 logger = get_task_logger(__name__)
 
-BLOCKLIST_PATH = "/home/kali/Desktop/gsoc/BuffaLogs/config/buffalogs/blocklisted_ips.txt"
+BLOCKLIST_PATH = os.path.join(os.path.dirname(__file__), "../../config/blocklisted_ips.txt")
 
 
 def clear_models_periodically():

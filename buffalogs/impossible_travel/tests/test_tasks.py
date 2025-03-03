@@ -26,12 +26,12 @@ class TestTasks(TestCase):
         setup_obj = Setup()
         setup_obj.setup()
         self.user = User.objects.create(username="blocklist_user")
-        # self.setUpBlocklist(self)
+
         """Clear alerts before each test"""
         Alert.objects.all().delete()
 
         # Prepare the blocklist file with a known blocklisted IP
-        self.blocklist_file = "/home/kali/Desktop/gsoc/BuffaLogs/config/buffalogs/blocklisted_ips.txt"
+        self.blocklist_file = os.path.join(os.path.dirname(__file__), "../../config/blocklisted_ips.txt")
         with open(self.blocklist_file, "w") as f:
             f.write("203.0.113.50\n")
 
@@ -390,13 +390,6 @@ class TestTasks(TestCase):
         self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
 
     # For blocklist detection
-    def setUpBlocklist(self):
-        """Clear alerts before each test"""
-        Alert.objects.all().delete()
-
-        # Prepare the blocklist file with a known blocklisted IP
-        self.blocklist_file = "/home/kali/Desktop/gsoc/BuffaLogs/config/buffalogs/blocklisted_ips.txt"
-
     def test_login_from_blocklisted_ip_creates_alert(self):
         # Confirm blocklist file exists
         print(f"Creating blocklist file at: {self.blocklist_file}")
