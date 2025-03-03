@@ -4,6 +4,7 @@
 * Added `Atypical Country` alert, with the addition of the customizable field: **Config.atypical_country_days** in order to set from how many days a login from a Country is considered "Atypical"
 * Added `User Risk Threshold` alert, with the customizable field: **Config.threshold_user_risk_alert** in order to set which level the user must have to trigger the "USER_RISK_THRESHOLD" alert
 ### Changes
+* Updated Certego shared CI to 1.5.0
 * Updated CI env: ubuntu from 22.04 to 24.04, python from 3.10 to 3.12 and Elasticsearch and Kibana from 3.17.13 to 3.17.27
 * Updated containers: Elasticsearch and Kibana from 3.17.13 to 3.17.27
 * Changed the **UserRiskScoreType.is_equal_or_higher(...)** method with the **UserRiskScoreType.compare_risk(...)** function
