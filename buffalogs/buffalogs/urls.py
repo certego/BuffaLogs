@@ -17,7 +17,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from impossible_travel import views
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 urlpatterns = [
     path("", views.homepage, name="homepage"),

@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "buffalogs.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "buffalogs.settings.settings")
 
 application = get_asgi_application()

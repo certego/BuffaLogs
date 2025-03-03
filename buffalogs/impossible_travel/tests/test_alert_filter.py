@@ -57,21 +57,35 @@ class TestAlertFilter(TestCase):
         # check correct default values population in Config object
         db_config = Config.objects.create(id=1)
         self.assertListEqual(db_config.ignored_users, ["Not Available", "N/A"])
+        self.assertEqual(db_config.ignored_users, settings.CERTEGO_BUFFALOGS_IGNORED_USERS)
         self.assertListEqual(db_config.enabled_users, [])
+        self.assertEqual(db_config.enabled_users, settings.CERTEGO_BUFFALOGS_ENABLED_USERS)
         self.assertListEqual(db_config.ignored_ips, ["127.0.0.1"])
+        self.assertEqual(db_config.ignored_ips, settings.CERTEGO_BUFFALOGS_IGNORED_IPS)
         self.assertListEqual(db_config.ignored_ISPs, [])
+        self.assertEqual(db_config.ignored_ISPs, settings.CERTEGO_BUFFALOGS_IGNORED_ISPS)
         self.assertListEqual(db_config.allowed_countries, [])
+        self.assertEqual(db_config.allowed_countries, settings.CERTEGO_BUFFALOGS_ALLOWED_COUNTRIES)
         self.assertListEqual(db_config.vip_users, [])
+        self.assertEqual(db_config.vip_users, settings.CERTEGO_BUFFALOGS_VIP_USERS)
         self.assertFalse(db_config.alert_is_vip_only)
         self.assertEqual(db_config.alert_minimum_risk_score, "No risk")
         self.assertListEqual(db_config.filtered_alerts_types, [])
         self.assertFalse(db_config.ignore_mobile_logins)
         self.assertEqual(db_config.distance_accepted, 100)
+        self.assertEqual(db_config.distance_accepted, settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED)
         self.assertEqual(db_config.vel_accepted, 300)
+        self.assertEqual(db_config.vel_accepted, settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED)
+        self.assertEqual(db_config.atypical_country_days, 30)
+        self.assertEqual(db_config.atypical_country_days, settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS)
         self.assertEqual(db_config.user_max_days, 60)
-        self.assertEqual(db_config.login_max_days, 30)
-        self.assertEqual(db_config.alert_max_days, 30)
-        self.assertEqual(db_config.ip_max_days, 30)
+        self.assertEqual(db_config.user_max_days, settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS)
+        self.assertEqual(db_config.login_max_days, 45)
+        self.assertEqual(db_config.login_max_days, settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS)
+        self.assertEqual(db_config.alert_max_days, 45)
+        self.assertEqual(db_config.alert_max_days, settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS)
+        self.assertEqual(db_config.ip_max_days, 45)
+        self.assertEqual(db_config.ip_max_days, settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS)
         db_alert = Alert.objects.get(id=1)
         res_alert = alert_filter.match_filters(alert=db_alert)
         self.assertFalse(res_alert.is_filtered)
@@ -130,7 +144,6 @@ class TestAlertFilter(TestCase):
         self.assertListEqual([], res_alert.filter_type)
 
     def test_match_filters_users_enabled_ignored_vip_false(self):
-        # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"] + Config.enabled_users = ["Lorygold"], Config.vip_users = ["Lorena Goldoni"] (but Config.alert_is_vip_only=False)
         db_config = Config.objects.create(id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"])
         # alert filtered because user is not in the enabled_users
         db_alert = Alert.objects.get(user__username="Lorena Goldoni")
@@ -144,7 +157,6 @@ class TestAlertFilter(TestCase):
         self.assertListEqual([], res_alert.filter_type)
 
     def test_match_filters_users_enabled_ignored_vip_true_wrong(self):
-        # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"], Config.enabled_users = ["Lorygold"], Config.vip_users = ["Lorena Goldoni"] + Config.alert_is_vip_only=True (BUT enabled_users != vip_users)
         db_config = Config.objects.create(
             id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"], alert_is_vip_only=True
         )
@@ -160,7 +172,6 @@ class TestAlertFilter(TestCase):
         self.assertListEqual(["is_vip_filter"], res_alert.filter_type)
 
     def test_match_filters_users_enabled_ignored_vip_true_correct1(self):
-        # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"], Config.enabled_users = ["Lorygold"], Config.vip_users = ["Lorena Goldoni", "Lorygold"] + Config.alert_is_vip_only=True (with enabled_users <= vip_users)
         db_config = Config.objects.create(
             id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"], alert_is_vip_only=True
         )
@@ -177,7 +188,6 @@ class TestAlertFilter(TestCase):
         self.assertListEqual([], res_alert.filter_type)
 
     def test_match_filters_users_enabled_ignored_vip_true_correct2(self):
-        # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"], Config.enabled_users = ["Lorygold", "Lorena Goldoni"], Config.vip_users = ["Lorena Goldoni", "Lorygold"] + Config.alert_is_vip_only=True (with enabled_users == vip_users)
         db_config = Config.objects.create(
             id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"], alert_is_vip_only=True
         )
@@ -195,7 +205,6 @@ class TestAlertFilter(TestCase):
         self.assertListEqual([], res_alert.filter_type)
 
     def test_match_filters_users_enabled_ignored_vip_true_correct3(self):
-        # test filter with: Config.ignored_users = ["Lorena Goldoni", "Lorena"], Config.enabled_users = ["Lorygold", "Lorena Goldoni", "Lore"], Config.vip_users = ["Lorena Goldoni", "Lorygold"] + Config.alert_is_vip_only=True (with enabled_users >= vip_users)
         db_config = Config.objects.create(
             id=1, ignored_users=["Lorena Goldoni", "Lorena"], enabled_users=["Lorygold"], vip_users=["Lorena Goldoni"], alert_is_vip_only=True
         )
@@ -213,7 +222,6 @@ class TestAlertFilter(TestCase):
         self.assertListEqual([], res_alert.filter_type)
 
     def test_match_filters_users_minimum_risk_score_filter(self):
-        # test filter with: ignored_users = ["Lorena Goldoni", "Lorena"], enabled_users = ["Lorena Goldoni"], vip_users = ["Lorena Goldoni"] + alert_is_vip_only=True + alert_minimum_risk_score = "Medium"
         db_config = Config.objects.create(
             id=1,
             ignored_users=["Lorena Goldoni", "Lorena"],
@@ -262,7 +270,7 @@ class TestAlertFilter(TestCase):
         self.assertFalse(res_alert.is_filtered)
         self.assertListEqual([], res_alert.filter_type)
 
-    def test_match_filters_devices_ignored_ISPs(self):
+    def test_match_filters_devices_ignored_isps(self):
         # test filter with: ignored_ISPs = ["ISP1"]
         db_config = Config.objects.create(id=1, ignored_ISPs=["ISP1"])
         # alert filtered because organization ISP in ignored_ISPs
@@ -305,7 +313,6 @@ class TestAlertFilter(TestCase):
         self.assertListEqual([], res_alert.filter_type)
 
     def test_match_filters_multiple_random_filters(self):
-        # test filter with: ignored_users = ["Lorena Goldoni", "Lorygold"], enabled_users = ["Lorena Goldoni"], vip_users = ["Lorena", "Lorygold"] + alert_is_vip_only=True + alert_minimum_risk_score = "Medium" + ignored_ips = ["5.6.7.8", "1.2.1.2"] + allowed_countries = ["Italy", "Romania", "UK"] + ignored_ISPs = ["ISP1", "ISP2"] + ignore_mobile_logins = True + filtered_alerts_types = ["New Device", "Imp Travel"]
         db_config = Config.objects.create(
             id=1,
             ignored_users=["Lorena Goldoni", "Lorygold"],
@@ -319,7 +326,7 @@ class TestAlertFilter(TestCase):
             ignore_mobile_logins=True,
             filtered_alerts_types=["New Device", "Imp Travel"],
         )
-        # alert filtered because: user not in vip_users (and alert_is_vip_only=True) + user risk_score: "No Risk" (and alert_minimum_risk_score = "Medium") + country: Italy (and allowed_countries = ["Italy", "Romania", "UK"]) + organization ISP: "ISP1" (and ignored_ISPs = ["ISP1", "ISP2"]) + alert "New Device" (and filtered_alerts_types = ["New Device", "Imp Travel"])
+        # alert filtered because: user not in vip_users (and alert_is_vip_only=True)
         db_alert = Alert.objects.get(user__username="Lorena Goldoni")
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertTrue(res_alert.is_filtered)
@@ -338,7 +345,7 @@ class TestAlertFilter(TestCase):
             ],
             res_alert.filter_type,
         )
-        # alert filtered because: user risk_score: "No Risk" (and alert_minimum_risk_score = "Medium") + alert ip: "5.6.7.8" (and ignored_ips = ["5.6.7.8", "1.2.1.2"]) + organization ISP: "ISP2" (and ignored_ISPs = ["ISP1", "ISP2"]) + user-agent is a mobile device
+        # alert filtered because: user risk_score: "No Risk" (and alert_minimum_risk_score = "Medium")
         db_alert = Alert.objects.get(user__username="Lorygold")
         res_alert = alert_filter.match_filters(alert=db_alert, app_config=db_config)
         # both lists are correct

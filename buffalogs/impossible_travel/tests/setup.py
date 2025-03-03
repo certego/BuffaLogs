@@ -4,7 +4,7 @@ from impossible_travel.models import Config, Login, User
 class Setup:
     def setup(self):
         user = User.objects.bulk_create([User(username="Lorena Goldoni"), User(username="Asa Strickland"), User(username="Aisha Delgado")])
-        logins = Login.objects.bulk_create(
+        Login.objects.bulk_create(
             [
                 # Login for not vip_users but allowed_countries
                 Login(
@@ -13,7 +13,7 @@ class Setup:
                     latitude=44.4937,
                     longitude=24.3456,
                     country="Italy",
-                    user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+                    user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",  # pylint: disable=line-too-long
                 ),
                 Login(
                     user=user[0],
@@ -30,7 +30,7 @@ class Setup:
                     latitude=22.3270,
                     longitude=82.6686,
                     country="India",
-                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393",
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393",  # pylint: disable=line-too-long
                 ),
                 # Login for vip_users and allowed_countries
                 Login(

@@ -13,6 +13,7 @@ class DummyAlerting(BaseAlerting):
         """
         super().__init__()
         # here we can access the alert_config to get the configuration for the alerter
+        self.alert_config = alert_config
 
     def notify_alerts(self):
         """

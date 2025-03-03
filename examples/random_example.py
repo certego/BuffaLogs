@@ -9,7 +9,7 @@ NUM_LOGS = 2000
 
 
 def main():
-    es = Elasticsearch(["http://localhost:59200"])
+    es = Elasticsearch(["http://localhost:9200"])
     common_data_cloud_index = generate_common_data()
     write_bulk(es, "cloud", common_data_cloud_index)
     common_data_weblog_index = generate_common_data()
@@ -24,10 +24,10 @@ def generate_common_data():
     event_category = ["threat"] * 2 + ["session"] * 2 + ["malware"] * 6 + ["authentication"] * 90
     event_type = ["start"] * 80 + ["end"] * 20
 
-    with open("random_data.yaml", "r") as info:
+    with open("random_data.yaml", "r", encoding="utf-8") as info:
         read_data = yaml.load(info, Loader=yaml.FullLoader)
 
-    for i in range(0, NUM_LOGS):
+    for _ in range(0, NUM_LOGS):
         tmp = {}
         ip = random.choice(read_data["ip"])
         now = datetime.utcnow()
