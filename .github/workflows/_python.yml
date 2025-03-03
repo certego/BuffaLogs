@@ -310,32 +310,32 @@ jobs:
           echo > requirements-linters.txt
 
           if [[ '${{ inputs.use_black}}' != 'false' ]]; then
-            echo "black==23.11.0" >> requirements-linters.txt
+            echo "black==24.8.0" >> requirements-linters.txt
           fi
 
           if [[ '${{ inputs.use_isort}}' != 'false' ]]; then
-            echo "isort==5.12.0" >> requirements-linters.txt
+            echo "isort==5.13.2" >> requirements-linters.txt
           fi
 
           if [[ '${{ inputs.use_flake8}}' != 'false' ]]; then
-            echo "flake8==6.1.0" >> requirements-linters.txt
+            echo "flake8==7.1.1" >> requirements-linters.txt
             if [[ -n '${{ inputs.django_settings_module }}' ]]; then
               echo "flake8-django==1.4" >> requirements-linters.txt
             fi
           fi
 
           if [[ '${{ inputs.use_pylint}}' != 'false' ]]; then
-            echo "pylint==2.17.7" >> requirements-linters.txt
+            echo "pylint==3.2.6" >> requirements-linters.txt
             if [[ -n '${{ inputs.django_settings_module }}' ]]; then
               echo "pylint-django==2.5.5" >> requirements-linters.txt
             fi
           fi
 
           if [[ '${{ inputs.use_bandit}}' != 'false' ]]; then
-            echo "bandit==1.7.5" >> requirements-linters.txt
+            echo "bandit==1.7.9" >> requirements-linters.txt
           fi
           if [[ '${{ inputs.use_autoflake}}' != 'false' ]]; then
-            echo "autoflake==2.2.1" >> requirements-linters.txt
+            echo "autoflake==2.3.1" >> requirements-linters.txt
           fi
           cat $(echo ${{ inputs.requirements_path }} | sed -e 's/.txt/-linter.txt/') >> requirements-linters.txt 2>/dev/null || exit 0
         shell: bash
