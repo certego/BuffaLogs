@@ -24,11 +24,7 @@ To start a new discussion, the categories to choose from are:
 *   Show and tell: show off to the community something you have made
 
 ## Issues
-You can create or solve an issue. 
-###    Create an issue
-If you spot a problem, search if an issue already exists ([here](https://github.com/certego/BuffaLogs/issues)). If a related issue doesn't exist, you can open a new issue.
-
-###    Solve an issue
+### Solve an issue
 Scan through our existing issues to find one that interests you. You can narrow down the search using `labels` as filters. Before starting to work on an issue, you need to get the approval of one of the maintainers. Therefore please ask to be assigned to an issue. If you do not that but you still raise a PR for that issue, your PR can be rejected. This is a form of respect for both the maintainers and the other contributors who could have already started to work on the same problem.
 
 ## Pull Request
@@ -53,17 +49,21 @@ How to create and submit a PR:
     pip install pre-commit
     ```
     If you didn't install pre-commit, it is necessary to run linters manually:
+    *   Autoflake
+    ```bash
+        autoflake -r -cd . --remove-all-unused-imports --remove-unused-variables --ignore-init-module-imports --ignore-pass-statements
+    ```
     *   Flake8
     ```bash
         flake8 . --show-source --config ../.github/configurations/python_linters/.flake8
     ```
     *   Black
     ```bash
-    black --config ../.github/configurations/python_linters/.black .
+    black --config .github/configurations/python_linters/.black .
     ```
     *   Isort
     ```bash
-    isort --sp ../.github/configurations/python_linters/.isort.cfg --profile black .
+    isort --sp .github/configurations/python_linters/.isort.cfg --profile black .
     ```
     *   Pylint
     ```bash
@@ -79,4 +79,6 @@ How to create and submit a PR:
     ```bash
     ./manage.py test impossible_travel
     ```
+5.  **Doc your code**: please, document your new code if needed, under the `docs/` folder
+
 **Working on your first Pull Request?** You can learn how from this *free* series [How to Contribute to an Open Source Project on GitHub](https://kcd.im/pull-request) 
