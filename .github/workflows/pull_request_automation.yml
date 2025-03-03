@@ -71,10 +71,10 @@ jobs:
       check_requirements_licenses: false
 
       use_postgres: true
-      postgres_version: 15
       postgres_db: buffalogs
       postgres_user: default_user
       postgres_password: password
+      postgres_version: 15
       use_memcached: false
       use_elastic_search: true
       elasticsearch_version: 7.17.27
