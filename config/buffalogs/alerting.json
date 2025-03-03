@@ -1,6 +1,7 @@
 {
-    "active_alerter": "dummy",
-    "dummy": {
-        "config_field_example": "value_example"
+    "slack": {
+        "enabled": true,
+        "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+        "channel": "#your-channel-name"
     }
 }
