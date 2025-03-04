@@ -1,17 +1,29 @@
+import os
 from datetime import timedelta
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.alerting.alert_factory import AlertFactory
-from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
+from impossible_travel.constants import (
+    AlertDetectionType,
+    ComparisonType,
+    UserRiskScoreType,
+)
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
+from impossible_travel.modules import (
+    alert_filter,
+    impossible_travel,
+    login_from_new_country,
+    login_from_new_device,
+)
 
 logger = get_task_logger(__name__)
+BLOCKLIST_IP_FILE = os.path.join(os.path.dirname(__file__), "../../config/buffalogs/blocklisted_ips.txt")
 
 
 @shared_task(name="BuffalogsCleanModelsPeriodicallyTask")
@@ -65,7 +77,11 @@ def update_risk_level(db_user: User, triggered_alert: Alert):
                 f"who changed risk_score from {current_risk_score} to {new_risk_level}",
             }
             logger.info(f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, " f"detected {db_user.alert_set.count()} alerts")
-            set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info)
+            set_alert(
+                db_user=db_user,
+                login_alert=triggered_alert.login_raw_data,
+                alert_info=alert_info,
+            )
 
             return True
     return False
@@ -82,7 +98,12 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict):
     :type alert_info: dict
     """
     logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
-    alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    alert = Alert.objects.create(
+        user_id=db_user.id,
+        login_raw_data=login_alert,
+        name=alert_info["alert_name"],
+        description=alert_info["alert_desc"],
+    )
     # update user.risk_score if necessary
     update_risk_level(db_user=alert.user, triggered_alert=alert)
     # check filters
@@ -130,7 +151,11 @@ def check_fields(db_user: User, fields: list):
                 if not db_user.usersip_set.filter(ip=login["ip"]).exists():
                     last_user_login = db_user.login_set.latest("timestamp")
                     logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert, travel_vel = imp_travel.calc_distance(db_user, prev_login=last_user_login, last_login_user_fields=login)
+                    travel_alert, travel_vel = imp_travel.calc_distance(
+                        db_user,
+                        prev_login=last_user_login,
+                        last_login_user_fields=login,
+                    )
                     if travel_alert:
                         new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
                         new_alert.login_raw_data["buffalogs"] = {}
@@ -142,7 +167,12 @@ def check_fields(db_user: User, fields: list):
                     #   Add the new ip address from which the login comes to the db
                     imp_travel.add_new_user_ip(db_user, login["ip"])
 
-                if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
+                if Login.objects.filter(
+                    user=db_user,
+                    index=login["index"],
+                    country=login["country"],
+                    user_agent=login["agent"],
+                ).exists():
                     logger.info(f"Updating login {login['id']} for user: {db_user.username}")
                     imp_travel.update_model(db_user, login)
                 else:
@@ -228,7 +258,11 @@ def process_logs():
     """Find all user logged in between that time range"""
     now = timezone.now()
     process_task, _ = TaskSettings.objects.get_or_create(
-        task_name=process_logs.__name__, defaults={"end_date": timezone.now() - timedelta(minutes=1), "start_date": timezone.now() - timedelta(minutes=30)}
+        task_name=process_logs.__name__,
+        defaults={
+            "end_date": timezone.now() - timedelta(minutes=1),
+            "start_date": timezone.now() - timedelta(minutes=30),
+        },
     )
     if (now - process_task.end_date).days < 1:
         # Recovering old data avoiding task time limit
@@ -288,3 +322,111 @@ def exec_process_logs(start_date, end_date):
             process_user(db_user, start_date, end_date)
     except AttributeError:
         logger.info("No users login aggregation found")
+
+
+@shared_task(name="CheckBlocklistedIPsTask")
+def check_blocklisted_ips():
+    """Check for successful logins from blocklisted IPs"""
+    logger.info("Starting blocklisted IPs check")
+
+    # Load blocklisted IPs
+    try:
+        with open(BLOCKLIST_IP_FILE, "r") as f:
+            blocklisted_ips = {line.strip() for line in f if line.strip()}
+    except IOError as e:
+        logger.error(f"Error reading blocklist file: {str(e)}")
+        raise ImproperlyConfigured(f"Blocklist file not found: {BLOCKLIST_IP_FILE}")
+
+    if not blocklisted_ips:
+        logger.info("No blocklisted IPs found in file")
+        return
+
+    # Calculate time range (last 30 minutes)
+    end_date = timezone.now()
+    start_date = end_date - timedelta(minutes=30)
+
+    # Create Elasticsearch connection
+    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
+
+    # Search for successful logins from blocklisted IPs
+    s = (
+        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
+        .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
+        .query("match", **{"event.outcome": "success"})
+        .query("match", **{"event.type": "start"})
+        .query("terms", **{"source.ip": list(blocklisted_ips)})
+        .source(
+            [
+                "user.name",
+                "source.ip",
+                "@timestamp",
+                "_id",
+                "source.geo.location.lat",
+                "source.geo.location.lon",
+                "source.geo.country_name",
+                "user_agent.original",
+            ]
+        )
+    )
+
+    response = s.execute()
+
+    logger.info(f"Found {len(response)} logins from blocklisted IPs")
+
+    for hit in response:
+        # Converted Hit to dictionary for safe access
+        hit_dict = hit.to_dict() if hasattr(hit, "to_dict") else hit
+
+        # Safely accessed user and name using dictionary methods
+        user = hit_dict.get("user", {})
+        if not user or "name" not in user:
+            logger.warning("Hit missing 'user' or 'user.name', skipping")
+            continue
+        username = user["name"]
+
+        source = hit_dict.get("source", {})
+        ip = source.get("ip", "")
+        if not ip:
+            logger.warning("Hit missing 'source.ip', skipping")
+            continue
+
+        timestamp = hit_dict.get("@timestamp")
+        if not timestamp:
+            logger.warning("Hit missing '@timestamp', skipping")
+            continue
+
+        event_id = hit_dict.get("_id", "")
+        index = hit_dict.get("_index", "").split("-")[0]
+
+        # Handle geo data with safe access
+        source_geo = source.get("geo", {})
+        location = source_geo.get("location", {})
+        latitude = location.get("lat")
+        longitude = location.get("lon")
+        country = source_geo.get("country_name", "")
+        user_agent = hit_dict.get("user_agent", {}).get("original", "")
+
+        db_user, _ = User.objects.get_or_create(username=username)
+
+        # Prepare login data
+        login_data = {
+            "user": db_user.username,
+            "timestamp": timestamp.isoformat(),
+            "ip": ip,
+            "event_id": event_id,
+            "index": index,
+            "latitude": latitude,
+            "longitude": longitude,
+            "country": country,
+            "user_agent": user_agent,
+        }
+
+        logger.info(f"Processing login for user {username} from IP {ip} at {timestamp.isoformat()}")
+
+        # Create alert
+        alert_info = {
+            "alert_name": AlertDetectionType.BLOCKLISTED_IP_LOGIN.value,
+            "alert_desc": (f"{AlertDetectionType.BLOCKLISTED_IP_LOGIN.label} {ip} " f"by user {username} at {timestamp} "),
+        }
+
+        set_alert(db_user=db_user, login_alert=login_data, alert_info=alert_info)

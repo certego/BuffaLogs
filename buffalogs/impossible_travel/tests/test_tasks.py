@@ -1,7 +1,9 @@
 import json
 import os
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
+from django.core.exceptions import ImproperlyConfigured
 from django.db import connection
 from django.db.models import Q
 from django.test import TestCase
@@ -51,7 +53,12 @@ class TestTasks(TestCase):
         "lon": -5.4125,
         "country": "Italy",
         "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246",
-        "buffalogs": {"avg_speed": 810, "start_lat": 45.748, "start_lon": 4.85, "start_country": "France"},
+        "buffalogs": {
+            "avg_speed": 810,
+            "start_lat": 45.748,
+            "start_lon": 4.85,
+            "start_country": "France",
+        },
         "timestamp": "2025-02-13T09:06:11.000Z",
         "organization": "ISP3",
     }
@@ -83,7 +90,11 @@ class TestTasks(TestCase):
         user_obj = User.objects.create(username="Lorena")
         Login.objects.create(user=user_obj, timestamp=timezone.now())
         UsersIP.objects.create(user=user_obj, ip=self.raw_data_NEW_COUNTRY["ip"])
-        Alert.objects.create(user=user_obj, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data=self.raw_data_NEW_COUNTRY)
+        Alert.objects.create(
+            user=user_obj,
+            name=AlertDetectionType.NEW_COUNTRY.value,
+            login_raw_data=self.raw_data_NEW_COUNTRY,
+        )
         self.assertTrue(User.objects.filter(username="Lorena").exists())
         self.assertTrue(Login.objects.filter(user=user_obj).exists())
         self.assertTrue(Alert.objects.filter(user=user_obj).exists())
@@ -117,7 +128,10 @@ class TestTasks(TestCase):
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
         alert = Alert.objects.create(
-            user=db_user, name=AlertDetectionType.IMP_TRAVEL.value, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description"
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL.value,
+            login_raw_data=self.raw_data_IMP_TRAVEL,
+            description="Test_Description",
         )
         self.assertTrue(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("Low", db_user.risk_score)
@@ -127,7 +141,8 @@ class TestTasks(TestCase):
         # then, the second alert must be the USER_RISK_THRESHOLD
         self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
         self.assertEqual(
-            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low",
+            db_user.alert_set.get(id=2).description,
         )
 
     def test_update_risk_level_medium(self):
@@ -136,7 +151,12 @@ class TestTasks(TestCase):
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
         # first alert
-        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description1")
+        alert = Alert.objects.create(
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            login_raw_data=self.raw_data_IMP_TRAVEL,
+            description="Test_Description1",
+        )
         self.assertTrue(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("Low", db_user.risk_score)
         self.assertEqual(2, db_user.alert_set.count())
@@ -145,10 +165,16 @@ class TestTasks(TestCase):
         # then, the second alert must be the USER_RISK_THRESHOLD
         self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
         self.assertEqual(
-            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low",
+            db_user.alert_set.get(id=2).description,
         )
         # second alert
-        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data=self.raw_data_NEW_DEVICE, description="Test_Description2")
+        alert = Alert.objects.create(
+            user=db_user,
+            name=AlertDetectionType.NEW_DEVICE,
+            login_raw_data=self.raw_data_NEW_DEVICE,
+            description="Test_Description2",
+        )
         # no new USER_RISK_THRESHOLD alert
         self.assertFalse(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("Low", db_user.risk_score)
@@ -158,12 +184,16 @@ class TestTasks(TestCase):
         # then, the second alert must be the USER_RISK_THRESHOLD
         self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
         self.assertEqual(
-            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low",
+            db_user.alert_set.get(id=2).description,
         )
         self.assertEqual(AlertDetectionType.NEW_DEVICE, db_user.alert_set.get(id=3).name)
         # third alert
         alert = Alert.objects.create(
-            user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data=self.raw_data_NEW_COUNTRY, description="Test_Description3"
+            user=db_user,
+            name=AlertDetectionType.NEW_COUNTRY,
+            login_raw_data=self.raw_data_NEW_COUNTRY,
+            description="Test_Description3",
         )
         # USER_RISK_THRESHOLD alert
         self.assertTrue(tasks.update_risk_level(db_user, triggered_alert=alert))
@@ -174,16 +204,23 @@ class TestTasks(TestCase):
         # then, the second alert must be the USER_RISK_THRESHOLD
         self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
         self.assertEqual(
-            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low",
+            db_user.alert_set.get(id=2).description,
         )
         self.assertEqual(AlertDetectionType.NEW_DEVICE, db_user.alert_set.get(id=3).name)
         self.assertEqual(AlertDetectionType.NEW_COUNTRY, db_user.alert_set.get(id=4).name)
         self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=5).name)
         self.assertEqual(
-            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from Low to Medium", db_user.alert_set.get(id=5).description
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from Low to Medium",
+            db_user.alert_set.get(id=5).description,
         )
         # fourth alert
-        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description4")
+        alert = Alert.objects.create(
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            login_raw_data=self.raw_data_IMP_TRAVEL,
+            description="Test_Description4",
+        )
         # no new USER_RISK_THRESHOLD alert
         self.assertFalse(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("Medium", db_user.risk_score)
@@ -193,13 +230,15 @@ class TestTasks(TestCase):
         # then, the second alert must be the USER_RISK_THRESHOLD
         self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
         self.assertEqual(
-            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low",
+            db_user.alert_set.get(id=2).description,
         )
         self.assertEqual(AlertDetectionType.NEW_DEVICE, db_user.alert_set.get(id=3).name)
         self.assertEqual(AlertDetectionType.NEW_COUNTRY, db_user.alert_set.get(id=4).name)
         self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=5).name)
         self.assertEqual(
-            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from Low to Medium", db_user.alert_set.get(id=5).description
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from Low to Medium",
+            db_user.alert_set.get(id=5).description,
         )
         self.assertEqual(AlertDetectionType.IMP_TRAVEL, db_user.alert_set.get(id=6).name)
 
@@ -208,7 +247,12 @@ class TestTasks(TestCase):
         #   5 alerts --> High risk
         self.test_update_risk_level_medium()
         db_user = User.objects.get(username="Lorena Goldoni")
-        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description5")
+        alert = Alert.objects.create(
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            login_raw_data=self.raw_data_IMP_TRAVEL,
+            description="Test_Description5",
+        )
         # new USER_RISK_THRESHOLD alert
         self.assertTrue(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("High", db_user.risk_score)
@@ -216,16 +260,27 @@ class TestTasks(TestCase):
         self.assertEqual(AlertDetectionType.IMP_TRAVEL, db_user.alert_set.get(id=7).name)
         self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=8).name)
         self.assertEqual(
-            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from Medium to High", db_user.alert_set.get(id=8).description
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from Medium to High",
+            db_user.alert_set.get(id=8).description,
         )
         # add some other alerts
-        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description6")
+        alert = Alert.objects.create(
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            login_raw_data=self.raw_data_IMP_TRAVEL,
+            description="Test_Description6",
+        )
         # no USER_RISK_THRESHOLD alert
         self.assertFalse(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("High", db_user.risk_score)
         self.assertEqual(9, db_user.alert_set.count())
         self.assertEqual(AlertDetectionType.IMP_TRAVEL, db_user.alert_set.get(id=9).name)
-        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description6")
+        alert = Alert.objects.create(
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            login_raw_data=self.raw_data_IMP_TRAVEL,
+            description="Test_Description6",
+        )
         # no USER_RISK_THRESHOLD alert
         self.assertFalse(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("High", db_user.risk_score)
@@ -237,7 +292,13 @@ class TestTasks(TestCase):
         db_user = User.objects.get(username="Lorena Goldoni")
         db_login = Login.objects.get(user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5")
         timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
+        login_data = {
+            "timestamp": timestamp,
+            "latitude": "45.4758",
+            "longitude": "9.2275",
+            "country": db_login.country,
+            "agent": db_login.user_agent,
+        }
         name = AlertDetectionType.IMP_TRAVEL
         desc = f"{name} for User: {db_user.username}, \
                     at: {timestamp}, from: ({db_login.latitude}, {db_login.longitude})"
@@ -271,11 +332,16 @@ class TestTasks(TestCase):
         tasks.set_alert(db_user, login_data, alert_info)
         db_alert = Alert.objects.get(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
         self.assertTrue(db_alert.is_filtered)
-        self.assertEqual([AlertFilterType.IS_VIP_FILTER, AlertFilterType.ALLOWED_COUNTRY_FILTER], db_alert.filter_type)
+        self.assertEqual(
+            [AlertFilterType.IS_VIP_FILTER, AlertFilterType.ALLOWED_COUNTRY_FILTER],
+            db_alert.filter_type,
+        )
 
     def test_process_logs_data_lost(self):
         TaskSettings.objects.create(
-            task_name="process_logs", start_date=timezone.datetime(2023, 4, 18, 10, 0), end_date=timezone.datetime(2023, 4, 18, 10, 30, 0)
+            task_name="process_logs",
+            start_date=timezone.datetime(2023, 4, 18, 10, 0),
+            end_date=timezone.datetime(2023, 4, 18, 10, 30, 0),
         )
         tasks.process_logs()
         new_end_date_expected = timezone.now() - timedelta(minutes=1)
@@ -309,16 +375,34 @@ class TestTasks(TestCase):
         #   2. at 2023-05-03T06:57:27.768Z from Japan,
         #   3. at 2023-05-03T07:10:23.154Z from United States
         tasks.check_fields(db_user, fields1)
-        self.assertEqual(3, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3").count())
-        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="India").count())
+        self.assertEqual(
+            3,
+            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3").count(),
+        )
+        self.assertEqual(
+            1,
+            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="India").count(),
+        )
         self.assertEqual(6, Login.objects.get(user=db_user, country="India").timestamp.hour)
         self.assertEqual(50, Login.objects.get(user=db_user, country="India").timestamp.minute)
         self.assertEqual(3, Login.objects.get(user=db_user, country="India").timestamp.second)
-        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count())
+        self.assertEqual(
+            1,
+            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count(),
+        )
         self.assertEqual(7, Login.objects.get(user=db_user, country="United States").timestamp.hour)
-        self.assertEqual(10, Login.objects.get(user=db_user, country="United States").timestamp.minute)
-        self.assertEqual(23, Login.objects.get(user=db_user, country="United States").timestamp.second)
-        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count())
+        self.assertEqual(
+            10,
+            Login.objects.get(user=db_user, country="United States").timestamp.minute,
+        )
+        self.assertEqual(
+            23,
+            Login.objects.get(user=db_user, country="United States").timestamp.second,
+        )
+        self.assertEqual(
+            1,
+            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count(),
+        )
         self.assertEqual(6, Login.objects.get(user=db_user, country="Japan").timestamp.hour)
         self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
         self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
@@ -327,61 +411,110 @@ class TestTasks(TestCase):
         #   5. at 2023-05-03T07:18:38.768Z from India with user_agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)
         #   6. at 2023-05-03T07:20:36.154Z from United States with user_agent: Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0
         tasks.check_fields(db_user, fields2)
-        self.assertEqual(6, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3").count())
-        self.assertEqual(3, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="India").count())
         self.assertEqual(
-            7, Login.objects.get(user=db_user, country="India", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0").timestamp.hour
+            6,
+            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3").count(),
         )
         self.assertEqual(
-            14,
-            Login.objects.get(user=db_user, country="India", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0").timestamp.minute,
-        )
-        self.assertEqual(
-            22,
-            Login.objects.get(user=db_user, country="India", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0").timestamp.second,
+            3,
+            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="India").count(),
         )
         self.assertEqual(
             7,
             Login.objects.get(
-                user=db_user, country="India", user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                user=db_user,
+                country="India",
+                user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
+            ).timestamp.hour,
+        )
+        self.assertEqual(
+            14,
+            Login.objects.get(
+                user=db_user,
+                country="India",
+                user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
+            ).timestamp.minute,
+        )
+        self.assertEqual(
+            22,
+            Login.objects.get(
+                user=db_user,
+                country="India",
+                user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
+            ).timestamp.second,
+        )
+        self.assertEqual(
+            7,
+            Login.objects.get(
+                user=db_user,
+                country="India",
+                user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)",
             ).timestamp.hour,
         )
         self.assertEqual(
             18,
             Login.objects.get(
-                user=db_user, country="India", user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                user=db_user,
+                country="India",
+                user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)",
             ).timestamp.minute,
         )
         self.assertEqual(
             38,
             Login.objects.get(
-                user=db_user, country="India", user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                user=db_user,
+                country="India",
+                user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)",
             ).timestamp.second,
         )
-        self.assertEqual(2, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count())
+        self.assertEqual(
+            2,
+            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count(),
+        )
         self.assertEqual(
             7,
             Login.objects.get(
-                user=db_user, country="United States", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+                user=db_user,
+                country="United States",
+                user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
             ).timestamp.hour,
         )
         self.assertEqual(
             31,
             Login.objects.get(
-                user=db_user, country="United States", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+                user=db_user,
+                country="United States",
+                user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
             ).timestamp.minute,
         )
         self.assertEqual(
             36,
             Login.objects.get(
-                user=db_user, country="United States", user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0"
+                user=db_user,
+                country="United States",
+                user_agent="Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0",
             ).timestamp.second,
         )
-        self.assertEqual(2, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count())
-        self.assertEqual(7, Login.objects.filter(user=db_user, country="United States").last().timestamp.hour)
-        self.assertEqual(31, Login.objects.filter(user=db_user, country="United States").last().timestamp.minute)
-        self.assertEqual(36, Login.objects.filter(user=db_user, country="United States").last().timestamp.second)
-        self.assertEqual(1, Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count())
+        self.assertEqual(
+            2,
+            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count(),
+        )
+        self.assertEqual(
+            7,
+            Login.objects.filter(user=db_user, country="United States").last().timestamp.hour,
+        )
+        self.assertEqual(
+            31,
+            Login.objects.filter(user=db_user, country="United States").last().timestamp.minute,
+        )
+        self.assertEqual(
+            36,
+            Login.objects.filter(user=db_user, country="United States").last().timestamp.second,
+        )
+        self.assertEqual(
+            1,
+            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count(),
+        )
         self.assertEqual(6, Login.objects.get(user=db_user, country="Japan").timestamp.hour)
         self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
         self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
@@ -420,16 +553,26 @@ class TestTasks(TestCase):
         self.assertEqual(1, anonymous_ip_alerts_fields1.count())
         # check new_device alerts for fields1 logins
         self.assertEqual("New Device", new_device_alerts_fields1[0].name)
-        self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z", new_device_alerts_fields1[0].description)
+        self.assertEqual(
+            "Login from new device for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z",
+            new_device_alerts_fields1[0].description,
+        )
         self.assertEqual("New Device", new_device_alerts_fields1[1].name)
-        self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z", new_device_alerts_fields1[1].description)
+        self.assertEqual(
+            "Login from new device for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z",
+            new_device_alerts_fields1[1].description,
+        )
         # check new_country alerts for fields1 logins
         self.assertEqual("New Country", new_country_alerts_fields1[0].name)
         self.assertEqual(
-            "Login from new country for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z, from: United States", new_country_alerts_fields1[0].description
+            "Login from new country for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z, from: United States",
+            new_country_alerts_fields1[0].description,
         )
         self.assertEqual("New Country", new_country_alerts_fields1[1].name)
-        self.assertEqual("Login from new country for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z, from: Japan", new_country_alerts_fields1[1].description)
+        self.assertEqual(
+            "Login from new country for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z, from: Japan",
+            new_country_alerts_fields1[1].description,
+        )
         # check imp_travel alerts for fields1 logins
         self.assertEqual("Imp Travel", imp_travel_alerts_fields1[0].name)
         self.assertEqual(
@@ -475,7 +618,11 @@ class TestTasks(TestCase):
 
         # Adding "Aisha Delgado" to vip users
         Config.objects.filter(id=1).delete()
-        config = Config.objects.create(allowed_countries=["Italy", "Romania"], vip_users=["Aisha Delgado"], alert_is_vip_only=True)
+        config = Config.objects.create(
+            allowed_countries=["Italy", "Romania"],
+            vip_users=["Aisha Delgado"],
+            alert_is_vip_only=True,
+        )
         config.save()
 
         # Second part - Expected new alerts in Alert Model:
@@ -497,14 +644,26 @@ class TestTasks(TestCase):
         self.assertEqual(2, new_device_alerts_fields2.count())
         # check new_device alerts for fields2
         self.assertEqual("New Device", new_device_alerts_fields2[0].name)
-        self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T07:14:22.768Z", new_device_alerts_fields2[0].description)
+        self.assertEqual(
+            "Login from new device for User: Aisha Delgado, at: 2023-05-03T07:14:22.768Z",
+            new_device_alerts_fields2[0].description,
+        )
         self.assertEqual("New Device", new_device_alerts_fields2[1].name)
-        self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T07:18:38.768Z", new_device_alerts_fields2[1].description)
+        self.assertEqual(
+            "Login from new device for User: Aisha Delgado, at: 2023-05-03T07:18:38.768Z",
+            new_device_alerts_fields2[1].description,
+        )
 
         # same old new_country alert relating to fields1 logins
-        self.assertEqual(2, Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).count())
+        self.assertEqual(
+            2,
+            Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).count(),
+        )
 
-        self.assertEqual(6, Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL).count())
+        self.assertEqual(
+            6,
+            Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL).count(),
+        )
 
     def test_check_fields_usersip(self):
         db_user = User.objects.get(username="Aisha Delgado")
@@ -529,7 +688,84 @@ class TestTasks(TestCase):
         self.assertEqual(1, UsersIP.objects.filter(user=db_user, ip="203.0.113.11").count())
         # Third part: no new alerts because all the ips have already been used
         tasks.check_fields(db_user, fields3)
-        self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
+        self.assertEqual(
+            0,
+            Alert.objects.filter(
+                user=db_user,
+                login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat(),
+            ).count(),
+        )
+
+    def test_check_blocklisted_ips(self):
+        """Test check_blocklisted_ips task for successful logins from blocklisted IPs"""
+        # Created a temporary blocklist file with test IPs
+        test_blocklist_file = "test_blocklist.txt"
+        blocklisted_ips = ["192.168.1.10", "10.0.0.5", "172.16.0.1"]
+        with open(test_blocklist_file, "w") as f:
+            for ip in blocklisted_ips:
+                f.write(f"{ip}\n")
+
+        # Patch BLOCKLIST_IP_FILE and the Elasticsearch connection
+        with patch("impossible_travel.tasks.BLOCKLIST_IP_FILE", test_blocklist_file):
+            with patch("impossible_travel.tasks.connections.create_connection") as mock_create_conn:
+                mock_create_conn.return_value = None
+
+                # Create test user
+                db_user, _ = User.objects.get_or_create(username="Dorna Raj Gyawali")
+
+                # Create mock Elasticsearch hits
+                hit1 = {
+                    "@timestamp": timezone.now(),
+                    "user": {"name": "Dorna Raj Gyawali"},
+                    "source": {
+                        "ip": "192.168.1.10",
+                        "geo": {
+                            "location": {"lat": 28.3949, "lon": 84.1240},
+                            "country_name": "Nepal",
+                        },
+                    },
+                    "user_agent": {"original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
+                    "meta": {"id": "test_event_id_1", "index": "cloud-test-2025-3-4"},
+                }
+                mock_hits = [hit1]
+
+                # Patch the Elasticsearch Search.execute method to return our mock hits
+                with patch.object(tasks.Search, "execute") as mock_execute:
+                    mock_execute.return_value = mock_hits
+                    tasks.check_blocklisted_ips()
+
+                    # Check first alert details
+                    alert1 = Alert.objects.filter(user=db_user, login_raw_data__ip="192.168.1.10").first()
+                    self.assertEqual(AlertDetectionType.BLOCKLISTED_IP_LOGIN.value, alert1.name)
+                    self.assertIn("Login from Blocklisted IP", alert1.description)
+
+        os.remove(test_blocklist_file)
+
+    def test_check_blocklisted_ips_no_blocklist(self):
+        """Test check_blocklisted_ips task with an empty blocklist file"""
+        test_blocklist_file = "test_empty_blocklist.txt"
+        # Create an empty file
+        with open(test_blocklist_file, "w") as f:
+            pass
+
+        with patch("impossible_travel.tasks.BLOCKLIST_IP_FILE", test_blocklist_file):
+            with patch("impossible_travel.tasks.connections.create_connection") as mock_create_conn:
+                mock_create_conn.return_value = None
+                tasks.check_blocklisted_ips()
+                # No alerts should be created when blocklist is empty
+                self.assertEqual(
+                    0,
+                    Alert.objects.filter(name=AlertDetectionType.BLOCKLISTED_IP_LOGIN).count(),
+                )
+
+        os.remove(test_blocklist_file)
+
+    def test_check_blocklisted_ips_missing_file(self):
+        """Test check_blocklisted_ips task with a missing blocklist file"""
+        non_existent_file = "non_existent_blocklist.txt"
+        with patch("impossible_travel.tasks.BLOCKLIST_IP_FILE", non_existent_file):
+            with self.assertRaises(ImproperlyConfigured):
+                tasks.check_blocklisted_ips()
 
     # TO DO
     # @patch("impossible_travel.tasks.check_fields")
