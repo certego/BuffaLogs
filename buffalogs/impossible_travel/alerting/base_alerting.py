@@ -10,6 +10,7 @@ class BaseAlerting(ABC):
 
     class SupportedAlerters(Enum):
         DUMMY = "dummy"
+        SLACK = "slack"
 
     def __init__(self):
         super().__init__()
