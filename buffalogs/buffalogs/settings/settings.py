@@ -229,4 +229,5 @@ CELERY_BEAT_SCHEDULE = {
     },
     "update_risk_level": {"task": "UpdateRiskLevelTask", "schedule": crontab(minute=10)},
     "notify_alerts": {"task": "NotifyAlertsTask", "schedule": crontab(minute=5)},
+    "check_blocklisted_ips": {"task": "CheckBlocklistedIPsTask", "schedule": crontab(minute=30)},
 }
