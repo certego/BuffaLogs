@@ -7,5 +7,14 @@
     },
     "dummy": {
         "config_field_example": "value_example"
+    },
+    "email":{
+        "email_backend" : "django.core.mail.backends.smtp.EmailBackend",
+        "email_server" : "smtp.gmail.com",
+        "email_port" : 587,  
+        "email_use_tls" : "True",
+        "email_host_user" : "SENDER_EMAIL",
+        "email_host_password" : "SENDER_APP_PASSWORD",
+        "default_from_email" : "BuffaLogs Alerts SENDER_EMAIL"
     }
 }
