@@ -51,10 +51,10 @@ In detail, it sends several types of alerts:
 
 ### Google Summer Of Code
 
-STAY TUNED!
+Timeline: https://developers.google.com/open-source/gsoc/timeline
+Honeynet projects ideas: https://www.honeynet.org/gsoc/gsoc-2025/google-summer-of-code-2025-project-ideas/ 
 
-As soon as Google will confirm our partecipation we are going to add all the information you need!
-
+Official Discord chat: https://discord.gg/68B8Ru5fSU
 
 ##  Installation & Running
 BuffaLogs employs the following tools which have to be installed on the machine:
