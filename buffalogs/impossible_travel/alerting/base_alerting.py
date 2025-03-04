@@ -10,6 +10,8 @@ class BaseAlerting(ABC):
 
     class SupportedAlerters(Enum):
         DUMMY = "dummy"
+        WEBHOOKS = "webhooks"
+        HTTPREQUEST = "http_request"
         TELEGRAM = "telegram"
 
     def __init__(self):
