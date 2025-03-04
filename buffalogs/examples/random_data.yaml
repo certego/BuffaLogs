@@ -1,0 +1,24 @@
+user_name:
+  - admin
+  - user1
+  - user2
+
+email:
+  - admin@example.com
+  - user1@example.com
+  - user2@example.com
+
+password:
+  - password123
+  - password123
+  - password123
+
+ip_address:
+  - 10.0.0.1
+  - 192.168.1.1
+  - 172.16.0.1
+
+timestamp:
+  - 2024-03-04 12:00:00
+  - 2024-03-04 13:00:00
+  - 2024-03-04 14:00:00
