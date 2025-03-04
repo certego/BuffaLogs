@@ -84,7 +84,7 @@ class TestImpossibleTravel(TestCase):
         self.assertEqual(new_login_db.index, old_login.index)
         self.assertEqual(new_login_db.country, old_login.country)
         self.assertEqual(new_login_db.user_agent, old_login.user_agent)
-        # Check if the other fields are changed
+        # Check if the other fields are changed 
         self.assertEqual(new_login_db.event_id, new_login_fields["id"])
         self.assertEqual(new_login_db.ip, new_login_fields["ip"])
         self.assertEqual(new_login_db.latitude, new_login_fields["lat"])
