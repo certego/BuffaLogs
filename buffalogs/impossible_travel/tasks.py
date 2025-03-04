@@ -9,18 +9,9 @@ from django.db import transaction
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.alerting.alert_factory import AlertFactory
-from impossible_travel.constants import (
-    AlertDetectionType,
-    ComparisonType,
-    UserRiskScoreType,
-)
+from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import (
-    alert_filter,
-    impossible_travel,
-    login_from_new_country,
-    login_from_new_device,
-)
+from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
 
 logger = get_task_logger(__name__)
 BLOCKLIST_IP_FILE = os.path.join(os.path.dirname(__file__), "../../config/buffalogs/blocklisted_ips.txt")
