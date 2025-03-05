@@ -712,7 +712,7 @@ class TestTasks(TestCase):
 
                 # Create test user
                 db_user, _ = User.objects.get_or_create(username="Dorna Raj Gyawali")
-                hit1 = load_test_data("test_blocklisted_ips_data")
+                hit1 = load_test_data("test_blocklisted_user_data")
                 mock_hits = [hit1]
 
                 # Patch the Elasticsearch Search.execute method to return our mock hits
