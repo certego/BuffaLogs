@@ -712,21 +712,7 @@ class TestTasks(TestCase):
 
                 # Create test user
                 db_user, _ = User.objects.get_or_create(username="Dorna Raj Gyawali")
-
-                # Create mock Elasticsearch hits
-                hit1 = {
-                    "@timestamp": timezone.now(),
-                    "user": {"name": "Dorna Raj Gyawali"},
-                    "source": {
-                        "ip": "192.168.1.10",
-                        "geo": {
-                            "location": {"lat": 28.3949, "lon": 84.1240},
-                            "country_name": "Nepal",
-                        },
-                    },
-                    "user_agent": {"original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
-                    "meta": {"id": "test_event_id_1", "index": "cloud-test-2025-3-4"},
-                }
+                hit1 = load_test_data("test_blocklisted_ips_data")
                 mock_hits = [hit1]
 
                 # Patch the Elasticsearch Search.execute method to return our mock hits

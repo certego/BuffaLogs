@@ -1,5 +1,5 @@
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -352,7 +352,7 @@ def check_blocklisted_ips():
                 "source.ip",
                 "@timestamp",
                 "_id",
-                "source.geo.location.lat",
+                "_index" "source.geo.location.lat",
                 "source.geo.location.lon",
                 "source.geo.country_name",
                 "user_agent.original",
@@ -386,8 +386,12 @@ def check_blocklisted_ips():
             logger.warning("Hit missing '@timestamp', skipping")
             continue
 
-        event_id = hit_dict.get("_id", "")
-        index = hit_dict.get("_index", "").split("-")[0]
+        if isinstance(timestamp, str):
+            timestamp = datetime.fromisoformat(timestamp)
+
+        meta = hit_dict.get("meta")
+        event_id = meta.get("id")
+        index = meta.get("index", "")
 
         # Handle geo data with safe access
         source_geo = source.get("geo", {})
@@ -396,7 +400,6 @@ def check_blocklisted_ips():
         longitude = location.get("lon")
         country = source_geo.get("country_name", "")
         user_agent = hit_dict.get("user_agent", {}).get("original", "")
-
         db_user, _ = User.objects.get_or_create(username=username)
 
         # Prepare login data

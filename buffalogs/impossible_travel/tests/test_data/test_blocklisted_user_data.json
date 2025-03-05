@@ -1,0 +1,13 @@
+{
+    "@timestamp": "2025-03-05T12:31:36.985584+00:00",
+    "user": {"name": "Dorna Raj Gyawali"},
+    "source": {
+        "ip": "192.168.1.10",
+        "geo": {
+            "location": {"lat": 28.3949, "lon": 84.1240},
+            "country_name": "Nepal"
+        }
+    },
+    "user_agent": {"original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
+    "meta": {"id": "test_event_id_1", "index": "cloud-test-2025-3-4"}
+}
