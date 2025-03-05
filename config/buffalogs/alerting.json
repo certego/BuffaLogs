@@ -7,5 +7,9 @@
     },
     "dummy": {
         "config_field_example": "value_example"
+    },
+    "pushover":{
+        "api_key":"YOUR_API_KEY",
+        "user_key":"YOUR_USER_KEY"
     }
 }
