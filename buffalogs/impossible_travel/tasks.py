@@ -7,10 +7,10 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
-from impossible_travel.constants import UserRiskScoreType
+from impossible_travel.alerting.alert_factory import AlertFactory
+from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
-from impossible_travel.alerting.alert_factory import AlertFactory
 
 logger = get_task_logger(__name__)
 
@@ -250,3 +250,122 @@ def exec_process_logs(start_date, end_date):
             process_user(db_user, start_date, end_date)
     except AttributeError:
         logger.info("No users login aggregation found")
+
+
+# Detect Bruteforce
+@shared_task(name="BuffalogsBruteforceDetectionTask")
+def detect_bruteforce_attempts():
+    """
+    Detect bruteforce attempts by querying failed logins directly from Elasticsearch.
+    Runs every 30 minutes via celery_beat.
+    """
+    logger.info("Starting Elasticsearch-based bruteforce detection task...")
+
+    config = Config.objects.first()
+    if not config:
+        logger.warning("No Config found, skipping bruteforce detection task.")
+        return
+
+    max_user_attempts = getattr(config, "max_login_bruteforce", 10)
+    max_ip_attempts = getattr(config, "max_ip_bruteforce", 20)
+
+    now = timezone.now()
+    one_hour_ago = now - timedelta(hours=1)
+
+    failed_logins = fetch_failed_logins_from_elastic(one_hour_ago, now)
+
+    detect_bruteforce_on_users(failed_logins, max_user_attempts)
+    detect_bruteforce_from_ips(failed_logins, max_ip_attempts)
+
+    logger.info("Completed bruteforce detection task.")
+
+
+def fetch_failed_logins_from_elastic(start_time, end_time):
+    """
+    Query Elasticsearch for failed logins within the specified time range.
+    """
+    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
+
+    s = (
+        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
+        .filter("range", **{"@timestamp": {"gte": start_time, "lt": end_time}})
+        .query("match", **{"event.outcome": "failure"})
+        .query("match", **{"event.type": "start"})
+        .source(
+            [
+                "user.name",
+                "source.ip",
+                "@timestamp",
+                "user_agent.original",
+            ]
+        )
+    )
+
+    response = s.execute()
+
+    failed_logins = []
+    for hit in response:
+        failed_logins.append(
+            {
+                "username": hit.get("user", {}).get("name"),
+                "ip": hit.get("source", {}).get("ip"),
+                "timestamp": hit["@timestamp"],
+                "user_agent": hit.get("user_agent", {}).get("original", ""),
+            }
+        )
+    return failed_logins
+
+
+def detect_bruteforce_on_users(failed_logins, max_attempts):
+    """
+    Detect if any individual user has exceeded the failed login threshold.
+    """
+    user_failures = {}
+    for login in failed_logins:
+        username = login["username"]
+        if username:
+            user_failures[username] = user_failures.get(username, 0) + 1
+
+    for username, count in user_failures.items():
+        if count >= max_attempts:
+            logger.warning(f"Bruteforce detected on user: {username} - {count} failed attempts.")
+            user = User.objects.filter(username=username).first()
+
+            alert_info = {
+                "alert_name": AlertDetectionType.BRUTEFORCE_USER_LOGIN.value,
+                "alert_desc": f"Bruteforce detected on user {username}: {count} failed login attempts in the last hour.",
+            }
+            print(alert_info)
+
+            set_alert(db_user=user, login_alert={"timestamp": str(timezone.now()), "ip": "", "country": "", "agent": ""}, alert_info=alert_info)
+
+
+def detect_bruteforce_from_ips(failed_logins, max_attempts):
+    """
+    Detect if any single IP has exceeded the failed login threshold across multiple users.
+    """
+    ip_failures = {}
+    ip_users = {}
+
+    for login in failed_logins:
+        ip = login["ip"]
+        username = login["username"]
+
+        ip_failures[ip] = ip_failures.get(ip, 0) + 1
+        if ip not in ip_users:
+            ip_users[ip] = set()
+        if username:
+            ip_users[ip].add(username)
+
+    for ip, count in ip_failures.items():
+        if count >= max_attempts:
+            logger.warning(f"Bruteforce detected from IP: {ip} - {count} failed attempts.")
+            affected_users = ", ".join(ip_users[ip]) if ip_users[ip] else "unknown users"
+
+            alert_info = {
+                "alert_name": AlertDetectionType.BRUTEFORCE_IP_LOGIN.value,
+                "alert_desc": f"Bruteforce detected from IP {ip}: {count} failed login attempts across users: {affected_users} in the last hour.",
+            }
+            print(alert_info)
+
+            set_alert(db_user=None, login_alert={"timestamp": str(timezone.now()), "ip": ip, "country": "", "agent": ""}, alert_info=alert_info)

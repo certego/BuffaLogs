@@ -229,4 +229,8 @@ CELERY_BEAT_SCHEDULE = {
     },
     "update_risk_level": {"task": "UpdateRiskLevelTask", "schedule": crontab(minute=10)},
     "notify_alerts": {"task": "NotifyAlertsTask", "schedule": crontab(minute=5)},
+    "detect_bruteforce_attempts": {
+        "task": "BuffalogsBruteforceDetectionTask",
+        "schedule": crontab(minute="*/30"),
+    },
 }

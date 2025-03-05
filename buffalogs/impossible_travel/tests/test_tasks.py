@@ -25,6 +25,17 @@ class TestTasks(TestCase):
         setup_obj = Setup()
         setup_obj.setup()
 
+        # for IP and Login Bruteforce
+        self.user1 = User.objects.create(username="bruteforce_user1")
+        self.user2 = User.objects.create(username="bruteforce_user2")
+        config, _ = Config.objects.get_or_create()
+        config.max_login_bruteforce = 5
+        config.max_ip_bruteforce = 10
+        config.save()
+
+        """Clear alerts before each test"""
+        Alert.objects.all().delete()
+
     def test_clear_models_periodically(self):
         """Testing clear_models_periodically() function"""
         user_obj = User.objects.create(username="Lorena")
@@ -378,6 +389,44 @@ class TestTasks(TestCase):
         # Third part: no new alerts because all the ips have already been used
         tasks.check_fields(db_user, fields3)
         self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
+
+    @patch("impossible_travel.tasks.fetch_failed_logins_from_elastic")
+    def test_user_bruteforce_alert_triggered(self, mock_fetch_failed_logins):
+        """
+        Simulate failed logins for a single user exceeding the threshold.
+        Expect a user-level bruteforce alert.
+        """
+        mock_fetch_failed_logins.return_value = [{"username": "bruteforce_user1", "ip": "192.168.1.1", "timestamp": timezone.now()} for _ in range(6)]
+
+        tasks.detect_bruteforce_attempts()
+
+        self.assertEqual(Alert.objects.count(), 1)
+        alert = Alert.objects.first()
+
+        self.assertEqual(alert.name, AlertDetectionType.BRUTEFORCE_USER_LOGIN)
+        self.assertIn("bruteforce_user1", alert.description)
+        self.assertIn("6 failed login attempts", alert.description)
+
+    @patch("impossible_travel.tasks.fetch_failed_logins_from_elastic")
+    def test_ip_bruteforce_alert_triggered(self, mock_fetch_failed_logins):
+        """
+        Simulate failed logins from the same IP across multiple users exceeding the threshold.
+        Expect an IP-level bruteforce alert.
+        """
+        mock_fetch_failed_logins.return_value = [
+            {"username": "bruteforce_user1", "ip": "203.0.113.50", "timestamp": timezone.now()},
+            {"username": "bruteforce_user2", "ip": "203.0.113.50", "timestamp": timezone.now()},
+        ] * 5  # 10 total failed logins from the same IP
+
+        tasks.detect_bruteforce_attempts()
+
+        self.assertEqual(Alert.objects.count(), 1)
+        alert = Alert.objects.first()
+
+        self.assertEqual(alert.name, AlertDetectionType.BRUTEFORCE_IP_LOGIN)
+        self.assertIn("203.0.113.50", alert.description)
+        self.assertIn("bruteforce_user1", alert.description)
+        self.assertIn("bruteforce_user2", alert.description)
 
     # TO DO
     # @patch("impossible_travel.tasks.check_fields")

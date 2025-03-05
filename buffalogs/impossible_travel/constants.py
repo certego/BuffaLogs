@@ -55,6 +55,8 @@ class AlertDetectionType(models.TextChoices):
     USER_RISK_THRESHOLD = "User Risk Threshold", _("User risk higher than threshold")
     LOGIN_ANONYMIZER_IP = "Login Anonymizer Ip", _("Login from an anonymizer IP")
     ATYPICAL_COUNTRY = "Atypical Country", _("Login from a country not visited recently")
+    BRUTEFORCE_USER_LOGIN = "Bruteforce User Login", _("Bruteforce Detected on User")
+    BRUTEFORCE_IP_LOGIN = "Bruteforce IP Login", _("Bruteforce Detected from IP")
 
     @classmethod
     def get_label_from_value(cls, value):

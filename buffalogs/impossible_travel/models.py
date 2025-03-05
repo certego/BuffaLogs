@@ -185,6 +185,8 @@ class Config(models.Model):
         default=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS, help_text="Days after which the alerts will be removed from the db"
     )
     ip_max_days = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS, help_text="Days after which the IPs will be removed from the db")
+    max_login_bruteforce = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_MAX_LOGIN_BRUTEFORCE, help_text="Maximum login bruteforce attempts")
+    max_ip_bruteforce = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_MAX_IP_BRUTEFORCE, help_text="Maximum IP bruteforce attempts")
 
     def clean(self):
         if not self.pk and Config.objects.exists():
