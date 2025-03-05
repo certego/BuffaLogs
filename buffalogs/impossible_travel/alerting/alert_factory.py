@@ -4,9 +4,8 @@ import os
 from django.conf import settings
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
-from impossible_travel.alerting.telegram_alerting import TelegramAlerting
 from impossible_travel.alerting.email_alerting import EmailAlerting
-
+from impossible_travel.alerting.telegram_alerting import TelegramAlerting
 
 
 class AlertFactory:
