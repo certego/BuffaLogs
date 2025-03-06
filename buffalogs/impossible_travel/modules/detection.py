@@ -11,7 +11,7 @@ from impossible_travel.modules import alert_filter
 logger = get_task_logger(__name__)
 
 
-def update_risk_level(db_user: User, triggered_alert: Alert):
+def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config):
     """Update user risk level depending on how many alerts were triggered
 
     :param db_user: user from DB
@@ -34,7 +34,6 @@ def update_risk_level(db_user: User, triggered_alert: Alert):
         # if the new_risk_level is higher than the current one
         # and the new_risk_level is higher or equal than the threshold set in the config.threshold_user_risk_alert
         # send the USER_RISK_THRESHOLD alert
-        app_config = Config.objects.get(id=1)
         config_threshold_comparison = UserRiskScoreType.compare_risk(app_config.threshold_user_risk_alert, new_risk_level)
 
         if config_threshold_comparison in [ComparisonType.EQUAL, ComparisonType.HIGHER]:
@@ -44,12 +43,12 @@ def update_risk_level(db_user: User, triggered_alert: Alert):
                 f"who changed risk_score from {current_risk_score} to {new_risk_level}",
             }
             logger.info(f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, " f"detected {db_user.alert_set.count()} alerts")
-            set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info)
+            set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info, app_config=app_config)
 
             return True
 
 
-def set_alert(db_user: User, login_alert: dict, alert_info: dict):
+def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Config):
     """Save the alert on db and logs it
 
     :param db_user: user from db
@@ -62,9 +61,9 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict):
     logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
     alert = Alert.objects.create(user=db_user, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     # update user.risk_score if necessary
-    update_risk_level(db_user=alert.user, triggered_alert=alert)
+    update_risk_level(db_user=alert.user, triggered_alert=alert, app_config=app_config)
     # check filters
-    alert_filter.match_filters(alert=alert)
+    alert_filter.match_filters(alert=alert, app_config=app_config)
     alert.save()
     return alert
 
@@ -78,7 +77,7 @@ def check_fields(db_user: User, fields: list):
     :type fields: list
     """
 
-    app_config, _ = Config.objects.get_or_create(id=1)
+    db_config, _ = Config.objects.get_or_create(id=1)
 
     for login in fields:
         if login.get("intelligence_category", None) == "anonymizer":
@@ -87,7 +86,7 @@ def check_fields(db_user: User, fields: list):
                 "alert_name": AlertDetectionType.ANONYMOUS_IP_LOGIN.value,
                 "alert_desc": f"{AlertDetectionType.ANONYMOUS_IP_LOGIN.label} from IP: {login['ip']} by User: {db_user.username}",
             }
-            set_alert(db_user, login_alert=login, alert_info=alert_info)
+            set_alert(db_user, login_alert=login, alert_info=alert_info, app_config=db_config)
         if login["lat"] and login["lon"]:
             if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
                 agent_alert = False
@@ -96,20 +95,20 @@ def check_fields(db_user: User, fields: list):
                     # check the possible alert: NEW_DEVICE
                     agent_alert = check_new_device(db_user, login)
                     if agent_alert:
-                        set_alert(db_user, login_alert=login, alert_info=agent_alert)
+                        set_alert(db_user, login_alert=login, alert_info=agent_alert, app_config=db_config)
 
                 if login["country"]:
                     # check the possible alerts: NEW_COUNTRY / ATYPICAL_COUNTRY
-                    country_alert = check_country(db_user, login, app_config)
+                    country_alert = check_country(db_user, login, db_config)
                     if country_alert:
-                        set_alert(db_user, login_alert=login, alert_info=country_alert)
+                        set_alert(db_user, login_alert=login, alert_info=country_alert, app_config=db_config)
 
                 if not db_user.usersip_set.filter(ip=login["ip"]).exists():
                     last_user_login = db_user.login_set.latest("timestamp")
                     logger.info(f"Calculating impossible travel: {login['id']}")
                     travel_alert, travel_vel = calc_distance_impossible_travel(db_user, prev_login=last_user_login, last_login_user_fields=login)
                     if travel_alert:
-                        new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
+                        new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert, app_config=db_config)
                         new_alert.login_raw_data["buffalogs"] = {}
                         new_alert.login_raw_data["buffalogs"]["start_country"] = last_user_login.country
                         new_alert.login_raw_data["buffalogs"]["avg_speed"] = travel_vel
@@ -142,17 +141,17 @@ def check_country(db_user: User, login_field: dict, app_config: Config) -> dict:
     # check "New Country" alert
     if db_user.login_set.filter(country=login_field["country"]).count() == 0:
         alert_info["alert_name"] = AlertDetectionType.NEW_COUNTRY.value
-        alert_info[
-            "alert_desc"
-        ] = f"{AlertDetectionType.NEW_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
+        alert_info["alert_desc"] = (
+            f"{AlertDetectionType.NEW_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
+        )
     # check "Atypical Country" alert
     elif (
         datetime.fromisoformat(login_field["timestamp"]) - db_user.login_set.filter(country=login_field["country"]).last().timestamp
     ).days >= app_config.atypical_country_days:
         alert_info["alert_name"] = AlertDetectionType.ATYPICAL_COUNTRY.value
-        alert_info[
-            "alert_desc"
-        ] = f"{AlertDetectionType.ATYPICAL_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
+        alert_info["alert_desc"] = (
+            f"{AlertDetectionType.ATYPICAL_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
+        )
     return alert_info
 
 
@@ -251,7 +250,7 @@ def calc_distance_impossible_travel(db_user, prev_login, last_login_user_fields)
 
         if vel > app_config.vel_accepted:
             alert_info["alert_name"] = AlertDetectionType.IMP_TRAVEL.value
-            alert_info[
-                "alert_desc"
-            ] = f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
+            alert_info["alert_desc"] = (
+                f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
+            )
     return alert_info, int(vel)

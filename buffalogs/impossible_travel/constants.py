@@ -126,4 +126,4 @@ class IngestionSourceType(models.TextChoices):
     * ELASTICSEARCH: The login data is extracted from Elasticsearch
     """
 
-    ELASTICSEARCH = "elasticsearch", _("Data Ingestion from Elasticsearch")
+    ELASTICSEARCH = "ElasticsearchIngestion", _("Name of the Ingestion class for Elasticsearch")

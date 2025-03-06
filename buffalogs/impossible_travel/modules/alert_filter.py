@@ -10,11 +10,7 @@ from ua_parser import parse
 logger = logging.getLogger(__name__)
 
 
-def match_filters(alert: Alert, app_config: Optional[Config] = None) -> Alert:
-    if app_config:
-        app_config = app_config
-    else:
-        app_config, _ = Config.objects.get_or_create(id=1)
+def match_filters(alert: Alert, app_config: Config) -> Alert:
     db_user = alert.user
 
     # Detection filters - users
@@ -68,7 +64,7 @@ def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) ->
             logger.debug(f"Alert: {db_alert.id} filtered because user: {db_user.username} not in vip_users and enabled_users Config lists")
             db_alert.filter_type.append(AlertFilterType.IS_VIP_FILTER)  # alert filtered because alert_is_vip_only=True but username not in vip_users list
     else:
-        if Config.enabled_users and not _check_username_list_regex(word=db_user.username, values_list=app_config.enabled_users):
+        if app_config.enabled_users and not _check_username_list_regex(word=db_user.username, values_list=app_config.enabled_users):
             # 2. alert filtered because the user is not in the enabled_users list
             logger.debug(f"Alert: {db_alert.id} filtered because user: {db_user.username} not in the enabled_users Config list")
             db_alert.filter_type.append(AlertFilterType.IGNORED_USER_FILTER)

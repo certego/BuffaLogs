@@ -3,15 +3,10 @@ from datetime import datetime, timedelta
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.utils import timezone
-from impossible_travel.constants import IngestionSourceType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules.ingestion_handler import Ingestion
 
 logger = get_task_logger(__name__)
-
-CLASS_NAME_TO_TASK_SETTING_SOURCE = {
-    "ElasticsearchIngestion": IngestionSourceType.ELASTICSEARCH.value,
-}
 
 
 @shared_task(name="BuffalogsCleanModelsPeriodicallyTask")
@@ -58,17 +53,13 @@ def process_logs(given_start_date: datetime = None, given_end_date: datetime = N
         return
 
     # get all the active ingestion sources
-    ingestion_instances = Ingestion.load_ingestion_sources()
-    if not ingestion_instances:
-        logger.error("No active ingestion source has been found")
-        return
+    ingestion_dicts = Ingestion.get_ingestion_sources()
 
     # get or create a TaskSetting object for each active ingestion source in order to keep track of the execution times of each job
-    for ingestion in ingestion_instances:
-        current_source_name = CLASS_NAME_TO_TASK_SETTING_SOURCE[ingestion.__class__.__name__]
+    for ingestion in ingestion_dicts:
         process_task, _ = TaskSettings.objects.get_or_create(
             task_name=process_logs.__name__,
-            ingestion_source=current_source_name,
+            ingestion_source=ingestion["class_name"],
             defaults={"start_date": now - timedelta(minutes=30), "end_date": now - timedelta(minutes=1)},
         )
 
@@ -86,4 +77,4 @@ def process_logs(given_start_date: datetime = None, given_end_date: datetime = N
 
             process_task.start_date, process_task.end_date = start_date, end_date
             process_task.save()
-            ingestion._exec_process_logs(start_date, end_date)
+            Ingestion.str_to_class(ingestion["class_name"]).process_users(start_date=start_date, end_date=end_date, ingestion_config=ingestion)

@@ -1,8 +1,10 @@
 import json
 import logging
 import os
+import sys
 from abc import ABC, abstractmethod
 from datetime import datetime
+from functools import reduce
 
 from django.conf import settings
 from elasticsearch_dsl import Search, connections
@@ -15,57 +17,63 @@ class Ingestion(ABC):
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     @staticmethod
-    def load_ingestion_sources():
-        """Load the configuration ingestion JSON file in order to create the istances for the active ingestion sources"""
-        file_path = settings.CERTEGO_BUFFALOGS_CONFIG_INGESTION_FILE
+    def str_to_class(str):
+        return reduce(getattr, str.split("."), sys.modules[__name__])
+
+    @staticmethod
+    def get_ingestion_sources() -> list:
+        """Load the configuration ingestion JSON file in order to create the istances for the active ingestion sources
+
+        :return: list of the ingestion config dictionaries
+        :rtype: list
+        """
+        file_path = settings.CERTEGO_BUFFALOGS_CONFIG_INGESTION_PATH
 
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Error: The configuration file for the Ingestion: '{file_path}' doesn't exist")
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                config_data = json.load(f)
+            with open(os.path.join(file_path, "ingestion.json"), encoding="utf-8") as f:
+                config_ingestion = json.load(f)
         except json.JSONDecodeError as e:
             raise ValueError(f"Error in the parsing of the json configuration file: '{file_path}': {e}")
 
-        active_sources = config_data.get("active_ingestion_sources", [])
-        ingestion_instances = []
+        active_sources = config_ingestion.get("active_ingestion_sources", [])
+        ingestion_dicts = []
 
         for source in active_sources:
-            ingestion_class = INGESTION_SOURCES.get(source)
-            if ingestion_class:
-                ingestion_instances.append(ingestion_class(config_data[source]))
-            else:
-                raise TypeError(f"Ingestion source {source} is not supported")
+            try:
+                ingestion_dicts.append(config_ingestion[source])
+            except KeyError:
+                Ingestion.logger.error(f"Ingestion source {source} is not supported")
+                pass
 
-        return ingestion_instances  # return the list of instances of the active ingestion sources
+        return ingestion_dicts  # return the list of config dictionaries for each active ingestion sources
 
     @abstractmethod
-    def _exec_process_logs(self, start_date: datetime, end_date: datetime, ingestion_config: dict = None):
-        """Starting the execution for the given time range
+    def process_users(self, start_date: datetime, end_date: datetime, ingestion_config: dict = None):
+        """Abstract method that implement the extraction of the users logged in between the time range considered defined by (start_date, end_date).
+        This method will be different implemented based on the ingestion source used.
 
-        :param start_date: Start datetime
-        :type start_date: datetime
-        :param end_date: End datetime
-        :type end_date: datetime
-        """ """Abstract method that implement the extraction of the users logged in between the time range considered defined by (start_date, end_date)
-
-        this method will be different implemented based on the ingestion source used
+        :param start_date: the initial datetime from which the users are considered
+        :type start_date: datetime (with tzinfo=datetime.timezone.utc)
+        :param end_date: the final datetime within which the users are considered
+        :type end_date: datetime (with tzinfo=datetime.timezone.utc)
         """
-        raise NotImplementedError
+        pass
 
     @abstractmethod
-    def _process_user(self, db_user: User, start_date: datetime, end_date: datetime):
+    def process_user_logins(self, db_user: User, start_date: datetime, end_date: datetime):
         """Abstract method that implement the extraction of the logins of the given user in the time range defined by (start_date, end_date)
 
         :param db_user:
         :type db_user: User object
-        :param start_date:   (with tzinfo=datetime.timezone.utc)
-        :type start_date:
-        :param end_date:   (with tzinfo=datetime.timezone.utc)
-        :type end_date:
+        :param start_date: the initial datetime from which the logins of the user are considered
+        :type start_date: datetime (with tzinfo=datetime.timezone.utc)
+        :param end_date: the final datetime within which the logins of the user are considered
+        :type end_date: datetime (with tzinfo=datetime.timezone.utc)
         """
-        raise NotImplementedError
+        pass
 
     def normalize_response_data(self, db_user: User, user_logins: list):
         """General function that normalizes the list of logins got
@@ -106,13 +114,15 @@ class Ingestion(ABC):
 
 
 class ElasticsearchIngestion(Ingestion):
-    def _exec_process_logs(self, start_date: datetime, end_date: datetime, ingestion_config: dict = None) -> list:
+    def process_users(self, start_date: datetime, end_date: datetime, elastic_ingestion_config: dict = None) -> list:
         """Starting the execution for the given time range, in order to take all the users that have logged in to the system in that time range
 
         :param start_date: Start datetime
         :type start_date: datetime
         :param end_date: End datetime
         :type end_date: datetime
+        :param elastic_ingestion_config: Config of the elasticsearch ingestion
+        :type elastic_ingestion_config: dict
 
         :return: the list of User objects
         :rtype: list
@@ -120,21 +130,11 @@ class ElasticsearchIngestion(Ingestion):
         logged_users_objects = []
         self.logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
 
-        # Load ingestion configuration if not provided
-        if ingestion_config is None:
-            config_path = os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_INGESTION_FILE)
-            try:
-                with open(config_path, "r") as file:
-                    ingestion_config = json.load(file)
-            except (FileNotFoundError, json.JSONDecodeError) as e:
-                self.logger.error(f"Error loading ingestion configuration file: {e}")
-                return
-
         # elasticsearch connection
-        connections.create_connection(hosts=ingestion_config["elasticsearch"]["url"], timeout=90, verify_certs=False)
+        connections.create_connection(hosts=elastic_ingestion_config["url"], timeout=90, verify_certs=False)
         # elasticsaerch query to get the logged users
         s = (
-            Search(index=ingestion_config["elasticsearch"]["indexes"])
+            Search(index=elastic_ingestion_config["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
             .query("match", **{"event.category": "authentication"})
             .query("match", **{"event.outcome": "success"})
@@ -156,7 +156,7 @@ class ElasticsearchIngestion(Ingestion):
             self.logger.info("No users logged in found")
         return logged_users_objects
 
-    def _process_user(self, db_user: User, start_date: datetime, end_date: datetime):
+    def process_user_logins(self, db_user: User, start_date: datetime, end_date: datetime, ingestion_config: dict):
         """Get info for each user login and normalization
 
         :param db_user: user from db
@@ -167,7 +167,7 @@ class ElasticsearchIngestion(Ingestion):
         :type end_date: timezone
         """
         s = (
-            Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
+            Search(index=ingestion_config["elasticsearch"]["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
             .query("match", **{"user.name": db_user.username})
             .query("match", **{"event.outcome": "success"})
@@ -201,9 +201,3 @@ class ElasticsearchIngestion(Ingestion):
         for hit in response:
             user_logins.append(hit.to_dict())
         self.normalize_response_data(db_user=db_user, user_logins=user_logins)
-
-
-# Map of the available ingestion_source instances
-INGESTION_SOURCES = {
-    "elasticsearch": ElasticsearchIngestion,
-}

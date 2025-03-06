@@ -76,35 +76,35 @@ class TestTasks(TestCase):
         with self.assertRaises(UsersIP.DoesNotExist):
             UsersIP.objects.get(user__username="Lorena")
 
-    @patch.object(ElasticsearchIngestion, "_exec_process_logs")
-    def test_process_logs_data_lost(self, mock_exec_process_logs):
+    @patch.object(ElasticsearchIngestion, "process_users")
+    def test_process_logs_data_lost(self, mockprocess_users):
         # testing the data lost flow
         process_task = TaskSettings.objects.create(
             task_name="process_logs", start_date=timezone.datetime(2023, 4, 18, 10, 0), end_date=timezone.datetime(2023, 4, 18, 10, 30, 0)
         )
-        self.assertEqual("elasticsearch", process_task.ingestion_source)
+        self.assertEqual("ElasticsearchIngestion", process_task.ingestion_source)
         tasks.process_logs()
-        process_task = TaskSettings.objects.get(task_name="process_logs", ingestion_source="elasticsearch")
+        process_task = TaskSettings.objects.get(task_name="process_logs", ingestion_source="ElasticsearchIngestion")
         new_end_date_expected = timezone.now() - timedelta(minutes=1)
         new_start_date_expected = new_end_date_expected - timedelta(minutes=30)
         # data have been lost and start_date and end_date updated to now
         self.assertLessEqual((process_task.start_date - new_start_date_expected).total_seconds(), 5)
         self.assertLessEqual((process_task.end_date - new_end_date_expected).total_seconds(), 5)
-        mock_exec_process_logs.assert_called_once()
+        mockprocess_users.assert_called_once()
 
     @patch("django.utils.timezone.now", return_value=datetime(2025, 2, 19, 12, 0, tzinfo=timezone.utc))
-    @patch.object(ElasticsearchIngestion, "_exec_process_logs")
-    def test_process_logs_default(self, mock_exec_process_logs, mock_now):
+    @patch.object(ElasticsearchIngestion, "process_users")
+    def test_process_logs_default(self, mockprocess_users, mock_now):
         # test no execution - break
         tasks.process_logs()
-        process_task = TaskSettings.objects.get(ingestion_source="elasticsearch")
+        process_task = TaskSettings.objects.get(ingestion_source="ElasticsearchIngestion")
         self.assertEqual(datetime(2025, 2, 19, 11, 30, tzinfo=timezone.utc), process_task.start_date)
         self.assertEqual(datetime(2025, 2, 19, 11, 59, tzinfo=timezone.utc), process_task.end_date)
-        self.assertEqual(mock_exec_process_logs.call_count, 0)
+        self.assertEqual(mockprocess_users.call_count, 0)
 
     @patch("django.utils.timezone.now", return_value=datetime(2025, 2, 19, 12, 0, tzinfo=timezone.utc))
-    @patch.object(ElasticsearchIngestion, "_exec_process_logs")
-    def test_process_logs_loop(self, mock_exec_process_logs, mock_now):
+    @patch.object(ElasticsearchIngestion, "process_users")
+    def test_process_logs_loop(self, mockprocess_users, mock_now):
         # fix the "timezone.now()" to test better the execution
         fixed_now = mock_now.return_value
         # test the loop data execution (6 times)
@@ -116,7 +116,7 @@ class TestTasks(TestCase):
         self.assertEqual(datetime(2025, 2, 19, 7, 29, tzinfo=timezone.utc), process_task.end_date)
         # Let entire exec for loop
         tasks.process_logs()
-        self.assertEqual(mock_exec_process_logs.call_count, 6)
+        self.assertEqual(mockprocess_users.call_count, 6)
         process_task.refresh_from_db()
         # check the final datetimes after the loop
         self.assertEqual(datetime(2025, 2, 19, 9, 59, tzinfo=timezone.utc), process_task.start_date)
@@ -124,7 +124,7 @@ class TestTasks(TestCase):
         # Now the loop is not executed all the 6 times, just 3 --> total 9 times
         tasks.process_logs()
         process_task.refresh_from_db()
-        self.assertEqual(mock_exec_process_logs.call_count, 9)
+        self.assertEqual(mockprocess_users.call_count, 9)
         # check the final datetimes after the second "partial" loop
         self.assertEqual(datetime(2025, 2, 19, 11, 29, tzinfo=timezone.utc), process_task.start_date)
         self.assertEqual(datetime(2025, 2, 19, 11, 59, tzinfo=timezone.utc), process_task.end_date)
