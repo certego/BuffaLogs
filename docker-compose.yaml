@@ -21,12 +21,13 @@ services:
             - buffalogs
         volumes:
             - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
-            # - ./config/nginx/certs:/etc/nginx/certs:ro
+           # - ./config/nginx/certs:/etc/nginx/certs:ro
             - buffalogs_django_static:/var/www:ro
             - buffalogs_nginx_sockets:/var/run/nginx-sockets
             - buffalogs_nginx_logs:/var/log/nginx:rw
         ports:
             - "80:80"
+           # - "443:443"
 
     buffalogs:
         container_name: buffalogs
