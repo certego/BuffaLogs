@@ -48,13 +48,19 @@ class Alert(models.Model):
     updated = models.DateTimeField(auto_now=True)
     description = models.TextField()
     is_vip = models.BooleanField(default=False)
-    is_filtered = models.BooleanField(default=False, help_text="Show if the alert has been filtered because of some filter (listed in the filter_type field)")
     filter_type = ArrayField(
         models.CharField(max_length=50, choices=AlertFilterType.choices, blank=True),
         blank=True,
         default=list,
         help_text="List of filters that disabled the related alert",
     )
+
+    @property
+    def is_filtered(self):
+        """Returns if the alert is filtered based on the filter_type field"""
+        if self.filter_type:
+            return True
+        return False
 
     class Meta:
         constraints = [
