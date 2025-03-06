@@ -7,8 +7,7 @@ from impossible_travel.modules import impossible_travel
 class TestImpossibleTravel(TestCase):
     imp_travel = impossible_travel.Impossible_Travel()
 
-    @classmethod
-    def setUpTestData(cls):
+    def setUp(self):
         Config.objects.create(
             id=1,
             ignored_users=["N/A", "Not Available"],
