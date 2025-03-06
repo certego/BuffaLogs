@@ -1,33 +1,51 @@
+import json
+import os
+
+from django.conf import settings
 from django.test import TestCase
-from impossible_travel.modules.ingestion_handler import Ingestion
+from impossible_travel.modules.ingestion_handler import ElasticsearchIngestion, Ingestion
+
+
+def load_ingestion_config_data():
+    file_path = settings.CERTEGO_BUFFALOGS_CONFIG_INGESTION_PATH
+    with open(os.path.join(file_path, "ingestion.json"), encoding="utf-8") as f:
+        config_ingestion = json.load(f)
+    return config_ingestion
 
 
 class IngestionTestCase(TestCase):
+    config_ingestion = load_ingestion_config_data()
 
-    # Tests for the ingestion source: Elasticsearch
-    def test_load_ingestion_sources__elasticsearch(self):
-        ingestion_source_received = Ingestion.load_ingestion_sources()
-        self.assertEqual(type(ingestion_source_received), list)
-        "impossible_travel.modules.ingestion_handler.ElasticsearchIngestion"
+    def test_str_to_class(self):
+        # Test the str_to_class static method
+        active_ingestion_sources = self.config_ingestion["active_ingestion_sources"]
+        for active_source in active_ingestion_sources:
+            # each class_name of the active source has to be implemented and the abstrach methods too
+            assert Ingestion.str_to_class(self.config_ingestion[active_source]["class_name"])
 
-    def test_process_user__elasticsearch(self):
-        pass
-        # testing the process_user function for the Elasticsearch ingestion source
-        # @patch("impossible_travel.tasks.check_fields")
-        # @patch.object(tasks.Search, "execute")
-        # def test_process_user(self, mock_execute, mock_check_fields):
-        #     data_elastic_sorted_dot_not = []
-        #     imp_travel = impossible_travel.Impossible_Travel()
-        #     data_elastic = load_test_data("test_data_process_user")
-        #     data_elastic_sorted = sorted(data_elastic, key=lambda d: d["@timestamp"])
-        #     for data in data_elastic_sorted:
-        #         data_elastic_sorted_dot_not.append(DictStruct(kwargs=data))
-        #     data_results = load_test_data("test_data_process_user_result")
-        #     mock_execute.return_value = data_elastic_sorted_dot_not
-        #     start_date = timezone.datetime(2023, 3, 8, 0, 0, 0)
-        #     end_date = timezone.datetime(2023, 3, 8, 23, 59, 59)
-        #     iso_start_date = imp_travel.validate_timestamp(start_date)
-        #     iso_end_date = imp_travel.validate_timestamp(end_date)
-        #     db_user = User.objects.get(username="Lorena Goldoni")
-        #     tasks.process_user(db_user, iso_start_date, iso_end_date)
-        #     mock_check_fields.assert_called_once_with(db_user, data_results)
+    def test_ingestion_config_file_classes(self):
+        # Test the presence of necessary fields in the config file
+        active_ingestion_sources = self.config_ingestion["active_ingestion_sources"]
+        self.assertEqual(list, type(active_ingestion_sources))
+        # check the presence of necessary fields in the ingestion configs for each source
+        for source in active_ingestion_sources:
+            self.assertIsNotNone(self.config_ingestion[source])
+            self.assertTrue(source in self.config_ingestion.keys())
+            self.assertTrue("class_name" in self.config_ingestion[source])
+            self.assertTrue("url" in self.config_ingestion[source])
+            self.assertTrue("username" in self.config_ingestion[source])
+            self.assertTrue("password" in self.config_ingestion[source])
+            self.assertTrue("custom_mapping" in self.config_ingestion[source])
+
+    def test_get_ingestion_sources_generic(self):
+        ingestion_source_received = Ingestion.get_ingestion_sources()
+        self.assertEqual(len(self.config_ingestion["active_ingestion_sources"]), len(ingestion_source_received))
+
+    def test_get_ingestion_sources__elasticsearch(self):
+        # Tests for the ingestion source: Elasticsearch
+        active_ingestion_sources = self.config_ingestion["active_ingestion_sources"]
+        # "elasticsearch" is always active and its config must exist
+        self.assertTrue("elasticsearch" in active_ingestion_sources)
+        self.assertTrue("elasticsearch" in self.config_ingestion.keys())
+        self.assertIn("ElasticsearchIngestion", self.config_ingestion["elasticsearch"].values())
+        self.assertIsInstance(Ingestion.str_to_class("ElasticsearchIngestion"), ElasticsearchIngestion.__class__)
