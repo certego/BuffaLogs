@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.postgres.forms import SimpleArrayField
 
 from .constants import AlertDetectionType, AlertFilterType, IngestionSourceType, UserRiskScoreType
-from .models import Alert, Config, TaskSettings, User, UsersIP
+from .models import Alert, Config, TaskSettings, User
 
 
 class MultiChoiceArrayWidget(forms.SelectMultiple):

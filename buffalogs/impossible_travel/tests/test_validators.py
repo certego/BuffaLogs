@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from impossible_travel.validators import *
+from impossible_travel.validators import validate_ips_or_network, validate_string_or_regex
 
 
 class ValidatorsTest(TestCase):
@@ -52,10 +52,10 @@ class ValidatorsTest(TestCase):
 
     def test_validate_ips_or_network_invalid_type(self):
         """Testing the function validate_ips_or_network with an incorrect type"""
-        with self.assertRaises(ValidationError) as context:
+        with self.assertRaises(ValidationError):
             validate_ips_or_network(["192.0.2.12", 1])
 
     def test_validate_ips_or_network_invalid_values(self):
         """Testing the function validate_ips_or_network with incorrect values"""
-        with self.assertRaises(ValidationError) as context:
+        with self.assertRaises(ValidationError):
             validate_ips_or_network(["12.45.5"])

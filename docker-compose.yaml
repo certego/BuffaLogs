@@ -40,6 +40,7 @@ services:
         volumes:
             - buffalogs_django_static:/var/www
             - buffalogs_nginx_sockets:/var/run/nginx-sockets
+            - ./config:/opt/certego/config:ro
         depends_on:
             - buffalogs_postgres
             - buffalogs_rabbitmq

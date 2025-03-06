@@ -70,12 +70,16 @@ class LoginSerializer(rfs.ModelSerializer):
 class LogoutSerializer(rfs.Serializer):
     default_error_message = {"bad_token": ("Token is expired or invalid")}
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tokens = None
+
     def validate(self, attrs):
         user = self.context["request"].user
         self.tokens = user.tokens()
         return attrs
 
-    def save(self):
+    def save(self, **kwargs):
         try:
             logout(self.context["request"])
         except TokenError:

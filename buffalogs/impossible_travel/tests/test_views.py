@@ -32,7 +32,7 @@ class TestViews(APITestCase):
                     latitude=40.364,
                     longitude=-79.8605,
                     country="United States",
-                    user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+                    user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",  # pylint: disable=line-too-long
                 ),
                 Login(
                     user=db_user,
@@ -54,7 +54,7 @@ class TestViews(APITestCase):
                     latitude=40.364,
                     longitude=-79.8605,
                     country="United States",
-                    user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+                    user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",  # pylint: disable=line-too-long
                 ),
                 Login(
                     user=db_user,
@@ -94,7 +94,7 @@ class TestViews(APITestCase):
                         "ip": "1.2.3.4",
                         "lat": 40.364,
                         "lon": -79.8605,
-                        "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+                        "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",  # pylint: disable=line-too-long
                         "index": "cloud",
                         "country": "United States",
                         "timestamp": "2023-06-19T17:17:31.358Z",
@@ -109,7 +109,7 @@ class TestViews(APITestCase):
                         "ip": "1.2.3.4",
                         "lat": 40.364,
                         "lon": -79.8605,
-                        "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+                        "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",  # pylint: disable=line-too-long
                         "index": "cloud",
                         "country": "United States",
                         "timestamp": "2023-06-19T18:15:33.548Z",
@@ -124,7 +124,7 @@ class TestViews(APITestCase):
                         "ip": "1.2.3.4",
                         "lat": 40.364,
                         "lon": -79.8605,
-                        "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+                        "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",  # pylint: disable=line-too-long
                         "index": "cloud",
                         "country": "United States",
                         "timestamp": "2023-06-20T10:17:33.358Z",

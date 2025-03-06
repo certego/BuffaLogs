@@ -3,7 +3,6 @@ import os
 import random
 
 import yaml
-from django.utils import timezone
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 

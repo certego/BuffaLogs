@@ -8,6 +8,7 @@
 * Modified `BuffalogsProcessLogsTask` in order to process on all the active ingestion sources defined in the *config/buffalogs/ingestion.json* configuration file
 * Refactoring on modules, removed: **impossible_travel.py**, **login_from_new_country.py** and **login_from_new_device.py**, in order to use just 3 modules for the 3 main processes: `ingestion_handler.py`, `detection.py` and `alert_filter.py`
 * Updated CI env: ubuntu from 22.04 to 24.04, python from 3.10 to 3.12 and Elasticsearch and Kibana from 3.17.13 to 3.17.27
+* Updated Certego shared CI to 1.5.0
 * Updated containers: Elasticsearch and Kibana from 3.17.13 to 3.17.27
 * Changed the **UserRiskScoreType.is_equal_or_higher(...)** method with the **UserRiskScoreType.compare_risk(...)** function
 * Changed users risk_level ranges: [1,3] alerts = "Low" level, [4,6] alerts = "Medium" level, >= 7 alerts = "High" level
@@ -15,6 +16,7 @@
 * Removed the `update_risk_level()` function from the `BuffalogsCleanModelsPeriodicallyTask` periodic task. Now, the new risk_score is calculated as soon as an alert is triggered
 ### Bugfix
 * Fixed elasticsearch port in *load_templates.sh* script
+* Updated linters to solve conflicts
 
 
 ## 1.4.x
