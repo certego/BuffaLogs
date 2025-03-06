@@ -199,7 +199,7 @@ def process_user(db_user, start_date, end_date):
         if "source" in hit:
             tmp = {"timestamp": hit["@timestamp"]}
             tmp["id"] = hit.meta["id"]
-            if hit.meta["index"]:
+            if hit.meta["index"].split("-")[0] == "fw":
                 tmp["index"] = "fw-proxy"
             else:
                 tmp["index"] = hit.meta["index"].split("-")[0]
