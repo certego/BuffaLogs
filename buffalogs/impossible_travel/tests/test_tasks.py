@@ -8,22 +8,24 @@ from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel import tasks
-from impossible_travel.modules import impossible_travel
 from impossible_travel.constants import AlertDetectionType, AlertFilterType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
+from impossible_travel.modules import impossible_travel
 from impossible_travel.tests.setup import Setup
+
 
 class DictStruct:
     def __init__(self, kwargs):
         for key, value in kwargs.items():
             if isinstance(value, dict):
-                value = DictStruct(value)  
-            setattr(self, key, value) 
+                value = DictStruct(value)
+            setattr(self, key, value)
+
     def __contains__(self, key):
-        return key in self.__dict__  
+        return key in self.__dict__
 
     def __getitem__(self, key):
-        return self.__dict__[key] 
+        return self.__dict__[key]
 
     def __repr__(self):
         return f"DictStruct({self.__dict__})"

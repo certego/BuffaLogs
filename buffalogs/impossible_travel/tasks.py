@@ -219,17 +219,18 @@ def process_user(db_user, start_date, end_date):
                     tmp["lat"] = None
                     tmp["lon"] = None
                     tmp["country"] = ""
-                        
+
             filtered_tmp = {
                 "timestamp": tmp["timestamp"],
                 "lat": tmp.get("lat"),
                 "lon": tmp.get("lon"),
                 "country": tmp.get("country", ""),
                 "agent": tmp.get("agent", ""),
-                }            
-            fields.append(filtered_tmp) # up to now: no geo info --> login discard
-            
+            }
+            fields.append(filtered_tmp)  # up to now: no geo info --> login discard
+
     check_fields(db_user, fields)
+
 
 @shared_task(name="BuffalogsProcessLogsTask")
 def process_logs():
