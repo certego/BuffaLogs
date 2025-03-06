@@ -1,8 +1,8 @@
 import json
 import os
 from datetime import datetime, timedelta
-from unittest.mock import patch
 
+from django.db import connection
 from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
@@ -13,34 +13,77 @@ from impossible_travel.tests.setup import Setup
 
 
 def load_test_data(name):
-    DATA_PATH = "impossible_travel/tests/test_data"
-    with open(os.path.join(DATA_PATH, name + ".json")) as file:
+    DATA_PATH = "impossible_travel/tests/test_data"  # pylint: disable=invalid-name
+    with open(os.path.join(DATA_PATH, name + ".json"), encoding="utf-8") as file:
         data = json.load(file)
     return data
 
 
 class TestTasks(TestCase):
+    # dicts for alert.login_raw_data field
+    raw_data_NEW_DEVICE = {
+        "id": "orig_id_1",
+        "index": "cloud",
+        "ip": "1.2.3.4",
+        "lat": 40.6079,
+        "lon": -74.4037,
+        "country": "United States",
+        "agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+        "timestamp": "2025-02-13T08:29:17.560Z",
+        "organization": "ISP1",
+    }
+    raw_data_NEW_COUNTRY = {
+        "id": "orig_id_2",
+        "index": "cloud",
+        "ip": "5.6.7.8",
+        "lat": 54.2414,
+        "lon": 77.591,
+        "country": "India",
+        "agent": "Mozilla/5.0 (Linux; Android 12; moto g stylus 5G) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36v",
+        "timestamp": "2025-02-13T09:16:25.000Z",
+        "organization": "ISP2",
+    }
+    raw_data_IMP_TRAVEL = {
+        "id": "orig_id_3",
+        "index": "cloud",
+        "ip": "9.10.11.12",
+        "lat": 43.3178,
+        "lon": -5.4125,
+        "country": "Italy",
+        "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246",
+        "buffalogs": {"avg_speed": 810, "start_lat": 45.748, "start_lon": 4.85, "start_country": "France"},
+        "timestamp": "2025-02-13T09:06:11.000Z",
+        "organization": "ISP3",
+    }
+
     @classmethod
-    def setUpTestData(self):
+    def setUpTestData(cls):
         setup_obj = Setup()
         setup_obj.setup()
+
+    def reset_auto_increment(self, model):
+        # reset the id number sequence after each tearDown
+        table_name = model._meta.db_table  # get the django table name, es. if model=Alert --> table_name=impossible_travel_alert
+        with connection.cursor() as cursor:
+            # get the sequence name dinamically
+            cursor.execute(f"SELECT pg_get_serial_sequence('{table_name}', 'id'); ")  # noqa: E702
+            sequence_name = cursor.fetchone()[0]  # Estrai il nome della sequenza
+
+            if sequence_name:
+                # reset the id sequence starting from 1
+                cursor.execute(f"SELECT setval('{sequence_name}', 1, false); ")  # noqa: E702
+
+    def tearDown(self):
+        # delete all alerts after each test, to clean the environment
+        Alert.objects.all().delete()
+        self.reset_auto_increment(model=Alert)
 
     def test_clear_models_periodically(self):
         """Testing clear_models_periodically() function"""
         user_obj = User.objects.create(username="Lorena")
         Login.objects.create(user=user_obj, timestamp=timezone.now())
-        raw_data = {
-            "id": 1,
-            "index": "cloud",
-            "ip": "1.2.3.4",
-            "lat": 40.6079,
-            "lon": -74.4037,
-            "country": "United States",
-            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
-            "timestamp": "2023-04-03T14:01:47.907Z",
-        }
-        UsersIP.objects.create(user=user_obj, ip=raw_data["ip"])
-        Alert.objects.create(user=user_obj, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data=raw_data)
+        UsersIP.objects.create(user=user_obj, ip=self.raw_data_NEW_COUNTRY["ip"])
+        Alert.objects.create(user=user_obj, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data=self.raw_data_NEW_COUNTRY)
         self.assertTrue(User.objects.filter(username="Lorena").exists())
         self.assertTrue(Login.objects.filter(user=user_obj).exists())
         self.assertTrue(Alert.objects.filter(user=user_obj).exists())
@@ -51,7 +94,7 @@ class TestTasks(TestCase):
         Login.objects.filter(user=user_obj).update(updated=old_date)
         Alert.objects.filter(user=user_obj).update(updated=old_date)
         UsersIP.objects.filter(user=user_obj).update(updated=old_date)
-        tasks.clear_models_periodically()
+        tasks.clean_models_periodically()
         with self.assertRaises(User.DoesNotExist):
             User.objects.get(username="Lorena")
         with self.assertRaises(Login.DoesNotExist):
@@ -62,56 +105,132 @@ class TestTasks(TestCase):
             UsersIP.objects.get(user__username="Lorena")
 
     def test_update_risk_level_norisk(self):
-        """Test update_risk_level() function for no_risk user"""
+        """Test default no_risk level user"""
         # 0 alert --> no risk
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
-        tasks.update_risk_level()
         db_user = User.objects.get(username="Lorena Goldoni")
         self.assertEqual("No risk", db_user.risk_score)
 
     def test_update_risk_level_low(self):
-        """Test update_risk_level() function for low risk user"""
-        # 1 alert --> Low risk
+        # test update_risk_level() function for low risk user
+        # 2 alerts --> Low risk
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
-        Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL.value, login_raw_data="Test", description="Test_Description")
-        tasks.update_risk_level()
-        db_user = User.objects.get(username="Lorena Goldoni")
+        alert = Alert.objects.create(
+            user=db_user, name=AlertDetectionType.IMP_TRAVEL.value, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description"
+        )
+        self.assertTrue(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("Low", db_user.risk_score)
+        self.assertEqual(2, db_user.alert_set.count())
+        # first user's alert must be the IMP_TRAVEL one
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL.value, db_user.alert_set.get(id=1).name)
+        # then, the second alert must be the USER_RISK_THRESHOLD
+        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
+        self.assertEqual(
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
+        )
 
     def test_update_risk_level_medium(self):
-        """Test update_risk_level() function for medium risk user"""
-        #   3 alerts --> Medium risk
+        # test update_risk_level() function for medium risk user
+        #   4 alerts --> Medium risk
         self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
         db_user = User.objects.get(username="Lorena Goldoni")
-        Alert.objects.bulk_create(
-            [
-                Alert(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data="Test1", description="Test_Description1"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data="Test2", description="Test_Description2"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test3", description="Test_Description3"),
-            ]
+        # first alert
+        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description1")
+        self.assertTrue(tasks.update_risk_level(db_user, triggered_alert=alert))
+        self.assertEqual("Low", db_user.risk_score)
+        self.assertEqual(2, db_user.alert_set.count())
+        # first user's alert must be the IMP_TRAVEL one
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL.value, db_user.alert_set.get(id=1).name)
+        # then, the second alert must be the USER_RISK_THRESHOLD
+        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
+        self.assertEqual(
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
         )
-        tasks.update_risk_level()
-        db_user = User.objects.get(username="Lorena Goldoni")
+        # second alert
+        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data=self.raw_data_NEW_DEVICE, description="Test_Description2")
+        # no new USER_RISK_THRESHOLD alert
+        self.assertFalse(tasks.update_risk_level(db_user, triggered_alert=alert))
+        self.assertEqual("Low", db_user.risk_score)
+        self.assertEqual(3, db_user.alert_set.count())
+        # first user's alert must be the IMP_TRAVEL one
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL.value, db_user.alert_set.get(id=1).name)
+        # then, the second alert must be the USER_RISK_THRESHOLD
+        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
+        self.assertEqual(
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
+        )
+        self.assertEqual(AlertDetectionType.NEW_DEVICE, db_user.alert_set.get(id=3).name)
+        # third alert
+        alert = Alert.objects.create(
+            user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data=self.raw_data_NEW_COUNTRY, description="Test_Description3"
+        )
+        # USER_RISK_THRESHOLD alert
+        self.assertTrue(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("Medium", db_user.risk_score)
+        self.assertEqual(5, db_user.alert_set.count())
+        # first user's alert must be the IMP_TRAVEL one
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL.value, db_user.alert_set.get(id=1).name)
+        # then, the second alert must be the USER_RISK_THRESHOLD
+        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
+        self.assertEqual(
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
+        )
+        self.assertEqual(AlertDetectionType.NEW_DEVICE, db_user.alert_set.get(id=3).name)
+        self.assertEqual(AlertDetectionType.NEW_COUNTRY, db_user.alert_set.get(id=4).name)
+        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=5).name)
+        self.assertEqual(
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from Low to Medium", db_user.alert_set.get(id=5).description
+        )
+        # fourth alert
+        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description4")
+        # no new USER_RISK_THRESHOLD alert
+        self.assertFalse(tasks.update_risk_level(db_user, triggered_alert=alert))
+        self.assertEqual("Medium", db_user.risk_score)
+        self.assertEqual(6, db_user.alert_set.count())
+        # first user's alert must be the IMP_TRAVEL one
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL.value, db_user.alert_set.get(id=1).name)
+        # then, the second alert must be the USER_RISK_THRESHOLD
+        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=2).name)
+        self.assertEqual(
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from No risk to Low", db_user.alert_set.get(id=2).description
+        )
+        self.assertEqual(AlertDetectionType.NEW_DEVICE, db_user.alert_set.get(id=3).name)
+        self.assertEqual(AlertDetectionType.NEW_COUNTRY, db_user.alert_set.get(id=4).name)
+        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=5).name)
+        self.assertEqual(
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from Low to Medium", db_user.alert_set.get(id=5).description
+        )
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL, db_user.alert_set.get(id=6).name)
 
     def test_update_risk_level_high(self):
-        """Test update_risk_level() function for high risk user"""
+        # test update_risk_level() function for high risk user
         #   5 alerts --> High risk
-        self.assertTrue(User.objects.filter(username="Lorena Goldoni").exists())
+        self.test_update_risk_level_medium()
         db_user = User.objects.get(username="Lorena Goldoni")
-        Alert.objects.bulk_create(
-            [
-                Alert(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data="Test1", description="Test_Description1"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data="Test2", description="Test_Description2"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test3", description="Test_Description3"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test4", description="Test_Description4"),
-                Alert(user=db_user, name=AlertDetectionType.NEW_COUNTRY, login_raw_data="Test5", description="Test_Description5"),
-            ]
-        )
-        tasks.update_risk_level()
-        db_user = User.objects.get(username="Lorena Goldoni")
+        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description5")
+        # new USER_RISK_THRESHOLD alert
+        self.assertTrue(tasks.update_risk_level(db_user, triggered_alert=alert))
         self.assertEqual("High", db_user.risk_score)
+        self.assertEqual(8, db_user.alert_set.count())
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL, db_user.alert_set.get(id=7).name)
+        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, db_user.alert_set.get(id=8).name)
+        self.assertEqual(
+            "User risk_score increased for User: Lorena Goldoni, who changed risk_score from Medium to High", db_user.alert_set.get(id=8).description
+        )
+        # add some other alerts
+        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description6")
+        # no USER_RISK_THRESHOLD alert
+        self.assertFalse(tasks.update_risk_level(db_user, triggered_alert=alert))
+        self.assertEqual("High", db_user.risk_score)
+        self.assertEqual(9, db_user.alert_set.count())
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL, db_user.alert_set.get(id=9).name)
+        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description6")
+        # no USER_RISK_THRESHOLD alert
+        self.assertFalse(tasks.update_risk_level(db_user, triggered_alert=alert))
+        self.assertEqual("High", db_user.risk_score)
+        self.assertEqual(10, db_user.alert_set.count())
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL, db_user.alert_set.get(id=10).name)
 
     def test_set_alert(self):
         # Add an alert and check if it is correctly inserted in the Alert Model
@@ -141,7 +260,7 @@ class TestTasks(TestCase):
         db_user = User.objects.get(username="Lorena Goldoni")
         db_login = Login.objects.filter(user=db_user).first()
         timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
+        login_data = self.raw_data_IMP_TRAVEL
         name = AlertDetectionType.IMP_TRAVEL
         desc = f"{name} for User: {db_user.username}, \
                     at: {timestamp}, from: ({db_login.latitude}, {db_login.longitude})"
@@ -274,23 +393,31 @@ class TestTasks(TestCase):
         tasks.check_fields(db_user, fields1)
         # First part - Expected alerts in Alert Model:
         #   1. at 2023-05-03T06:55:31.768Z alert NEW DEVICE
-        #   2. at 2023-05-03T06:55:31.768Z alert NEW COUNTRY
-        #   3. at 2023-05-03T06:55:31.768Z alert IMP TRAVEL
-        #   4. at 2023-05-03T06:57:27.768Z alert NEW DEVICE
-        #   4. at 2023-05-03T06:57:27.768Z alert NEW COUNTRY
-        #   5. at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
-        #   6. at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
-        self.assertEqual(7, Alert.objects.filter(user=db_user).count())
+        #   2. alert User Risk Threshold (from No risk to Low level)
+        #   3. at 2023-05-03T06:55:31.768Z alert NEW COUNTRY
+        #   4. at 2023-05-03T06:55:31.768Z alert IMP TRAVEL
+        #   5. alert User Risk Threshold (from Low to Medium level)
+        #   6. at 2023-05-03T06:57:27.768Z alert ANONYMOUS_IP_LOGIN
+        #   7. at 2023-05-03T06:57:27.768Z alert NEW DEVICE
+        #   8. at 2023-05-03T06:57:27.768Z alert NEW COUNTRY
+        #   9. alert User Risk Threshold (from Medium to High level)
+        #   10. at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
+        #   11. at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
+        self.assertEqual(11, Alert.objects.filter(user=db_user).count())
         self.assertEqual(0, Alert.objects.filter(is_filtered=True).count())
         self.assertEqual(0, Alert.objects.filter(~Q(filter_type=[])).count())
-        self.assertEqual(7, Alert.objects.filter(is_filtered=False).count())
-        self.assertEqual(7, Alert.objects.filter(filter_type=[]).count())
+        self.assertEqual(11, Alert.objects.filter(is_filtered=False).count())
+        self.assertEqual(11, Alert.objects.filter(filter_type=[]).count())
         new_device_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE)
         self.assertEqual(2, new_device_alerts_fields1.count())
         new_country_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY)
         self.assertEqual(2, new_country_alerts_fields1.count())
         imp_travel_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
         self.assertEqual(3, imp_travel_alerts_fields1.count())
+        user_risk_threshold_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.USER_RISK_THRESHOLD)
+        self.assertEqual(3, user_risk_threshold_alerts_fields1.count())
+        anonymous_ip_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.ANONYMOUS_IP_LOGIN)
+        self.assertEqual(1, anonymous_ip_alerts_fields1.count())
         # check new_device alerts for fields1 logins
         self.assertEqual("New Device", new_device_alerts_fields1[0].name)
         self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z", new_device_alerts_fields1[0].description)
@@ -306,18 +433,43 @@ class TestTasks(TestCase):
         # check imp_travel alerts for fields1 logins
         self.assertEqual("Imp Travel", imp_travel_alerts_fields1[0].name)
         self.assertEqual(
-            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z, from: United States, previous country: India, distance covered at 133973 Km/h",
+            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z, "
+            + "from: United States, previous country: India, distance covered at 133973 Km/h",
             imp_travel_alerts_fields1[0].description,
         )
         self.assertEqual("Imp Travel", imp_travel_alerts_fields1[1].name)
         self.assertEqual(
-            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z, from: Japan, previous country: United States, distance covered at 344009 Km/h",
+            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z, from: Japan, "
+            + "previous country: United States, distance covered at 344009 Km/h",
             imp_travel_alerts_fields1[1].description,
         )
         self.assertEqual("Imp Travel", imp_travel_alerts_fields1[2].name)
         self.assertEqual(
-            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T07:10:23.154Z, from: United States, previous country: Japan, distance covered at 52564 Km/h",
+            "Impossible Travel detected for User: Aisha Delgado, at: 2023-05-03T07:10:23.154Z, "
+            + "from: United States, previous country: Japan, distance covered at 52564 Km/h",
             imp_travel_alerts_fields1[2].description,
+        )
+        # check user_risk_threshold alerts for fields1 logins
+        self.assertEqual("User Risk Threshold", user_risk_threshold_alerts_fields1[0].name)
+        self.assertEqual(
+            "User risk_score increased for User: Aisha Delgado, who changed risk_score from No risk to Low",
+            user_risk_threshold_alerts_fields1[0].description,
+        )
+        self.assertEqual("User Risk Threshold", user_risk_threshold_alerts_fields1[1].name)
+        self.assertEqual(
+            "User risk_score increased for User: Aisha Delgado, who changed risk_score from Low to Medium",
+            user_risk_threshold_alerts_fields1[1].description,
+        )
+        self.assertEqual("User Risk Threshold", user_risk_threshold_alerts_fields1[2].name)
+        self.assertEqual(
+            "User risk_score increased for User: Aisha Delgado, who changed risk_score from Medium to High",
+            user_risk_threshold_alerts_fields1[2].description,
+        )
+        # check anonymous_ip_login alerts for fields1 logins
+        self.assertEqual("Anonymous IP Login", anonymous_ip_alerts_fields1[0].name)
+        self.assertEqual(
+            "Login from an anonymous IP from IP: 203.0.113.20 by User: Aisha Delgado",
+            anonymous_ip_alerts_fields1[0].description,
         )
         self.assertEqual(0, Alert.objects.filter(user=db_user, filter_type=["is_vip_filter"]).count())
 
@@ -327,17 +479,17 @@ class TestTasks(TestCase):
         config.save()
 
         # Second part - Expected new alerts in Alert Model:
-        #   7. at 2023-05-03T07:14:22.768Z alert NEW DEVICE
-        #   8. at 2023-05-03T07:14:22.768Z alert IMP TRAVEL
-        #   9. at 2023-05-03T07:18:38.768Z alert NEW DEVICE
-        #   10. at 2023-05-03T07:18:38.768Z alert IMP TRAVEL
-        #   11. at 2023-05-03T07:20:36.154Z alert IMP TRAVEL
+        #   12. at 2023-05-03T07:14:22.768Z alert NEW DEVICE
+        #   13. at 2023-05-03T07:14:22.768Z alert IMP TRAVEL
+        #   14. at 2023-05-03T07:18:38.768Z alert NEW DEVICE
+        #   15. at 2023-05-03T07:18:38.768Z alert IMP TRAVEL
+        #   16. at 2023-05-03T07:20:36.154Z alert IMP TRAVEL
 
         # get IDs of old alerts to check the new alerts
         new_device_alerts_fields1_ids = list(new_device_alerts_fields1.values_list("id", flat=True))
 
         tasks.check_fields(db_user, fields2)
-        self.assertEqual(12, Alert.objects.filter(user=db_user).count())
+        self.assertEqual(16, Alert.objects.filter(user=db_user).count())
         # get new_device alerts relating to fields2 making query all_new_device_alerts - new_device_alerts_fields1
         all_new_device_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE)
         self.assertEqual(4, all_new_device_alerts.count())

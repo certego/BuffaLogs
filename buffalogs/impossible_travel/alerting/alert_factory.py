@@ -1,8 +1,12 @@
+import json
+import os
+
+from django.conf import settings
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
-import os
-import json
-from django.conf import settings
+from impossible_travel.alerting.http_request import HTTPRequestAlerting
+from impossible_travel.alerting.telegram_alerting import TelegramAlerting
+from impossible_travel.alerting.webhook import WebHookAlerting
 
 class AlertFactory:
     def __init__(self) -> None:
@@ -11,7 +15,10 @@ class AlertFactory:
         self.alert_config = config[config["active_alerter"]]
 
     def _read_config(self) -> dict:
-        with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"), mode="r") as f:
+        """
+        Read the configuration file.
+        """
+        with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"), mode="r", encoding="utf-8") as f:
             config = json.load(f)
         if "active_alerter" not in config:
             raise ValueError("active_alerter not found in alerting.json")
@@ -22,10 +29,19 @@ class AlertFactory:
         return config
 
     def get_alert_class(self) -> BaseAlerting:
-        if self.active_alerter == BaseAlerting.SupportedAlerters.DUMMY:
-            return DummyAlerting(self.alert_config)
-        elif self.active_alerter == BaseAlerting.SupportedAlerters.SLACK:
-            from impossible_travel.alerting.slack_alerter import SlackAlerter
-            return SlackAlerter(self.alert_config)
-        else:
-            raise ValueError(f"Unsupported alerter: {self.active_alerter}")
+        """Creates and return an alerter using the abstract factory"""
+        
+        match self.active_alerter:
+            case BaseAlerting.SupportedAlerters.DUMMY:
+                return DummyAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.SLACK:
+                from impossible_travel.alerting.slack_alerter import SlackAlerter
+                return SlackAlerter(self.alert_config)
+            case BaseAlerting.SupportedAlerters.WEBHOOK:
+                return WebHookAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.HTTPREQUEST:
+                return HTTPRequestAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.TELEGRAM:
+                return TelegramAlerting(self.alert_config)
+            case _:
+                raise ValueError(f"Unsupported alerter: {self.active_alerter}")
