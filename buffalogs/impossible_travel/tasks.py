@@ -199,7 +199,7 @@ def process_user(db_user, start_date, end_date):
         if "source" in hit:
             tmp = {"timestamp": hit["@timestamp"]}
             tmp["id"] = hit.meta["id"]
-            if hit.meta["index"].split("-")[0] == "fw":
+            if hit.meta["index"]:
                 tmp["index"] = "fw-proxy"
             else:
                 tmp["index"] = hit.meta["index"].split("-")[0]
@@ -219,9 +219,17 @@ def process_user(db_user, start_date, end_date):
                     tmp["lat"] = None
                     tmp["lon"] = None
                     tmp["country"] = ""
-                fields.append(tmp)  # up to now: no geo info --> login discard
+                        
+            filtered_tmp = {
+                "timestamp": tmp["timestamp"],
+                "lat": tmp.get("lat"),
+                "lon": tmp.get("lon"),
+                "country": tmp.get("country", ""),
+                "agent": tmp.get("agent", ""),
+                }            
+            fields.append(filtered_tmp) # up to now: no geo info --> login discard
+            
     check_fields(db_user, fields)
-
 
 @shared_task(name="BuffalogsProcessLogsTask")
 def process_logs():

@@ -3,7 +3,7 @@
     "meta": {
       "index": "cloud-test_data-2023-9-5",
       "id": "Abc1",
-      "score": None,
+      "score": null,
       "sort": [
         1693920641064
       ],
@@ -35,7 +35,7 @@
     "meta": {
       "index": "cloud-test_data-2023-9-5",
       "id": "Def2",
-      "score": None,
+      "score": null,
       "sort": [
         1693920641064
       ],
@@ -67,7 +67,7 @@
     "meta": {
       "index": "cloud-test_data-2023-9-5",
       "id": "Ghi3",
-      "score": None,
+      "score": null,
       "sort": [
         1693920641064
       ],
@@ -99,7 +99,7 @@
     "meta": {
       "index": "cloud-test_data-2023-9-5",
       "id": "Lmn4",
-      "score": None,
+      "score": null,
       "sort": [
         1693920641064
       ],
@@ -131,7 +131,7 @@
     "meta": {
       "index": "cloud-test_data-2023-9-5",
       "id": "Opq5",
-      "score": None,
+      "score": null,
       "sort": [
         1693920641064
       ],
@@ -163,7 +163,7 @@
     "meta": {
       "index": "cloud-test_data-2023-9-5",
       "id": "Rst6",
-      "score": None,
+      "score": null,
       "sort": [
         1693920641064
       ],
@@ -195,7 +195,7 @@
     "meta": {
       "index": "cloud-test_data-2023-9-5",
       "id": "Uvw7",
-      "score": None,
+      "score": null,
       "sort": [
         1693920641064
       ],
@@ -227,7 +227,7 @@
     "meta": {
       "index": "cloud-test_data-2023-9-5",
       "id": "Xyz8",
-      "score": None,
+      "score": null,
       "sort": [
         1693920641064
       ],

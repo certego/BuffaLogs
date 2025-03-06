@@ -105,3 +105,7 @@ class Impossible_Travel:
         :type source_ip: str
         """
         UsersIP.objects.create(user=db_user, ip=source_ip)
+
+    def validate_timestamp(self, dt: datetime) -> str:
+        """Convert a datetime object to an ISO 8601 formatted string."""
+        return dt.strftime("%Y-%m-%dT%H:%M:%SZ")

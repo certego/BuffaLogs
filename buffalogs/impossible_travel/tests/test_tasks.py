@@ -1,15 +1,32 @@
 import json
 import os
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from django.db import connection
 from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel import tasks
+from impossible_travel.modules import impossible_travel
 from impossible_travel.constants import AlertDetectionType, AlertFilterType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.tests.setup import Setup
+
+class DictStruct:
+    def __init__(self, kwargs):
+        for key, value in kwargs.items():
+            if isinstance(value, dict):
+                value = DictStruct(value)  
+            setattr(self, key, value) 
+    def __contains__(self, key):
+        return key in self.__dict__  
+
+    def __getitem__(self, key):
+        return self.__dict__[key] 
+
+    def __repr__(self):
+        return f"DictStruct({self.__dict__})"
 
 
 def load_test_data(name):
@@ -531,22 +548,21 @@ class TestTasks(TestCase):
         tasks.check_fields(db_user, fields3)
         self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
 
-    # TO DO
-    # @patch("impossible_travel.tasks.check_fields")
-    # @patch.object(tasks.Search, "execute")
-    # def test_process_user(self, mock_execute, mock_check_fields):
-    #     data_elastic_sorted_dot_not = []
-    #     imp_travel = impossible_travel.Impossible_Travel()
-    #     data_elastic = load_test_data("test_data_process_user")
-    #     data_elastic_sorted = sorted(data_elastic, key=lambda d: d["@timestamp"])
-    #     for data in data_elastic_sorted:
-    #         data_elastic_sorted_dot_not.append(DictStruct(kwargs=data))
-    #     data_results = load_test_data("test_data_process_user_result")
-    #     mock_execute.return_value = data_elastic_sorted_dot_not
-    #     start_date = timezone.datetime(2023, 3, 8, 0, 0, 0)
-    #     end_date = timezone.datetime(2023, 3, 8, 23, 59, 59)
-    #     iso_start_date = imp_travel.validate_timestamp(start_date)
-    #     iso_end_date = imp_travel.validate_timestamp(end_date)
-    #     db_user = User.objects.get(username="Lorena Goldoni")
-    #     tasks.process_user(db_user, iso_start_date, iso_end_date)
-    #     mock_check_fields.assert_called_once_with(db_user, data_results)
+    @patch("impossible_travel.tasks.check_fields")
+    @patch.object(tasks.Search, "execute")
+    def test_process_user(self, mock_execute, mock_check_fields):
+        data_elastic_sorted_dot_not = []
+        imp_travel = impossible_travel.Impossible_Travel()
+        data_elastic = load_test_data("test_data_process_user")
+        data_elastic_sorted = sorted(data_elastic, key=lambda d: d["@timestamp"])
+        for data in data_elastic_sorted:
+            data_elastic_sorted_dot_not.append(DictStruct(kwargs=data))
+        data_results = load_test_data("test_data_process_user_result")
+        mock_execute.return_value = data_elastic_sorted_dot_not
+        start_date = timezone.datetime(2023, 3, 8, 0, 0, 0)
+        end_date = timezone.datetime(2023, 3, 8, 23, 59, 59)
+        iso_start_date = imp_travel.validate_timestamp(start_date)
+        iso_end_date = imp_travel.validate_timestamp(end_date)
+        db_user = User.objects.get(username="Lorena Goldoni")
+        tasks.process_user(db_user, iso_start_date, iso_end_date)
+        mock_check_fields.assert_called_once_with(db_user, data_results)
