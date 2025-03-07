@@ -1,5 +1,10 @@
 {
     "active_alerter": "telegram",
+    "slack": {
+        "enabled": true,
+        "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+        "channel": "#your-channel-name"
+    },
     "telegram": {
         "api_base_url": "https://api.telegram.org",
         "bot_token": "your_bot_token",
@@ -16,5 +21,30 @@
         "email_host_user" : "SENDER_EMAIL",
         "email_host_password" : "SENDER_APP_PASSWORD",
         "default_from_email" : "BuffaLogs Alerts SENDER_EMAIL"
+    },
+    "http_request" : {
+        "name" : "",
+        "endpoint" : "",
+        "options" : {
+            "token_variable_name" : "", 
+            "alert_types" : [],
+            "fields" : [],
+            "login_data" : [],
+            "batch_size" : -1
+            }
+    },
+    "webhooks" : {
+        "name" : "",
+        "endpoint" : "",
+        "secret_key_variable_name" : "",
+        "options" : {
+            "issuer" : "",
+            "token_expiration_seconds" : "",
+            "algorithm" : "",
+            "alert_types" : [],
+            "fields" : [],
+            "login_data" : [],
+            "batch_size" : -1
+        }
     }
 }

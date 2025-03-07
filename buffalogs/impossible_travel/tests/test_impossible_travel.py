@@ -7,8 +7,7 @@ from impossible_travel.modules import impossible_travel
 class TestImpossibleTravel(TestCase):
     imp_travel = impossible_travel.Impossible_Travel()
 
-    @classmethod
-    def setUpTestData(cls):
+    def setUp(self):
         Config.objects.create(
             id=1,
             ignored_users=["N/A", "Not Available"],
@@ -54,7 +53,7 @@ class TestImpossibleTravel(TestCase):
             "country": "Sudan",
         }
         db_user = User.objects.get(username="Lorena Goldoni")
-        prev_login = Login.objects.get(id=db_user.id)
+        prev_login = Login.objects.get(user_id=db_user.id)
         result, vel = self.imp_travel.calc_distance(db_user, prev_login, last_login_user_fields)
         self.assertEqual("Imp Travel", result["alert_name"])
         self.assertEqual(
