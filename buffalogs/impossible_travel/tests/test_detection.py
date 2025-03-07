@@ -1,6 +1,6 @@
+import datetime
 import json
 import os
-from datetime import datetime
 
 from django.db.models import Q
 from django.test import TestCase
@@ -70,7 +70,7 @@ class DetectionTestCase(TestCase):
             event_id="event_1",
             index="cloud",
             ip="1.2.3.4",
-            timestamp=datetime(2023, 3, 8, 17, 8, 33, 358000, tzinfo=timezone.utc),
+            timestamp=datetime.datetime(2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc),
             latitude=40.364,
             longitude=-79.8605,
             country="United States",
@@ -95,7 +95,7 @@ class DetectionTestCase(TestCase):
             event_id="event_1",
             index="cloud",
             ip="1.2.3.4",
-            timestamp=datetime(2023, 3, 8, 17, 8, 33, 358000, tzinfo=timezone.utc),
+            timestamp=datetime.datetime(2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc),
             latitude=40.364,
             longitude=-79.8605,
             country="United States",
@@ -621,4 +621,4 @@ class DetectionTestCase(TestCase):
         self.assertEqual(1, UsersIP.objects.filter(user=db_user, ip="203.0.113.11").count())
         # Third part: no new alerts because all the ips have already been used
         detection.check_fields(db_user, fields3)
-        self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
+        self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime.datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
