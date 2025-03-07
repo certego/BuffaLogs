@@ -1,5 +1,6 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
+
 from ..alerting.slack_alerter import SlackAlerter
 
 
