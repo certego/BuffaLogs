@@ -20,18 +20,14 @@ class AlertFactory:
         Read the configuration file.
         """
         with open(
-            os.path.join(
-                settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"
-            ),
+            os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"),
             mode="r",
             encoding="utf-8",
         ) as f:
             config = json.load(f)
         if "active_alerter" not in config:
             raise ValueError("active_alerter not found in alerting.json")
-        if config["active_alerter"] not in [
-            e.value for e in BaseAlerting.SupportedAlerters
-        ]:
+        if config["active_alerter"] not in [e.value for e in BaseAlerting.SupportedAlerters]:
             raise ValueError(f"active_alerter {config['active_alerter']} not supported")
         if config[config["active_alerter"]] is None:
             raise ValueError(f"Configuration for {config['active_alerter']} not found")
