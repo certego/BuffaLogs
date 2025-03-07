@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from buffalogs.impossible_travel.alerting.slack_alerter import SlackAlerter
 
 

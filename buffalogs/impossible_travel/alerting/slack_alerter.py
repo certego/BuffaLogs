@@ -1,6 +1,8 @@
 import json
+from typing import Any, Dict
+
 import requests
-from typing import Dict, Any
+
 from .base_alerting import BaseAlerting
 
 
