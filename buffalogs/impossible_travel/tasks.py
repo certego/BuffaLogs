@@ -9,7 +9,7 @@ from elasticsearch_dsl import Search, connections
 from impossible_travel.alerting.alert_factory import AlertFactory
 from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
+from impossible_travel.modules import alert_filter, detection
 
 logger = get_task_logger(__name__)
 
@@ -100,9 +100,6 @@ def check_fields(db_user: User, fields: list):
     :param fields: list of login data of the user
     :type fields: list
     """
-    imp_travel = impossible_travel.Impossible_Travel()
-    new_dev = login_from_new_device.Login_New_Device()
-    new_country = login_from_new_country.Login_New_Country()
 
     app_config, _ = Config.objects.get_or_create(id=1)
 
@@ -118,19 +115,19 @@ def check_fields(db_user: User, fields: list):
                 agent_alert = False
                 country_alert = False
                 if login["agent"]:
-                    agent_alert = new_dev.check_new_device(db_user, login)
+                    agent_alert = detection.check_new_device(db_user, login)
                     if agent_alert:
                         set_alert(db_user, login_alert=login, alert_info=agent_alert)
 
                 if login["country"]:
-                    country_alert = new_country.check_country(db_user, login, app_config)
+                    country_alert = detection.check_country(db_user, login, app_config)
                     if country_alert:
                         set_alert(db_user, login_alert=login, alert_info=country_alert)
 
                 if not db_user.usersip_set.filter(ip=login["ip"]).exists():
                     last_user_login = db_user.login_set.latest("timestamp")
                     logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert, travel_vel = imp_travel.calc_distance(db_user, prev_login=last_user_login, last_login_user_fields=login)
+                    travel_alert, travel_vel = detection.calc_distance_impossible_travel(db_user, prev_login=last_user_login, last_login_user_fields=login)
                     if travel_alert:
                         new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
                         new_alert.login_raw_data["buffalogs"] = {}
@@ -140,19 +137,19 @@ def check_fields(db_user: User, fields: list):
                         new_alert.login_raw_data["buffalogs"]["start_lon"] = last_user_login.longitude
                         new_alert.save()
                     #   Add the new ip address from which the login comes to the db
-                    imp_travel.add_new_user_ip(db_user, login["ip"])
+                    UsersIP.objects.create(user=db_user, ip=login["ip"])
 
                 if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
                     logger.info(f"Updating login {login['id']} for user: {db_user.username}")
-                    imp_travel.update_model(db_user, login)
+                    detection.update_model(db_user, login)
                 else:
                     logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
-                    imp_travel.add_new_login(db_user, login)
+                    detection.add_new_login(db_user, login)
 
             else:
                 logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
-                imp_travel.add_new_login(db_user, login)
-                imp_travel.add_new_user_ip(db_user, login["ip"])
+                detection.add_new_login(db_user, login)
+                UsersIP.objects.create(user=db_user, ip=login["ip"])
         else:
             logger.info(f"No latitude or longitude for User {db_user.username}")
 
