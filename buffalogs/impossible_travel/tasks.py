@@ -276,7 +276,7 @@ def exec_process_logs(start_date, end_date):
         .query("match", **{"event.type": "start"})
         .query("exists", field="user.name")
     )
-    s.aggs.bucket("login_user", "terms", field="user.name.keyword", size=10000)
+    s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
     response = s.execute()
     try:
         logger.info(f"Successfully got {len(response.aggregations.login_user.buckets)} users")
