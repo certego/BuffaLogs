@@ -4,6 +4,7 @@
 * Added `Atypical Country` alert, with the addition of the customizable field: **Config.atypical_country_days** in order to set from how many days a login from a Country is considered "Atypical"
 * Added `User Risk Threshold` alert, with the customizable field: **Config.threshold_user_risk_alert** in order to set which level the user must have to trigger the "USER_RISK_THRESHOLD" alert
 ### Changes
+* Removed the setup.py method for tests and added the `tests-fixture`
 * Refactoring on modules, removed: **impossible_travel.py**, **login_from_new_country.py** and **login_from_new_device.py**, in order to use just 3 modules for the 3 main processes: `ingestion_handler.py`, `detection.py` and `alert_filter.py`
 * Updated Certego shared CI to 1.5.0
 * Updated containers: Elasticsearch and Kibana from 3.17.13 to 3.17.27
