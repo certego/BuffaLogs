@@ -15,7 +15,7 @@ class TestEmailAlerting(TestCase):
             "email_use_tls": True,
             "email_host_user": "SENDER_EMAIL_ADDRESS",
             "email_host_password": "SENDER_APP_PASSWORD",
-            "default_from_email": "BuffaLogs Alerts SENDER_EMAIL_ADRESS",
+            "default_from_email": "BuffaLogs Alerts SENDER_EMAIL_ADDRESS",
         }
         self.email_alerting = EmailAlerting(self.email_config)
 
@@ -40,7 +40,7 @@ class TestEmailAlerting(TestCase):
         self.assertEqual(email.subject, "Login Anomaly Alert: Imp Travel")
         self.assertEqual(email.body, "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs")
         self.assertEqual(email.from_email, "BuffaLogs Alerts SENDER_EMAIL_ADDRESS")
-        self.assertEqual(email.to, ["RECIEVER_EMAIL_ADDRESS"])
+        self.assertEqual(email.to, ["RECEIVER_EMAIL_ADDRESS"])
 
     def test_send_email(self):
         """Actually sending the email to the recepient's address."""

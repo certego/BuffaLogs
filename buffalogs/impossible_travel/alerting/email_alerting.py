@@ -14,7 +14,7 @@ class EmailAlerting(BaseAlerting):
         Initialize the Email Alerting class with email settings.
         """
         super().__init__()
-        self.recipient_list = ["RECIVER_EMAIL_ADDRESS"]
+        self.recipient_list = ["RECEIVER_EMAIL_ADDRESS"]
         self.email_config = alert_config
         self._configure_email_settings()
 
