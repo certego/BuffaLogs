@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from buffalogs.impossible_travel.modules import alert_filter
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
@@ -10,7 +9,7 @@ from elasticsearch_dsl import Search, connections
 from impossible_travel.alerting.alert_factory import AlertFactory
 from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import detection
+from impossible_travel.modules import alert_filter, detection
 
 logger = get_task_logger(__name__)
 
