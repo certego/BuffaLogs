@@ -33,6 +33,10 @@
             "batch_size" : -1
             }
     },
+    "pushover":{
+        "api_key":"API_KEY",
+        "user_key":"USER_TOKEN"
+    },
     "webhooks" : {
         "name" : "",
         "endpoint" : "",
