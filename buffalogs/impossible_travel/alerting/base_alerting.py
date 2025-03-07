@@ -10,6 +10,7 @@ class BaseAlerting(ABC):
 
     class SupportedAlerters(Enum):
         DUMMY = "dummy"
+        SLACK = "slack"
         WEBHOOKS = "webhooks"
         HTTPREQUEST = "http_request"
         TELEGRAM = "telegram"
