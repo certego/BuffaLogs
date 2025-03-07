@@ -1,7 +1,6 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
-
-from buffalogs.impossible_travel.alerting.slack_alerter import SlackAlerter
+from ..alerting.slack_alerter import SlackAlerter
 
 
 class TestSlackAlerter(TestCase):
