@@ -1,18 +1,18 @@
 import json
 import requests
 from typing import Dict, Any
-from base_alerting import BaseAlerting
 from .base_alerting import BaseAlerting
+
 
 class SlackAlerter(BaseAlerting):
     """Slack alerter for BuffaLogs impossible travel detection."""
 
     def __init__(self, config):
         super().__init__()
-        self.webhook_url = config.get('webhook_url')
+        self.webhook_url = config.get("webhook_url")
         if not self.webhook_url:
             raise ValueError("Slack webhook URL is required")
-        self.channel = config.get('channel', '#general')
+        self.channel = config.get("channel", "#general")
         self.alerts_data = []
 
     def format_message(self, alert_data):
@@ -23,35 +23,35 @@ class SlackAlerter(BaseAlerting):
                     "type": "header",
                     "text": {
                         "type": "plain_text",
-                        "text": "🚨 Impossible Travel Alert"
-                    }
+                        "text": "🚨 Impossible Travel Alert",
+                    },
                 },
                 {
                     "type": "section",
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": f"*User:* {alert_data.get('user', 'Unknown')}"
+                            "text": f"*User:* {alert_data.get('user', 'Unknown')}",
                         },
                         {
                             "type": "mrkdwn",
-                            "text": f"*Time:* {alert_data.get('timestamp', 'Unknown')}"
-                        }
-                    ]
+                            "text": f"*Time:* {alert_data.get('timestamp', 'Unknown')}",
+                        },
+                    ],
                 },
                 {
                     "type": "section",
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": f"*Location 1:* {alert_data.get('location1', 'Unknown')}"
+                            "text": f"*Location 1:* {alert_data.get('location1', 'Unknown')}",
                         },
                         {
                             "type": "mrkdwn",
-                            "text": f"*Location 2:* {alert_data.get('location2', 'Unknown')}"
-                        }
-                    ]
-                }
+                            "text": f"*Location 2:* {alert_data.get('location2', 'Unknown')}",
+                        },
+                    ],
+                },
             ]
         }
 
@@ -70,7 +70,7 @@ class SlackAlerter(BaseAlerting):
             response = requests.post(
                 self.webhook_url,
                 json=message,
-                headers={'Content-Type': 'application/json'}
+                headers={"Content-Type": "application/json"},
             )
             response.raise_for_status()
             return True
