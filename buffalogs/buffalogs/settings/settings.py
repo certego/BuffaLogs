@@ -227,6 +227,6 @@ CELERY_BEAT_SCHEDULE = {
         "task": "ProcessLogsTask",
         "schedule": crontab(minute=30),
     },
-    "update_risk_level": {"task": "UpdateRiskLevelTask", "schedule": crontab(minute=10)},
+    "clean_models_periodically": {"task": "BuffalogsCleanModelsPeriodicallyTask", "schedule": crontab(hour=23, minute=59)},
     "notify_alerts": {"task": "NotifyAlertsTask", "schedule": crontab(minute=5)},
 }
