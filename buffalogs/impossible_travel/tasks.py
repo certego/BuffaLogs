@@ -1,15 +1,10 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from django.conf import settings
-from django.db import transaction
 from django.utils import timezone
-from elasticsearch_dsl import Search, connections
-from impossible_travel.alerting.alert_factory import AlertFactory
-from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import alert_filter, detection
+from impossible_travel.modules.ingestion_handler import Ingestion
 
 logger = get_task_logger(__name__)
 
@@ -32,256 +27,54 @@ def clean_models_periodically():
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
-def update_risk_level(db_user: User, triggered_alert: Alert):
-    """Update user risk level depending on how many alerts were triggered
-
-    :param db_user: user from DB
-    :type db_user: User object
-    :param triggered_alert: alert that has just been triggered
-    :type alert: Alert object
-    """
-    with transaction.atomic():
-        current_risk_score = db_user.risk_score
-        new_risk_level = UserRiskScoreType.get_risk_level(db_user.alert_set.count())
-
-        # update the risk_score anyway in order to keep the users up-to-date each time they are seen by the system
-        db_user.risk_score = new_risk_level
-        db_user.save()
-
-        risk_comparison = UserRiskScoreType.compare_risk(current_risk_score, new_risk_level)
-        if risk_comparison in [ComparisonType.LOWER, ComparisonType.EQUAL]:
-            return False  # risk_score doesn't increased, so no USER_RISK_THRESHOLD alert
-
-        # if the new_risk_level is higher than the current one
-        # and the new_risk_level is higher or equal than the threshold set in the config.threshold_user_risk_alert
-        # send the USER_RISK_THRESHOLD alert
-        app_config = Config.objects.get(id=1)
-        config_threshold_comparison = UserRiskScoreType.compare_risk(app_config.threshold_user_risk_alert, new_risk_level)
-
-        if config_threshold_comparison in [ComparisonType.EQUAL, ComparisonType.HIGHER]:
-            alert_info = {
-                "alert_name": AlertDetectionType.USER_RISK_THRESHOLD.value,
-                "alert_desc": f"{AlertDetectionType.USER_RISK_THRESHOLD.label} for User: {db_user.username}, "
-                f"who changed risk_score from {current_risk_score} to {new_risk_level}",
-            }
-            logger.info(f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, " f"detected {db_user.alert_set.count()} alerts")
-            set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info)
-
-            return True
-    return False
-
-
-def set_alert(db_user: User, login_alert: dict, alert_info: dict):
-    """Save the alert on db and logs it
-
-    :param db_user: user from db
-    :type db_user: object
-    :param login_alert: dictionary login from elastic
-    :type login_alert: dict
-    :param alert_info: dictionary with alert info
-    :type alert_info: dict
-    """
-    logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
-    alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
-    # update user.risk_score if necessary
-    update_risk_level(db_user=alert.user, triggered_alert=alert)
-    # check filters
-    alert_filter.match_filters(alert=alert)
-    alert.save()
-    return alert
-
-
-def check_fields(db_user: User, fields: list):
-    """
-    Call the relative function to check the different types of alerts, based on the existing fields
-
-    :param db_user: user from DB
-    :type db_user: User object
-    :param fields: list of login data of the user
-    :type fields: list
-    """
-
-    app_config, _ = Config.objects.get_or_create(id=1)
-
-    for login in fields:
-        if login.get("intelligence_category", None) == "anonymizer":
-            alert_info = {
-                "alert_name": AlertDetectionType.ANONYMOUS_IP_LOGIN.value,
-                "alert_desc": f"{AlertDetectionType.ANONYMOUS_IP_LOGIN.label} from IP: {login['ip']} by User: {db_user.username}",
-            }
-            set_alert(db_user, login_alert=login, alert_info=alert_info)
-        if login["lat"] and login["lon"]:
-            if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
-                agent_alert = False
-                country_alert = False
-                if login["agent"]:
-                    agent_alert = detection.check_new_device(db_user, login)
-                    if agent_alert:
-                        set_alert(db_user, login_alert=login, alert_info=agent_alert)
-
-                if login["country"]:
-                    country_alert = detection.check_country(db_user, login, app_config)
-                    if country_alert:
-                        set_alert(db_user, login_alert=login, alert_info=country_alert)
-
-                if not db_user.usersip_set.filter(ip=login["ip"]).exists():
-                    last_user_login = db_user.login_set.latest("timestamp")
-                    logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert, travel_vel = detection.calc_distance_impossible_travel(db_user, prev_login=last_user_login, last_login_user_fields=login)
-                    if travel_alert:
-                        new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
-                        new_alert.login_raw_data["buffalogs"] = {}
-                        new_alert.login_raw_data["buffalogs"]["start_country"] = last_user_login.country
-                        new_alert.login_raw_data["buffalogs"]["avg_speed"] = travel_vel
-                        new_alert.login_raw_data["buffalogs"]["start_lat"] = last_user_login.latitude
-                        new_alert.login_raw_data["buffalogs"]["start_lon"] = last_user_login.longitude
-                        new_alert.save()
-                    #   Add the new ip address from which the login comes to the db
-                    UsersIP.objects.create(user=db_user, ip=login["ip"])
-
-                if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
-                    logger.info(f"Updating login {login['id']} for user: {db_user.username}")
-                    detection.update_model(db_user, login)
-                else:
-                    logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
-                    detection.add_new_login(db_user, login)
-
-            else:
-                logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
-                detection.add_new_login(db_user, login)
-                UsersIP.objects.create(user=db_user, ip=login["ip"])
-        else:
-            logger.info(f"No latitude or longitude for User {db_user.username}")
-
-
-def process_user(db_user, start_date, end_date):
-    """Get info for each user login and normalization
-
-    :param db_user: user from db
-    :type db_user: object
-    :param start_date: start date of analysis
-    :type start_date: timezone
-    :param end_date: finish date of analysis
-    :type end_date: timezone
-    """
-    fields = []
-    s = (
-        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
-        .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
-        .query("match", **{"user.name": db_user.username})
-        .query("match", **{"event.outcome": "success"})
-        .query("match", **{"event.type": "start"})
-        .query("exists", field="source.ip")
-        .source(
-            includes=[
-                "user.name",
-                "@timestamp",
-                "source.geo.location.lat",
-                "source.geo.location.lon",
-                "source.geo.country_name",
-                "source.as.organization.name",
-                "user_agent.original",
-                "_index",
-                "source.ip",
-                "_id",
-                "source.intelligence_category",
-            ]
-        )
-        .sort("@timestamp")  # from the oldest to the most recent login
-        .extra(size=10000)
-    )
-    response = s.execute()
-    logger.info(f"Got {len(response)} logins for user {db_user.username}")
-    for hit in response:
-        if "source" in hit:
-            tmp = {"timestamp": hit["@timestamp"]}
-            tmp["id"] = hit.meta["id"]
-            if hit.meta["index"].split("-")[0] == "fw":
-                tmp["index"] = "fw-proxy"
-            else:
-                tmp["index"] = hit.meta["index"].split("-")[0]
-            tmp["ip"] = hit["source"]["ip"]
-            if "user_agent" in hit:
-                tmp["agent"] = hit["user_agent"]["original"]
-            else:
-                tmp["agent"] = ""
-            if "as" in hit.source:
-                tmp["organization"] = hit["source"]["as"]["organization"]["name"]
-            if "geo" in hit.source:
-                if "location" in hit.source.geo and "country_name" in hit.source.geo:
-                    tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
-                    tmp["lon"] = hit["source"]["geo"]["location"]["lon"]
-                    tmp["country"] = hit["source"]["geo"]["country_name"]
-                else:
-                    tmp["lat"] = None
-                    tmp["lon"] = None
-                    tmp["country"] = ""
-                fields.append(tmp)  # up to now: no geo info --> login discard
-    check_fields(db_user, fields)
+def validate_datetime(value):
+    if not isinstance(value, datetime) or value.tzinfo is None:
+        raise ValueError("start_date and end_date must be timezone-aware datetime objects")
+    return value
 
 
 @shared_task(name="BuffalogsProcessLogsTask")
-def process_logs():
-    """Find all user logged in between that time range"""
+def process_logs(given_start_date: datetime = None, given_end_date: datetime = None):
+    """Process logs in a given date range, or default to the last 30 minutes.
+
+    :param start_date: datetime from which to start the detection
+    :type start_date: timezone-aware datetime object
+    :param end_date: datetime up to which to carry out the detection
+    :type end_date: timezone-aware datetime object
+    """
+    # validate the datetimes if start_date and end_date are passed by the mgmt command
     now = timezone.now()
-    process_task, _ = TaskSettings.objects.get_or_create(
-        task_name=process_logs.__name__, defaults={"end_date": timezone.now() - timedelta(minutes=1), "start_date": timezone.now() - timedelta(minutes=30)}
-    )
-    if (now - process_task.end_date).days < 1:
-        # Recovering old data avoiding task time limit
+    try:
+        if given_start_date and given_end_date:
+            start_date = validate_datetime(given_start_date)
+            end_date = validate_datetime(given_end_date)
+    except ValueError as e:
+        logger.error(f"The datetime given has an invalid datetime format: {e}")
+        return
+
+    # get all the active ingestion sources
+    ingestion_dicts = Ingestion.get_ingestion_sources()
+
+    # get or create a TaskSetting object for each active ingestion source in order to keep track of the execution times of each job
+    for ingestion in ingestion_dicts:
+        process_task, _ = TaskSettings.objects.get_or_create(
+            task_name=process_logs.__name__,
+            ingestion_source=ingestion["class_name"],
+            defaults={"start_date": now - timedelta(minutes=30), "end_date": now - timedelta(minutes=1)},
+        )
+
         for _ in range(6):
-            start_date = process_task.end_date
-            end_date = start_date + timedelta(minutes=30)
+            if (now - process_task.end_date).days >= 1:
+                logger.info(f"Data lost from {process_task.end_date} to now")
+                start_date = now - timedelta(minutes=31)
+                end_date = now - timedelta(minutes=1)
+            else:
+                start_date = process_task.end_date
+                end_date = process_task.end_date + timedelta(minutes=30)
+
             if end_date > now:
                 break
-            process_task.start_date = start_date
-            process_task.end_date = end_date
+
+            process_task.start_date, process_task.end_date = start_date, end_date
             process_task.save()
-            exec_process_logs(start_date, end_date)
-
-    else:
-        logger.info(f"Data lost from {process_task.end_date} to now")
-        end_date = timezone.now() - timedelta(minutes=1)
-        start_date = end_date - timedelta(minutes=30)
-        process_task.start_date = start_date
-        process_task.end_date = end_date
-        process_task.save()
-        exec_process_logs(start_date, end_date)
-
-
-@shared_task(name="NotifyAlertsTask")
-def notify_alerts():
-    alert = AlertFactory().get_alert_class()
-    alert.notify_alerts()
-
-
-def exec_process_logs(start_date, end_date):
-    """Starting the execution for the given time range
-
-    :param start_date: Start datetime
-    :type start_date: datetime
-    :param end_date: End datetime
-    :type end_date: datetime
-    """
-    logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
-    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
-    s = (
-        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
-        .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
-        .query("match", **{"event.category": "authentication"})
-        .query("match", **{"event.outcome": "success"})
-        .query("match", **{"event.type": "start"})
-        .query("exists", field="user.name")
-    )
-    s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
-    response = s.execute()
-    try:
-        logger.info(f"Successfully got {len(response.aggregations.login_user.buckets)} users")
-        for user in response.aggregations.login_user.buckets:
-            db_user, created = User.objects.get_or_create(username=user.key)
-            if not created:
-                # Saving user to update updated_at field
-                db_user.save()
-            process_user(db_user, start_date, end_date)
-    except AttributeError:
-        logger.info("No users login aggregation found")
+            Ingestion.str_to_class(ingestion["class_name"]).process_users(start_date=start_date, end_date=end_date, ingestion_config=ingestion)
