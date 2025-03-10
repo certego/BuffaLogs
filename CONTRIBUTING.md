@@ -16,6 +16,13 @@ Please follow the code of conduct in all your interactions with the project.
 #  Contribution Process
 ## Discussions
 If you have a fix, feature, doubt or suggestion to propose (that is not present in the current issues), please start by opening a [discussion](https://github.com/certego/BuffaLogs/discussions).
+To start a new discussion, the categories to choose from are: 
+*   General: chat about important news affecting the project
+*   Ideas: share ideas for new features to implement
+*   Polls: take a vote from the community
+*   Q&A: ask the community for help or doubts
+*   Show and tell: show off to the community something you have made
+
 Discussions help evaluate ideas before they become issues.
 
 ## Issues
