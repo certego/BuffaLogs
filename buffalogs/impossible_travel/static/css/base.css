@@ -95,3 +95,93 @@ li a:link{
   margin-right: 16px;
 }
 
+.mobile-navbar {
+  display: none;
+  background-color: #2d353c;
+  opacity: 0.8;
+  width: 100%;
+  height: 60px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1100;
+}
+
+.mobile-nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 15px;
+}
+
+.brand-link {
+  color: #dee2e6;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: bold;
+  margin-right: 30px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.nav-dashboard a, .nav-users a {
+  background: none;
+  color: #858a8e;
+  text-decoration: none;
+  font-size: 18px;
+  margin-right: 20px; 
+  border-bottom: 1px solid #455A64;
+
+}
+
+.mobile-nav-container a:hover {
+  color: #03DAC6;
+}
+
+.main-content {
+  transition: all 0.5s ease;
+}
+
+
+@media (max-width: 768px) {
+  #sidebar {
+    display: none !important;
+  }
+
+  .content{
+    display: none !important;
+  }
+
+  .breadcrumb-title {
+    padding: 20px;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  #reportrange {
+    padding-top: 80px;
+    margin-left: 0;
+  }
+  
+  #viewport {
+    padding-left: 0;
+  }
+  
+  
+  .mobile-navbar {
+    display: block;
+  }
+
+  .mobile-nav-container {
+    width: 100%;
+  }
+  
+  .main-content {
+    padding-top: 70px;
+    width: 100%;
+  }
+}
