@@ -43,7 +43,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             json_data = json.loads(post_data)
             self.server.received_data = json_data
         except json.JSONDecodeError:
-            print("[HTTP TEST SERVER] DECODE ERROR")
             self.send_response(400)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
@@ -72,7 +71,6 @@ def get_test_server():
 
 
 def run_test_server(server):
-    print(f"[HTTP TEST SERVER] STARTUP server started on {server.server_address[0]}:{server.server_address[1]}")  # noqa: E231
     server.serve_forever()
 
 
@@ -80,7 +78,6 @@ class TestHTTPRequestAlerting(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print("[HTTP TEST SERVER] SETUP")
         cls.test_server = get_test_server()
         if cls.test_server:
             cls.server_thread = threading.Thread(target=run_test_server, args=(cls.test_server,), daemon=True)
@@ -267,10 +264,9 @@ class TestHTTPRequestAlerting(TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls.test_server is not None:
-            print("\n[HTTP TEST SERVER] SHUTDOWN")
             try:
                 cls.test_server.shutdown()
                 cls.test_server.server_close()
             except Exception as e:
-                print(f"[HTTP TEST SERVER] ERROR: {e}")
+               raise ValueError(e)
         super().tearDownClass()
