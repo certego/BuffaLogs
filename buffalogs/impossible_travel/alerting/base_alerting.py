@@ -14,6 +14,8 @@ class BaseAlerting(ABC):
         WEBHOOKS = "webhooks"
         HTTPREQUEST = "http_request"
         TELEGRAM = "telegram"
+        EMAIL = "email"
+        PUSHOVER = "pushover"
 
     def __init__(self):
         super().__init__()

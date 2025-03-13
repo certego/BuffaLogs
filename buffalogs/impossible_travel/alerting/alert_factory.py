@@ -4,7 +4,9 @@ import os
 from django.conf import settings
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
+from impossible_travel.alerting.email_alerting import EmailAlerting
 from impossible_travel.alerting.http_request import HTTPRequestAlerting
+from impossible_travel.alerting.pushover_alerting import PushoverAlerting
 from impossible_travel.alerting.telegram_alerting import TelegramAlerting
 from impossible_travel.alerting.webhook import WebHookAlerting
 
@@ -49,5 +51,9 @@ class AlertFactory:
                 return HTTPRequestAlerting(self.alert_config)
             case BaseAlerting.SupportedAlerters.TELEGRAM:
                 return TelegramAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.EMAIL:
+                return EmailAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.PUSHOVER:
+                return PushoverAlerting(self.alert_config)
             case _:
                 raise ValueError(f"Unsupported alerter: {self.active_alerter}")

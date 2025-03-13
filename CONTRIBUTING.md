@@ -15,7 +15,7 @@ Please follow the code of conduct in all your interactions with the project.
 
 #  Contribution Process
 ## Discussions
-If you would like help in troubleshooting on a PR you are working on, or have a new idea to share, join us in [discussions](https://github.com/certego/BuffaLogs/discussions).
+If you have a fix, feature, doubt or suggestion to propose (that is not present in the current issues), please start by opening a [discussion](https://github.com/certego/BuffaLogs/discussions).
 To start a new discussion, the categories to choose from are: 
 *   General: chat about important news affecting the project
 *   Ideas: share ideas for new features to implement
@@ -23,17 +23,17 @@ To start a new discussion, the categories to choose from are:
 *   Q&A: ask the community for help or doubts
 *   Show and tell: show off to the community something you have made
 
+Discussions help evaluate ideas before they become issues.
+
 ## Issues
-### Solve an issue
-Scan through our existing issues to find one that interests you. You can narrow down the search using `labels` as filters. Before starting to work on an issue, you need to get the approval of one of the maintainers. Therefore please ask to be assigned to an issue. If you do not that but you still raise a PR for that issue, your PR can be rejected. This is a form of respect for both the maintainers and the other contributors who could have already started to work on the same problem.
+Discussions could be converted into issues by the administrators.
+Scan through our existing issues to find one that interests you. Before starting to work on an issue, you need to get the approval of one of the maintainers. Therefore please ask to be assigned to an issue. If you do not that but you still raise a PR for that issue, your PR can be rejected. This is a form of respect for both the maintainers and the other contributors who could have already started to work on the same problem.
 
 ## Pull Request
-You should usually open a pull request in the following situations:
-*   Submit trivial fixes (for example, a typo, a broken link or an obvious error)
-*   Start working on a contribution that was already asked for, or that you have already discussed, in an issue.
-
+You can submit a PR only for an assigned issue. If you open a PR without prior discussion or approval, it may be directly rejected.
 Once you have started working on an issue and you have some work to share and discuss with us, please raise a draft PR early with incomplete changes. In this way you can continue working on the same and we can track your progress and actively review and help.
 Pull requests are allowed only for the `develop` branch. That code will be pushed to master only on a new release. Before submitting the PR, remember to pull the most recent changes available in the develop branch.
+
 How to create and submit a PR:
 1.  [Fork the repository](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) and clone it locally. Connect your local to the `develop` branch and pull in changes from it so that you stay up to date. 
 2.  [Create a new branch](https://docs.github.com/en/get-started/quickstart/github-flow) starting from the `develop` branch with a name that refers to the issue you are working on.
@@ -81,4 +81,4 @@ How to create and submit a PR:
     ```
 5.  **Doc your code**: please, document your new code if needed, under the `docs/` folder
 
-**Working on your first Pull Request?** You can learn how from this *free* series [How to Contribute to an Open Source Project on GitHub](https://kcd.im/pull-request) 
+**Working on your first Pull Request?** You can learn how from this *free* series [How to Contribute to an Open Source Project on GitHub](https://kcd.im/pull-request)
