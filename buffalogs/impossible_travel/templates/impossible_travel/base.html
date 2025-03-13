@@ -25,6 +25,20 @@
 </head>
 <body>
 
+  <!-- NAVBAR SECTION SMALLER SCREEN-->
+  <nav class="mobile-navbar">
+    <div class="mobile-nav-container">
+      <a href="{% url 'homepage' %}" class="brand-link">BuffaLogs</a>
+      <div class="nav-links">
+        <div class="nav-dashboard">
+          <a href="{% url 'homepage' %}">Dashboard</a>
+        </div>
+        <div class="nav-users">
+          <a href="{% url 'users' %}">Users</a>
+        </div>
+      </div>
+    </div>
+  </nav>
     <!-- NAVBAR SECTION -->
     {% block navbar %}
     <div id="viewport">
