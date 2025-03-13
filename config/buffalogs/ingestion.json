@@ -1,0 +1,32 @@
+{
+    "active_ingestion_sources": [
+        "elasticsearch"
+    ],
+    "elasticsearch": {
+        "class_name": "ElasticsearchIngestion",
+        "url": "http://elasticsearch:9200/",
+        "username": "foobar",
+        "password": "bar",
+        "timeout": 90,
+        "indexes": "cloud-*,fw-proxy-*",
+        "custom_mapping": {
+            "timestamp": "@timestamp",
+            "id": "id",
+            "index": "index",
+            "username": "user.name",
+            "ip": "source.ip",
+            "agent": "source.user_agent.original",
+            "organization": "source.as.organization.name",
+            "country": "source.geo.country_name",
+            "lat": "source.geo.location.lat",
+            "lon": "source.geo.location.lon"
+        }
+    },
+    "splunk": {
+        "class_name": "SplunkIngestion",
+        "url": "localhost:9201",
+        "username": "foobar",
+        "password": "bar",
+        "custom_mapping": {}
+    }
+}
