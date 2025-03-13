@@ -268,5 +268,5 @@ class TestHTTPRequestAlerting(TestCase):
                 cls.test_server.shutdown()
                 cls.test_server.server_close()
             except Exception as e:
-               raise ValueError(e)
+                raise ValueError(e)
         super().tearDownClass()
