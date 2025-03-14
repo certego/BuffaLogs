@@ -60,7 +60,7 @@ class AlertAdmin(admin.ModelAdmin):
         "filter_type",
         "is_vip",
     )
-    search_fields = ("id", "user__username", "name", "is_filtered_field_display")
+    search_fields = ("id", "user__username", "name")
     readonly_fields = ("name", "get_username", "login_raw_data", "description", "filter_type", "is_filtered_field_display", "is_vip", "notified")
 
     @admin.display(description="username")
