@@ -3,13 +3,11 @@ from datetime import timedelta
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.db import transaction
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.alerting.alert_factory import AlertFactory
-from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import alert_filter, detection
+from impossible_travel.modules import detection
 
 logger = get_task_logger(__name__)
 
@@ -30,128 +28,6 @@ def clean_models_periodically():
 
     delete_ip_time = now - timedelta(days=app_config.ip_max_days)
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
-
-
-def update_risk_level(db_user: User, triggered_alert: Alert):
-    """Update user risk level depending on how many alerts were triggered
-
-    :param db_user: user from DB
-    :type db_user: User object
-    :param triggered_alert: alert that has just been triggered
-    :type alert: Alert object
-    """
-    with transaction.atomic():
-        current_risk_score = db_user.risk_score
-        new_risk_level = UserRiskScoreType.get_risk_level(db_user.alert_set.count())
-
-        # update the risk_score anyway in order to keep the users up-to-date each time they are seen by the system
-        db_user.risk_score = new_risk_level
-        db_user.save()
-
-        risk_comparison = UserRiskScoreType.compare_risk(current_risk_score, new_risk_level)
-        if risk_comparison in [ComparisonType.LOWER, ComparisonType.EQUAL]:
-            return False  # risk_score doesn't increased, so no USER_RISK_THRESHOLD alert
-
-        # if the new_risk_level is higher than the current one
-        # and the new_risk_level is higher or equal than the threshold set in the config.threshold_user_risk_alert
-        # send the USER_RISK_THRESHOLD alert
-        app_config = Config.objects.get(id=1)
-        config_threshold_comparison = UserRiskScoreType.compare_risk(app_config.threshold_user_risk_alert, new_risk_level)
-
-        if config_threshold_comparison in [ComparisonType.EQUAL, ComparisonType.HIGHER]:
-            alert_info = {
-                "alert_name": AlertDetectionType.USER_RISK_THRESHOLD.value,
-                "alert_desc": f"{AlertDetectionType.USER_RISK_THRESHOLD.label} for User: {db_user.username}, "
-                f"who changed risk_score from {current_risk_score} to {new_risk_level}",
-            }
-            logger.info(f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, " f"detected {db_user.alert_set.count()} alerts")
-            set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info)
-
-            return True
-    return False
-
-
-def set_alert(db_user: User, login_alert: dict, alert_info: dict):
-    """Save the alert on db and logs it
-
-    :param db_user: user from db
-    :type db_user: object
-    :param login_alert: dictionary login from elastic
-    :type login_alert: dict
-    :param alert_info: dictionary with alert info
-    :type alert_info: dict
-    """
-    logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
-    alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
-    # update user.risk_score if necessary
-    update_risk_level(db_user=alert.user, triggered_alert=alert)
-    # check filters
-    alert_filter.match_filters(alert=alert)
-    alert.save()
-    return alert
-
-
-def check_fields(db_user: User, fields: list):
-    """
-    Call the relative function to check the different types of alerts, based on the existing fields
-
-    :param db_user: user from DB
-    :type db_user: User object
-    :param fields: list of login data of the user
-    :type fields: list
-    """
-
-    app_config, _ = Config.objects.get_or_create(id=1)
-
-    for login in fields:
-        if login.get("intelligence_category", None) == "anonymizer":
-            alert_info = {
-                "alert_name": AlertDetectionType.ANONYMOUS_IP_LOGIN.value,
-                "alert_desc": f"{AlertDetectionType.ANONYMOUS_IP_LOGIN.label} from IP: {login['ip']} by User: {db_user.username}",
-            }
-            set_alert(db_user, login_alert=login, alert_info=alert_info)
-        if login["lat"] and login["lon"]:
-            if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
-                agent_alert = False
-                country_alert = False
-                if login["agent"]:
-                    agent_alert = detection.check_new_device(db_user, login)
-                    if agent_alert:
-                        set_alert(db_user, login_alert=login, alert_info=agent_alert)
-
-                if login["country"]:
-                    country_alert = detection.check_country(db_user, login, app_config)
-                    if country_alert:
-                        set_alert(db_user, login_alert=login, alert_info=country_alert)
-
-                if not db_user.usersip_set.filter(ip=login["ip"]).exists():
-                    last_user_login = db_user.login_set.latest("timestamp")
-                    logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert, travel_vel = detection.calc_distance_impossible_travel(db_user, prev_login=last_user_login, last_login_user_fields=login)
-                    if travel_alert:
-                        new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
-                        new_alert.login_raw_data["buffalogs"] = {}
-                        new_alert.login_raw_data["buffalogs"]["start_country"] = last_user_login.country
-                        new_alert.login_raw_data["buffalogs"]["avg_speed"] = travel_vel
-                        new_alert.login_raw_data["buffalogs"]["start_lat"] = last_user_login.latitude
-                        new_alert.login_raw_data["buffalogs"]["start_lon"] = last_user_login.longitude
-                        new_alert.save()
-                    #   Add the new ip address from which the login comes to the db
-                    UsersIP.objects.create(user=db_user, ip=login["ip"])
-
-                if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
-                    logger.info(f"Updating login {login['id']} for user: {db_user.username}")
-                    detection.update_model(db_user, login)
-                else:
-                    logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
-                    detection.add_new_login(db_user, login)
-
-            else:
-                logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
-                detection.add_new_login(db_user, login)
-                UsersIP.objects.create(user=db_user, ip=login["ip"])
-        else:
-            logger.info(f"No latitude or longitude for User {db_user.username}")
 
 
 def process_user(db_user, start_date, end_date):
@@ -217,7 +93,7 @@ def process_user(db_user, start_date, end_date):
                     tmp["lon"] = None
                     tmp["country"] = ""
                 fields.append(tmp)  # up to now: no geo info --> login discard
-    check_fields(db_user, fields)
+    detection.check_fields(db_user, fields)
 
 
 @shared_task(name="BuffalogsProcessLogsTask")
@@ -232,12 +108,11 @@ def process_logs():
         for _ in range(6):
             start_date = process_task.end_date
             end_date = start_date + timedelta(minutes=30)
-            if end_date > now:
-                break
-            process_task.start_date = start_date
-            process_task.end_date = end_date
-            process_task.save()
-            exec_process_logs(start_date, end_date)
+            if end_date < now:
+                process_task.start_date = start_date
+                process_task.end_date = end_date
+                process_task.save()
+                exec_process_logs(start_date, end_date)
 
     else:
         logger.info(f"Data lost from {process_task.end_date} to now")
