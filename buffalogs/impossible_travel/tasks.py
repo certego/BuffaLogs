@@ -3,13 +3,11 @@ from datetime import timedelta
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.db import transaction
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
 from impossible_travel.alerting.alert_factory import AlertFactory
-from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import alert_filter, detection
+from impossible_travel.modules import detection
 
 logger = get_task_logger(__name__)
 
@@ -110,12 +108,11 @@ def process_logs():
         for _ in range(6):
             start_date = process_task.end_date
             end_date = start_date + timedelta(minutes=30)
-            if end_date > now:
-                break
-            process_task.start_date = start_date
-            process_task.end_date = end_date
-            process_task.save()
-            exec_process_logs(start_date, end_date)
+            if end_date < now:
+                process_task.start_date = start_date
+                process_task.end_date = end_date
+                process_task.save()
+                exec_process_logs(start_date, end_date)
 
     else:
         logger.info(f"Data lost from {process_task.end_date} to now")
