@@ -1,177 +1,220 @@
 ---
-ip: 
-    - address: 0.0.0.0
-      country_name: Test_ignored_ip
-      latitude: 0
-      longitude: 0
-    - address: 0.0.0.0/0
-      country_name: Test_ignored_ip
-      latitude: 0
-      longitude: 0
-    - address: 203.0.113.2
-      country_name: United States
-      latitude: 39.8910
-      longitude: -75.1792
-    - address: 203.0.113.3
-      country_name: United States
-      latitude: 30.3657
-      longitude: -88.5561
-    - address: 203.0.113.4
-      country_name: United States
-      latitude: 37.7468
-      longitude: -84.3014
-    - address: 203.0.113.5
-      country_name: United States
-      latitude: 39.1841
-      longitude: -77.0242
-    - address: 203.0.113.6
-      country_name: United States
-      latitude: 38.7622
-      longitude: -76.9379
-    - address: 203.0.113.7
-      country_name: United States
-      latitude: 40.3640
-      longitude: -79.8605
-    - address: 203.0.113.8
-      country_name: United States
-      latitude: 40.6079
-      longitude: -74.4037
-    - address: 203.0.113.9
-      country_name: United States
-      latitude: 39.9257
-      longitude: -75.3101
-    - address: 203.0.113.10
-      country_name: United States
-      latitude: 39.3771
-      longitude: -76.7065
-    - address: 203.0.113.11
-      country_name: United States
-      latitude: 39.3745
-      longitude: -76.6964
-    - address: 203.0.113.12
-      country_name: United States
-      latitude: 38.7382
-      longitude: -77.2363
-    - address: 203.0.113.13
-      country_name: United States
-      latitude: 38.3903 
-      longitude: -77.3956
-    - address: 203.0.113.14
-      country_name: United States
-      latitude: 38.8217
-      longitude: -77.1814
-    - address: 203.0.113.15
-      country_name: United States
-      latitude: 38.8515
-      longitude: -77.1591
-    - address: 203.0.113.75
-      country_name: United States
-      latitude: 37.2947
-      longitude: -78.4003
-    - address: 203.0.113.16
-      country_name: United States
-      latitude: 37.5252
-      longitude: -77.3622
-    - address: 203.0.113.12
-      country_name: United States
-      latitude: 37.5461
-      longitude: -77.5306
-    - address: 203.0.113.17
-      country_name: United States
-      latitude: 37.5563
-      longitude: -77.5849
-    - address: 203.0.113.18
-      country_name: Japan
-      latitude: 35.9196
-      longitude: 139.6675
-    - address: 203.0.113.19
-      country_name: Japan
-      latitude: 35.8194
-      longitude: 139.9622
-    - address: 203.0.113.20
-      country_name: Japan
-      latitude: 35.5259
-      longitude: 139.5486
-    - address: 203.0.113.21
-      country_name: Japan
-      latitude: 35.7037
-      longitude: 139.5011
-    - address: 203.0.113.22
-      country_name: Japan
-      latitude: 35.6728
-      longitude: 139.7150
-    - address: 203.0.113.23
-      country_name: Japan
-      latitude: 36.4147
-      longitude: 139.2348
-    - address: 203.0.113.24
-      country_name: Japan
-      latitude: 36.2462
-      longitude: 138.8497
-    - address: 203.0.113.25
-      country_name: Japan
-      latitude: 35.2196
-      longitude: 137.0620
-    - address: 203.0.113.26
-      country_name: Japan
-      latitude: 34.3883
-      longitude: 132.4803
-    - address: 203.0.113.27
-      country_name: India
-      latitude: 28.5911
-      longitude: 77.0286
-    - address: 203.0.113.28
-      country_name: India
-      latitude: 28.3618
-      longitude: 77.2594
-    - address: 203.0.113.29
-      country_name: India
-      latitude: 28.7092
-      longitude: 77.0946
-    - address: 203.0.113.30
-      country_name: India
-      latitude: 28.6127
-      longitude: 77.2826
-    - address: 203.0.113.31
-      country_name: India
-      latitude: 26.8871
-      longitude: 75.8033
-    - address: 203.0.113.32
-      country_name: India
-      latitude: 27.0519
-      longitude: 75.7899
-    - address: 203.0.113.33
-      country_name: India
-      latitude: 27.1985
-      longitude: 77.9147
-    - address: 203.0.113.34
-      country_name: India
-      latitude: 26.9411
-      longitude: 75.8773
-    - address: 203.0.113.35
-      country_name: India
-      latitude: 28.5832
-      longitude: 77.0305
-    - address: 203.0.113.36
-      country_name: India
-      latitude: 26.4235
-      longitude: 80.2619
-    - address: 203.0.113.37
-      country_name: India
-      latitude: 25.5496
-      longitude: 77.4915
-    - address: 203.0.113.38
-      country_name: India
-      latitude: 22.3270
-      longitude: 82.6686
-    - address: 203.0.113.39
-      country_name: India
-      latitude: 10.9759
-      longitude: 76.9394
-    - address: 203.0.113.40
-      country_name: India
-      latitude: 11.0922
-      longitude: 77.1025
+ip:
+- address: 0.0.0.0
+  country_name: Test_ignored_ip
+  latitude: 0
+  longitude: 0
+  organization: Unknown ISP
+- address: 0.0.0.0/0
+  country_name: Test_ignored_ip
+  latitude: 0
+  longitude: 0
+  organization: Unknown ISP
+- address: 203.0.113.2
+  country_name: United States
+  latitude: 39.891
+  longitude: -75.1792
+  organization: Spectrum
+- address: 203.0.113.3
+  country_name: United States
+  latitude: 30.3657
+  longitude: -88.5561
+  organization: CenturyLink
+- address: 203.0.113.4
+  country_name: United States
+  latitude: 37.7468
+  longitude: -84.3014
+  organization: T-Mobile USA
+- address: 203.0.113.5
+  country_name: United States
+  latitude: 39.1841
+  longitude: -77.0242
+  organization: Spectrum
+- address: 203.0.113.6
+  country_name: United States
+  latitude: 38.7622
+  longitude: -76.9379
+  organization: Verizon Communications
+- address: 203.0.113.7
+  country_name: United States
+  latitude: 40.364
+  longitude: -79.8605
+  organization: Verizon Communications
+- address: 203.0.113.8
+  country_name: United States
+  latitude: 40.6079
+  longitude: -74.4037
+  organization: Comcast Xfinity
+- address: 203.0.113.9
+  country_name: United States
+  latitude: 39.9257
+  longitude: -75.3101
+  organization: AT&T Services, Inc.
+- address: 203.0.113.10
+  country_name: United States
+  latitude: 39.3771
+  longitude: -76.7065
+  organization: Comcast Xfinity
+- address: 203.0.113.11
+  country_name: United States
+  latitude: 39.3745
+  longitude: -76.6964
+  organization: Comcast Xfinity
+- address: 203.0.113.12
+  country_name: United States
+  latitude: 38.7382
+  longitude: -77.2363
+  organization: AT&T Services, Inc.
+- address: 203.0.113.13
+  country_name: United States
+  latitude: 38.3903
+  longitude: -77.3956
+  organization: Verizon Communications
+- address: 203.0.113.14
+  country_name: United States
+  latitude: 38.8217
+  longitude: -77.1814
+  organization: Spectrum
+- address: 203.0.113.15
+  country_name: United States
+  latitude: 38.8515
+  longitude: -77.1591
+  organization: Comcast Xfinity
+- address: 203.0.113.75
+  country_name: United States
+  latitude: 37.2947
+  longitude: -78.4003
+  organization: CenturyLink
+- address: 203.0.113.16
+  country_name: United States
+  latitude: 37.5252
+  longitude: -77.3622
+  organization: Verizon Communications
+- address: 203.0.113.12
+  country_name: United States
+  latitude: 37.5461
+  longitude: -77.5306
+  organization: Google Fiber
+- address: 203.0.113.17
+  country_name: United States
+  latitude: 37.5563
+  longitude: -77.5849
+  organization: Google Fiber
+- address: 203.0.113.18
+  country_name: Japan
+  latitude: 35.9196
+  longitude: 139.6675
+  organization: OCN (NTT DoCoMo)
+- address: 203.0.113.19
+  country_name: Japan
+  latitude: 35.8194
+  longitude: 139.9622
+  organization: So-net
+- address: 203.0.113.20
+  country_name: Japan
+  latitude: 35.5259
+  longitude: 139.5486
+  organization: KDDI Corporation (au)
+- address: 203.0.113.21
+  country_name: Japan
+  latitude: 35.7037
+  longitude: 139.5011
+  organization: So-net
+- address: 203.0.113.22
+  country_name: Japan
+  latitude: 35.6728
+  longitude: 139.715
+  organization: IIJ (Internet Initiative Japan)
+- address: 203.0.113.23
+  country_name: Japan
+  latitude: 36.4147
+  longitude: 139.2348
+  organization: SoftBank Corp.
+- address: 203.0.113.24
+  country_name: Japan
+  latitude: 36.2462
+  longitude: 138.8497
+  organization: OCN (NTT DoCoMo)
+- address: 203.0.113.25
+  country_name: Japan
+  latitude: 35.2196
+  longitude: 137.062
+  organization: SoftBank Corp.
+- address: 203.0.113.26
+  country_name: Japan
+  latitude: 34.3883
+  longitude: 132.4803
+  organization: NTT Communications
+- address: 203.0.113.27
+  country_name: India
+  latitude: 28.5911
+  longitude: 77.0286
+  organization: Bharti Airtel
+- address: 203.0.113.28
+  country_name: India
+  latitude: 28.3618
+  longitude: 77.2594
+  organization: Tata Communications
+- address: 203.0.113.29
+  country_name: India
+  latitude: 28.7092
+  longitude: 77.0946
+  organization: Tata Communications
+- address: 203.0.113.30
+  country_name: India
+  latitude: 28.6127
+  longitude: 77.2826
+  organization: Tata Communications
+- address: 203.0.113.31
+  country_name: India
+  latitude: 26.8871
+  longitude: 75.8033
+  organization: Vodafone Idea (Vi)
+- address: 203.0.113.32
+  country_name: India
+  latitude: 27.0519
+  longitude: 75.7899
+  organization: Reliance Jio Infocomm
+- address: 203.0.113.33
+  country_name: India
+  latitude: 27.1985
+  longitude: 77.9147
+  organization: BSNL
+- address: 203.0.113.34
+  country_name: India
+  latitude: 26.9411
+  longitude: 75.8773
+  organization: Reliance Jio Infocomm
+- address: 203.0.113.35
+  country_name: India
+  latitude: 28.5832
+  longitude: 77.0305
+  organization: Reliance Jio Infocomm
+- address: 203.0.113.36
+  country_name: India
+  latitude: 26.4235
+  longitude: 80.2619
+  organization: BSNL
+- address: 203.0.113.37
+  country_name: India
+  latitude: 25.5496
+  longitude: 77.4915
+  organization: Bharti Airtel
+- address: 203.0.113.38
+  country_name: India
+  latitude: 22.327
+  longitude: 82.6686
+  organization: Vodafone Idea (Vi)
+- address: 203.0.113.39
+  country_name: India
+  latitude: 10.9759
+  longitude: 76.9394
+  organization: Bharti Airtel
+- address: 203.0.113.40
+  country_name: India
+  latitude: 11.0922
+  longitude: 77.1025
+  organization: Bharti Airtel
 user_agent:
     - Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)
     - Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0

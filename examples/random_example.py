@@ -37,16 +37,23 @@ def generate_common_data():
         tmp["@timestamp"] = head + tail
 
         tmp["user"] = {"name": random.choice(read_data["user_name"])}
-        tmp["event"] = {"outcome": random.choice(event_outcome), "category": random.choice(event_category), "type": random.choice(event_type)}
+        tmp["event"] = {
+            "outcome": random.choice(event_outcome),
+            "category": random.choice(event_category),
+            "type": random.choice(event_type),
+        }
         tmp["source"] = {
             "ip": ip["address"],
             "geo": {
                 "country_name": ip["country_name"],
             },
         }
-        tmp["source"]["geo"]["location"] = {"lat": ip["latitude"], "lon": ip["longitude"]}
+        tmp["source"]["geo"]["location"] = {
+            "lat": ip["latitude"],
+            "lon": ip["longitude"],
+        }
         tmp["user_agent"] = {"original": random.choice(read_data["user_agent"])}
-
+        tmp["source"]["as"] = {"organization": {"name": ip["organization"]}}
         now = now + timedelta(seconds=1)
         fields.append(tmp)
     return fields
@@ -59,7 +66,13 @@ def write_bulk(es, index, msg_list):
     :type msg_list: list
     """
     now = datetime.utcnow()
-    bulk(es, _bulk_gendata(f"{index}-test_data-{str(now.year)}-{str(now.month)}-{str(now.day)}", msg_list))
+    bulk(
+        es,
+        _bulk_gendata(
+            f"{index}-test_data-{str(now.year)}-{str(now.month)}-{str(now.day)}",
+            msg_list,
+        ),
+    )
 
 
 def _bulk_gendata(index, msg_list):

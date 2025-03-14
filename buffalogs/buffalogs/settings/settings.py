@@ -224,7 +224,7 @@ CELERY_BEAT_SCHEDULER = "celery.beat:PersistentScheduler"
 
 CELERY_BEAT_SCHEDULE = {
     "process_logs": {
-        "task": "ProcessLogsTask",
+        "task": "BuffalogsProcessLogsTask",
         "schedule": crontab(minute=30),
     },
     "clean_models_periodically": {"task": "BuffalogsCleanModelsPeriodicallyTask", "schedule": crontab(hour=23, minute=59)},
