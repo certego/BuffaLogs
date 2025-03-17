@@ -3,19 +3,17 @@ from datetime import timedelta
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.db import transaction
-from django.db.models import Count
 from django.utils import timezone
 from elasticsearch_dsl import Search, connections
-from impossible_travel.constants import UserRiskScoreType
-from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules import alert_filter, impossible_travel, login_from_new_country, login_from_new_device
 from impossible_travel.alerting.alert_factory import AlertFactory
+from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
+from impossible_travel.modules import detection
 
 logger = get_task_logger(__name__)
 
 
-def clear_models_periodically():
+@shared_task(name="BuffalogsCleanModelsPeriodicallyTask")
+def clean_models_periodically():
     """Delete old data in the models"""
     app_config = Config.objects.get(id=1)
     now = timezone.now()
@@ -30,94 +28,6 @@ def clear_models_periodically():
 
     delete_ip_time = now - timedelta(days=app_config.ip_max_days)
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
-
-
-@shared_task(name="BuffalogsUpdateRiskLevelTask")
-def update_risk_level():
-    """Update users risk level depending on how many alerts were triggered"""
-    clear_models_periodically()
-    with transaction.atomic():
-        for u in User.objects.annotate(Count("alert")):
-            alerts_num = u.alert__count
-            tmp = UserRiskScoreType.get_risk_level(alerts_num)
-            if u.risk_score != tmp:
-                # Added log only if it's updated, not always for each High risk user
-                logger.info(f"Upgraded risk level for User: {u.username}, {alerts_num} detected")
-                u.risk_score = tmp
-                u.save()
-
-
-def set_alert(db_user, login_alert, alert_info):
-    """Save the alert on db and logs it
-
-    :param db_user: user from db
-    :type db_user: object
-    :param login_alert: dictionary login from elastic
-    :type login_alert: dict
-    :param alert_info: dictionary with alert info
-    :type alert_info: dict
-    """
-    logger.info(
-        f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']} from {login_alert['country']} from device: {login_alert['agent']}"
-    )
-    alert = Alert.objects.create(user_id=db_user.id, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
-    # check filters
-    alert_filter.match_filters(alert=alert)
-    alert.save()
-    return alert
-
-
-def check_fields(db_user, fields):
-    """
-    Call the relative function if user_agents and/or geoip exist
-    """
-    imp_travel = impossible_travel.Impossible_Travel()
-    new_dev = login_from_new_device.Login_New_Device()
-    new_country = login_from_new_country.Login_New_Country()
-
-    for login in fields:
-        if login["lat"] and login["lon"]:
-            if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
-                agent_alert = False
-                country_alert = False
-                if login["agent"]:
-                    agent_alert = new_dev.check_new_device(db_user, login)
-                    if agent_alert:
-                        set_alert(db_user, login_alert=login, alert_info=agent_alert)
-
-                if login["country"]:
-                    country_alert = new_country.check_country(db_user, login)
-                    if country_alert:
-                        set_alert(db_user, login_alert=login, alert_info=country_alert)
-
-                if not db_user.usersip_set.filter(ip=login["ip"]).exists():
-                    last_user_login = db_user.login_set.latest("timestamp")
-                    logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert, travel_vel = imp_travel.calc_distance(db_user, prev_login=last_user_login, last_login_user_fields=login)
-                    if travel_alert:
-                        new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert)
-                        new_alert.login_raw_data["buffalogs"] = {}
-                        new_alert.login_raw_data["buffalogs"]["start_country"] = last_user_login.country
-                        new_alert.login_raw_data["buffalogs"]["avg_speed"] = travel_vel
-                        new_alert.login_raw_data["buffalogs"]["start_lat"] = last_user_login.latitude
-                        new_alert.login_raw_data["buffalogs"]["start_lon"] = last_user_login.longitude
-                        new_alert.save()
-                    #   Add the new ip address from which the login comes to the db
-                    imp_travel.add_new_user_ip(db_user, login["ip"])
-
-                if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
-                    logger.info(f"Updating login {login['id']} for user: {db_user.username}")
-                    imp_travel.update_model(db_user, login)
-                else:
-                    logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
-                    imp_travel.add_new_login(db_user, login)
-
-            else:
-                logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
-                imp_travel.add_new_login(db_user, login)
-                imp_travel.add_new_user_ip(db_user, login["ip"])
-        else:
-            logger.info(f"No latitude or longitude for User {db_user.username}")
 
 
 def process_user(db_user, start_date, end_date):
@@ -150,6 +60,7 @@ def process_user(db_user, start_date, end_date):
                 "_index",
                 "source.ip",
                 "_id",
+                "source.intelligence_category",
             ]
         )
         .sort("@timestamp")  # from the oldest to the most recent login
@@ -182,14 +93,14 @@ def process_user(db_user, start_date, end_date):
                     tmp["lon"] = None
                     tmp["country"] = ""
                 fields.append(tmp)  # up to now: no geo info --> login discard
-    check_fields(db_user, fields)
+    detection.check_fields(db_user, fields)
 
 
 @shared_task(name="BuffalogsProcessLogsTask")
 def process_logs():
     """Find all user logged in between that time range"""
     now = timezone.now()
-    process_task, op_result = TaskSettings.objects.get_or_create(
+    process_task, _ = TaskSettings.objects.get_or_create(
         task_name=process_logs.__name__, defaults={"end_date": timezone.now() - timedelta(minutes=1), "start_date": timezone.now() - timedelta(minutes=30)}
     )
     if (now - process_task.end_date).days < 1:
@@ -197,12 +108,11 @@ def process_logs():
         for _ in range(6):
             start_date = process_task.end_date
             end_date = start_date + timedelta(minutes=30)
-            if end_date > now:
-                break
-            process_task.start_date = start_date
-            process_task.end_date = end_date
-            process_task.save()
-            exec_process_logs(start_date, end_date)
+            if end_date < now:
+                process_task.start_date = start_date
+                process_task.end_date = end_date
+                process_task.save()
+                exec_process_logs(start_date, end_date)
 
     else:
         logger.info(f"Data lost from {process_task.end_date} to now")

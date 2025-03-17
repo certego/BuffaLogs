@@ -2,9 +2,8 @@ from django.contrib import admin
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
-
-from .forms import AlertAdminForm, ConfigAdminForm, UserAdminForm
-from .models import Alert, Config, Login, TaskSettings, User, UsersIP
+from impossible_travel.forms import AlertAdminForm, ConfigAdminForm, UserAdminForm
+from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 
 
 @admin.register(Login)
@@ -49,8 +48,20 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
     form = AlertAdminForm
-    list_display = ("id", "created", "updated", "get_username", "get_alert_value", "description", "login_raw_data", "is_vip", "is_filtered")
-    search_fields = ("id", "user__username", "name", "is_filtered")
+    list_display = (
+        "id",
+        "created",
+        "updated",
+        "get_username",
+        "get_alert_value",
+        "description",
+        "login_raw_data",
+        "is_filtered_field_display",
+        "filter_type",
+        "is_vip",
+    )
+    search_fields = ("id", "user__username", "name")
+    readonly_fields = ("name", "get_username", "login_raw_data", "description", "filter_type", "is_filtered_field_display", "is_vip", "notified")
 
     @admin.display(description="username")
     def get_username(self, obj):
@@ -75,7 +86,7 @@ class ConfigsAdmin(admin.ModelAdmin):
         ("Detection filters - location", {"fields": ("ignored_ips", "allowed_countries")}),
         ("Detection filters - devices", {"fields": ("ignored_ISPs", "ignore_mobile_logins")}),
         ("Detection filters - alerts", {"fields": ("filtered_alerts_types",)}),
-        ("Detection setup - Impossible Travel alerts", {"fields": ("distance_accepted", "vel_accepted")}),
+        ("Detection setup - Alerts", {"fields": ("distance_accepted", "vel_accepted", "atypical_country_days", "threshold_user_risk_alert")}),
         ("Detection setup - Clean models", {"fields": ("user_max_days", "login_max_days", "alert_max_days", "ip_max_days")}),
     ]
     list_display = (
@@ -93,9 +104,13 @@ class ConfigsAdmin(admin.ModelAdmin):
     )
     search_fields = ("id",)
 
-    @admin.display(description="Minimum user risk_score")
+    @admin.display(description="Alert minimum risk score")
     def get_minimum_risk_score_value(self, obj):
         return obj.alert_minimum_risk_score
+
+    @admin.display(description="Threshold user risk alert:")
+    def get_threshold_user_risk_alert(self, obj):
+        return obj.threshold_user_risk_alert
 
     def save_model(self, request, obj, form, change):
         if change:

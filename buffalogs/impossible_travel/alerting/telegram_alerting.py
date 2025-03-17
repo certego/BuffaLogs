@@ -64,8 +64,10 @@ class TelegramAlerting(BaseAlerting):
             )
             response.raise_for_status()
             return True
-        except Exception as e:
-            self.logger.error(
-                f"Telegram notification failed for alert {alert.id}: {str(e)}"
-            )
-            return False
+        except requests.exceptions.Timeout:
+            self.logger.error(f"Telegram notification failed for alert {alert.id}: Request timed out")
+        except requests.exceptions.HTTPError as e:
+            self.logger.error(f"Telegram notificiation failed for alert: {alert.id}: HTTP error {e.response.status_code}")
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"Telegram notification failed for alert {alert.id}: {str(e)}")
+        return False

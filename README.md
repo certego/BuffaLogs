@@ -51,10 +51,10 @@ In detail, it sends several types of alerts:
 
 ### Google Summer Of Code
 
-STAY TUNED!
+Timeline: https://developers.google.com/open-source/gsoc/timeline
+Honeynet projects ideas: https://www.honeynet.org/gsoc/gsoc-2025/google-summer-of-code-2025-project-ideas/ 
 
-As soon as Google will confirm our partecipation we are going to add all the information you need!
-
+Official Discord chat: https://discord.gg/68B8Ru5fSU
 
 ##  Installation & Running
 BuffaLogs employs the following tools which have to be installed on the machine:
@@ -106,7 +106,8 @@ BuffaLogs is able to analyse logs coming from any source, provided that it compl
                     "name": "<ISP_name>"
                 }
             },
-            "ip": "<log_source_ip>"
+            "ip": "<log_source_ip>",
+            "intelligence_category": "<intelligence_category>"
         },
         "user_agent": {
             "original": "<log_device_user_agent>"
@@ -143,7 +144,7 @@ sudo docker-compose down -v
 Then you can safely delete this repository.
 
 ##  Contribution
-BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](docs/CONTRIBUTING.md) before making any changes to the project.
+BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](CONTRIBUTING.md) before making any changes to the project.
 
 ## Release
 1. If needed, update the requirements in the `requirements.txt` and also into the `setup.cfg` file

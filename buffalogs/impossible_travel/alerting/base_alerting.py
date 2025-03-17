@@ -1,6 +1,6 @@
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-import logging
 
 
 class BaseAlerting(ABC):
@@ -9,8 +9,13 @@ class BaseAlerting(ABC):
     """
 
     class SupportedAlerters(Enum):
-        DUMMY =   "dummy"
-        TELEGRAM= "telegram"
+        DUMMY = "dummy"
+        SLACK = "slack"
+        WEBHOOK = "webhooks"
+        HTTPREQUEST = "http_request"
+        TELEGRAM = "telegram"
+        EMAIL = "email"
+        PUSHOVER = "pushover"
 
     def __init__(self):
         super().__init__()
@@ -22,4 +27,4 @@ class BaseAlerting(ABC):
         Execute the query operation.
         Must be implemented by concrete classes.
         """
-        pass
+        raise NotImplementedError

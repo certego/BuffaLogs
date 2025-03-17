@@ -1,5 +1,10 @@
 {
     "active_alerter": "telegram",
+    "slack": {
+        "enabled": true,
+        "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+        "channel": "#your-channel-name"
+    },
     "telegram": {
         "api_base_url": "https://api.telegram.org",
         "bot_token": "your_bot_token",
@@ -7,5 +12,43 @@
     },
     "dummy": {
         "config_field_example": "value_example"
+    },
+    "email":{
+        "email_backend" : "django.core.mail.backends.smtp.EmailBackend",
+        "email_server" : "smtp.gmail.com",
+        "email_port" : 587,  
+        "email_use_tls" : "True",
+        "email_host_user" : "SENDER_EMAIL",
+        "email_host_password" : "SENDER_APP_PASSWORD",
+        "default_from_email" : "BuffaLogs Alerts SENDER_EMAIL"
+    },
+    "http_request" : {
+        "name" : "",
+        "endpoint" : "",
+        "options" : {
+            "token_variable_name" : "", 
+            "alert_types" : [],
+            "fields" : [],
+            "login_data" : [],
+            "batch_size" : -1
+            }
+    },
+    "pushover":{
+        "api_key":"API_KEY",
+        "user_key":"USER_TOKEN"
+    },
+    "webhooks" : {
+        "name" : "",
+        "endpoint" : "",
+        "secret_key_variable_name" : "",
+        "options" : {
+            "issuer" : "",
+            "token_expiration_seconds" : "",
+            "algorithm" : "",
+            "alert_types" : [],
+            "fields" : [],
+            "login_data" : [],
+            "batch_size" : -1
+        }
     }
 }
