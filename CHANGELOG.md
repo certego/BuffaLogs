@@ -1,12 +1,19 @@
 ## 2.x.x
 ### 2.0.0
 #### Features
-* Added `Atypical Country` alert, with the addition of the customizable field: **Config.atypical_country_days** in order to set from how many days a login from a Country is considered "Atypical"
-* Added `User Risk Threshold` alert, with the customizable field: **Config.threshold_user_risk_alert** in order to set which level the user must have to trigger the "USER_RISK_THRESHOLD" alert
+* Added the `Atypical Country` alert type, with the addition of the customizable field: **Config.atypical_country_days** in order to set from how many days a login from a Country is considered "Atypical"
+* Added the `User Risk Threshold` alert type, with the customizable field: **Config.threshold_user_risk_alert** in order to set which level the user must have to trigger the "USER_RISK_THRESHOLD" alert
+* Added the `Anonymous IP Login` alert type, in order to signal the logins made from an anonymizer IP
+* Added the `Alerter` abstract class, in order to implement alerting sources for the alerts triggered
+* Added the `Telegram` alerter (by community - @drona-gyawali)
+* Added the `HTTP request` and `Webhook` alerters (by community - @Noble-47)
+* Added the `Slack` alerter (by community - @Muhammad-Rebaal)
+* Added the `Email` alerter (by community - @kunalsz)
+* Added the `Pushover` alerter (by community - @kunalsz)
 ### Changes
 * Changed the `Alert.is_filtered` field into a property
-* Removed the setup.py method for tests and added the `tests-fixture`
-* Refactoring on modules, removed: **impossible_travel.py**, **login_from_new_country.py** and **login_from_new_device.py**, in order to use just 3 modules for the 3 main processes: `ingestion_handler.py`, `detection.py` and `alert_filter.py`
+* Removed the setup.py method for tests and added the `tests-fixture` instead
+* Refactoring on modules, removed: **impossible_travel.py**, **login_from_new_country.py** and **login_from_new_device.py**, in order to use just 2 files related to the main processes: `detection.py` and `alert_filter.py`
 * Updated Certego shared CI to 1.5.0
 * Updated containers: Elasticsearch and Kibana from 3.17.13 to 3.17.27
 * Changed the **UserRiskScoreType.is_equal_or_higher(...)** method with the **UserRiskScoreType.compare_risk(...)** function
@@ -14,10 +21,15 @@
 * Added debug logs for the Filter logic
 * Removed the `update_risk_level()` function from the `BuffalogsCleanModelsPeriodicallyTask` periodic task. Now, the new risk_score is calculated as soon as an alert is triggered
 ### Bugfix
-* Fixed the alert filters applied to users
+* Fixed the user-agent parser in the filtering
+* Fixed the alerts.json.gz fixture (by community - @Noble-47)
+* Fixed the admin visualization for the `is_filtered` and the `filter_type` fields
+* Fixed the impossible_travel mgmt command
+* Fixed the alert filters applied to users, in the `_update_users_filters` method
 * Fixed elasticsearch port in *load_templates.sh* script
-* Updated linters to solve conflicts
-
+* Updated linters to solve conflicts in versions
+* Added explicit version number to AG-Grid script source to fix javascript (by community - @Noble-47)
+* Fixed the GUI widget resizing (by community - @drona-gyawali)
 
 ## 1.4.x
 ### 1.4.0

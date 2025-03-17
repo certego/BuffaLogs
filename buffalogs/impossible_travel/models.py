@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib import admin
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -62,6 +63,10 @@ class Alert(models.Model):
         if self.filter_type:
             return True
         return False
+
+    @admin.display(description="is_filtered", boolean=True)
+    def is_filtered_field_display(self):
+        return self.is_filtered
 
     class Meta:
         constraints = [

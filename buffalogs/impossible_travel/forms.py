@@ -38,8 +38,8 @@ class ShortLabelChoiceField(forms.ChoiceField):
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop("choices", [])
-        formatted_choices = [(value, value) for value, _ in choices]
-        super().__init__(*args, choices=formatted_choices, **kwargs)
+        formatted_choices = [("", "---------")] + [(value, value) for value, _ in choices]
+        super().__init__(*args, choices=formatted_choices, required=False, **kwargs)
 
 
 class UserAdminForm(forms.ModelForm):

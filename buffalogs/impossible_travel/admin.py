@@ -48,8 +48,20 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
     form = AlertAdminForm
-    list_display = ("id", "created", "updated", "get_username", "get_alert_value", "description", "login_raw_data", "is_vip", "is_filtered")
-    search_fields = ("id", "user__username", "name", "is_filtered")
+    list_display = (
+        "id",
+        "created",
+        "updated",
+        "get_username",
+        "get_alert_value",
+        "description",
+        "login_raw_data",
+        "is_filtered_field_display",
+        "filter_type",
+        "is_vip",
+    )
+    search_fields = ("id", "user__username", "name")
+    readonly_fields = ("name", "get_username", "login_raw_data", "description", "filter_type", "is_filtered_field_display", "is_vip", "notified")
 
     @admin.display(description="username")
     def get_username(self, obj):
