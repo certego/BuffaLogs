@@ -52,6 +52,6 @@
         }
     },
     "discord" : {
-        "webhook_url" : "YOUR_WEBHOOK_URL"
+        "webhook_url" : "https://discord.com/api/webhooks/WEBHOOK"
     }
 }

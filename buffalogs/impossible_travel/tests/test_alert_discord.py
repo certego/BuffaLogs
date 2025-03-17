@@ -10,7 +10,7 @@ class TestDiscordAlerting(TestCase):
     def setUp(self):
         """Set up test data before running tests."""
 
-        self.discord_config = {"webhook_url": "YOUR_WEBHOOK_URL"}
+        self.discord_config = {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK"}
         self.discord_alerting = DiscordAlerting(self.discord_config)
 
         # Create a dummy user
@@ -41,7 +41,7 @@ class TestDiscordAlerting(TestCase):
         }
 
         mock_post.assert_called_once_with(
-            "YOUR_WEBHOOK_URL",
+            "https://discord.com/api/webhooks/WEBHOOK",
             headers={"Content-Type": "application/json"},
             data=json.dumps(expected_payload),
         )
