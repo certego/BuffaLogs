@@ -1,5 +1,5 @@
 {
-    "active_alerter": "telegram",
+    "active_alerter": "discord",
     "slack": {
         "enabled": true,
         "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
@@ -50,5 +50,8 @@
             "login_data" : [],
             "batch_size" : -1
         }
+    },
+    "discord" : {
+        "webhook_url" : "YOUR_WEBHOOK_URL"
     }
 }
