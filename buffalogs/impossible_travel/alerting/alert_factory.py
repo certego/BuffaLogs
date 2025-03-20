@@ -8,6 +8,7 @@ from impossible_travel.alerting.dummy_alerting import DummyAlerting
 from impossible_travel.alerting.email_alerting import EmailAlerting
 from impossible_travel.alerting.http_request import HTTPRequestAlerting
 from impossible_travel.alerting.pushover_alerting import PushoverAlerting
+from impossible_travel.alerting.slack_alerter import SlackAlerter
 from impossible_travel.alerting.telegram_alerting import TelegramAlerting
 from impossible_travel.alerting.webhook import WebHookAlerting
 
@@ -43,8 +44,6 @@ class AlertFactory:
             case BaseAlerting.SupportedAlerters.DUMMY:
                 return DummyAlerting(self.alert_config)
             case BaseAlerting.SupportedAlerters.SLACK:
-                from impossible_travel.alerting.slack_alerter import SlackAlerter
-
                 return SlackAlerter(self.alert_config)
             case BaseAlerting.SupportedAlerters.WEBHOOK:
                 return WebHookAlerting(self.alert_config)
