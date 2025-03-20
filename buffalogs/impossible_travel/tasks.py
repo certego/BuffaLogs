@@ -3,8 +3,9 @@ from datetime import datetime, timedelta
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.utils import timezone
+from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
-from impossible_travel.modules.ingestion_handler import Ingestion
+from impossible_travel.modules import detection
 
 logger = get_task_logger(__name__)
 
@@ -27,54 +28,54 @@ def clean_models_periodically():
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
-def validate_datetime(value):
-    if not isinstance(value, datetime) or value.tzinfo is None:
-        raise ValueError("start_date and end_date must be timezone-aware datetime objects")
-    return value
-
-
 @shared_task(name="BuffalogsProcessLogsTask")
-def process_logs(given_start_date: datetime = None, given_end_date: datetime = None):
-    """Process logs in a given date range, or default to the last 30 minutes.
-
-    :param start_date: datetime from which to start the detection
-    :type start_date: timezone-aware datetime object
-    :param end_date: datetime up to which to carry out the detection
-    :type end_date: timezone-aware datetime object
-    """
-    # validate the datetimes if start_date and end_date are passed by the mgmt command
+def process_logs():
+    """Set the datetime range within which the users must be considered and start the detection"""
     now = timezone.now()
-    try:
-        if given_start_date and given_end_date:
-            start_date = validate_datetime(given_start_date)
-            end_date = validate_datetime(given_end_date)
-    except ValueError as e:
-        logger.error(f"The datetime given has an invalid datetime format: {e}")
-        return
+    process_task, _ = TaskSettings.objects.get_or_create(
+        task_name=process_logs.__name__,
+        defaults={
+            "end_date": now - timedelta(minutes=1),
+            "start_date": now - timedelta(minutes=30),
+        },
+    )
+    ingestion = IngestionFactory().get_ingestion_class()
+    date_ranges = []
 
-    # get all the active ingestion sources
-    ingestion_dicts = Ingestion.get_ingestion_sources()
-
-    # get or create a TaskSetting object for each active ingestion source in order to keep track of the execution times of each job
-    for ingestion in ingestion_dicts:
-        process_task, _ = TaskSettings.objects.get_or_create(
-            task_name=process_logs.__name__,
-            ingestion_source=ingestion["class_name"],
-            defaults={"start_date": now - timedelta(minutes=30), "end_date": now - timedelta(minutes=1)},
-        )
-
+    if (now - process_task.end_date).days < 1:
+        # Recovering old data avoiding task time limit
         for _ in range(6):
-            if (now - process_task.end_date).days >= 1:
-                logger.info(f"Data lost from {process_task.end_date} to now")
-                start_date = now - timedelta(minutes=31)
-                end_date = now - timedelta(minutes=1)
-            else:
-                start_date = process_task.end_date
-                end_date = process_task.end_date + timedelta(minutes=30)
+            start_date = process_task.end_date
+            end_date = start_date + timedelta(minutes=30)
+            if end_date < now:
+                date_ranges.append((start_date, end_date))
+                process_task.end_date = end_date
+    else:
+        logger.info(f"Data lost from {process_task.end_date} to now")
+        end_date = now - timedelta(minutes=1)
+        start_date = end_date - timedelta(minutes=30)
+        date_ranges.append((start_date, end_date))
+        process_task.end_date = end_date
 
-            if end_date > now:
-                break
+    if date_ranges:
+        process_task.start_date = date_ranges[0][0]
+        process_task.save()
 
-            process_task.start_date, process_task.end_date = start_date, end_date
-            process_task.save()
-            Ingestion.str_to_class(ingestion["class_name"]).process_users(start_date=start_date, end_date=end_date, ingestion_config=ingestion)
+        # get the users that logged into the system in those time ranges
+        for start_date, end_date in date_ranges:
+            usernames_list = ingestion.process_users(start_date, end_date)
+
+            # for each user returned, get the related logins
+            for username in usernames_list:
+                user_logins = ingestion.process_user_logins(start_date, end_date, username)
+
+                # normalize logins in order to map them into the buffalogs fields
+                normalized_user_logins = ingestion.normalize_fields(logins_response=user_logins)
+
+                # if valid logins have been found, add the user into the DB and start the detection
+                if normalized_user_logins:
+                    db_user, created = User.objects.get_or_create(username=username)
+                    if not created:
+                        # Saving user anyway to update updated_at field in order to take track of the recent users seen
+                        db_user.save()
+                    detection.check_fields(db_user=db_user, fields=normalized_user_logins)

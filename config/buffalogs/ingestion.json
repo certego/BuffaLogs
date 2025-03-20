@@ -1,14 +1,12 @@
 {
-    "active_ingestion_sources": [
-        "elasticsearch"
-    ],
+    "active_ingestion": "elasticsearch",
     "elasticsearch": {
-        "class_name": "ElasticsearchIngestion",
         "url": "http://elasticsearch:9200/",
         "username": "foobar",
         "password": "bar",
         "timeout": 90,
         "indexes": "cloud-*,fw-proxy-*",
+        "bucket_size": 10000,
         "custom_mapping": {
             "timestamp": "@timestamp",
             "id": "id",
@@ -23,7 +21,6 @@
         }
     },
     "splunk": {
-        "class_name": "SplunkIngestion",
         "url": "localhost:9201",
         "username": "foobar",
         "password": "bar",
