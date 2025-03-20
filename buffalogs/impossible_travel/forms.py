@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.postgres.forms import SimpleArrayField
 
-from .constants import AlertDetectionType, AlertFilterType, IngestionSourceType, UserRiskScoreType
+from .constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
 from .models import Alert, Config, TaskSettings, User
 
 
@@ -80,7 +80,6 @@ class ConfigAdminForm(forms.ModelForm):
 
 
 class TaskSettingsAdminForm(forms.ModelForm):
-    ingestion_source = ShortLabelChoiceField(choices=IngestionSourceType.choices)
 
     class Meta:
         model = TaskSettings

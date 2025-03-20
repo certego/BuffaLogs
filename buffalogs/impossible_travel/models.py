@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from impossible_travel.constants import AlertDetectionType, AlertFilterType, IngestionSourceType, UserRiskScoreType
+from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
 from impossible_travel.validators import validate_ips_or_network, validate_string_or_regex
 
 
@@ -96,16 +96,6 @@ class TaskSettings(models.Model):
     updated = models.DateTimeField(auto_now=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    ingestion_source = models.CharField(choices=IngestionSourceType.choices, max_length=30, null=False, blank=False, default=IngestionSourceType.ELASTICSEARCH)
-
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                # Check that the TaskSettings.ingestion_source is one of the value in the Enum IngestionSourceType
-                check=models.Q(ingestion_source__in=[choice[0] for choice in IngestionSourceType.choices]),
-                name="valid_ingestion_source_choice",
-            )
-        ]
 
 
 def get_default_ignored_users():
