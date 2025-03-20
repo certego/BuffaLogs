@@ -21,7 +21,7 @@
         }
     },
     "splunk": {
-        "url": "localhost:9201",
+        "url": "http://localhost:9200/",
         "username": "foobar",
         "password": "bar",
         "custom_mapping": {}

@@ -71,6 +71,7 @@ def process_logs():
 
                 # normalize logins in order to map them into the buffalogs fields
                 normalized_user_logins = ingestion.normalize_fields(logins_response=user_logins)
+                logger.info(f"Got {len(normalized_user_logins)} actual useful logins for the user {username}")
 
                 # if valid logins have been found, add the user into the DB and start the detection
                 if normalized_user_logins:

@@ -39,7 +39,7 @@ class BaseIngestion(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def process_user_logins(self, start_date: datetime, end_date: datetime, username: str):
+    def process_user_logins(self, start_date: datetime, end_date: datetime, username: str) -> list:
         """Abstract method that implement the extraction of the logins of the given user in the time range defined by (start_date, end_date)
         This method will be different implemented based on the ingestion source used.
 
@@ -49,6 +49,9 @@ class BaseIngestion(ABC):
         :type start_date: datetime (with tzinfo=datetime.timezone.utc)
         :param end_date: the final datetime within which the logins of the user are considered
         :type end_date: datetime (with tzinfo=datetime.timezone.utc)
+
+        :return: list of logins of a user
+        :rtype: list
         """
         raise NotImplementedError
 
@@ -60,6 +63,6 @@ class BaseIngestion(ABC):
         :param db_user: user object in the DB
         :type db_user: User object
         :param logins_response: user related logins
-        :type logins_response: any, dpeending on the ingestion source
+        :type logins_response: any, depending on the ingestion source
         """
         raise NotImplementedError
