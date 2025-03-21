@@ -1,7 +1,7 @@
 import { deleteCookie, getCookie } from 'cookies-next';
 
 export function removeToken(): void {
-  deleteCookie("user");;
+  deleteCookie("user");
 }
 
 export function getToken(): String | undefined {
