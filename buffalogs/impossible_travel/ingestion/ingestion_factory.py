@@ -25,7 +25,7 @@ class IngestionFactory:
             encoding="utf-8",
         ) as f:
             config = json.load(f)
-        if config["active_ingestion"] not in [i for i in BaseIngestion.SupportedIngestionSources]:
+        if config["active_ingestion"] not in [i.value for i in BaseIngestion.SupportedIngestionSources]:
             raise ValueError(f"The ingestion source: {config['active_ingestion']} is not supported")
         if not config.get(config["active_ingestion"]):
             raise ValueError(f"The configuration for the {config['active_ingestion']} must be implemented")
