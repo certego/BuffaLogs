@@ -1,0 +1,76 @@
+[
+    {
+        "@timestamp": "2025-02-26T13:56:48.123Z",
+        "source": {
+            "geo": {
+                "location": {
+                    "lat": 51.0951,
+                    "lon": 10.2714
+                }
+            },
+            "ip": "192.0.2.11"
+        },
+        "user": {
+            "name": "bugs-bunny@organization.com"
+        },
+        "user_agent": {
+            "original": ""
+        }
+    },
+    {
+        "@timestamp": "2025-02-26T13:56:53.123Z",
+        "source": {
+            "geo": {
+                "location": {
+                    "lat": 51.0951,
+                    "lon": 10.2714
+                }
+            },
+            "ip": ""
+        },
+        "user": {
+            "name": "bugs-bunny@organization.com"
+        },
+        "user_agent": {
+            "original": ""
+        }
+    },
+    {
+        "@timestamp": "2025-02-26T13:57:49.953Z",
+        "source": {
+            "geo": {
+                "country_name": "Italy",
+                "location": {
+                    "lat": 41.1732,
+                    "lon": 12.3425
+                }
+            },
+            "ip": "192.0.2.21"
+        },
+        "user": {
+            "name": "bugs-bunny@organization.com"
+        },
+        "user_agent": {
+            "original": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36"
+        }
+    },
+    {
+        "@timestamp": "2025-02-26T13:58:49.953Z",
+        "source": {
+            "geo": {
+                "country_name": "Italy",
+                "location": {
+                    "lat": 38.1732,
+                    "lon": 15.3425
+                }
+            },
+            "ip": "192.0.2.21"
+        },
+        "user": {
+            "name": "bugs-bunny@organization.com"
+        },
+        "user_agent": {
+            "original": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36"
+        }
+    }
+]

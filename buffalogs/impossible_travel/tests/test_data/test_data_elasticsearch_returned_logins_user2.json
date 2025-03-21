@@ -1,0 +1,71 @@
+[
+    {
+        "@timestamp": "2025-02-26T13:56:21.123Z",
+        "source": {
+            "geo": {
+                "country_name": "Germany",
+                "location": {
+                    "lat": 51.0951,
+                    "lon": 10.2714
+                }
+            },
+            "ip": "192.0.2.10"
+        },
+        "user": {
+            "name": "scooby.doo@gmail.com"
+        },
+        "user_agent": {
+            "original": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36"
+        }
+    },
+    {
+        "@timestamp": "2025-02-26T13:56:32.123Z",
+        "source": {
+            "geo": {
+                "country_name": "",
+                "location": {
+                    "lat": 51.0951,
+                    "lon": 10.2714
+                }
+            },
+            "ip": "192.0.2.8"
+        },
+        "user": {
+            "name": "scooby.doo@gmail.com"
+        },
+        "user_agent": {
+            "original": ""
+        }
+    },
+    {
+        "@timestamp": "2025-02-26T13:56:34.123Z",
+        "source": {
+            "geo": {
+                "country_name": "",
+                "location": {
+                    "lat": 51.0951,
+                    "lon": 10.2714
+                }
+            },
+            "ip": "192.0.2.8"
+        },
+        "user": {
+            "name": "scooby.doo@gmail.com"
+        }
+    },
+    {
+        "@timestamp": "2025-02-26T13:56:45.123Z",
+        "source": {
+            "geo": {
+                "country_name": "France"
+            },
+            "ip": "192.0.2.9"
+        },
+        "user": {
+            "name": "scooby.doo@gmail.com"
+        },
+        "user_agent": {
+            "original": ""
+        }
+    }
+]

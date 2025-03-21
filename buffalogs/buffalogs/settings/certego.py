@@ -17,8 +17,6 @@ CERTEGO_BUFFALOGS_ELASTIC_INDEX = os.environ.get("BUFFALOGS_ELASTIC_INDEX", "web
 CERTEGO_BUFFALOGS_SECRET_KEY = os.environ.get("BUFFALOGS_SECRET_KEY", "django-insecure-am9z-fi-x*aqxlb-@abkhb@pu!0da%0a77h%-8d(dwzrrktwhu")
 # Config path
 CERTEGO_BUFFALOGS_CONFIG_PATH = os.path.join(CERTEGO_DJANGO_PROJ_BASE_DIR, "../config/")
-# Config file for source ingestion process (ingestion.py)
-CERTEGO_BUFFALOGS_CONFIG_INGESTION_PATH = os.path.join(CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/")
 
 # For alert_filter.py in Config model
 CERTEGO_BUFFALOGS_IGNORED_USERS = ["Not Available", "N/A"]

@@ -1,0 +1,21 @@
+[
+    {
+        "@timestamp": "2025-02-26T14:02:10.167Z",
+        "source": {
+            "geo": {
+                "country_name": "Germany",
+                "location": {
+                    "lat": 45.6342,
+                    "lon": 18.2578
+                }
+            },
+            "ip": "192.0.2.26"
+        },
+        "user": {
+            "name": "bugs.bunny2"
+        },
+        "user_agent": {
+            "original": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
+        }
+    }
+]

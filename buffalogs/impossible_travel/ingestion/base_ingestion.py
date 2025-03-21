@@ -56,13 +56,14 @@ class BaseIngestion(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def normalize_fields(self, db_user: User, logins_response):
+    def normalize_fields(self, logins_response) -> list:
         """Abstract method that implement the normalization of the fields returned by the ingestion source in order to be mapped into the field names used by BuffaLogs
         This method will be different implemented based on the ingestion source used.
 
-        :param db_user: user object in the DB
-        :type db_user: User object
         :param logins_response: user related logins
         :type logins_response: any, depending on the ingestion source
+
+        :return: list of normalized logins
+        :rtype: list
         """
         raise NotImplementedError
