@@ -14,7 +14,7 @@ export function getToken(): String | undefined {
 }
 
 export function getRefreshToken(): String | undefined  {
-  const authCookie= getCookie('user');;
+  const authCookie= getCookie('user');
   if(typeof authCookie === 'string') {
     const tokens = JSON.parse(authCookie);
     return tokens?.refresh_token;
