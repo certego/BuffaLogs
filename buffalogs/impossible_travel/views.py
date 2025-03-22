@@ -11,8 +11,8 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.http import require_http_methods
-from elasticsearch_dsl import Search, connections
 from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
+from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.models import Alert, Login, User
 
 
@@ -68,15 +68,15 @@ def users(request):
     return render(request, "impossible_travel/users.html")
 
 
-def unique_logins(request):
+def unique_logins(request, pk_user=None):
     return render(request, "impossible_travel/unique_logins.html")
 
 
-def all_logins(request):
+def all_logins(request, pk_user=None):
     return render(request, "impossible_travel/all_logins.html")
 
 
-def alerts(request):
+def alerts(request, pk_user=None):
     return render(request, "impossible_travel/alerts.html")
 
 
@@ -140,39 +140,14 @@ def get_users(request):
 def get_all_logins(request, pk_user):
     context = []
     count = 0
-    connections.create_connection(hosts=[settings.CERTEGO_ELASTICSEARCH], timeout=90)
     end_date = timezone.now()
     start_date = end_date + timedelta(days=-365)
     user_obj = User.objects.filter(id=pk_user)
     username = user_obj[0].username
-    s = (
-        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
-        .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
-        .query("match", **{"user.name": username})
-        .exclude("match", **{"event.outcome": "failure"})
-        .source(includes=["user.name", "@timestamp", "geoip.latitude", "geoip.longitude", "geoip.country_name", "user_agent.original"])
-        .sort("-@timestamp")
-        .extra(size=10000)
-    )
-    response = s.execute()
-    for hit in response:
-        count = count + 1
-        tmp = {"timestamp": hit["@timestamp"]}
-
-        if "geoip" in hit and "country_name" in hit["geoip"]:
-            tmp["latitude"] = hit["geoip"]["latitude"]
-            tmp["longitude"] = hit["geoip"]["longitude"]
-            tmp["country"] = hit["geoip"]["country_name"]
-        else:
-            tmp["latitude"] = None
-            tmp["longitude"] = None
-            tmp["country"] = ""
-        if "user_agent" in hit:
-            tmp["user_agent"] = hit["user_agent"]["original"]
-        else:
-            tmp["user_agent"] = ""
-        context.append(tmp)
-    return JsonResponse(json.dumps(context, default=str), safe=False)
+    ingestion = IngestionFactory().get_ingestion_class()
+    user_logins = ingestion.process_user_logins(start_date, end_date, username)
+    normalized_user_logins = ingestion.normalize_fields(logins_response=user_logins)
+    return JsonResponse(json.dumps(normalized_user_logins, default=str), safe=False)
 
 
 @require_http_methods(["GET"])
