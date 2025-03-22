@@ -4,13 +4,14 @@ from datetime import timedelta
 
 import pygal
 from dateutil.relativedelta import relativedelta
+from django.conf import settings
 from django.utils import timezone
 from impossible_travel.models import Alert, User
 from pygal.style import Style
 
 
 def _load_data(name):
-    DATA_PATH = "impossible_travel/dashboard/"  # pylint: disable=invalid-name
+    DATA_PATH = os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/dashboard/")  # pylint: disable=invalid-name
     with open(os.path.join(DATA_PATH, name + ".json"), encoding="utf-8") as file:
         data = json.load(file)
     return data
