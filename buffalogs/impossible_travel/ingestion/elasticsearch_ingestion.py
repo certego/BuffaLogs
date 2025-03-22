@@ -43,9 +43,10 @@ class ElasticsearchIngestion(BaseIngestion):
             self.logger.info(f"Successfully got {len(response.aggregations.login_user.buckets)} users")
             for user in response.aggregations.login_user.buckets:
                 users_list.append(user.key)
-            return users_list
+        return users_list
 
     def process_user_logins(self, start_date, end_date, username):
+        response = []
         s = (
             Search(index=self.elastic_config["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
@@ -81,7 +82,7 @@ class ElasticsearchIngestion(BaseIngestion):
             self.logger.error(f"Exception while quering elasticsearch: {e}")
         else:
             self.logger.info(f"Got {len(response)} logins for the user {username} to be normalized")
-            return response
+        return response
 
     def normalize_fields(self, logins_response):
         fields = []
