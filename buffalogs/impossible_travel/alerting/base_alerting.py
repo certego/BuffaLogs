@@ -16,6 +16,7 @@ class BaseAlerting(ABC):
         TELEGRAM = "telegram"
         EMAIL = "email"
         PUSHOVER = "pushover"
+        DISCORD = "discord"
 
     def __init__(self):
         super().__init__()
