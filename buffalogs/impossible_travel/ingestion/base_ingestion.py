@@ -15,9 +15,11 @@ class BaseIngestion(ABC):
         """Types of possible data ingestion sources
 
         * ELASTICSEARCH: The login data is extracted from Elasticsearch
+        * OPENSEARCH: The login data is extracted from Opensearch
         """
 
         ELASTICSEARCH = "elasticsearch"
+        OPENSEARCH = "opensearch"
 
     def __init__(self):
         super().__init__()
