@@ -1,0 +1,101 @@
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #sidebar {
+            width: 250px;
+            height: 100vh;
+            background:rgb(25, 43, 52);
+            color: white;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            padding: 0; /* Remove padding to allow proper centering */
+        }
+        .world-map-container img {
+            width: 100%;
+            height: auto;
+            max-width: 1000px; /* Optional: Set a max-width for large screens */
+        }
+        
+        
+        #sidebar a {
+            color: #CFD8DC;
+            padding: 10px;
+            display: block;
+            text-decoration: none;
+        }
+        #sidebar a:hover {
+            background: #455A64;
+            color: #ECEFF1;
+        }
+
+        #content {
+            overflow: hidden;
+            height: 100vh;
+            
+            margin-left: 250px;
+            padding: 20px;
+   
+        }
+        @media (max-width: 768px) {
+            #sidebar {
+                display: none;
+            }
+            #content {
+                margin-left: 0;
+            }
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow-x: hidden; /* Prevents horizontal scrolling */
+        }
+        .bg-grey {
+            background-color:rgba(25, 43, 52, 0.97) !important;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+          }
+          
+          .widget-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+          }
+          
+        #content {
+            margin-left: 250px;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevents full page scrolling */
+        }
+        
+        .container {
+            flex-grow: 1;
+            width: 100%; /* Ensures it doesn't shrink */
+            min-width: 0; /* Prevents flexbox overflow */
+            height: calc(100vh - 56px); /* Adjusts for navbar height */
+            overflow-y: scroll; /* Enables vertical scrolling */
+            overflow-x: hidden; /* Prevents horizontal scrolling */
+            padding-bottom: 20px;
+            white-space: normal; /* Prevents text overflow */
+        }
+        
+        @media (max-width: 768px) {
+            #content {
+                margin-left: 0; /* Remove sidebar space on small screens */
+            }
+        }
+        .navbar-nav .nav-link.active, #sidebar a.active {
+            background-color: #455A64;
+            color: #ECEFF1 !important;
+            font-weight: bold;
+        }
+        
+    
