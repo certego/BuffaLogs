@@ -12,8 +12,7 @@ from impossible_travel.models import Alert, Login, User, UsersIP
 
 
 def load_test_data(name):
-    DATA_PATH = os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data")
-    with open(os.path.join(DATA_PATH, name + ".json")) as file:
+    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data", name + ".json")) as file:
         data = json.load(file)
     return data
 
