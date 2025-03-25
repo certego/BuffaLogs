@@ -17,8 +17,7 @@ from impossible_travel.models import Alert, Login, User
 
 
 def _load_data(name):
-    DATA_PATH = "impossible_travel/dashboard/"  # pylint: disable=invalid-name
-    with open(os.path.join(DATA_PATH, name + ".json"), encoding="utf-8") as file:
+    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/dashboard/", name + ".json"), encoding="utf-8") as file:
         data = json.load(file)
     return data
 
