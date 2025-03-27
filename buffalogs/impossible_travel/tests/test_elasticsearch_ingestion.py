@@ -69,7 +69,7 @@ class ElasticsearchIngestionTestCase(TestCase):
 
     def test_process_users_ConnectionError(self):
         # test the function process_users with the exception ConnectionError
-        self.elastic_config["url"] = "unexisting-url"
+        self.elastic_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
         elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
@@ -118,7 +118,7 @@ class ElasticsearchIngestionTestCase(TestCase):
 
     def test_process_user_logins_ConnectionError(self):
         # test the function process_user_logins with the exception ConnectionError
-        self.elastic_config["url"] = "unexisting-url"
+        self.elastic_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
         elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
