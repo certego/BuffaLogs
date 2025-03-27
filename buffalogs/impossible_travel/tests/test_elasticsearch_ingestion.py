@@ -49,7 +49,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self._load_test_data_on_elastic(data_to_be_added=self.list_to_be_added_fw_proxy, index="fw-proxy-test_data")
 
     def _load_elastic_template_on_elastic(self, template_to_be_added):
-        response = self.es.indices.put_template("example_template", template_to_be_added)
+        response = self.es.indices.put_template(name="example_template", body=template_to_be_added)
         # check that the template has been uploaded correctly
         self.assertTrue(response["acknowledged"])
 
