@@ -38,11 +38,7 @@ class OpensearchIngestion(BaseIngestion):
                     ]
                 }
             },
-            "aggs": {
-                "login_user": {
-                    "terms": {"field": "user.name.keyword", "size": self.opensearch_config["bucket_size"]}
-                }
-            }
+            "aggs": {"login_user": {"terms": {"field": "user.name.keyword", "size": self.opensearch_config["bucket_size"]}}},
         }
         try:
             response = self.client.search(index=self.opensearch_config["indexes"], body=query)
@@ -54,8 +50,8 @@ class OpensearchIngestion(BaseIngestion):
             self.logger.error(f"Exception while quering opensearch: {e}")
         else:
             self.logger.info(f"Successfully got {len(response['aggregations']['login_user']['buckets'])} users")
-            for user in response['aggregations']['login_user']['buckets']:
-                users_list.append(user['key'])
+            for user in response["aggregations"]["login_user"]["buckets"]:
+                users_list.append(user["key"])
         return users_list
 
     def process_user_logins(self, start_date, end_date, username):
@@ -98,7 +94,7 @@ class OpensearchIngestion(BaseIngestion):
             self.logger.error(f"Exception while quering opensearch: {e}")
         else:
             self.logger.info(f"Got {len(response['hits']['hits'])} logins for the user {username} to be normalized")
-        return response['hits']['hits']
+        return response["hits"]["hits"]
 
     def normalize_fields(self, logins_response):
         fields = []
@@ -111,7 +107,7 @@ class OpensearchIngestion(BaseIngestion):
                     tmp["index"] = "fw-proxy"
                 else:
                     tmp["index"] = hit["_index"].split("-")[0]
-                
+
                 # record
                 data = hit["_source"]
                 tmp["timestamp"] = data["@timestamp"]
