@@ -15,8 +15,6 @@ CERTEGO_BUFFALOGS_POSTGRES_PASSWORD = os.environ.get("BUFFALOGS_POSTGRES_PASSWOR
 CERTEGO_BUFFALOGS_POSTGRES_PORT = os.environ.get("BUFFALOGS_POSTGRES_PORT", "5432")
 CERTEGO_BUFFALOGS_ELASTIC_INDEX = os.environ.get("BUFFALOGS_ELASTIC_INDEX", "weblog-*,cloud-*,fw-proxy-*,filebeat-*")
 CERTEGO_BUFFALOGS_SECRET_KEY = os.environ.get("BUFFALOGS_SECRET_KEY", "django-insecure-am9z-fi-x*aqxlb-@abkhb@pu!0da%0a77h%-8d(dwzrrktwhu")
-# Config path
-CERTEGO_BUFFALOGS_CONFIG_PATH = os.path.join(CERTEGO_DJANGO_PROJ_BASE_DIR, "../config/")
 
 # For alert_filter.py in Config model
 CERTEGO_BUFFALOGS_IGNORED_USERS = ["Not Available", "N/A"]

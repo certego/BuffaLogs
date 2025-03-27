@@ -73,6 +73,7 @@ class ElasticsearchIngestion(BaseIngestion):
         :return: Elasticsearch response of logins of that username
         :rtype: elasticsearch_dsl.response.Response
         """
+        response = []
         s = (
             Search(index=self.elastic_config["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
@@ -109,7 +110,7 @@ class ElasticsearchIngestion(BaseIngestion):
             self.logger.error(f"Exception while quering elasticsearch: {e}")
         else:
             self.logger.info(f"Got {len(response)} logins for the user {username} to be normalized")
-            return response
+        return response
 
     def normalize_fields(self, logins_response):
         """
@@ -122,26 +123,27 @@ class ElasticsearchIngestion(BaseIngestion):
         :rtype: list
         """
         fields = []
-        for hit in logins_response:
-            if "source" in hit:
+        for hit in logins_response.get("hits", {}).get("hits", []):
+            source_data = hit.get("_source", {})
+            if "source" in source_data:
                 tmp = {
-                    "timestamp": hit["@timestamp"],
-                    "id": getattr(getattr(hit, "meta", {}), "id", ""),
-                    "index": "fw-proxy" if getattr(getattr(hit, "meta", {}), "index", "").startswith("fw-") else getattr(hit.meta, "index", "").split("-")[0],
-                    "ip": hit["source"]["ip"],
-                    "agent": getattr(getattr(hit, "user_agent", {}), "original", ""),
-                    "organization": getattr(getattr(getattr(getattr(hit, "source", {}), "as", {}), "organization", {}), "name", ""),
+                    "timestamp": source_data.get("@timestamp", ""),
+                    "id": hit.get("_id", ""),
+                    "index": "fw-proxy" if hit.get("_index", "").startswith("fw-") else hit.get("_index", "").split("-")[0],
+                    "ip": source_data.get("source", {}).get("ip", ""),
+                    "agent": source_data.get("user_agent", {}).get("original", ""),
+                    "organization": source_data.get("as", {}).get("organization", {}).get("name", ""),
                 }
 
                 # geolocation fields
-                geo_dict = getattr(getattr(hit, "source", {}), "geo", {})
-                if "location" in geo_dict and "country_name" in geo_dict:
-                    # no geo info --> login discard
+                geo_dict = source_data.get("source", {}).get("geo", {})
+                if geo_dict.get("location", {}).get("lat", "") and geo_dict.get("location", {}).get("lon", "") and geo_dict.get("country_name", {}):
+                    # no all of the geo info (latitude, longitude and country_name) --> login discarded (up to now)
                     tmp.update(
                         {
-                            "lat": getattr(getattr(geo_dict, "location", {}), "lat", None),
-                            "lon": getattr(getattr(geo_dict, "location", {}), "lon", None),
-                            "country": getattr(getattr(geo_dict, "location", {}), "country_name", ""),
+                            "lat": geo_dict["location"]["lat"],
+                            "lon": geo_dict["location"]["lon"],
+                            "country": geo_dict["country_name"],
                         }
                     )
 
