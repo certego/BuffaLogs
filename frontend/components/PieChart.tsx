@@ -1,34 +1,24 @@
 import { useDateContext } from "@/contexts/DateContext";
 import { getUsersPieChart } from "@/lib/requestdata";
-import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import {
   Pie,
   Cell,
   Label,
   Sector,
+  PieChart as RechartsPieChart,
 } from "recharts";
-const PieChart = dynamic(
-  () => import("recharts").then((recharts) => recharts.PieChart),
-  { ssr: false }
-);
 
-const RADIAN = Math.PI / 180;
-const cx = 170;
-const cy = 200;
-const iR = 50;
-const oR = 100;
-const value = 50;
+interface PieDataType {
+  type: string;
+  value: number;
+  color: string;
+}
 
 const Piechart: React.FC = () => {
-  interface pieDataType {
-    type: string;
-    value: number;
-    color: string;
-  }
   const [label, setLabel] = useState("Risk Levels");
-  const [activeIndex, setActiveIndex] = useState<number | number[]>(0);
-  const [data, setData] = useState<pieDataType[]>([]);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [data, setData] = useState<PieDataType[]>([]);
   const { date } = useDateContext();
 
   const onPieEnter = (_: any, index: number) => {
@@ -46,38 +36,28 @@ const Piechart: React.FC = () => {
           color: colors[index % colors.length],
         }));
         setData(formattedData);
-      } catch (e) {}
+      } catch (e) {
+        console.error("Failed to fetch pie chart data", e);
+      }
     };
     fetchData();
   }, [date]);
-
-  interface ActiveShapeProps {
-    cx: number;
-    cy: number;
-    midAngle: number;
-    innerRadius: number;
-    outerRadius: number;
-    startAngle: number;
-    endAngle: number;
-    fill: any;
-    value: number;
-    payload: any;
-  }
   
-  const renderActiveShape = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    startAngle,
-    endAngle,
-    fill,
-    value,
-    payload,
-  }: ActiveShapeProps) => {
+  const renderActiveShape = (props: any) => {
     const RADIAN = Math.PI / 180;
-
+    const {
+      cx,
+      cy,
+      midAngle,
+      innerRadius,
+      outerRadius,
+      startAngle,
+      endAngle,
+      fill,
+      payload,
+      value
+    } = props;
+  
     const sin = Math.sin(-RADIAN * midAngle);
     const cos = Math.cos(-RADIAN * midAngle);
     const sx = cx + (outerRadius + 10) * cos;
@@ -87,7 +67,7 @@ const Piechart: React.FC = () => {
     const ex = mx + (cos >= 0 ? 1 : -1) * 22;
     const ey = my;
     const textAnchor = cos >= 0 ? "start" : "end";
-
+  
     return (
       <g>
         <Sector
@@ -119,13 +99,18 @@ const Piechart: React.FC = () => {
           y={ey}
           textAnchor={textAnchor}
           fill="#fff"
-        >{`${payload.type} ${value}`}</text>
+        >{`${payload.type}: ${value}`}</text>
       </g>
     );
   };
 
+  const cx = 170;
+  const cy = 200;
+  const iR = 50;
+  const oR = 100;
+
   return (
-    <PieChart width={400} height={250}>
+    <RechartsPieChart width={400} height={250}>
       <Pie
         activeIndex={activeIndex}
         activeShape={renderActiveShape}
@@ -142,11 +127,11 @@ const Piechart: React.FC = () => {
         onMouseEnter={onPieEnter}
       >
         {data.map((entry, index) => (
-          <Cell key={`cell-${index}`} fill={entry.color}></Cell>
+          <Cell key={`cell-${index}`} fill={entry.color} />
         ))}
-        <Label value={label} color="fff" position="center" />
+        <Label value={label} color="#fff" position="center" />
       </Pie>
-    </PieChart>
+    </RechartsPieChart>
   );
 };
 

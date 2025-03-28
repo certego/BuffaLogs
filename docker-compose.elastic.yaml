@@ -11,6 +11,7 @@ services:
             - cluster.routing.allocation.disk.watermark.low=99%
             - cluster.routing.allocation.disk.watermark.high=99%
             - cluster.routing.allocation.disk.watermark.flood_stage=99%
+            - xpack.security.enabled=true   # Enable security
         ulimits:
             memlock: 
                 soft: -1
@@ -27,10 +28,9 @@ services:
         image: docker.elastic.co/kibana/kibana:7.17.27
         hostname: kibana
         environment:
-            ELASTICSEARCH_URL: http://elasticsearch:9200
             ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-        links:
-            - elasticsearch
+            ELASTICSEARCH_USERNAME: kibana_system
+            ELASTICSEARCH_PASSWORD: 3kwnLlcSHnJYRDh2kWi9  # Secure password storage
         depends_on:
             - elasticsearch
         ports:
@@ -39,6 +39,5 @@ services:
             test: curl -fs http://localhost:5601/
 
 volumes:
-
     elasticsearch_data:
         driver: local

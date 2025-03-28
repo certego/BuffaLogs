@@ -28,12 +28,14 @@ def homepage(request):
     users_pie_context = None
     world_map_context = None
     alerts_line_context = None
+
     if request.method == "GET":
         date_range = []
         now = timezone.now()
-        end_str = now.strftime("%B %-d, %Y")
+        # Cross-platform date formatting
+        end_str = now.strftime("%B %d, %Y").replace(" 0", " ")
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        start_str = start.strftime("%B %-d, %Y")
+        start_str = start.strftime("%B %d, %Y").replace(" 0", " ")
         date_range.append(start)
         date_range.append(now)
         users_pie_context = users_pie_chart(start, now)
@@ -43,9 +45,9 @@ def homepage(request):
     elif request.method == "POST":
         date_range = json.loads(request.POST["date_range"])
         start = parse_datetime(date_range[0])
-        start_str = start.strftime("%B %-d, %Y")
+        start_str = start.strftime("%B %d, %Y").replace(" 0", " ")
         end = parse_datetime(date_range[1])
-        end_str = end.strftime("%B %-d, %Y")
+        end_str = end.strftime("%B %d, %Y").replace(" 0", " ")
         users_pie_context = users_pie_chart(start, end)
         alerts_line_context = alerts_line_chart(start, end)
         world_map_context = world_map_chart(start, end)
