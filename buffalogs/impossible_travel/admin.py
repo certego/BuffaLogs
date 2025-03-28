@@ -75,12 +75,8 @@ class AlertAdmin(admin.ModelAdmin):
 @admin.register(TaskSettings)
 class TaskSettingsAdmin(admin.ModelAdmin):
     form = TaskSettingsAdminForm
-    list_display = ("id", "created", "updated", "task_name", "start_date", "end_date", "get_ingestion_source_value")
-    search_fields = ("id", "task_name", "start_date", "ingestion_source")
-
-    @admin.display(description="ingestion_source")
-    def get_ingestion_source_value(self, obj):
-        return obj.ingestion_source
+    list_display = ("id", "created", "updated", "task_name", "start_date", "end_date")
+    search_fields = ("id", "task_name", "start_date")
 
 
 @admin.register(Config)
