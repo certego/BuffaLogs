@@ -124,6 +124,40 @@
   min-height: 300px;
 }
 
+/* Add this to homepage.css */
+#countryFilter {
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#countrySelector {
+  background-color: #343a40;
+  color: #fff;
+  border: 1px solid #343a40;
+  border-radius: 4px;
+  padding: 8px 15px;
+  cursor: pointer;
+}
+
+#countrySelector:hover {
+  background-color: #23272b;
+  border-color: #1d2124;
+}
+
+@media (max-width: 768px) {
+  #countryFilter {
+      margin-left: 0;
+      flex-direction: column;
+      align-items: flex-start;
+  }
+  
+  #countrySelector {
+      width: 100% !important;
+  }
+}
+
 @media (max-width: 1200px) {
   .dashboard-grid {
     grid-template-columns: repeat(6, 1fr);

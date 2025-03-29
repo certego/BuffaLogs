@@ -80,22 +80,29 @@ document.addEventListener( "DOMContentLoaded", function () {
     ];
 
     function fetch_request() {
-        fetch("/get_last_alerts", {
+        const countrySelector = document.getElementById('countrySelector');
+        const country = countrySelector ? countrySelector.value : '';
+        
+        let url = "/get_last_alerts";
+        if (country) {
+            url += `?country=${encodeURIComponent(country)}`;
+        }
+        
+        fetch(url, {
             method: 'GET',
             headers: {
                 "Accept": "application/json",
                 "X-Requested-With": "XMLHttpRequest"
             }
         })
-            .then(response => response.json())
-            .then((data) => {
-                const parsedData = JSON.parse(data);
-                gridOptions.rowData = parsedData;
-                gridOptions.api.setRowData(parsedData);
-            })
-            .catch(err => console.log('Request Failed', err));
+        .then(response => response.json())
+        .then((data) => {
+            const parsedData = JSON.parse(data);
+            gridOptions.rowData = parsedData;
+            gridOptions.api.setRowData(parsedData);
+        })
+        .catch(err => console.log('Request Failed', err));
     }
-
     // Grid options (to customize grid)
     const gridOptions = {
         columnDefs: columns,
@@ -216,3 +223,92 @@ function parseRangeData(start_date, end_date){
     return date_range
 }
 
+// Initialize country filter
+document.addEventListener("DOMContentLoaded", function() {
+    // Set up country filter
+    const countrySelector = document.getElementById('countrySelector');
+    const clearCountryFilter = document.getElementById('clearCountryFilter');
+    
+    if (countrySelector && clearCountryFilter) {
+        // Fetch countries data
+        fetch("/get_countries", {
+            method: 'GET',
+            headers: {
+                "Accept": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(response => response.json())
+        .then((data) => {
+            const countries = JSON.parse(data);
+            
+            // Populate dropdown with countries
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countrySelector.appendChild(option);
+            });
+        })
+        .catch(err => console.log('Failed to fetch countries', err));
+        
+        // Apply country filter when selection changes
+        countrySelector.addEventListener('change', function() {
+            applyCountryFilter(this.value);
+        });
+        
+        // Clear filter button
+        clearCountryFilter.addEventListener('click', function() {
+            countrySelector.value = '';
+            applyCountryFilter('');
+        });
+    }
+});
+
+function applyCountryFilter(country) {
+    const csrftoken = getCookie('csrftoken');
+    
+    // Apply filter to grid
+    if (gridOptions && gridOptions.api) {
+        if (country) {
+            // Filter the current grid data
+            gridOptions.api.setQuickFilter(country);
+        } else {
+            // Clear filter
+            gridOptions.api.setQuickFilter('');
+        }
+    }
+    
+    // Update world map and other visualizations
+    fetch("/filter_by_country", {
+        method: 'POST',
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": csrftoken
+        },
+        body: JSON.stringify({ country: country })
+    })
+    .then(response => response.json())
+    .then((data) => {
+        try {
+            // Update world map
+            const worldMapContainer = document.querySelector('.world-map-container figure embed');
+            console.log("Map container:", worldMapContainer);
+            console.log("Map data:", data.world_map_context);
+            
+            if (worldMapContainer && data.world_map_context) {
+                worldMapContainer.setAttribute('src', data.world_map_context);
+            } else {
+                console.error("Either map container or map data is missing");
+            }
+            
+            // Update other charts if needed
+            // ...rest of your code
+        } catch (error) {
+            console.error("Error updating visualizations:", error);
+        }
+    })
+    .catch(err => console.log('Filter request failed', err));
+}

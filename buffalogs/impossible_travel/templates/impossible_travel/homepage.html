@@ -62,6 +62,15 @@
         {% autoescape off %}<figure><embed type="image/svg+xml" src="{{world_map_context}}"/></figure>{% endautoescape %}
       </div>
     </div>
+
+    <!-- Add this right after the reportrange div in homepage.html -->
+<div id="countryFilter" class="mb-4">
+  <select id="countrySelector" class="form-select btn-dark me-2 text-truncate" style="width: auto; display: inline-block;">
+    <option value="">All Countries</option>
+    <!-- Countries will be populated via JavaScript -->
+  </select>
+  <button id="clearCountryFilter" class="btn btn-dark">Clear Filter</button>
+</div>
     
     <!-- Live Alerts Widget -->
     <div class="widget-container live-alerts-container">

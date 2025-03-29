@@ -1,9 +1,62 @@
-body{
+body {
     background-color: #dee2e6;
 }
-#myGrid{
+
+#myGrid {
     width: 80%;
-    position: absolute;
-    left: 300px;
-    padding: 50px;
+    position: relative;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.filter-container {
+    width: 80%;
+    margin: 20px auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+@media (max-width: 1200px) {
+    #myGrid, .filter-container {
+        width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    #myGrid, .filter-container {
+        width: 95%;
+        left: auto;
+        padding: 10px;
+    }
+    
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-container input,
+    .filter-container select,
+    .filter-container button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Active filter badge styles */
+.filter-badge {
+    display: inline-block;
+    background-color: #495057;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+}
+
+.filter-badge .remove-filter {
+    margin-left: 5px;
+    cursor: pointer;
 }

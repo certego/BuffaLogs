@@ -1,9 +1,339 @@
-body{
+/* Base styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background-color: #dee2e6;
+    display: flex;
+    min-height: 100vh;
 }
-#myGrid{
-    width: 80%;
-    position: absolute;
-    left: 300px;
-    padding: 50px;
+
+/* Sidebar Navigation */
+.sidebar {
+    width: 200px;
+    background-color: #495057;
+    color: white;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 100;
+}
+
+.brand {
+    padding: 20px 20px 10px;
+}
+
+.app-title {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.app-subtitle {
+    font-size: 16px;
+    opacity: 0.8;
+    margin-top: 5px;
+}
+
+.nav-items {
+    margin-top: 50px;
+}
+
+.nav-item {
+    padding: 12px 20px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.nav-item:hover, .nav-item.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-left-color: white;
+}
+
+/* Main Content Wrapper */
+.main-content {
+    flex: 1;
+    margin-left: 200px; /* Equal to sidebar width */
+    width: calc(100% - 200px);
+    box-sizing: border-box;
+    padding: 0;
+}
+
+/* Page Header */
+.page-header {
+    padding: 20px;
+    font-size: 32px;
+    font-weight: 500;
+    color: #212529;
+}
+
+/* Filter Controls */
+.filter-controls {
+    display: flex;
+    gap: 10px;
+    background-color: #343a40;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 0 15px 15px 15px;
+}
+
+.filter-controls input,
+.filter-controls select {
+    padding: 8px 12px;
+    border: 1px solid #6c757d;
+    background-color: #343a40;
+    color: white;
+    border-radius: 4px;
+}
+
+.filter-controls select {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 30px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.filter-controls button {
+    padding: 8px 15px;
+    background-color: #6c757d;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.filter-controls button:hover {
+    background-color: #5c636a;
+}
+
+/* Data Table */
+.data-table {
+    margin: 0 15px;
+    background-color: #212529;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.data-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    background-color: #343a40;
+    padding: 12px 15px;
+    text-align: left;
+    color: white;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.data-table th .sort-icon {
+    margin-left: 5px;
+    opacity: 0.5;
+}
+
+.data-table th:hover .sort-icon {
+    opacity: 1;
+}
+
+.data-table td {
+    padding: 10px 15px;
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.data-table .empty-state {
+    padding: 50px 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px 15px;
+    color: white;
+    background-color: #212529;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pagination-info {
+    margin-right: 10px;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-controls button {
+    background-color: #343a40;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+}
+
+.pagination-controls button:hover {
+    background-color: #495057;
+}
+
+/* Dashboard specific */
+.date-selector {
+    display: inline-block;
+    background-color: #343a40;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin: 0 0 20px 20px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 300px;
+    grid-template-rows: auto auto;
+    gap: 15px;
+    padding: 0 15px;
+}
+
+.dashboard-card {
+    background-color: #343a40;
+    border-radius: 6px;
+    color: white;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card-header {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.risk-score-card {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.alerts-analytics-card {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.alerts-table-card {
+    grid-column: 3;
+    grid-row: 1 / 3;
+}
+
+.alerts-location-card {
+    grid-column: 1 / 3;
+    grid-row: 2;
+}
+
+.no-data {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 28px;
+}
+
+/* Risk level legend */
+.risk-level {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.risk-level .indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.risk-level.no-risk .indicator {
+    background-color: #6c757d;
+}
+
+.risk-level.low .indicator {
+    background-color: #28a745;
+}
+
+.risk-level.medium .indicator {
+    background-color: #ffc107;
+}
+
+.risk-level.high .indicator {
+    background-color: #dc3545;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .alerts-table-card {
+        grid-column: 1 / 3;
+        grid-row: 3;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+    
+    .app-title, .app-subtitle {
+        display: none;
+    }
+    
+    .nav-item {
+        padding: 15px 0;
+        text-align: center;
+    }
+    
+    .main-content {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .alerts-analytics-card {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .alerts-location-card {
+        grid-column: 1;
+        grid-row: 3;
+    }
+    
+    .alerts-table-card {
+        grid-column: 1;
+        grid-row: 4;
+    }
 }
