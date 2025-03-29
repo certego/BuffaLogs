@@ -36,6 +36,7 @@ class TestViewsElasticIngestion(TestCase):
         with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"), mode="r", encoding="utf-8") as f:
             config = json.load(f)
             self.config = config["elasticsearch"]
+            self.config["url"] = "http://localhost:9200/"
 
     def generate_test_data(self):
         data = []
@@ -66,7 +67,7 @@ class TestViewsElasticIngestion(TestCase):
         expected_logins = []
         for item in test_data:
             index, _id, msg = item
-            es.index(index=index, id=_id, body=msg)
+            es.index(index=index, id=_id, body=msg, refresh=True)
             expected_logins.append(self.generate_expected_data(_id, index))
         self.expected_logins = expected_logins
 
@@ -82,3 +83,10 @@ class TestViewsElasticIngestion(TestCase):
             "lon": 56.78,
             "country": "Test Country",
         }
+
+    def tearDown(self):
+        es = Elasticsearch([self.config["url"]])
+        for i, index in enumerate(["cloud", "fw-proxy"]):
+            index = f"{index}-test_data-1970-01-01"
+            _id = f"test_id_{i + 1}"
+            es.delete(index=index, id=_id)
