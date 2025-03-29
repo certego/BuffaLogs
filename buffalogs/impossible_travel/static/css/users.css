@@ -1,9 +1,8 @@
-body{
-    background-color: #dee2e6;
-}
 #myGrid{
     width: 80%;
     position: absolute;
     left: 300px;
     padding: 50px;
 }
+
+
