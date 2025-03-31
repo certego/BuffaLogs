@@ -30,8 +30,6 @@ This guide outlines the steps to configure Microsoft Teams webhooks for receivin
 3. **Copy the Webhook URL**:
    - A unique URL will be generated. **Copy this URL** immediately—it will not be shown again.
 
-   [Microsoft Teams Offical Documentation](https://learn.microsoft.com/en-us/microsoftteams/platform/assets/images/webhooks/webhook-url.png)
-
 ---
 
 ### 2. Configure `alerting.json`
