@@ -17,7 +17,7 @@ class BaseAlerting(ABC):
         EMAIL = "email"
         PUSHOVER = "pushover"
         DISCORD = "discord"
-        TEAMS = "teams"
+        MICROSOFTTEAMS = "microsoftteams"
 
     def __init__(self):
         super().__init__()

@@ -5,14 +5,14 @@ from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
 
-class TeamsAlerting(BaseAlerting):
+class MicrosoftTeamsAlerting(BaseAlerting):
     """
-    Concrete implementation of the BaseQuery class for Teams.
+    Concrete implementation of the BaseQuery class for MicrosoftTeams.
     """
 
     def __init__(self, alert_config: dict):
         """
-        Constructor for the Teams Alerter query object.
+        Constructor for the MicrosoftTeams Alerter query object.
         """
         super().__init__()
         self.webhook_url = alert_config.get("webhook_url")
@@ -42,4 +42,4 @@ class TeamsAlerting(BaseAlerting):
                 alert.save()
 
         except requests.exceptions.RequestException as e:
-            self.logger.error(f"Teams API error: {str(e)}")
+            self.logger.error(f"API error: {str(e)}")

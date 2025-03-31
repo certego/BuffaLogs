@@ -3,14 +3,14 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from django.test import TestCase
-from impossible_travel.alerting.teams_alerting import TeamsAlerting
+from impossible_travel.alerting.microsoft_teams_alerter import MicrosoftTeamsAlerting
 from impossible_travel.models import Alert, User
 
 
 class TestTeamAlerting(TestCase):
     def setUp(self):
         self.teams_config = {"webhook_url": "https://example.com/webhook/id/webhook/unique-id/token"}
-        self.teams_alerting = TeamsAlerting(self.teams_config)
+        self.teams_alerting = MicrosoftTeamsAlerting(self.teams_config)
 
         # Creating test user and alert
         self.user = User.objects.create(username="testuser")
