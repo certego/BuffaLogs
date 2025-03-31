@@ -7,9 +7,9 @@ from impossible_travel.alerting.discord_alerting import DiscordAlerting
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
 from impossible_travel.alerting.email_alerting import EmailAlerting
 from impossible_travel.alerting.http_request import HTTPRequestAlerting
+from impossible_travel.alerting.microsoft_teams_alerter import MicrosoftTeamsAlerting
 from impossible_travel.alerting.pushover_alerting import PushoverAlerting
 from impossible_travel.alerting.slack_alerter import SlackAlerter
-from impossible_travel.alerting.microsoft_teams_alerter import MicrosoftTeamsAlerting
 from impossible_travel.alerting.telegram_alerting import TelegramAlerting
 from impossible_travel.alerting.webhook import WebHookAlerting
 

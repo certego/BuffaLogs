@@ -34,7 +34,11 @@ class MicrosoftTeamsAlerting(BaseAlerting):
                     "text": f"{alert.description}\n\nstay safe, BuffaLogs",
                 }
 
-                response = requests.post(self.webhook_url, headers={"Content-Type": "application/json"}, data=json.dumps(message_card))
+                response = requests.post(
+                    self.webhook_url,
+                    headers={"Content-Type": "application/json"},
+                    data=json.dumps(message_card),
+                )
 
                 response.raise_for_status()
                 self.logger.info("Alerting %s", alert.name)
