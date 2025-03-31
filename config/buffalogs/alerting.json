@@ -54,7 +54,7 @@
     "discord" : {
         "webhook_url" : "https://discord.com/api/webhooks/WEBHOOK"
     },
-    "teams" : {
+    "microsoftteams" : {
         "webhook_url" : "https://example.com/webhook/id/webhook/unique-id/token"
     }
 
