@@ -73,7 +73,7 @@ class ElasticsearchIngestion(BaseIngestion):
         :return: Elasticsearch response of logins of that username
         :rtype: elasticsearch_dsl.response.Response
         """
-        response = []
+        response = {}
         s = (
             Search(index=self.elastic_config["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
@@ -122,6 +122,10 @@ class ElasticsearchIngestion(BaseIngestion):
         :return: list of normalized logins
         :rtype: list
         """
+        if not isinstance(logins_response, dict):
+            # assume it's a Response object
+            logins_response = logins_response.to_dict()
+
         fields = []
         for hit in logins_response.get("hits", {}).get("hits", []):
             source_data = hit.get("_source", {})
@@ -132,7 +136,7 @@ class ElasticsearchIngestion(BaseIngestion):
                     "index": "fw-proxy" if hit.get("_index", "").startswith("fw-") else hit.get("_index", "").split("-")[0],
                     "ip": source_data.get("source", {}).get("ip", ""),
                     "agent": source_data.get("user_agent", {}).get("original", ""),
-                    "organization": source_data.get("as", {}).get("organization", {}).get("name", ""),
+                    "organization": source_data.get("source", {}).get("as", {}).get("organization", {}).get("name", ""),
                 }
 
                 # geolocation fields

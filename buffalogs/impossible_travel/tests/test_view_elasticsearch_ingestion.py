@@ -67,7 +67,7 @@ class TestViewsElasticIngestion(TestCase):
         expected_logins = []
         for item in test_data:
             index, _id, msg = item
-            es.index(index=index, id=_id, body=msg, refresh=True)
+            es.index(index=index, id=_id, body=msg, refresh="true")
             expected_logins.append(self.generate_expected_data(_id, index))
         self.expected_logins = expected_logins
 
