@@ -8,7 +8,6 @@ This guide outlines the steps to configure Microsoft Teams webhooks for receivin
 ## Prerequisites 
 - Microsoft Business Account with **admin rights** to configure Teams channels.
 - Access to the Teams channel where alerts will be sent.
-- `alerting.json` file configured for BuffaLogs.
 
 ---
 
@@ -22,7 +21,6 @@ This guide outlines the steps to configure Microsoft Teams webhooks for receivin
    - Click the **⋮ (More options)** button next to the channel name.
    - Select **Connectors** from the dropdown.
 
-   ![Teams Connectors Menu](https://learn.microsoft.com/en-us/microsoftteams/platform/assets/images/connectors/connectors-1.png)
 
 2. **Add the Incoming Webhook connector**:
    - Search for **Incoming Webhook** and click **Add**.
@@ -39,12 +37,11 @@ This guide outlines the steps to configure Microsoft Teams webhooks for receivin
 ### 2. Configure `alerting.json`
 
 1. **Paste the Webhook URL**:
-   - Open your BuffaLogs `alerting.json` file.
-   - Add the URL under the `teams` section:
+   - Update the `alerting.json` file by adding the webhook URL to the `microsoftTeams` section.
 
    ```json
    {
-     "teams": {
+     "microsoftteams": {
        "webhook_url": "https://example.webhook.office.com/webhookb2/.../IncomingWebhook/..."
      }
    }
