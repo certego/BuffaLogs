@@ -1,10 +1,10 @@
 import logging
 
 from django.conf import settings
-from opensearchpy import OpenSearch
 from impossible_travel.ingestion.base_ingestion import BaseIngestion
 from impossible_travel.models import User
 from impossible_travel.modules import detection
+from opensearchpy import OpenSearch
 
 
 class OpensearchIngestion(BaseIngestion):
