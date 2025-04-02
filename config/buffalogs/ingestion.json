@@ -21,9 +21,25 @@
         }
     },
     "splunk": {
-        "url": "http://localhost:9200/",
-        "username": "foobar",
-        "password": "bar",
-        "custom_mapping": {}
-    }
+        "host": "splunk",
+        "port": 8089,
+        "scheme": "https",
+        "username": "admin",
+        "password": "changeme",
+        "timeout": 90,
+        "indexes": "cloud-*,fw-proxy-*",
+        "bucket_size": 10000,
+        "custom_mapping": {
+          "timestamp": "@timestamp",
+          "id": "_id",
+          "index": "index",
+          "username": "user.name",
+          "ip": "source.ip",
+          "agent": "user_agent.original",
+          "organization": "source.as.organization.name",
+          "country": "source.geo.country_name",
+          "lat": "source.geo.location.lat",
+          "lon": "source.geo.location.lon"
+        }
+      }
 }

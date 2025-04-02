@@ -1,0 +1,25 @@
+services:
+    splunk:
+        container_name: buffalogs_splunk
+        image: splunk/splunk:latest
+        hostname: splunk
+        environment:
+            - SPLUNK_START_ARGS=--accept-license
+            - SPLUNK_ENABLE_LISTEN=9997
+            - SPLUNK_PASSWORD=StrongPassword123
+        ports:
+            - "8000:8000"  # Splunk Web UI
+            - "8088:8088"  # HTTP Event Collector (HEC)
+            - "9997:9997"  # Receiving events from forwarders
+        volumes:
+            - splunk_data:/opt/splunk/var
+        networks:
+            - splunk-net
+
+volumes:
+    splunk_data:
+        driver: local
+
+networks:
+    splunk-net:
+        driver: bridge
