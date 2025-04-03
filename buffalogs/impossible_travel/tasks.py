@@ -10,22 +10,22 @@ from impossible_travel.modules import detection
 logger = get_task_logger(__name__)
 
 
+def delete_old_data(model, days):
+    """Helper function to delete old data,takes model and days as args"""
+    now = timezone.now()
+    delete_time = now - timedelta(days=days)
+    model.objects.filter(updated__lte=delete_time).delete()
+
+
 @shared_task(name="BuffalogsCleanModelsPeriodicallyTask")
 def clean_models_periodically():
     """Delete old data in the models"""
     app_config = Config.objects.get(id=1)
-    now = timezone.now()
-    delete_user_time = now - timedelta(days=app_config.user_max_days)
-    User.objects.filter(updated__lte=delete_user_time).delete()
 
-    delete_login_time = now - timedelta(days=app_config.login_max_days)
-    Login.objects.filter(updated__lte=delete_login_time).delete()
-
-    delete_alert_time = now - timedelta(days=app_config.alert_max_days)
-    Alert.objects.filter(updated__lte=delete_alert_time).delete()
-
-    delete_ip_time = now - timedelta(days=app_config.ip_max_days)
-    UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
+    delete_old_data(User, app_config.user_max_days)
+    delete_old_data(Login, app_config.login_max_days)
+    delete_old_data(Alert, app_config.alert_max_days)
+    delete_old_data(UsersIP, app_config.ip_max_days)
 
 
 @shared_task(name="BuffalogsProcessLogsTask")
