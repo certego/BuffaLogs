@@ -8,7 +8,16 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, connections
+from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
 from impossible_travel.models import User
+
+
+def read_config():
+    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"), mode="r", encoding="utf-8") as f:
+        config = json.load(f)
+        config = config["elasticsearch"]
+        config["url"] = "http://localhost:9200/"
+    return config
 
 
 class TestViewsElasticIngestion(TestCase):
@@ -20,23 +29,19 @@ class TestViewsElasticIngestion(TestCase):
     def setUp(self):
         self.maxDiff = None
         self.client = Client()
-        self.read_config()
+        self.config = read_config()
         self.create_test_data()
 
+    @patch("impossible_travel.ingestion.ingestion_factory.IngestionFactory.get_ingestion_class")
     @patch("django.utils.timezone.now")
-    def test_get_all_logins(self, mock_now):
+    def test_get_all_logins(self, mock_now, mock_get_ingestion_class):
         mock_now.return_value = datetime(1970, 1, 1, 0, 0) + timedelta(days=10)
+        mock_get_ingestion_class.return_value = ElasticsearchIngestion(ingestion_config=self.config)
         url = reverse("get_all_logins", kwargs={"pk_user": self.user.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.json())
         self.assertEqual(content, self.expected_logins)
-
-    def read_config(self):
-        with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"), mode="r", encoding="utf-8") as f:
-            config = json.load(f)
-            self.config = config["elasticsearch"]
-            self.config["url"] = "http://localhost:9200/"
 
     def generate_test_data(self):
         data = []
