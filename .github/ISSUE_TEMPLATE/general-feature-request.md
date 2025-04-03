@@ -1,5 +1,5 @@
 ---
-name: Feature request
+name: General Feature request
 about: Suggest an idea for this project
 title: "[FEATURE] <frontend/backend>: <short_custom_title>"
 labels: feature

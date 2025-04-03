@@ -4,10 +4,6 @@
   min-height: 100vh;
 }
 
-.breadcrumb-title {
-  margin-bottom: 1rem;
-}
-
 #reportrange {
   margin-bottom: 2rem;
 }
@@ -20,7 +16,7 @@
 }
 
 .widget-container {
-  background-color: #2d353c;
+  background-color: #5c83a4;
   border-radius: 20px;
   padding: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

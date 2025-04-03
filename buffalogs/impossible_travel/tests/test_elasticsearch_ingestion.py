@@ -35,6 +35,7 @@ def load_elastic_template(name):
 
 class ElasticsearchIngestionTestCase(TestCase):
     def setUp(self):
+        # executed once per test (at the beginning)
         self.ingestion_config = load_ingestion_config_data()
         self.elastic_config = self.ingestion_config["elasticsearch"]
         self.elastic_config["url"] = "http://localhost:9200"
@@ -54,8 +55,9 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.assertTrue(response["acknowledged"])
 
     def tearDown(self) -> None:
-        self.es.indices.delete(index="cloud-test_data", ignore=[404])
-        self.es.indices.delete(index="fw-proxy-test_data", ignore=[404])
+        # executed once per test (at the end)
+        self.es.indices.delete(index="cloud-*", ignore=[404])
+        self.es.indices.delete(index="fw-proxy-*", ignore=[404])
 
     def _bulk_gendata(self, index: str, data_list: list):
         for single_data in data_list:

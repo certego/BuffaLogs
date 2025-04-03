@@ -15,6 +15,7 @@ geopy>=2.4.1
 kombu>=5.2.4
 nodeenv>=1.7.0
 pathspec>=0.10.3
+opensearch-py>=2.8.0
 prompt-toolkit>=3.0.33
 psycopg[binary]>=3.2.3
 pygal>=3.0.0
