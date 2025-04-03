@@ -52,7 +52,7 @@ class SplunkIngestion(BaseIngestion):
         end_date_str = end_date.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
         query = f"""
-            search index={self.splunk_config["indexes"]} 
+            search index={self.splunk_config["indexes"]}
             earliest="{start_date_str}" latest="{end_date_str}"
             event.category="authentication" event.outcome="success" event.type="start"
             | stats count by user.name
@@ -110,14 +110,14 @@ class SplunkIngestion(BaseIngestion):
 
         # Build Splunk query to get login events for specific user
         query = f"""
-            search index={self.splunk_config["indexes"]} 
+            search index={self.splunk_config["indexes"]}
             earliest="{start_date_str}" latest="{end_date_str}"
             user.name="{username}" event.category="authentication" event.outcome="success" event.type="start"
             | where isnotnull(source.ip)
-            | fields user.name, _time AS "@timestamp", source.geo.location.lat, source.geo.location.lon, 
+            | fields user.name, _time AS "@timestamp", source.geo.location.lat, source.geo.location.lon,
               source.geo.country_name, source.as.organization.name, user_agent.original, index, source.ip, _id,
               source.intelligence_category
-            | sort 0 @timestamp 
+            | sort 0 @timestamp
         """
         try:
             search_kwargs = {
