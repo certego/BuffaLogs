@@ -152,7 +152,7 @@ curl -k https://localhost:8088/services/collector \
 
 
 - **Data Pasting:**  
-  When you paste data with this schema, Splunk automatically creates Table based values based on the nested structure.
+  When you paste data with this schema, Splunk intelligently parses the nested structure and automatically generates table-based values.
   
 > **Table view of Data:**  
 > ![Screenshot of ingestion source table](https://github.com/user-attachments/assets/821ee11f-7e10-44d9-9baf-fd01a32826c5)
