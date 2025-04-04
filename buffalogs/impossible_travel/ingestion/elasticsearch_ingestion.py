@@ -70,10 +70,10 @@ class ElasticsearchIngestion(BaseIngestion):
         :param end_date: the final datetime within which the logins of the user are considered
         :type end_date: datetime (with tzinfo=datetime.timezone.utc)
 
-        :return: Elasticsearch response of logins of that username
-        :rtype: elasticsearch_dsl.response.Response
+        :return: list of the logins (dictionaries) for that username
+        :rtype: list of dicts
         """
-        response = []
+        user_logins = []
         s = (
             Search(index=self.elastic_config["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
@@ -110,42 +110,12 @@ class ElasticsearchIngestion(BaseIngestion):
             self.logger.error(f"Exception while quering elasticsearch: {e}")
         else:
             self.logger.info(f"Got {len(response)} logins for the user {username} to be normalized")
-        return response
 
-    def normalize_fields(self, logins_response):
-        """
-        Concrete implementation of the BaseIngestion.normalize_fields abstract method
+        # create a single standard dict (with the required fields listed in the ingestion.json config file) for each login
+        for hit in response.hits.hits:
+            hit_dict = hit.to_dict()
+            tmp = {"_index": "fw-proxy" if hit_dict.get("_index", "").startswith("fw-") else hit_dict.get("_index", "").split("-")[0], "_id": hit_dict["_id"]}
+            tmp.update(hit_dict["_source"])
+            user_logins.append(tmp)
 
-        :param logins_response: user related logins returned by the Elasticsearch query
-        :type logins_response: Elasticsearch response
-
-        :return: list of normalized logins
-        :rtype: list
-        """
-        fields = []
-        for hit in logins_response.get("hits", {}).get("hits", []):
-            source_data = hit.get("_source", {})
-            if "source" in source_data:
-                tmp = {
-                    "timestamp": source_data.get("@timestamp", ""),
-                    "id": hit.get("_id", ""),
-                    "index": "fw-proxy" if hit.get("_index", "").startswith("fw-") else hit.get("_index", "").split("-")[0],
-                    "ip": source_data.get("source", {}).get("ip", ""),
-                    "agent": source_data.get("user_agent", {}).get("original", ""),
-                    "organization": source_data.get("as", {}).get("organization", {}).get("name", ""),
-                }
-
-                # geolocation fields
-                geo_dict = source_data.get("source", {}).get("geo", {})
-                if geo_dict.get("location", {}).get("lat", "") and geo_dict.get("location", {}).get("lon", "") and geo_dict.get("country_name", {}):
-                    # no all of the geo info (latitude, longitude and country_name) --> login discarded (up to now)
-                    tmp.update(
-                        {
-                            "lat": geo_dict["location"]["lat"],
-                            "lon": geo_dict["location"]["lon"],
-                            "country": geo_dict["country_name"],
-                        }
-                    )
-
-                    fields.append(tmp)
-        return fields
+        return user_logins

@@ -31,6 +31,10 @@ def clean_models_periodically():
 @shared_task(name="BuffalogsProcessLogsTask")
 def process_logs():
     """Set the datetime range within which the users must be considered and start the detection"""
+    ingestion_factory = IngestionFactory()
+    ingestion = ingestion_factory.get_ingestion_class()
+    normalized_user_logins = []
+    date_ranges = []
     now = timezone.now()
     process_task, _ = TaskSettings.objects.get_or_create(
         task_name=process_logs.__name__,
@@ -39,8 +43,6 @@ def process_logs():
             "start_date": now - timedelta(minutes=30),
         },
     )
-    ingestion = IngestionFactory().get_ingestion_class()
-    date_ranges = []
 
     if (now - process_task.end_date).days < 1:
         # Recovering old data avoiding task time limit
@@ -70,7 +72,21 @@ def process_logs():
                 user_logins = ingestion.process_user_logins(start_date, end_date, username)
 
                 # normalize logins in order to map them into the buffalogs fields
-                normalized_user_logins = ingestion.normalize_fields(logins_response=user_logins)
+                for login in user_logins:
+                    normalized_data = {
+                        buffalogs_key: ingestion_factory._normalize_fields(login, ingestion_key)
+                        for ingestion_key, buffalogs_key in ingestion_factory.mapping.items()
+                    }
+                    # skip logins without timestamp, ip, country, latitude or longitude (for now)
+                    if (
+                        normalized_data["timestamp"]
+                        and normalized_data["ip"]
+                        and normalized_data["country"]
+                        and normalized_data["lat"]
+                        and normalized_data["lon"]
+                    ):
+                        normalized_user_logins.append(normalized_data)
+
                 logger.info(f"Got {len(normalized_user_logins)} actual useful logins for the user {username}")
 
                 # if valid logins have been found, add the user into the DB and start the detection

@@ -8,16 +8,16 @@
         "indexes": "cloud-*,fw-proxy-*",
         "bucket_size": 10000,
         "custom_mapping": {
-            "timestamp": "@timestamp",
-            "id": "id",
-            "index": "index",
-            "username": "user.name",
-            "ip": "source.ip",
-            "agent": "source.user_agent.original",
-            "organization": "source.as.organization.name",
-            "country": "source.geo.country_name",
-            "lat": "source.geo.location.lat",
-            "lon": "source.geo.location.lon"
+            "@timestamp": "timestamp",
+            "_id": "id",
+            "_index": "index",
+            "user.name": "username",
+            "source.ip": "ip",
+            "source.user_agent.original": "agent",
+            "source.as.organization.name": "organization",
+            "source.geo.country_name": "country",
+            "source.geo.location.lat": "lat",
+            "source.geo.location.lon": "lon"
         }
     },
     "opensearch": {
