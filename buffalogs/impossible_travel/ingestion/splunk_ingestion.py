@@ -24,7 +24,7 @@ class SplunkIngestion(BaseIngestion):
                 port=self.splunk_config.get("port", 8089),
                 username=self.splunk_config.get("username"),
                 password=self.splunk_config.get("password"),
-                scheme=self.splunk_config.get("scheme", "https"),
+                scheme=self.splunk_config.get("scheme", "http"),
             )
         except ConnectionError as e:
             logging.error("Failed to establish a connection: %s", e)

@@ -43,7 +43,7 @@
     "splunk": {
         "host": "splunk",
         "port": 8089,
-        "scheme": "https",
+        "scheme": "http",
         "username": "admin",
         "password": "changeme",
         "timeout": 90,
