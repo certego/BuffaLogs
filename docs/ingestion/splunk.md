@@ -1,6 +1,6 @@
 # Splunk Ingestion Documentation
 
-This document outlines a step-by-step guide for configuring Splunk using Docker services. It walks you through deploying Splunk in a containerized environment, then explains how you can ingest data in two ways: locally (by manually adding data via the Splunk web interface) and programmatically (via API calls, like using the HTTP Event Collector). Finally, it describes how Splunk processes the incoming data, parsing and indexing it according to defined configurations.
+This document outlines a step-by-step guide for configuring Splunk using Docker services. It walks you through deploying Splunk in a containerized environment, then explains how you can send data in two ways: locally (by manually adding data via the Splunk web interface) and programmatically (via API calls, like using the HTTP Event Collector). Finally, it describes how Splunk processes the incoming data, parsing and indexing it according to defined configurations.
 
 ---
 
@@ -8,7 +8,6 @@ This document outlines a step-by-step guide for configuring Splunk using Docker 
 
 - **Docker & Docker Compose:** Make sure you have Docker and Docker Compose installed.
 - **Basic Splunk Knowledge:** Familiarity with Splunk’s interface and basic ingestion concepts.
-- **HEC Configuration:** Refer to the [Splunk HEC Documentation](https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector) for detailed instructions on setting up the HTTP Event Collector.
 
 ---
 
@@ -22,9 +21,6 @@ In the `docker-compose.splunk.yaml` file, several configurations can be tailored
 - **Ports and Volumes:**  
   Customize port mappings and volume mounts if your environment requires different configurations.
   
-- **HEC Settings:**  
-  Ensure that the HEC endpoint is properly configured. You may need to adjust the collector’s port or token in the YAML.
-
 > **Tip:** Open the YAML file and look for sections marked with comments like `# Customize below` to find where you might change passwords or ports.
 
 ---
@@ -50,7 +46,7 @@ To run your Splunk service:
 
 ## Configuring Ingestion Settings
 
-The ingestion configuration is maintained in a separate JSON file (e.g., `ingestion.json`). Here, you can define how data should be processed. At this stage, the installation is basic, but you can update the file as your needs grow.
+The ingestion configuration is maintained in a separate JSON file (e.g., `ingestion.json`). Here, you can define how data should be processed. At this stage, the installation is basic, but you can update the file as your needs.
 
 - **Custom Fields:**  
   Modify the JSON keys and values to reflect the fields you need. This is where you align with your internal schema requirements.
@@ -182,7 +178,7 @@ If you encounter any issues:
   Please report your problems or discuss concerns on the [BuffaLogs Official Repository](https://github.com/buffalogs/buffalogs). This ensures you receive timely support from the community.
   
 - **Official Splunk Documentation:**  
-  For more detailed troubleshooting regarding Splunk’s ingestion processes, check out the [Splunk Ingestion Documentation](https://docs.splunk.com/Documentation/Splunk/latest/Data/HEC).
+  For more detailed troubleshooting regarding Splunk’s ingestion processes, check out the [Splunk Ingestion Documentation](https://docs.splunk.com/Documentation/Splunk).
 
 ---
 
