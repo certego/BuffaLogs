@@ -77,9 +77,17 @@ class BaseIngestion(ABC):
 
         return normalized_logins
 
-    def _normalize_fields(self, data: dict):
+    def _normalize_fields(self, data: dict) -> dict:
+        """Normalize each login based on the mapping
+
+        :param data: the logins to be normalized into the mapping fields
+        :type data: dict
+
+        :return: the final normalized login dict
+        :rtype: dict
+        """
         normalized_data = {}
-        # Normalize each login based on the mapping
+        #
         for ingestion_key, buffalogs_key in self.mapping.items():
             # Split the key in case it's nested (ex. 'source.geo.location.lat')
             keys = ingestion_key.split(".")
