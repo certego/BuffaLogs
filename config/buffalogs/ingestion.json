@@ -13,7 +13,7 @@
             "_index": "index",
             "user.name": "username",
             "source.ip": "ip",
-            "source.user_agent.original": "agent",
+            "user_agent.original": "agent",
             "source.as.organization.name": "organization",
             "source.geo.country_name": "country",
             "source.geo.location.lat": "lat",

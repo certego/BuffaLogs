@@ -13,7 +13,7 @@ logger = get_task_logger(__name__)
 @shared_task(name="BuffalogsCleanModelsPeriodicallyTask")
 def clean_models_periodically():
     """Delete old data in the models"""
-    app_config = Config.objects.get(id=1)
+    app_config, _ = Config.objects.get_or_create(id=1)
     now = timezone.now()
     delete_user_time = now - timedelta(days=app_config.user_max_days)
     User.objects.filter(updated__lte=delete_user_time).delete()
@@ -59,11 +59,13 @@ def process_logs():
         process_task.end_date = end_date
 
     if date_ranges:
-        process_task.start_date = date_ranges[0][0]
-        process_task.save()
 
         # get the users that logged into the system in those time ranges
         for start_date, end_date in date_ranges:
+            process_task.start_date = start_date
+            process_task.end_date = end_date
+            process_task.save()
+
             usernames_list = ingestion.process_users(start_date, end_date)
 
             # for each user returned, get the related logins

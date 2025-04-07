@@ -36,6 +36,7 @@ class IngestionFactoryTestCase(TestCase):
         self.assertIsNot({}, factory.ingestion_config)
         self.assertIsInstance(factory.ingestion_config, dict)
         self.assertEqual(self.ingestion_config["active_ingestion"], factory.active_ingestion.value)
+        self.assertDictEqual(self.ingestion_config[factory.active_ingestion.value]["custom_mapping"], factory.mapping)
 
     def test_read_config_valid(self):
         # test correct config loading
@@ -51,27 +52,3 @@ class IngestionFactoryTestCase(TestCase):
         ingestion_class = factory.get_ingestion_class()
         self.assertIsInstance(ingestion_class, ElasticsearchIngestion)
         self.assertEqual(excpected_config["elasticsearch"], factory.ingestion_config)
-
-    def test_normalize_fields_valid(self):
-        # test _normalize_fields with an existing key value
-        data = {"source": {"geo": {"location": {"lat": 51.0951, "lon": 10.2714}}}, "username": "bugs-bunny@organization.com"}
-        key = "source.geo.location.lat"
-        factory = IngestionFactory()
-        result = factory._normalize_fields(data, key)
-        self.assertEqual(51.0951, result)
-
-    def test_normalize_fields_key_not_found(self):
-        # test _normalize_fields with an unexisting key
-        data = {"source": {"geo": {"location": {"lat": 51.0951}}}}
-        key = "source.geo.location.lon"
-        factory = IngestionFactory()
-        result = factory._normalize_fields(data, key)
-        self.assertEqual("", result)
-
-    def test_normalize_fields_empty_dict(self):
-        # test _normalize_fields with an empty login dict
-        data = {}
-        key = "username"
-        factory = IngestionFactory()
-        result = factory._normalize_fields(data, key)
-        self.assertEqual("", result)

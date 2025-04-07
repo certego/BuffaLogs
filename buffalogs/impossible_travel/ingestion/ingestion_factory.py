@@ -44,4 +44,4 @@ class IngestionFactory:
             case BaseIngestion.SupportedIngestionSources.OPENSEARCH:
                 return OpensearchIngestion(self.ingestion_config)
             case _:
-                raise ValueError(f"Unsupported ingestionsource: {self.active_ingestion}")
+                raise ValueError(f"Unsupported ingestion source: {self.active_ingestion}")
