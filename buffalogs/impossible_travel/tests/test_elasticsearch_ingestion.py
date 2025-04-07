@@ -74,7 +74,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_users(start_date, end_date)
 
@@ -83,7 +83,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["timeout"] = 0.001
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_users(start_date, end_date)
 
@@ -92,7 +92,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["indexes"] = "unexisting-index"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_users(start_date, end_date)
 
@@ -100,7 +100,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         # test the function process_users with no data in that range time
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         # users returned should be: "Stitch", "scooby.doo@gmail.com", "bugs-bunny@organization.com" (from "cloud" index)
         # and "bugs.bunny" (from "fw-proxy" index)
         returned_users = elastic_ingestor.process_users(start_date, end_date)
@@ -111,7 +111,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         # test the function process_users with data on Elasticsearch
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         # users returned should be: "Stitch", "scooby.doo@gmail.com", "bugs-bunny@organization.com" (from "cloud" index)
         # and "bugs.bunny" (from "fw-proxy" index)
         returned_users = elastic_ingestor.process_users(start_date, end_date)
@@ -123,7 +123,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -132,7 +132,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["timeout"] = 0.001
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -141,7 +141,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["indexes"] = "unexisting-index"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -149,7 +149,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         # test the function process_user_logins with some data on Elasticsearch but not in the specific datetime range
         start_date = datetime(2025, 2, 26, 8, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 10, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         user1_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(0, len(user1_logins))
         user2_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="scooby.doo@gmail.com")
@@ -163,43 +163,34 @@ class ElasticsearchIngestionTestCase(TestCase):
 
     def test_process_user_logins_data_out_of_date_some(self):
         # test the function process_user_logins with some data on Elasticsearch in the specific datetime range
-        expected_return_user1 = load_test_data("test_data_elasticsearch_returned_logins_user1")
-        expected_return_user2 = load_test_data("test_data_elasticsearch_returned_logins_user2")
-        expected_return_user3 = load_test_data("test_data_elasticsearch_returned_logins_user3")
-        expected_return_user4 = load_test_data("test_data_elasticsearch_returned_logins_user4")
+        expected_logins_user1 = load_test_data("test_data_elasticsearch_returned_logins_user1")
+        expected_logins_user2 = load_test_data("test_data_elasticsearch_returned_logins_user2")
+        expected_logins_user3 = load_test_data("test_data_elasticsearch_returned_logins_user3")
+        expected_logins_user4 = load_test_data("test_data_elasticsearch_returned_logins_user4")
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         # user1 logins
         user1_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(2, len(user1_logins))
-        self.assertDictEqual(expected_return_user1["_shards"], user1_logins["_shards"].to_dict())
-        self.assertDictEqual(expected_return_user1["hits"]["hits"][0]["_source"], user1_logins.hits.hits[0]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user1["hits"]["hits"][1]["_source"], user1_logins.hits.hits[1]["_source"].to_dict())
+        self.assertListEqual(expected_logins_user1, user1_logins)
         # user2 logins
         user2_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="scooby.doo@gmail.com")
         self.assertEqual(4, len(user2_logins))
-        self.assertDictEqual(expected_return_user2["_shards"], user2_logins["_shards"].to_dict())
-        self.assertDictEqual(expected_return_user2["hits"]["hits"][0]["_source"], user2_logins.hits.hits[0]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user2["hits"]["hits"][1]["_source"], user2_logins.hits.hits[1]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user2["hits"]["hits"][2]["_source"], user2_logins.hits.hits[2]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user2["hits"]["hits"][3]["_source"], user2_logins.hits.hits[3]["_source"].to_dict())
+        self.assertListEqual(expected_logins_user2, user2_logins)
         # user3 logins
         user3_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="bugs-bunny@organization.com")
         self.assertEqual(4, len(user3_logins))
-        self.assertDictEqual(expected_return_user3["_shards"], user3_logins["_shards"].to_dict())
-        self.assertDictEqual(expected_return_user3["hits"]["hits"][0]["_source"], user3_logins.hits.hits[0]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user3["hits"]["hits"][1]["_source"], user3_logins.hits.hits[1]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user3["hits"]["hits"][2]["_source"], user3_logins.hits.hits[2]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user3["hits"]["hits"][3]["_source"], user3_logins.hits.hits[3]["_source"].to_dict())
+        self.assertListEqual(expected_logins_user3, user3_logins)
         # user4 logins
         user4_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="bugs.bunny")
         self.assertEqual(1, len(user4_logins))
-        self.assertDictEqual(expected_return_user4["_shards"], user4_logins["_shards"].to_dict())
-        self.assertDictEqual(expected_return_user4["hits"]["hits"][0]["_source"], user4_logins.hits.hits[0]["_source"].to_dict())
+        # only the first login in this time range
+        self.assertListEqual([expected_logins_user4[0]], user4_logins)
         # user5 logins
         user5_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="bugs.bunny2")
         self.assertEqual(0, len(user5_logins))
+        self.assertListEqual([], user5_logins)
 
     def test_process_user_logins_data_all(self):
         # test the function process_user_logins with all data on Elasticsearch in the specific datetime range
@@ -210,201 +201,24 @@ class ElasticsearchIngestionTestCase(TestCase):
         expected_return_user5 = load_test_data("test_data_elasticsearch_returned_logins_user5")
         start_date = datetime(2025, 2, 26, 10, 40, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 18, 10, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         # user1 logins
         user1_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(2, len(user1_logins))
-        self.assertDictEqual(expected_return_user1["_shards"], user1_logins["_shards"].to_dict())
-        self.assertDictEqual(expected_return_user1["hits"]["hits"][0]["_source"], user1_logins.hits.hits[0]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user1["hits"]["hits"][1]["_source"], user1_logins.hits.hits[1]["_source"].to_dict())
+        self.assertListEqual(expected_return_user1, user1_logins)
         # user2 logins
         user2_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="scooby.doo@gmail.com")
         self.assertEqual(4, len(user2_logins))
-        self.assertDictEqual(expected_return_user2["_shards"], user2_logins["_shards"].to_dict())
-        self.assertDictEqual(expected_return_user2["hits"]["hits"][0]["_source"], user2_logins.hits.hits[0]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user2["hits"]["hits"][1]["_source"], user2_logins.hits.hits[1]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user2["hits"]["hits"][2]["_source"], user2_logins.hits.hits[2]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user2["hits"]["hits"][3]["_source"], user2_logins.hits.hits[3]["_source"].to_dict())
+        self.assertListEqual(expected_return_user2, user2_logins)
         # user3 logins
         user3_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="bugs-bunny@organization.com")
         self.assertEqual(4, len(user3_logins))
-        self.assertDictEqual(expected_return_user3["_shards"], user3_logins["_shards"].to_dict())
-        self.assertDictEqual(expected_return_user3["hits"]["hits"][0]["_source"], user3_logins.hits.hits[0]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user3["hits"]["hits"][1]["_source"], user3_logins.hits.hits[1]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user3["hits"]["hits"][2]["_source"], user3_logins.hits.hits[2]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user3["hits"]["hits"][3]["_source"], user3_logins.hits.hits[3]["_source"].to_dict())
+        self.assertListEqual(expected_return_user3, user3_logins)
         # user4 logins
         user4_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="bugs.bunny")
         self.assertEqual(2, len(user4_logins))
-        self.assertDictEqual(expected_return_user4["_shards"], user4_logins["_shards"].to_dict())
-        self.assertDictEqual(expected_return_user4["hits"]["hits"][0]["_source"], user4_logins.hits.hits[0]["_source"].to_dict())
-        self.assertDictEqual(expected_return_user4["hits"]["hits"][1]["_source"], user4_logins.hits.hits[1]["_source"].to_dict())
+        self.assertListEqual(expected_return_user4, user4_logins)
         # user5 logins
         user5_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="bugs.bunny2")
         self.assertEqual(1, len(user5_logins))
-        self.assertDictEqual(expected_return_user5["_shards"], user5_logins["_shards"].to_dict())
-        self.assertDictEqual(expected_return_user5["hits"]["hits"][0]["_source"], user5_logins.hits.hits[0]["_source"].to_dict())
-
-    def test_normalize_fields_no_data(self):
-        # test the function normalize_fields for a response without data
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
-        actual_result = elastic_ingestor.normalize_fields(logins_response={})
-        self.assertListEqual([], actual_result)
-
-    def test_normalize_fields_no_hits(self):
-        # test the function normalize_fields for a response without any hit
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
-        elastic_response_to_be_normalized = {
-            "took": 14,
-            "timed_out": False,
-            "_shards": {"total": 2, "successful": 2, "skipped": 0, "failed": 0},
-            "hits": {"total": {"value": 0, "relation": "eq"}, "max_score": None, "hits": []},
-        }
-        actual_result = elastic_ingestor.normalize_fields(logins_response=elastic_response_to_be_normalized)
-        self.assertListEqual([], actual_result)
-
-    def test_normalize_fields_no_source(self):
-        # test the function normalize_fields for a response without the "source" nested dict populated
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
-        elastic_response_to_be_normalized = {"@timestamp": "2025-02-26T13:40:35.173Z", "user": {"name": "Stitch"}, "user_agent": {"original": "Linux"}}
-        expected_result = []
-        actual_result = elastic_ingestor.normalize_fields(logins_response=elastic_response_to_be_normalized)
-        self.assertListEqual(expected_result, actual_result)
-
-    def test_normalize_fields_data_user1(self):
-        # test the function normalize_fields for the logins response of user1
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
-        elastic_response_to_be_normalized = load_test_data("test_data_elasticsearch_returned_logins_user1")
-        expected_result = [
-            {
-                "timestamp": "2025-02-26T13:40:15.173Z",
-                "id": "log_id_0",
-                "index": "cloud",
-                "ip": "192.0.2.1",
-                "agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0",
-                "organization": "",
-                "lat": 37.2924,
-                "lon": 136.2759,
-                "country": "Japan",
-            },
-            {
-                "timestamp": "2025-02-26T13:40:35.173Z",
-                "id": "log_id_1",
-                "index": "cloud",
-                "ip": "192.0.2.1",
-                "agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0",
-                "organization": "",
-                "lat": 34.2924,
-                "lon": 141.2759,
-                "country": "Japan",
-            },
-        ]
-        actual_result = elastic_ingestor.normalize_fields(logins_response=elastic_response_to_be_normalized)
-        self.assertEqual(len(expected_result), len(actual_result))
-        self.assertListEqual(expected_result, actual_result)
-
-    def test_normalize_fields_data_user2(self):
-        # test the function normalize_fields for the logins response of user2
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
-        elastic_response_to_be_normalized = load_test_data("test_data_elasticsearch_returned_logins_user2")
-        expected_result = [
-            {
-                "timestamp": "2025-02-26T13:56:21.123Z",
-                "id": "log_id_2",
-                "index": "cloud",
-                "ip": "192.0.2.10",
-                "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
-                "organization": "",
-                "lat": 51.0951,
-                "lon": 10.2714,
-                "country": "Germany",
-            }
-        ]
-        actual_result = elastic_ingestor.normalize_fields(logins_response=elastic_response_to_be_normalized)
-        self.assertEqual(len(expected_result), len(actual_result))
-        self.assertListEqual(expected_result, actual_result)
-
-    def test_normalize_fields_data_user3(self):
-        # test the function normalize_fields for the logins response of user3
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
-        elastic_response_to_be_normalized = load_test_data("test_data_elasticsearch_returned_logins_user3")
-        expected_result = [
-            {
-                "timestamp": "2025-02-26T13:57:49.953Z",
-                "id": "log_id_8",
-                "index": "cloud",
-                "ip": "192.0.2.21",
-                "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
-                "organization": "",
-                "lat": 41.1732,
-                "lon": 12.3425,
-                "country": "Italy",
-            },
-            {
-                "timestamp": "2025-02-26T13:58:49.953Z",
-                "id": "log_id_9",
-                "index": "cloud",
-                "ip": "192.0.2.21",
-                "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
-                "organization": "",
-                "lat": 38.1732,
-                "lon": 15.3425,
-                "country": "Italy",
-            },
-        ]
-        actual_result = elastic_ingestor.normalize_fields(logins_response=elastic_response_to_be_normalized)
-        self.assertEqual(len(expected_result), len(actual_result))
-        self.assertListEqual(expected_result, actual_result)
-
-    def test_normalize_fields_data_user4(self):
-        # test the function normalize_fields for the logins response of user4
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
-        elastic_response_to_be_normalized = load_test_data("test_data_elasticsearch_returned_logins_user4")
-        expected_result = [
-            {
-                "timestamp": "2025-02-26T13:59:59.167Z",
-                "id": "log_id_10",
-                "index": "cloud",
-                "ip": "192.0.2.26",
-                "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
-                "organization": "",
-                "lat": 45.6342,
-                "lon": 10.2578,
-                "country": "France",
-            },
-            {
-                "timestamp": "2025-02-26T14:01:10.167Z",
-                "id": "log_id_11",
-                "index": "cloud",
-                "ip": "192.0.2.26",
-                "agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0",
-                "organization": "",
-                "lat": 45.6342,
-                "lon": 18.2578,
-                "country": "Germany",
-            },
-        ]
-        actual_result = elastic_ingestor.normalize_fields(logins_response=elastic_response_to_be_normalized)
-        self.assertEqual(len(expected_result), len(actual_result))
-        self.assertListEqual(expected_result, actual_result)
-
-    def test_normalize_fields_data_user5(self):
-        # test the function normalize_fields for the logins response of user5
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
-        elastic_response_to_be_normalized = load_test_data("test_data_elasticsearch_returned_logins_user5")
-        expected_result = [
-            {
-                "timestamp": "2025-02-26T14:02:10.167Z",
-                "id": "log_id_12",
-                "index": "cloud",
-                "ip": "192.0.2.26",
-                "agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0",
-                "organization": "",
-                "lat": 45.6342,
-                "lon": 18.2578,
-                "country": "Germany",
-            }
-        ]
-        actual_result = elastic_ingestor.normalize_fields(logins_response=elastic_response_to_be_normalized)
-        self.assertEqual(len(expected_result), len(actual_result))
-        self.assertListEqual(expected_result, actual_result)
+        self.assertListEqual(expected_return_user5, user5_logins)

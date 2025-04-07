@@ -12,6 +12,8 @@ class IngestionFactory:
         config = self._read_config()
         self.active_ingestion = BaseIngestion.SupportedIngestionSources(config["active_ingestion"])
         self.ingestion_config = config[config["active_ingestion"]]
+        # default mapping: Elasticsearch mapping
+        self.mapping = self.ingestion_config.get("custom_mapping", config["elasticsearch"]["custom_mapping"])
 
     def _read_config(self) -> dict:
         """
@@ -38,8 +40,8 @@ class IngestionFactory:
         """
         match self.active_ingestion:
             case BaseIngestion.SupportedIngestionSources.ELASTICSEARCH:
-                return ElasticsearchIngestion(self.ingestion_config)
+                return ElasticsearchIngestion(self.ingestion_config, self.mapping)
             case BaseIngestion.SupportedIngestionSources.OPENSEARCH:
                 return OpensearchIngestion(self.ingestion_config)
             case _:
-                raise ValueError(f"Unsupported ingestionsource: {self.active_ingestion}")
+                raise ValueError(f"Unsupported ingestion source: {self.active_ingestion}")
