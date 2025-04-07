@@ -45,24 +45,3 @@ class IngestionFactory:
                 return OpensearchIngestion(self.ingestion_config)
             case _:
                 raise ValueError(f"Unsupported ingestionsource: {self.active_ingestion}")
-
-    def _normalize_fields(self, data: dict, key: str) -> dict:
-        """Concrete method that manage the mapping into the required BuffaLogs mapping.
-        The mapping used is defined into the ingestion.json file "custom_mapping" if defined, otherwise it is used the default one
-
-        :param data: the login to be normalized into the mapping fields
-        :type data: dict
-        :param key: field name
-        :type key: str
-
-        :return: the final normalized dict with the login
-        :rtype: dict
-
-        """
-        keys = key.split(".")  # divide the key in levels if nested
-        for k in keys:
-            if isinstance(data, dict) and k in data:
-                data = data[k]  # into the nested level
-            else:
-                return ""  # empty str if the path doesn't exist
-        return data

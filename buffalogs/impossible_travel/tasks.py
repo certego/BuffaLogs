@@ -33,7 +33,6 @@ def process_logs():
     """Set the datetime range within which the users must be considered and start the detection"""
     ingestion_factory = IngestionFactory()
     ingestion = ingestion_factory.get_ingestion_class()
-    normalized_user_logins = []
     date_ranges = []
     now = timezone.now()
     process_task, _ = TaskSettings.objects.get_or_create(
@@ -71,28 +70,14 @@ def process_logs():
             for username in usernames_list:
                 user_logins = ingestion.process_user_logins(start_date, end_date, username)
 
-                # normalize logins in order to map them into the buffalogs fields
-                for login in user_logins:
-                    normalized_data = {
-                        buffalogs_key: ingestion_factory._normalize_fields(login, ingestion_key)
-                        for ingestion_key, buffalogs_key in ingestion_factory.mapping.items()
-                    }
-                    # skip logins without timestamp, ip, country, latitude or longitude (for now)
-                    if (
-                        normalized_data["timestamp"]
-                        and normalized_data["ip"]
-                        and normalized_data["country"]
-                        and normalized_data["lat"]
-                        and normalized_data["lon"]
-                    ):
-                        normalized_user_logins.append(normalized_data)
+                parsed_logins = ingestion._normalize_fields(logins=user_logins, mapping=ingestion_factory.mapping)
 
-                logger.info(f"Got {len(normalized_user_logins)} actual useful logins for the user {username}")
+                logger.info(f"Got {len(parsed_logins)} actual useful logins for the user {username}")
 
                 # if valid logins have been found, add the user into the DB and start the detection
-                if normalized_user_logins:
+                if parsed_logins:
                     db_user, created = User.objects.get_or_create(username=username)
                     if not created:
                         # Saving user anyway to update updated_at field in order to take track of the recent users seen
                         db_user.save()
-                    detection.check_fields(db_user=db_user, fields=normalized_user_logins)
+                    detection.check_fields(db_user=db_user, fields=parsed_logins)
