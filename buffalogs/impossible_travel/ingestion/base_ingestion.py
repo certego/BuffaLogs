@@ -103,12 +103,12 @@ class BaseIngestion(ABC):
             # Add the value to the normalized data
             normalized_data[buffalogs_key] = value
 
-            # Skip logins without timestamp, ip, country, latitude or longitude
-            if (
-                normalized_data.get("timestamp")
-                and normalized_data.get("ip")
-                and normalized_data.get("country")
-                and normalized_data.get("lat")
-                and normalized_data.get("lon")
-            ):
-                return normalized_data
+        # Skip logins without timestamp, ip, country, latitude or longitude
+        if (
+            normalized_data.get("timestamp")
+            and normalized_data.get("ip")
+            and normalized_data.get("country")
+            and normalized_data.get("lat")
+            and normalized_data.get("lon")
+        ):
+            return normalized_data
