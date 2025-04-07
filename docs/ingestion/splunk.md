@@ -160,11 +160,10 @@ curl -k https://localhost:8088/services/collector \
 
  **Processing Logic:**
   
-  The `splunk_ingestion.py` connector is built around three core functions:
+  The `splunk_ingestion.py` connector is built around two core functions:
   
   - **process_user:** Extracts and handles the username data.
   - **process_user_login:** Collects and processes login responses.
-  - **normalized_fields:** Normalizes incoming data, converting logs into the BuffaLogs format to power further operations.
 
 This streamlined approach not only organizes your log ingestion flow but also sets the stage for additional processing.
 
