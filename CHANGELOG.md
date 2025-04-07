@@ -1,4 +1,11 @@
 ## 2.x.x
+### 2.1.0
+#### Features
+* Added the `Ingestion` process
+* Added the Discord alerter (by community - @kunalsz)
+### Changes
+* Refactored the actual flow and the `BuffalogsProcessLogsTask` main task, in order to allow the implementation of more ingestion sources
+* Refactored Hardcoded paths (by community - @kunalsz)
 ### 2.0.0
 #### Features
 * Added the `Atypical Country` alert type, with the addition of the customizable field: **Config.atypical_country_days** in order to set from how many days a login from a Country is considered "Atypical"

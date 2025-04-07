@@ -19,6 +19,8 @@ services:
             - "9200:9200"
         volumes:
             - elasticsearch_data:/usr/share/elasticsearch/data
+        networks:
+            - elk
         healthcheck:
             test: curl -XGET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'
 
@@ -29,8 +31,8 @@ services:
         environment:
             ELASTICSEARCH_URL: http://elasticsearch:9200
             ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-        links:
-            - elasticsearch
+        networks:
+            - elk
         depends_on:
             - elasticsearch
         ports:
@@ -39,6 +41,9 @@ services:
             test: curl -fs http://localhost:5601/
 
 volumes:
-
     elasticsearch_data:
         driver: local
+
+networks:
+    elk:
+        driver: bridge

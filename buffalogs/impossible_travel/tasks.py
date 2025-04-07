@@ -2,10 +2,8 @@ from datetime import timedelta
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from django.conf import settings
 from django.utils import timezone
-from elasticsearch_dsl import Search, connections
-from impossible_travel.alerting.alert_factory import AlertFactory
+from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import detection
 
@@ -30,133 +28,55 @@ def clean_models_periodically():
     UsersIP.objects.filter(updated__lte=delete_ip_time).delete()
 
 
-def process_user(db_user, start_date, end_date):
-    """Get info for each user login and normalization
-
-    :param db_user: user from db
-    :type db_user: object
-    :param start_date: start date of analysis
-    :type start_date: timezone
-    :param end_date: finish date of analysis
-    :type end_date: timezone
-    """
-    fields = []
-    s = (
-        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
-        .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
-        .query("match", **{"user.name": db_user.username})
-        .query("match", **{"event.outcome": "success"})
-        .query("match", **{"event.type": "start"})
-        .query("exists", field="source.ip")
-        .source(
-            includes=[
-                "user.name",
-                "@timestamp",
-                "source.geo.location.lat",
-                "source.geo.location.lon",
-                "source.geo.country_name",
-                "source.as.organization.name",
-                "user_agent.original",
-                "_index",
-                "source.ip",
-                "_id",
-                "source.intelligence_category",
-            ]
-        )
-        .sort("@timestamp")  # from the oldest to the most recent login
-        .extra(size=10000)
-    )
-    response = s.execute()
-    logger.info(f"Got {len(response)} logins for user {db_user.username}")
-    for hit in response:
-        if "source" in hit:
-            tmp = {"timestamp": hit["@timestamp"]}
-            tmp["id"] = hit.meta["id"]
-            if hit.meta["index"].split("-")[0] == "fw":
-                tmp["index"] = "fw-proxy"
-            else:
-                tmp["index"] = hit.meta["index"].split("-")[0]
-            tmp["ip"] = hit["source"]["ip"]
-            if "user_agent" in hit:
-                tmp["agent"] = hit["user_agent"]["original"]
-            else:
-                tmp["agent"] = ""
-            if "as" in hit.source:
-                tmp["organization"] = hit["source"]["as"]["organization"]["name"]
-            if "geo" in hit.source:
-                if "location" in hit.source.geo and "country_name" in hit.source.geo:
-                    tmp["lat"] = hit["source"]["geo"]["location"]["lat"]
-                    tmp["lon"] = hit["source"]["geo"]["location"]["lon"]
-                    tmp["country"] = hit["source"]["geo"]["country_name"]
-                else:
-                    tmp["lat"] = None
-                    tmp["lon"] = None
-                    tmp["country"] = ""
-                fields.append(tmp)  # up to now: no geo info --> login discard
-    detection.check_fields(db_user, fields)
-
-
 @shared_task(name="BuffalogsProcessLogsTask")
 def process_logs():
-    """Find all user logged in between that time range"""
+    """Set the datetime range within which the users must be considered and start the detection"""
     now = timezone.now()
     process_task, _ = TaskSettings.objects.get_or_create(
-        task_name=process_logs.__name__, defaults={"end_date": timezone.now() - timedelta(minutes=1), "start_date": timezone.now() - timedelta(minutes=30)}
+        task_name=process_logs.__name__,
+        defaults={
+            "end_date": now - timedelta(minutes=1),
+            "start_date": now - timedelta(minutes=30),
+        },
     )
+    ingestion = IngestionFactory().get_ingestion_class()
+    date_ranges = []
+
     if (now - process_task.end_date).days < 1:
         # Recovering old data avoiding task time limit
         for _ in range(6):
             start_date = process_task.end_date
             end_date = start_date + timedelta(minutes=30)
             if end_date < now:
-                process_task.start_date = start_date
+                date_ranges.append((start_date, end_date))
                 process_task.end_date = end_date
-                process_task.save()
-                exec_process_logs(start_date, end_date)
-
     else:
         logger.info(f"Data lost from {process_task.end_date} to now")
-        end_date = timezone.now() - timedelta(minutes=1)
+        end_date = now - timedelta(minutes=1)
         start_date = end_date - timedelta(minutes=30)
-        process_task.start_date = start_date
+        date_ranges.append((start_date, end_date))
         process_task.end_date = end_date
+
+    if date_ranges:
+        process_task.start_date = date_ranges[0][0]
         process_task.save()
-        exec_process_logs(start_date, end_date)
 
+        # get the users that logged into the system in those time ranges
+        for start_date, end_date in date_ranges:
+            usernames_list = ingestion.process_users(start_date, end_date)
 
-@shared_task(name="NotifyAlertsTask")
-def notify_alerts():
-    alert = AlertFactory().get_alert_class()
-    alert.notify_alerts()
+            # for each user returned, get the related logins
+            for username in usernames_list:
+                user_logins = ingestion.process_user_logins(start_date, end_date, username)
 
+                # normalize logins in order to map them into the buffalogs fields
+                normalized_user_logins = ingestion.normalize_fields(logins_response=user_logins)
+                logger.info(f"Got {len(normalized_user_logins)} actual useful logins for the user {username}")
 
-def exec_process_logs(start_date, end_date):
-    """Starting the execution for the given time range
-
-    :param start_date: Start datetime
-    :type start_date: datetime
-    :param end_date: End datetime
-    :type end_date: datetime
-    """
-    logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
-    connections.create_connection(hosts=settings.CERTEGO_ELASTICSEARCH, timeout=90, verify_certs=False)
-    s = (
-        Search(index=settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX)
-        .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
-        .query("match", **{"event.category": "authentication"})
-        .query("match", **{"event.outcome": "success"})
-        .query("match", **{"event.type": "start"})
-        .query("exists", field="user.name")
-    )
-    s.aggs.bucket("login_user", "terms", field="user.name", size=10000)
-    response = s.execute()
-    try:
-        logger.info(f"Successfully got {len(response.aggregations.login_user.buckets)} users")
-        for user in response.aggregations.login_user.buckets:
-            db_user, created = User.objects.get_or_create(username=user.key)
-            if not created:
-                # Saving user to update updated_at field
-                db_user.save()
-            process_user(db_user, start_date, end_date)
-    except AttributeError:
-        logger.info("No users login aggregation found")
+                # if valid logins have been found, add the user into the DB and start the detection
+                if normalized_user_logins:
+                    db_user, created = User.objects.get_or_create(username=username)
+                    if not created:
+                        # Saving user anyway to update updated_at field in order to take track of the recent users seen
+                        db_user.save()
+                    detection.check_fields(db_user=db_user, fields=normalized_user_logins)

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.postgres.forms import SimpleArrayField
 
 from .constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
-from .models import Alert, Config, User
+from .models import Alert, Config, TaskSettings, User
 
 
 class MultiChoiceArrayWidget(forms.SelectMultiple):
@@ -77,3 +77,10 @@ class ConfigAdminForm(forms.ModelForm):
         css = {
             "all": ("css/custom_admin.css",),
         }
+
+
+class TaskSettingsAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = TaskSettings
+        fields = "__all__"

@@ -1,0 +1,75 @@
+{
+    "took": 5,
+    "timed_out": false,
+    "_shards": {
+        "total": 2,
+        "successful": 2,
+        "skipped": 0,
+        "failed": 0
+    },
+    "hits": {
+        "total": {
+            "value": 2,
+            "relation": "eq"
+        },
+        "max_score": null,
+        "hits": [
+            {
+                "_index": "cloud-test_data",
+                "_type": "_doc",
+                "_id": "log_id_0",
+                "_score": null,
+                "_source": {
+                    "@timestamp": "2025-02-26T13:40:15.173Z",
+                    "source": {
+                        "geo": {
+                            "country_name": "Japan",
+                            "location": {
+                                "lon": 136.2759,
+                                "lat": 37.2924
+                            }
+                        },
+                        "ip": "192.0.2.1"
+                    },
+                    "user": {
+                        "name": "Stitch"
+                    },
+                    "user_agent": {
+                        "original": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
+                    }
+                },
+                "sort": [
+                    1740577215173
+                ]
+            },
+            {
+                "_index": "cloud-test_data",
+                "_type": "_doc",
+                "_id": "log_id_1",
+                "_score": null,
+                "_source": {
+                    "@timestamp": "2025-02-26T13:40:35.173Z",
+                    "source": {
+                        "geo": {
+                            "country_name": "Japan",
+                            "location": {
+                                "lon": 141.2759,
+                                "lat": 34.2924
+                            }
+                        },
+                        "ip": "192.0.2.1"
+                    },
+                    "user": {
+                        "name": "Stitch"
+                    },
+                    "user_agent": {
+                        "original": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
+                    }
+                },
+                "sort": [
+                    1740577235173
+                ]
+            }
+        ]
+    }
+}

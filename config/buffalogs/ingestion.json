@@ -1,0 +1,49 @@
+{
+    "active_ingestion": "elasticsearch",
+    "elasticsearch": {
+        "url": "http://elasticsearch:9200/",
+        "username": "foobar",
+        "password": "bar",
+        "timeout": 90,
+        "indexes": "cloud-*,fw-proxy-*",
+        "bucket_size": 10000,
+        "custom_mapping": {
+            "timestamp": "@timestamp",
+            "id": "id",
+            "index": "index",
+            "username": "user.name",
+            "ip": "source.ip",
+            "agent": "source.user_agent.original",
+            "organization": "source.as.organization.name",
+            "country": "source.geo.country_name",
+            "lat": "source.geo.location.lat",
+            "lon": "source.geo.location.lon"
+        }
+    },
+    "opensearch": {
+        "url": "http://opensearch:9200/",
+        "username": "foobar",
+        "password": "bar",
+        "timeout": 90,
+        "indexes": "cloud-*,fw-proxy-*",
+        "bucket_size": 10000,
+        "custom_mapping": {
+            "timestamp": "@timestamp",
+            "id": "id",
+            "index": "index",
+            "username": "user.name",
+            "ip": "source.ip",
+            "agent": "source.user_agent.original",
+            "organization": "source.as.organization.name",
+            "country": "source.geo.country_name",
+            "lat": "source.geo.location.lat",
+            "lon": "source.geo.location.lon"
+        }
+    },
+    "splunk": {
+        "url": "http://localhost:9200/",
+        "username": "foobar",
+        "password": "bar",
+        "custom_mapping": {}
+    }
+}
