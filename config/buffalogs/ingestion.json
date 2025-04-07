@@ -44,22 +44,22 @@
         "host": "splunk",
         "port": 8089,
         "scheme": "http",
-        "username": "admin",
-        "password": "changeme",
+        "username": "foobar",
+        "password": "bar",
         "timeout": 90,
-        "indexes": "cloud-*,fw-proxy-*",
+        "indexes": "main",
         "bucket_size": 10000,
         "custom_mapping": {
-          "timestamp": "@timestamp",
-          "id": "_id",
-          "index": "index",
-          "username": "user.name",
-          "ip": "source.ip",
-          "agent": "user_agent.original",
-          "organization": "source.as.organization.name",
-          "country": "source.geo.country_name",
-          "lat": "source.geo.location.lat",
-          "lon": "source.geo.location.lon"
+            "user.name": "username",
+            "@timestamp": "timestamp",
+            "source.ip": "ip",
+            "source.geo.country_name": "country",
+            "source.geo.location.lat": "lat",
+            "source.geo.location.lon": "lon",
+            "user_agent.original": "agent",
+            "source.as.organization.name": "organization",
+            "_id": "id",
+            "index": "index"
         }
       }
 }

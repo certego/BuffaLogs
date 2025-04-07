@@ -11,20 +11,19 @@ class SplunkIngestion(BaseIngestion):
     Concrete implementation of the BaseIngestion class for Splunk ingestion source
     """
 
-    def __init__(self, ingestion_config: dict):
+    def __init__(self, ingestion_config: dict, mapping: dict):
         """
         Constructor for the Splunk Ingestion object
         """
-        super().__init__()
-        self.splunk_config = ingestion_config
+        super().__init__(ingestion_config, mapping)
         try:
-            # create the splunk host connection
+            # Create the Splunk host connection
             self.service = client.connect(
-                host=self.splunk_config.get("host", "localhost"),
-                port=self.splunk_config.get("port", 8089),
-                username=self.splunk_config.get("username"),
-                password=self.splunk_config.get("password"),
-                scheme=self.splunk_config.get("scheme", "http"),
+                host=self.ingestion_config.get("host", "localhost"),
+                port=self.ingestion_config.get("port", 8089),
+                username=self.ingestion_config.get("username"),
+                password=self.ingestion_config.get("password"),
+                scheme=self.ingestion_config.get("scheme", "http"),
             )
         except ConnectionError as e:
             logging.error("Failed to establish a connection: %s", e)
@@ -36,13 +35,9 @@ class SplunkIngestion(BaseIngestion):
         """
         Concrete implementation of the BaseIngestion.process_users abstract method
 
-        :param start_date: the initial datetime from which the users are considered
-        :type start_date: datetime (with tzinfo=datetime.timezone.utc)
-        :param end_date: the final datetime within which the users are considered
-        :type end_date: datetime (with tzinfo=datetime.timezone.utc)
-
-        :return: list of users strings that logged in Splunk
-        :rtype: list
+        :param start_date: Initial datetime from which users are considered
+        :param end_date: Final datetime within which users are considered
+        :return: List of user strings that logged in Splunk
         """
         self.logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
         users_list = []
@@ -52,7 +47,7 @@ class SplunkIngestion(BaseIngestion):
         end_date_str = end_date.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
         query = f"""
-            search index={self.splunk_config["indexes"]}
+            search index={self.ingestion_config["indexes"]}
             earliest="{start_date_str}" latest="{end_date_str}"
             event.category="authentication" event.outcome="success" event.type="start"
             | stats count by user.name
@@ -64,7 +59,7 @@ class SplunkIngestion(BaseIngestion):
                 "earliest_time": start_date_str,
                 "latest_time": end_date_str,
                 "exec_mode": "normal",
-                "count": self.splunk_config.get("bucket_size", 10000),
+                "count": self.ingestion_config.get("bucket_size", 10000),
             }
 
             search_job = self.service.jobs.create(query, **search_kwargs)
@@ -80,9 +75,9 @@ class SplunkIngestion(BaseIngestion):
             self.logger.info(f"Successfully got {len(users_list)} users")
 
         except ConnectionError:
-            self.logger.error(f"Failed to establish a connection with host: {self.splunk_config.get('host')}")
+            self.logger.error(f"Failed to establish a connection with host: {self.ingestion_config.get('host')}")
         except TimeoutError:
-            self.logger.error(f"Timeout reached for the host: {self.splunk_config.get('host')}")
+            self.logger.error(f"Timeout reached for the host: {self.ingestion_config.get('host')}")
         except Exception as e:
             self.logger.error(f"Exception while querying Splunk: {e}")
         return users_list
@@ -91,26 +86,20 @@ class SplunkIngestion(BaseIngestion):
         """
         Concrete implementation of the BaseIngestion.process_user_logins abstract method
 
-        :param username: username of the user that logged in Splunk
-        :type username: str
-        :param start_date: the initial datetime from which the logins of the user are considered
-        :type start_date: datetime (with tzinfo=datetime.timezone.utc)
-        :param end_date: the final datetime within which the logins of the user are considered
-        :type end_date: datetime (with tzinfo=datetime.timezone.utc)
-
-        :return: Splunk response of logins of that username
-        :rtype: list
+        :param username: Username of the user that logged in
+        :param start_date: Initial datetime from which logins are considered
+        :param end_date: Final datetime within which logins are considered
+        :return: List of login dictionaries for the specified user
         """
-
         response = []
 
         # Format dates for Splunk query
         start_date_str = start_date.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
         end_date_str = end_date.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
-        # Build Splunk query to get login events for specific user
+        # Build Splunk query to get login events for the specific user
         query = f"""
-            search index={self.splunk_config["indexes"]}
+            search index={self.ingestion_config["indexes"]}
             earliest="{start_date_str}" latest="{end_date_str}"
             user.name="{username}" event.category="authentication" event.outcome="success" event.type="start"
             | where isnotnull(source.ip)
@@ -124,12 +113,12 @@ class SplunkIngestion(BaseIngestion):
                 "earliest_time": start_date_str,
                 "latest_time": end_date_str,
                 "exec_mode": "normal",
-                "count": self.splunk_config.get("bucket_size", 10000),
+                "count": self.ingestion_config.get("bucket_size", 10000),
             }
 
             search_job = self.service.jobs.create(query, **search_kwargs)
 
-            # Waiting for the job to complete
+            # Wait for the job to complete
             while not search_job.is_done():
                 search_job.refresh()
 
@@ -138,50 +127,12 @@ class SplunkIngestion(BaseIngestion):
                 if isinstance(result, dict):
                     response.append(result)
 
-            self.logger.info(f"Got {len(response)} logins for the user {username} to be normalized")
+            self.logger.info(f"Got {len(response)} logins for user {username} to be normalized")
 
         except ConnectionError:
-            self.logger.error(f"Failed to establish a connection with host: {self.splunk_config.get('host')}")
+            self.logger.error(f"Failed to establish a connection with host: {self.ingestion_config.get('host')}")
         except TimeoutError:
-            self.logger.error(f"Timeout reached for the host: {self.splunk_config.get('host')}")
+            self.logger.error(f"Timeout reached for the host: {self.ingestion_config.get('host')}")
         except Exception as e:
             self.logger.error(f"Exception while querying Splunk: {e}")
-        return {"hits": {"hits": response}}
-
-    def normalize_fields(self, logins_response):
-        """
-        Concrete implementation of the BaseIngestion.normalize_fields abstract method
-
-        :param logins_response: user related logins returned by the Splunk query
-        :type logins_response: Splunk response
-
-        :return: list of normalized logins
-        :rtype: list
-        """
-        fields = []
-
-        hits = logins_response.get("hits", {}).get("hits", [])
-
-        for hit in hits:
-            if "source.ip" in hit:  # In results, each hit is already a dict (not a nested _source)
-                tmp = {
-                    "timestamp": hit.get("@timestamp", ""),
-                    "id": hit.get("_id", ""),
-                    "index": "fw-proxy" if hit.get("index", "").startswith("fw-") else hit.get("index", "").split("-")[0],
-                    "ip": hit.get("source.ip", ""),
-                    "agent": hit.get("user_agent.original", ""),
-                    "organization": hit.get("source.as.organization.name", ""),
-                }
-
-                if hit.get("source.geo.location.lat") and hit.get("source.geo.location.lon") and hit.get("source.geo.country_name"):
-                    # no all of the geo info (latitude, longitude and country_name) --> login discarded (up to now)
-                    tmp.update(
-                        {
-                            "lat": hit["source.geo.location.lat"],
-                            "lon": hit["source.geo.location.lon"],
-                            "country": hit["source.geo.country_name"],
-                        }
-                    )
-
-                    fields.append(tmp)
-        return fields
+        return response
