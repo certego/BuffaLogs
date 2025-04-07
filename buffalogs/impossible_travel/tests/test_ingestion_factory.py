@@ -8,6 +8,12 @@ from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
 
 
+def load_test_data(name):
+    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data/", name + ".json")) as file:
+        data = json.load(file)
+    return data
+
+
 def load_ingestion_config_data():
     with open(
         os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),

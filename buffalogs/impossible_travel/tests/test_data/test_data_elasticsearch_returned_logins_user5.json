@@ -1,47 +1,23 @@
-{
-    "took": 14,
-    "timed_out": false,
-    "_shards": {
-        "total": 2,
-        "successful": 2,
-        "skipped": 0,
-        "failed": 0
-    },
-    "hits": {
-        "total": {
-            "value": 1,
-            "relation": "eq"
+[
+    {
+        "_index": "fw-proxy",
+        "_id": "log_id_4",
+        "@timestamp": "2025-02-26T14:02:10.167Z",
+        "source": {
+            "geo": {
+                "country_name": "Germany",
+                "location": {
+                    "lon": 18.2578,
+                    "lat": 45.6342
+                }
+            },
+            "ip": "192.0.2.26"
         },
-        "max_score": null,
-        "hits": [
-            {
-                "_index": "cloud-",
-                "_type": "_doc",
-                "_id": "log_id_12",
-                "_score": null,
-                "_source": {
-                    "@timestamp": "2025-02-26T14:02:10.167Z",
-                    "source": {
-                        "geo": {
-                            "country_name": "Germany",
-                            "location": {
-                                "lon": 18.2578,
-                                "lat": 45.6342
-                            }
-                        },
-                        "ip": "192.0.2.26"
-                    },
-                    "user": {
-                        "name": "bugs.bunny2"
-                    },
-                    "user_agent": {
-                        "original": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
-                    }
-                },
-                "sort": [
-                    1740578530167
-                ]
-            }
-        ]
+        "user": {
+            "name": "bugs.bunny2"
+        },
+        "user_agent": {
+            "original": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
+        }
     }
-}
+]
