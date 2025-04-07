@@ -74,7 +74,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_users(start_date, end_date)
 
@@ -83,7 +83,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["timeout"] = 0.001
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_users(start_date, end_date)
 
@@ -92,7 +92,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["indexes"] = "unexisting-index"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_users(start_date, end_date)
 
@@ -100,7 +100,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         # test the function process_users with no data in that range time
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         # users returned should be: "Stitch", "scooby.doo@gmail.com", "bugs-bunny@organization.com" (from "cloud" index)
         # and "bugs.bunny" (from "fw-proxy" index)
         returned_users = elastic_ingestor.process_users(start_date, end_date)
@@ -111,7 +111,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         # test the function process_users with data on Elasticsearch
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         # users returned should be: "Stitch", "scooby.doo@gmail.com", "bugs-bunny@organization.com" (from "cloud" index)
         # and "bugs.bunny" (from "fw-proxy" index)
         returned_users = elastic_ingestor.process_users(start_date, end_date)
@@ -123,7 +123,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -132,7 +132,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["timeout"] = 0.001
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -141,7 +141,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["indexes"] = "unexisting-index"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -149,7 +149,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         # test the function process_user_logins with some data on Elasticsearch but not in the specific datetime range
         start_date = datetime(2025, 2, 26, 8, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 10, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         user1_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(0, len(user1_logins))
         user2_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="scooby.doo@gmail.com")
@@ -169,7 +169,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         expected_logins_user4 = load_test_data("test_data_elasticsearch_returned_logins_user4")
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         # user1 logins
         user1_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(2, len(user1_logins))
@@ -201,7 +201,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         expected_return_user5 = load_test_data("test_data_elasticsearch_returned_logins_user5")
         start_date = datetime(2025, 2, 26, 10, 40, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 18, 10, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config)
+        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
         # user1 logins
         user1_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(2, len(user1_logins))

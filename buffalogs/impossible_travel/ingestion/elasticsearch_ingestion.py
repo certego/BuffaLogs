@@ -10,14 +10,13 @@ class ElasticsearchIngestion(BaseIngestion):
     Concrete implementation of the BaseIngestion class for Elasticsearch ingestion source
     """
 
-    def __init__(self, ingestion_config: dict):
+    def __init__(self, ingestion_config: dict, mapping: dict):
         """
         Constructor for the Elasticsearch Ingestion object
         """
-        super().__init__()
-        self.elastic_config = ingestion_config
+        super().__init__(ingestion_config, mapping)
         # create the elasticsearch host connection
-        connections.create_connection(hosts=self.elastic_config["url"], timeout=self.elastic_config["timeout"], verify_certs=False)
+        connections.create_connection(hosts=self.ingestion_config["url"], timeout=self.ingestion_config["timeout"], verify_certs=False)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def process_users(self, start_date: datetime, end_date: datetime) -> list:
@@ -36,14 +35,14 @@ class ElasticsearchIngestion(BaseIngestion):
         self.logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
         users_list = []
         s = (
-            Search(index=self.elastic_config["indexes"])
+            Search(index=self.ingestion_config["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
             .query("match", **{"event.category": "authentication"})
             .query("match", **{"event.outcome": "success"})
             .query("match", **{"event.type": "start"})
             .query("exists", field="user.name")
         )
-        s.aggs.bucket("login_user", "terms", field="user.name", size=self.elastic_config["bucket_size"])
+        s.aggs.bucket("login_user", "terms", field="user.name", size=self.ingestion_config["bucket_size"])
         try:
             response = s.execute()
         except ConnectionError:
@@ -79,7 +78,7 @@ class ElasticsearchIngestion(BaseIngestion):
         response = None
         user_logins = []
         s = (
-            Search(index=self.elastic_config["indexes"])
+            Search(index=self.ingestion_config["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
             .query("match", **{"user.name": username})
             .query("match", **{"event.category": "authentication"})
@@ -102,7 +101,7 @@ class ElasticsearchIngestion(BaseIngestion):
                 ]
             )
             .sort("@timestamp")  # from the oldest to the most recent login
-            .extra(size=self.elastic_config["bucket_size"])
+            .extra(size=self.ingestion_config["bucket_size"])
         )
         try:
             response = s.execute()

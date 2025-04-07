@@ -40,7 +40,7 @@ class IngestionFactory:
         """
         match self.active_ingestion:
             case BaseIngestion.SupportedIngestionSources.ELASTICSEARCH:
-                return ElasticsearchIngestion(self.ingestion_config)
+                return ElasticsearchIngestion(self.ingestion_config, self.mapping)
             case BaseIngestion.SupportedIngestionSources.OPENSEARCH:
                 return OpensearchIngestion(self.ingestion_config)
             case _:

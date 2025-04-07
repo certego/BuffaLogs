@@ -72,7 +72,7 @@ def process_logs():
             for username in usernames_list:
                 user_logins = ingestion.process_user_logins(start_date, end_date, username)
 
-                parsed_logins = ingestion._normalize_fields(logins=user_logins, mapping=ingestion_factory.mapping)
+                parsed_logins = ingestion.normalize_fields(logins=user_logins)
 
                 logger.info(f"Got {len(parsed_logins)} actual useful logins for the user {username}")
 
