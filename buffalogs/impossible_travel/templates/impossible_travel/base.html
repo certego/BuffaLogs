@@ -1,7 +1,9 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
+<head>
+    <link rel="icon" href="{% static "img/buffalogs_logo.png" %}" type="image/png">
+    <link rel="shortcut icon" href="{% static "img/favicon.ico" %}" type="image/x-icon">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %} Base {% endblock %}</title>
@@ -12,6 +14,7 @@
         <!-- Custom CSS -->
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
         <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+
 
         {% block head_content %}
         {% endblock %}
