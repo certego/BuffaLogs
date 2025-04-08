@@ -45,6 +45,6 @@ class IngestionFactory:
             case BaseIngestion.SupportedIngestionSources.OPENSEARCH:
                 return OpensearchIngestion(self.ingestion_config)
             case BaseIngestion.SupportedIngestionSources.SPLUNK:
-                return SplunkIngestion(self.ingestion_config)
+                return SplunkIngestion(self.ingestion_config, self.mapping)
             case _:
                 raise ValueError(f"Unsupported ingestion source: {self.active_ingestion}")

@@ -18,25 +18,15 @@ def load_ingestion_config_data():
     return config_ingestion
 
 
-def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data/", name + ".json")) as file:
-        data = json.load(file)
-    return data
-
-
 class SplunkIngestionTestCase(TestCase):
     def setUp(self):
+        self.patcher = patch("splunklib.client.connect")
+        self.mock_connect = self.patcher.start()
+        self.mock_connect.return_value = MagicMock()
+        self.addCleanup(self.patcher.stop)
+
         self.ingestion_config = load_ingestion_config_data()
-        self.splunk_config = {
-            "host": "localhost",
-            "port": 8089,
-            "username": "admin",
-            "password": "changeme",
-            "scheme": "https",
-            "timeout": 90,
-            "indexes": "cloud-*,fw-proxy-*",
-            "bucket_size": 10000,
-        }
+        self.splunk_config = self.ingestion_config["splunk"]
         # Setup test data
         self.user1_test_data = [
             {
@@ -221,3 +211,129 @@ class SplunkIngestionTestCase(TestCase):
                 for key in expected:
                     self.assertIn(key, actual)
                     self.assertEqual(actual[key], expected[key])
+
+    def test_normalize_fields_valid_data(self):
+        mapping = {
+            "user.name": "username",
+            "@timestamp": "timestamp",
+            "source.ip": "ip",
+            "source.geo.country_name": "country",
+            "source.geo.location.lat": "lat",
+            "source.geo.location.lon": "lon",
+            "user_agent.original": "user_agent",
+        }
+        ingestor = SplunkIngestion(self.splunk_config, mapping=mapping)
+        log_entry = {
+            "user": {"name": "test_user"},
+            "@timestamp": "2025-02-26T13:40:15.173Z",
+            "source": {
+                "ip": "192.168.1.1",
+                "geo": {
+                    "country_name": "Japan",
+                    "location": {
+                        "lat": 35.6762,
+                        "lon": 139.6503,
+                    },
+                },
+            },
+            "user_agent": {"original": "Mozilla/5.0"},
+        }
+        normalized = ingestor.normalize_fields([log_entry])
+        self.assertEqual(len(normalized), 1)
+        normalized_entry = normalized[0]
+        self.assertEqual(normalized_entry["username"], "test_user")
+        self.assertEqual(normalized_entry["timestamp"], "2025-02-26T13:40:15.173Z")
+        self.assertEqual(normalized_entry["ip"], "192.168.1.1")
+        self.assertEqual(normalized_entry["country"], "Japan")
+        self.assertEqual(normalized_entry["lat"], 35.6762)
+        self.assertEqual(normalized_entry["lon"], 139.6503)
+        self.assertEqual(normalized_entry["user_agent"], "Mozilla/5.0")
+
+    def test_normalize_fields_missing_optional(self):
+        """Test normalization when optional fields are missing"""
+        mapping = {
+            "user.name": "username",
+            "@timestamp": "timestamp",
+            "source.ip": "ip",
+            "source.geo.country_name": "country",
+            "source.geo.location.lat": "lat",
+            "source.geo.location.lon": "lon",
+            "user_agent.original": "user_agent",
+        }
+        ingestor = SplunkIngestion(self.splunk_config, mapping=mapping)
+        log_entry = {
+            "user": {"name": "test_user"},
+            "@timestamp": "2025-02-26T13:40:15.173Z",
+            "source": {
+                "ip": "192.168.1.1",
+                "geo": {
+                    "country_name": "Japan",
+                    "location": {
+                        "lat": 35.6762,
+                        "lon": 139.6503,
+                    },
+                },
+            },
+            # Missing user_agent.original
+        }
+        normalized = ingestor.normalize_fields([log_entry])
+        self.assertEqual(len(normalized), 1)
+        self.assertEqual(normalized[0]["user_agent"], "")
+
+    def test_normalize_fields_missing_required(self):
+        """Test normalization excludes entries with missing required fields"""
+        mapping = {
+            "user.name": "username",
+            "@timestamp": "timestamp",
+            "source.ip": "ip",
+            "source.geo.country_name": "country",
+            "source.geo.location.lat": "lat",
+            "source.geo.location.lon": "lon",
+        }
+        ingestor = SplunkIngestion(self.splunk_config, mapping=mapping)
+        log_entry = {
+            "user": {"name": "test_user"},
+            "@timestamp": "2025-02-26T13:40:15.173Z",
+            "source": {
+                # Missing ip
+                "geo": {
+                    "country_name": "Japan",
+                    "location": {
+                        "lat": 35.6762,
+                        "lon": 139.6503,
+                    },
+                },
+            },
+        }
+        normalized = ingestor.normalize_fields([log_entry])
+        self.assertEqual(len(normalized), 0)
+
+    def test_normalize_nested_fields(self):
+        """Test normalization correctly handles nested fields"""
+        mapping = {
+            "source.geo.location.lat": "lat",
+            "source.geo.location.lon": "lon",
+            "user.name": "username",
+            "@timestamp": "timestamp",
+            "source.ip": "ip",
+            "source.geo.country_name": "country",
+        }
+        ingestor = SplunkIngestion(self.splunk_config, mapping=mapping)
+        log_entry = {
+            "user": {"name": "test_user"},
+            "@timestamp": "2025-02-26T13:40:15.173Z",
+            "source": {
+                "ip": "192.168.1.1",
+                "geo": {
+                    "country_name": "Japan",
+                    "location": {
+                        "lat": 35.6762,
+                        "lon": 139.6503,
+                    },
+                },
+            },
+        }
+        normalized = ingestor.normalize_fields([log_entry])
+        self.assertEqual(len(normalized), 1)
+        self.assertEqual(normalized[0]["lat"], 35.6762)
+        self.assertEqual(normalized[0]["lon"], 139.6503)
