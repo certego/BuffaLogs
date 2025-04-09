@@ -145,7 +145,7 @@ def get_all_logins(request, pk_user):
     username = user_obj[0].username
     ingestion = IngestionFactory().get_ingestion_class()
     user_logins = ingestion.process_user_logins(start_date, end_date, username)
-    normalized_user_logins = ingestion.normalize_fields(logins_response=user_logins)
+    normalized_user_logins = ingestion.normalize_fields(user_logins)
     return JsonResponse(json.dumps(normalized_user_logins, default=str), safe=False)
 
 

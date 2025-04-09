@@ -36,7 +36,7 @@ class TestViewsElasticIngestion(TestCase):
     @patch("django.utils.timezone.now")
     def test_get_all_logins(self, mock_now, mock_get_ingestion_class):
         mock_now.return_value = datetime(1970, 1, 1, 0, 0) + timedelta(days=10)
-        mock_get_ingestion_class.return_value = ElasticsearchIngestion(ingestion_config=self.config)
+        mock_get_ingestion_class.return_value = ElasticsearchIngestion(ingestion_config=self.config, mapping=self.config["custom_mapping"])
         url = reverse("get_all_logins", kwargs={"pk_user": self.user.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -81,12 +81,13 @@ class TestViewsElasticIngestion(TestCase):
             "timestamp": "1970-01-01T00:00:00Z",
             "id": _id,
             "index": "cloud" if index.startswith("cloud") else "fw-proxy",
+            "username": self.user.username,
             "ip": "192.168.1.1",
             "agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0",
             "organization": "Test ISP",
+            "country": "Test Country",
             "lat": 12.34,
             "lon": 56.78,
-            "country": "Test Country",
         }
 
     def tearDown(self):
