@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.db.models import Count, Max
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.http import require_http_methods
@@ -20,6 +20,20 @@ def _load_data(name):
     with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/dashboard/", name + ".json"), encoding="utf-8") as file:
         data = json.load(file)
     return data
+
+
+def user_view(template_name):
+    def view_decorator(func):
+        def wrapper(request, pk_user):
+            context = {"pk_user": pk_user}
+            extra_context = func(request, pk_user) if func else {}
+            if extra_context:
+                context.update(extra_context)
+            return render(request, template_name, context)
+
+        return wrapper
+
+    return view_decorator
 
 
 def homepage(request):
@@ -67,16 +81,19 @@ def users(request):
     return render(request, "impossible_travel/users.html")
 
 
-def unique_logins(request, pk_user=None):
-    return render(request, "impossible_travel/unique_logins.html")
+@user_view("impossible_travel/unique_logins.html")
+def unique_logins(request, pk_user):
+    return {}
 
 
-def all_logins(request, pk_user=None):
-    return render(request, "impossible_travel/all_logins.html")
+@user_view("impossible_travel/all_logins.html")
+def all_logins(request, pk_user):
+    return {}
 
 
-def alerts(request, pk_user=None):
-    return render(request, "impossible_travel/alerts.html")
+@user_view("impossible_travel/alerts.html")
+def alerts(request, pk_user):
+    return {}
 
 
 def get_last_alerts(request):
