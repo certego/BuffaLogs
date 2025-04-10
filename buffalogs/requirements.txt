@@ -31,3 +31,4 @@ uWSGI>=2.0.28
 virtualenv>=20.17.1
 wcwidth>=0.2.5
 requests>=2.32.3    # for Alerting module
+splunk-sdk>=2.1.0   # for Splunk ingestion source (optional)

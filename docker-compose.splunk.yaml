@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+    splunk:
+        container_name: buffalogs_splunk
+        image: splunk/splunk:latest
+        hostname: splunk
+        environment:
+            - SPLUNK_START_ARGS=--accept-license
+            - SPLUNK_PASSWORD=YourSecurePassword
+            - SPLUNK_ENABLE_LISTEN=9997
+            - SPLUNK_ADD=tcp 1514
+        ports:
+            - "8000:8000"   # Splunk Web UI
+            - "8089:8089"   # Splunk REST API
+            - "9997:9997"   # Splunk indexer receiving port
+            - "1514:1514"   # TCP input for log forwarding
+        volumes:
+            - splunk_data:/opt/splunk/var
+            - splunk_etc:/opt/splunk/etc
+        networks:
+            - splunk-net
+        restart: unless-stopped
+
+volumes:
+    splunk_data:
+        driver: local
+    splunk_etc:
+        driver: local
+
+networks:
+    splunk-net:
+        driver: bridge
