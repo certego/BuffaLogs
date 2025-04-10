@@ -15,10 +15,12 @@ class BaseIngestion(ABC):
         """Types of possible data ingestion sources
 
         * ELASTICSEARCH: The login data is extracted from Elasticsearch
+        * SPLUNK: The login data is extracted from Splunk
         * OPENSEARCH: The login data is extracted from Opensearch
         """
 
         ELASTICSEARCH = "elasticsearch"
+        SPLUNK = "splunk"
         OPENSEARCH = "opensearch"
 
     def __init__(self, ingestion_config, mapping):
