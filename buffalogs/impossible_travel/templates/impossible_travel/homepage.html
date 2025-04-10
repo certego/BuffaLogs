@@ -15,6 +15,9 @@
 {% endblock %}
 
 {% block body_content %}
+  <form style="display:none;">
+  {% csrf_token %}
+  </form>
   <div class="d-flex justify-content-lg-start justify-content-center" id="reportrange" data-startdate="{{startdate}}" data-enddate="{{enddate}}">
     <a href="#" class="btn bg-grey me-2 text-truncate text-light" id="daterange-filter">
       <i class="fa fa-calendar"></i> 
