@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 
+from django.conf import settings
 from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
@@ -11,8 +12,7 @@ from impossible_travel.modules import detection
 
 
 def load_test_data(name):
-    DATA_PATH = "impossible_travel/tests/test_data"
-    with open(os.path.join(DATA_PATH, name + ".json")) as file:
+    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data", name + ".json")) as file:
         data = json.load(file)
     return data
 

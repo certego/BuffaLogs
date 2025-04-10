@@ -1,0 +1,44 @@
+[
+    {
+        "_index": "cloud",
+        "_id": "log_id_0",
+        "@timestamp": "2025-02-26T13:40:15.173Z",
+        "source": {
+            "geo": {
+                "country_name": "Japan",
+                "location": {
+                    "lon": 136.2759,
+                    "lat": 37.2924
+                }
+            },
+            "ip": "192.0.2.1"
+        },
+        "user": {
+            "name": "Stitch"
+        },
+        "user_agent": {
+            "original": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
+        }
+    },
+    {
+        "_index": "cloud",
+        "_id": "log_id_3",
+        "@timestamp": "2025-02-26T13:40:35.173Z",
+        "source": {
+            "geo": {
+                "country_name": "Japan",
+                "location": {
+                    "lon": 141.2759,
+                    "lat": 34.2924
+                }
+            },
+            "ip": "192.0.2.1"
+        },
+        "user": {
+            "name": "Stitch"
+        },
+        "user_agent": {
+            "original": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
+        }
+    }
+]

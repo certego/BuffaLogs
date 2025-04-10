@@ -1,4 +1,21 @@
 ## 2.x.x
+### 2.1.0
+#### Features
+* Added the `Ingestion` process
+* Added the Discord alerter (by community - @kunalsz)
+* Added the Microsoft Teams alerter (by community - @drona-gyawali)
+* Added the Opensearch ingestion source (by community - @rskbansal)
+* Added the Splunk ingestion source (by community - @drona-gyawali)
+### Changes
+* Refactored the actual flow and the `BuffalogsProcessLogsTask` main task, in order to allow the implementation of more ingestion sources
+* Refactored Hardcoded paths (by community - @kunalsz)
+* Changed `links` to `networks` for elastic and kibana containers connection for deprecation [article [here](https://docs.docker.com/engine/network/links)] (by community - @rskbansal)
+* Changed UI palette color (by community - @ragupari)
+* Refactored the views to handle the new ingestion_factory paradigm (by community - @noble47)
+### Bugfix
+* Fixed the homepage resposive behaviour (by community - @ragupari)
+* Fixed the "TypeError unique_logins() got an unexpected keyword argument 'pk_user'" in the frontend (by community - @drona-gyawali)
+* Fixed the `csrf_token` reference in the frontend homepage, required by forms to protect against Cross-Site Request Forgery (CSRF) attacks (by community - @drona-gyawali)
 ### 2.0.0
 #### Features
 * Added the `Atypical Country` alert type, with the addition of the customizable field: **Config.atypical_country_days** in order to set from how many days a login from a Country is considered "Atypical"

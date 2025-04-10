@@ -1,10 +1,10 @@
 document.addEventListener( "DOMContentLoaded", function () {
-
     const columns = [
         { 
             field: "timestamp",
             headerName: "Login Timestamp",
             resizable: true,
+	    minWidth: 100,
             maxWidth: 250,
             sortable: true,
             unSortIcon: true,
@@ -14,25 +14,28 @@ document.addEventListener( "DOMContentLoaded", function () {
             field: "country",
             headerName: "Country",
             resizable: true,
+	    minWidth: 100,
             maxWidth: 250,
             filter: true,
             sortable: true,
             unSortIcon: true,
         }, 
         { 
-            field: "latitude",
+            field: "lat",
             headerName: "Latitude",
             resizable: true,
+	    minWidth:70,
             maxWidth: 150,
         },
         { 
-            field: "longitude",
+            field: "lon",
             headerName: "Longitude",
             resizable: true,
+	    minWidth:70,
             maxWidth: 150,
         },
         { 
-            field: "user_agent",
+            field: "agent",
             headerName: "User Agent",
             resizable: true,
             minWidth: 1000,

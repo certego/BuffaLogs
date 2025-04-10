@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
-from impossible_travel.forms import AlertAdminForm, ConfigAdminForm, UserAdminForm
+from impossible_travel.forms import AlertAdminForm, ConfigAdminForm, TaskSettingsAdminForm, UserAdminForm
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 
 
@@ -74,6 +74,7 @@ class AlertAdmin(admin.ModelAdmin):
 
 @admin.register(TaskSettings)
 class TaskSettingsAdmin(admin.ModelAdmin):
+    form = TaskSettingsAdminForm
     list_display = ("id", "created", "updated", "task_name", "start_date", "end_date")
     search_fields = ("id", "task_name", "start_date")
 

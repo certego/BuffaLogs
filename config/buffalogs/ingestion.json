@@ -1,0 +1,65 @@
+{
+    "active_ingestion": "elasticsearch",
+    "elasticsearch": {
+        "url": "http://elasticsearch:9200/",
+        "username": "foobar",
+        "password": "bar",
+        "timeout": 90,
+        "indexes": "cloud-*,fw-proxy-*",
+        "bucket_size": 10000,
+        "custom_mapping": {
+            "@timestamp": "timestamp",
+            "_id": "id",
+            "_index": "index",
+            "user.name": "username",
+            "source.ip": "ip",
+            "user_agent.original": "agent",
+            "source.as.organization.name": "organization",
+            "source.geo.country_name": "country",
+            "source.geo.location.lat": "lat",
+            "source.geo.location.lon": "lon"
+        }
+    },
+    "opensearch": {
+        "url": "http://opensearch:9200/",
+        "username": "foobar",
+        "password": "bar",
+        "timeout": 90,
+        "indexes": "cloud-*,fw-proxy-*",
+        "bucket_size": 10000,
+        "custom_mapping": {
+            "timestamp": "@timestamp",
+            "id": "id",
+            "index": "index",
+            "username": "user.name",
+            "ip": "source.ip",
+            "agent": "source.user_agent.original",
+            "organization": "source.as.organization.name",
+            "country": "source.geo.country_name",
+            "lat": "source.geo.location.lat",
+            "lon": "source.geo.location.lon"
+        }
+    },
+    "splunk": {
+        "host": "splunk",
+        "port": 8089,
+        "scheme": "http",
+        "username": "foobar",
+        "password": "bar",
+        "timeout": 90,
+        "indexes": "main",
+        "bucket_size": 10000,
+        "custom_mapping": {
+            "user.name": "username",
+            "@timestamp": "timestamp",
+            "source.ip": "ip",
+            "source.geo.country_name": "country",
+            "source.geo.location.lat": "lat",
+            "source.geo.location.lon": "lon",
+            "user_agent.original": "agent",
+            "source.as.organization.name": "organization",
+            "_id": "id",
+            "index": "index"
+        }
+      }
+}

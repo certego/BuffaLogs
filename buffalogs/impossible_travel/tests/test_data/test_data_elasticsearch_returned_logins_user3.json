@@ -1,0 +1,84 @@
+[
+    {
+        "_index": "cloud",
+        "_id": "log_id_9",
+        "@timestamp": "2025-02-26T13:56:48.123Z",
+        "source": {
+            "geo": {
+                "location": {
+                    "lon": 10.2714,
+                    "lat": 51.0951
+                }
+            },
+            "ip": "192.0.2.11"
+        },
+        "user": {
+            "name": "bugs-bunny@organization.com"
+        },
+        "user_agent": {
+            "original": ""
+        }
+    },
+    {
+        "_index": "cloud",
+        "_id": "log_id_10",
+        "@timestamp": "2025-02-26T13:56:53.123Z",
+        "source": {
+            "geo": {
+                "location": {
+                    "lon": 10.2714,
+                    "lat": 51.0951
+                }
+            },
+            "ip": ""
+        },
+        "user": {
+            "name": "bugs-bunny@organization.com"
+        },
+        "user_agent": {
+            "original": ""
+        }
+    },
+    {
+        "_index": "cloud",
+        "_id": "log_id_12",
+        "@timestamp": "2025-02-26T13:57:49.953Z",
+        "source": {
+            "geo": {
+                "country_name": "Italy",
+                "location": {
+                    "lon": 12.3425,
+                    "lat": 41.1732
+                }
+            },
+            "ip": "192.0.2.21"
+        },
+        "user": {
+            "name": "bugs-bunny@organization.com"
+        },
+        "user_agent": {
+            "original": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36"
+        }
+    },
+    {
+        "_index": "cloud",
+        "_id": "log_id_13",
+        "@timestamp": "2025-02-26T13:58:49.953Z",
+        "source": {
+            "geo": {
+                "country_name": "Italy",
+                "location": {
+                    "lon": 15.3425,
+                    "lat": 38.1732
+                }
+            },
+            "ip": "192.0.2.21"
+        },
+        "user": {
+            "name": "bugs-bunny@organization.com"
+        },
+        "user_agent": {
+            "original": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36"
+        }
+    }
+]

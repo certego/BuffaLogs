@@ -2,7 +2,8 @@ import logging
 from datetime import datetime
 
 from django.core.management.base import BaseCommand
-from impossible_travel.tasks import exec_process_logs, process_logs
+from impossible_travel.models import TaskSettings
+from impossible_travel.tasks import process_logs
 
 logger = logging.getLogger()
 
@@ -28,7 +29,14 @@ class Command(BaseCommand):
                 logger.info("Time data does not match format '%Y-%m-%d %H:%M:%S'")
 
             self.stdout.write(self.style.SUCCESS(f"Starting detection from {start_date_obj} and {end_date_obj}"))
-            exec_process_logs(start_date_obj, end_date_obj)
+            process_task, _ = TaskSettings.objects.get_or_create(
+                task_name=process_logs.__name__,
+                defaults={
+                    "end_date": end_date_obj,
+                    "start_date": start_date_obj,
+                },
+            )
+            process_task.save()
 
         elif options["start_date"] or options["end_date"]:
             self.stdout.write(self.style.ERROR("Error: missing one argument"))
