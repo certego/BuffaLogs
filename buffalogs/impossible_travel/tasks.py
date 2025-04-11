@@ -3,6 +3,7 @@ from datetime import timedelta
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.utils import timezone
+from impossible_travel.alerting.alert_factory import AlertFactory
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 from impossible_travel.modules import detection
@@ -82,3 +83,9 @@ def process_logs():
                         # Saving user anyway to update updated_at field in order to take track of the recent users seen
                         db_user.save()
                     detection.check_fields(db_user=db_user, fields=parsed_logins)
+
+
+@shared_task(name="NotifyAlertsTask")
+def notify_alerts():
+    alert = AlertFactory().get_alert_class()
+    alert.notify_alerts()
