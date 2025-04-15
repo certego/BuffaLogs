@@ -10,6 +10,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
@@ -168,9 +169,14 @@ def get_all_logins(request, pk_user):
 
 @require_http_methods(["GET"])
 def users_pie_chart_api(request):
-    timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
-    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
-    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
+    start_date = parse_datetime(request.GET.get("start", ""))
+    end_date = parse_datetime(request.GET.get("end", ""))
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
     result = {
         "no_risk": User.objects.filter(updated__range=(start_date, end_date), risk_score="No risk").count(),
         "low": User.objects.filter(updated__range=(start_date, end_date), risk_score="Low").count(),
@@ -183,9 +189,14 @@ def users_pie_chart_api(request):
 
 @require_http_methods(["GET"])
 def alerts_line_chart_api(request):
-    timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
-    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
-    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
+    start_date = parse_datetime(request.GET.get("start", ""))
+    end_date = parse_datetime(request.GET.get("end", ""))
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
     date_range = []
     date_str = []
     result = {}
@@ -217,6 +228,10 @@ def alerts_line_chart_api(request):
     else:
         result["Timeframe"] = "month"
         start_date = timezone.datetime(start_date.year, start_date.month, 1)
+
+        if is_naive(start_date):
+            start_date = make_aware(start_date)
+
         while start_date <= end_date:
             date_range.append(datetime(start_date.year, start_date.month, 1))
             date_range.append(datetime(start_date.year, start_date.month, calendar.monthrange(start_date.year, start_date.month)[1]))
@@ -231,9 +246,14 @@ def alerts_line_chart_api(request):
 
 @require_http_methods(["GET"])
 def world_map_chart_api(request):
-    timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
-    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
-    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
+    start_date = parse_datetime(request.GET.get("start", ""))
+    end_date = parse_datetime(request.GET.get("end", ""))
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
     countries = _load_data("countries")
     result = []
     tmp = []
@@ -263,9 +283,14 @@ def world_map_chart_api(request):
 @require_http_methods(["GET"])
 def alerts_api(request):
     result = []
-    timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
-    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
-    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
+    start_date = parse_datetime(request.GET.get("start", ""))
+    end_date = parse_datetime(request.GET.get("end", ""))
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
     alerts_list = Alert.objects.filter(created__range=(start_date, end_date))
     for alert in alerts_list:
         tmp = {"timestamp": alert.login_raw_data["timestamp"], "username": User.objects.get(id=alert.user_id).username, "rule_name": alert.name}
@@ -277,9 +302,14 @@ def alerts_api(request):
 @require_http_methods(["GET"])
 def risk_score_api(request):
     result = {}
-    timestamp_format = "%Y-%m-%dT%H:%M:%SZ"
-    start_date = datetime.strptime(request.GET.get("start", ""), timestamp_format)
-    end_date = datetime.strptime(request.GET.get("end", ""), timestamp_format)
+    start_date = parse_datetime(request.GET.get("start", ""))
+    end_date = parse_datetime(request.GET.get("end", ""))
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
     user_risk_list = User.objects.filter(updated__range=(start_date, end_date)).values()
     for key in user_risk_list:
         result[key["username"]] = key["risk_score"]
