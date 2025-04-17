@@ -1,4 +1,8 @@
 ## 2.x.x
+### 2.1.1
+### Bugfix
+* Fixed user-agent parsing in case of a "None" os
+* Restored the NotifyAlertsTask task removed by mistake
 ### 2.1.0
 #### Features
 * Added the `Ingestion` process

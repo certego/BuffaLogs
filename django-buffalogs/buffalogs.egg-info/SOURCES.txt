@@ -36,6 +36,7 @@ impossible_travel/ingestion/base_ingestion.py
 impossible_travel/ingestion/elasticsearch_ingestion.py
 impossible_travel/ingestion/ingestion_factory.py
 impossible_travel/ingestion/opensearch_ingestion.py
+impossible_travel/ingestion/splunk_ingestion.py
 impossible_travel/management/commands/clear_models.py
 impossible_travel/management/commands/impossible_travel.py
 impossible_travel/management/commands/notify_alerts.py
