@@ -2,7 +2,6 @@ from datetime import datetime
 
 from celery.utils.log import get_task_logger
 from django.db import DatabaseError, IntegrityError, transaction
-from django.db.models import Q
 from django.utils import timezone
 from geopy.distance import geodesic
 from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
@@ -28,7 +27,7 @@ def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config)
     with transaction.atomic():
         current_risk_score = db_user.risk_score
         # for the risk_score consider the number of alerts that are not in the Config.risk_score_increment_alerts list
-        new_risk_level = UserRiskScoreType.get_risk_level(db_user.alert_set.filter(~Q(name__in=app_config.risk_score_increment_alerts)).count())
+        new_risk_level = UserRiskScoreType.get_risk_level(db_user.alert_set.filter(name__in=app_config.risk_score_increment_alerts).count())
 
         # update the risk_score anyway in order to keep the users up-to-date each time they are seen by the system
         db_user.risk_score = new_risk_level
@@ -36,6 +35,9 @@ def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config)
 
         risk_comparison = UserRiskScoreType.compare_risk(current_risk_score, new_risk_level)
         if risk_comparison in [ComparisonType.LOWER, ComparisonType.EQUAL]:
+            logger.info(
+                f"The current user.risk_score ({current_risk_score}) is {risk_comparison.value} than the new risk_score: {new_risk_level}. The Config.risk_score_increment_alerts list contains: {app_config.risk_score_increment_alerts}"
+            )
             return False  # risk_score doesn't increased, so no USER_RISK_THRESHOLD alert
 
         # if the new_risk_level is higher than the current one
@@ -49,7 +51,9 @@ def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config)
                 "alert_desc": f"{AlertDetectionType.USER_RISK_THRESHOLD.label} for User: {db_user.username}, "
                 f"who changed risk_score from {current_risk_score} to {new_risk_level}",
             }
-            logger.info(f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, " f"detected {db_user.alert_set.count()} alerts")
+            logger.info(
+                f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, detected {db_user.alert_set.count()} alerts. The Config.risk_score_increment_alerts list contains: {app_config.risk_score_increment_alerts}"
+            )
             set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info, app_config=app_config)
 
             return True
@@ -70,11 +74,11 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Co
     """
     logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
     alert = Alert.objects.create(user=db_user, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    alert.save()
     # update user.risk_score if necessary
     update_risk_level(db_user=alert.user, triggered_alert=alert, app_config=app_config)
     # check filters
     alert_filter.match_filters(alert=alert, app_config=app_config)
-    alert.save()
     return alert
 
 
