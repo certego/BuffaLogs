@@ -1,4 +1,7 @@
 ## 2.x.x
+### 2.1.1
+### Bugfix
+* Fixed user-agent parsing in case of a "None" os
 ### 2.1.0
 #### Features
 * Added the `Ingestion` process
