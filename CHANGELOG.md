@@ -1,4 +1,7 @@
 ## 2.x.x
+### 2.2.0
+#### Features
+* Added the `Config.risk_score_increment_alerts` field in order to permit the selection of the alerts type which increment the User risk_score value (Default: ["New Country", "Anonymous IP Login", "Atypical Country", "Imp Travel"])
 ### 2.1.2
 ### Bugfix
 * Handled splunklib import because it's a library not mandatory (if the default ingestion source used is Elasticsearch)
