@@ -45,6 +45,8 @@ def match_filters(alert: Alert, app_config: Config) -> Alert:
     if alert.name in app_config.filtered_alerts_types:
         alert.filter_type.append(AlertFilterType.FILTERED_ALERTS)
 
+    alert.save()
+
 
 def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) -> Alert:
     """Check all the filters relative to users.

@@ -11,17 +11,23 @@ from impossible_travel.modules import alert_filter
 logger = get_task_logger(__name__)
 
 
-def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config):
-    """Update user risk level depending on how many alerts were triggered
+def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config) -> bool:
+    """Update user risk level depending on how many alerts were triggered and the Config.risk_score_increment_alerts
 
     :param db_user: user from DB
     :type db_user: User object
     :param triggered_alert: alert that has just been triggered
     :type alert: Alert object
+    :param app_config: buffalogs config object
+    :type app_config: Config object
+
+    :return: False if user.risk_score doesn't increased, True otherwise
+    :rtype: bool
     """
     with transaction.atomic():
         current_risk_score = db_user.risk_score
-        new_risk_level = UserRiskScoreType.get_risk_level(db_user.alert_set.count())
+        # for the risk_score consider the number of alerts that are not in the Config.risk_score_increment_alerts list
+        new_risk_level = UserRiskScoreType.get_risk_level(db_user.alert_set.filter(name__in=app_config.risk_score_increment_alerts).count())
 
         # update the risk_score anyway in order to keep the users up-to-date each time they are seen by the system
         db_user.risk_score = new_risk_level
@@ -29,6 +35,9 @@ def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config)
 
         risk_comparison = UserRiskScoreType.compare_risk(current_risk_score, new_risk_level)
         if risk_comparison in [ComparisonType.LOWER, ComparisonType.EQUAL]:
+            logger.info(
+                f"The current user.risk_score ({current_risk_score}) is {risk_comparison.value} than the new risk_score: {new_risk_level}. The Config.risk_score_increment_alerts list contains: {app_config.risk_score_increment_alerts}"
+            )
             return False  # risk_score doesn't increased, so no USER_RISK_THRESHOLD alert
 
         # if the new_risk_level is higher than the current one
@@ -42,13 +51,15 @@ def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config)
                 "alert_desc": f"{AlertDetectionType.USER_RISK_THRESHOLD.label} for User: {db_user.username}, "
                 f"who changed risk_score from {current_risk_score} to {new_risk_level}",
             }
-            logger.info(f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, " f"detected {db_user.alert_set.count()} alerts")
+            logger.info(
+                f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, detected {db_user.alert_set.count()} alerts. The Config.risk_score_increment_alerts list contains: {app_config.risk_score_increment_alerts}"
+            )
             set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info, app_config=app_config)
 
             return True
 
 
-def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Config):
+def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Config) -> Alert:
     """Save the alert on db and logs it
 
     :param db_user: user from db
@@ -57,14 +68,17 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Co
     :type login_alert: dict
     :param alert_info: dictionary with alert info
     :type alert_info: dict
+
+    :return: new buffalogs alert object
+    :rtype: Alert obj
     """
     logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
     alert = Alert.objects.create(user=db_user, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    alert.save()
     # update user.risk_score if necessary
     update_risk_level(db_user=alert.user, triggered_alert=alert, app_config=app_config)
     # check filters
     alert_filter.match_filters(alert=alert, app_config=app_config)
-    alert.save()
     return alert
 
 
@@ -136,6 +150,16 @@ def check_fields(db_user: User, fields: list):
 def check_country(db_user: User, login_field: dict, app_config: Config) -> dict:
     """
     Check Login from new Country and send alert
+
+    :param db_user: user from db
+    :type db_user: object
+    :param login_field: last login to check
+    :type login_field: dict
+    :param app_config: buffalogs config object
+    :type app_config: Config
+
+    :return: dictionary with alert info
+    :rtype: dict
     """
     alert_info = {}
     # check "New Country" alert
@@ -155,9 +179,17 @@ def check_country(db_user: User, login_field: dict, app_config: Config) -> dict:
     return alert_info
 
 
-def check_new_device(db_user, login_field):
+def check_new_device(db_user: User, login_field: dict) -> dict:
     """
     Check Login from new Device and send alert
+
+    :param db_user: user from db
+    :type db_user: object
+    :param login_field: last login to check
+    :type login_field: dict
+
+    :return: dictionary with alert info
+    :rtype: dict
     """
     alert_info = {}
     if db_user.login_set.filter(user_agent=login_field["agent"]).count() == 0:
@@ -167,11 +199,11 @@ def check_new_device(db_user, login_field):
         return alert_info
 
 
-def add_new_login(db_user, new_login_field):
+def add_new_login(db_user: User, new_login_field: dict):
     """Add new login if there isn't previous login on db relative to that user
 
     :param db_user: user from db
-    :type db_user: object
+    :type db_user: User object
     :param new_login_field: dictionary with last login info
     :type new_login_field: dict
     """
@@ -188,7 +220,7 @@ def add_new_login(db_user, new_login_field):
     )
 
 
-def update_model(db_user, new_login):
+def update_model(db_user: User, new_login: dict):
     """Update DB entry with last login info (for same: User - index - country - agent)
 
     :param db_user: user from DB
@@ -218,18 +250,18 @@ def update_model(db_user, new_login):
         )
 
 
-def calc_distance_impossible_travel(db_user, prev_login, last_login_user_fields):
+def calc_distance_impossible_travel(db_user: User, prev_login: Login, last_login_user_fields: dict):
     """Compute distance and velocity to alert if impossible travel occurs
 
     :param db_user: user from db
-    :type db_user: object
+    :type db_user: User object
     :param prev_login: last login saved in db
     :type prev_login: object
     :param last_login_user_fields: dictionary login from elastic
     :type last_login_user_fields: dict
 
-    :return: dictionary with info about the impossible travel alert
-    :rtype: dict
+    :return: dictionary with info about the impossible travel alert and velocity of travel
+    :rtype: dict, int
     """
     app_config = Config.objects.get(id=1)
     alert_info = {}
