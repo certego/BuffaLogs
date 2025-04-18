@@ -77,4 +77,3 @@ class IngestionFactory:
                 )
             case _:
                 raise ValueError(f"Unsupported ingestion source: {self.active_ingestion}")
-         
