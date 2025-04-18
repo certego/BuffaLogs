@@ -12,63 +12,60 @@ from impossible_travel.ingestion.splunk_ingestion import SplunkIngestion
 
 
 class IngestionFactory:
+    """Factory to build the right ingestion class from config."""
+
     def __init__(self):
         config = self._read_config()
         active = config["active_ingestion"]
         self.active_ingestion = BaseIngestion.SupportedIngestionSources(active)
         self.ingestion_config = config[active]
 
-        # pull in common mapping if referenced, otherwise use any backend override
-        common = config.get(
+        # pull in common mapping if referenced, otherwise use any override
+        common_map = config.get(
             "common_custom_mapping",
             config["elasticsearch"]["custom_mapping"],
         )
-        self.mapping = self.ingestion_config.get("custom_mapping", common)
+        self.mapping = self.ingestion_config.get(
+            "custom_mapping", common_map
+        )
 
     def _read_config(self) -> dict:
-        """
-        Read the ingestion configuration file
-
-        :return: the configuration dict
-        :rtype: dict
-        """
+        """Load and validate ingestion.json, replace common mapping refs."""
         config_path = os.path.join(
             settings.CERTEGO_BUFFALOGS_CONFIG_PATH,
             "buffalogs",
             "ingestion.json",
         )
-        with open(config_path, mode="r", encoding="utf-8") as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
 
-        # replace any "${common_custom_mapping}" placeholders
-        common = config.get(
+        # Inline common mapping where requested
+        common_map = config.get(
             "common_custom_mapping",
             config["elasticsearch"]["custom_mapping"],
         )
         for backend in ("elasticsearch", "opensearch", "splunk"):
             cm = config.get(backend, {}).get("custom_mapping")
             if cm == "${common_custom_mapping}":
-                config[backend]["custom_mapping"] = common
+                config[backend]["custom_mapping"] = common_map
 
-        if config["active_ingestion"] not in [
-            i.value for i in BaseIngestion.SupportedIngestionSources
-        ]:
+        supported = [i.value for i in BaseIngestion.SupportedIngestionSources]
+        if config["active_ingestion"] not in supported:
             raise ValueError(
-                f"The ingestion source: {config['active_ingestion']} is not supported"
+                f"Ingestion source '{config['active_ingestion']}' "
+                "is not supported"
             )
 
         if not config.get(config["active_ingestion"]):
             raise ValueError(
-                f"The configuration for the {config['active_ingestion']} "
+                f"Configuration for '{config['active_ingestion']}' "
                 "must be implemented"
             )
 
         return config
 
     def get_ingestion_class(self):
-        """
-        Return the ingestion class
-        """
+        """Return the instantiated ingestion class for the active backend."""
         match self.active_ingestion:
             case BaseIngestion.SupportedIngestionSources.ELASTICSEARCH:
                 return ElasticsearchIngestion(
@@ -82,5 +79,6 @@ class IngestionFactory:
                 )
             case _:
                 raise ValueError(
-                    f"Unsupported ingestion source: {self.active_ingestion}"
+                    f"Unsupported ingestion source: "
+                    f"{self.active_ingestion}"
                 )
