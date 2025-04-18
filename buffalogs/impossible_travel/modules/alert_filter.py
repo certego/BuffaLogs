@@ -35,7 +35,7 @@ def match_filters(alert: Alert, app_config: Config) -> Alert:
         alert.filter_type.append(AlertFilterType.IGNORED_ISP_FILTER)
     if app_config.ignore_mobile_logins and alert.login_raw_data["agent"]:
         ua_parsed = parse(alert.login_raw_data["agent"])
-        if ua_parsed.os.family in settings.CERTEGO_BUFFALOGS_MOBILE_DEVICES:
+        if ua_parsed.os and ua_parsed.os.family in settings.CERTEGO_BUFFALOGS_MOBILE_DEVICES:
             logger.debug(
                 f"Alert: {alert.id} filtered for user: {db_user.username} because the login user-agent: {alert.login_raw_data['agent']} is a mobile device and Config.ignore_mobile_logins: {app_config.ignore_mobile_logins}"
             )

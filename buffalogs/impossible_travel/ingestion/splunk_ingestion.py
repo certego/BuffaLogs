@@ -1,13 +1,12 @@
 import logging
 from datetime import datetime
 
-from impossible_travel.ingestion.base_ingestion import BaseIngestion
-
 try:
     import splunklib.client as client
     import splunklib.results as results
 except ImportError:
     pass
+from impossible_travel.ingestion.base_ingestion import BaseIngestion
 
 
 class SplunkIngestion(BaseIngestion):
