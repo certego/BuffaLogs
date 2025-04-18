@@ -7,8 +7,12 @@ from impossible_travel.ingestion.base_ingestion import BaseIngestion
 from impossible_travel.ingestion.elasticsearch_ingestion import (
     ElasticsearchIngestion,
 )
-from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
-from impossible_travel.ingestion.splunk_ingestion import SplunkIngestion
+from impossible_travel.ingestion.opensearch_ingestion import (
+    OpensearchIngestion,
+)
+from impossible_travel.ingestion.splunk_ingestion import (
+    SplunkIngestion,
+)
 
 
 class IngestionFactory:
@@ -48,16 +52,12 @@ class IngestionFactory:
                 config[backend]["custom_mapping"] = common_map
 
         supported = [i.value for i in BaseIngestion.SupportedIngestionSources]
-        if config["active_ingestion"] not in supported:
-            raise ValueError(
-                f"Ingestion source '{config['active_ingestion']}' " "is not supported"
-            )
+        src = config["active_ingestion"]
+        if src not in supported:
+            raise ValueError(f"Ingestion source '{src}' is not supported")
 
-        if not config.get(config["active_ingestion"]):
-            raise ValueError(
-                f"Configuration for '{config['active_ingestion']}' "
-                "must be implemented"
-            )
+        if not config.get(src):
+            raise ValueError(f"Configuration for '{src}' must be implemented")
 
         return config
 
@@ -65,12 +65,21 @@ class IngestionFactory:
         """Return the instantiated ingestion class for the active backend."""
         match self.active_ingestion:
             case BaseIngestion.SupportedIngestionSources.ELASTICSEARCH:
-                return ElasticsearchIngestion(self.ingestion_config, self.mapping)
+                return ElasticsearchIngestion(
+                    self.ingestion_config,
+                    self.mapping,
+                )
             case BaseIngestion.SupportedIngestionSources.OPENSEARCH:
-                return OpensearchIngestion(self.ingestion_config)
+                return OpensearchIngestion(
+                    self.ingestion_config,
+                )
             case BaseIngestion.SupportedIngestionSources.SPLUNK:
-                return SplunkIngestion(self.ingestion_config, self.mapping)
+                return SplunkIngestion(
+                    self.ingestion_config,
+                    self.mapping,
+                )
             case _:
                 raise ValueError(
-                    f"Unsupported ingestion source: " f"{self.active_ingestion}"
+                    f"Unsupported ingestion source: "
+                    f"{self.active_ingestion}"
                 )
