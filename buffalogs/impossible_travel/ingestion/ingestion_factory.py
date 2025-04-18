@@ -2,7 +2,6 @@ import json
 import os
 
 from django.conf import settings
-
 from impossible_travel.ingestion.base_ingestion import BaseIngestion
 from impossible_travel.ingestion.elasticsearch_ingestion import (
     ElasticsearchIngestion,
@@ -70,13 +69,13 @@ class IngestionFactory:
                     self.mapping,
                 )
             case BaseIngestion.SupportedIngestionSources.OPENSEARCH:
-                return OpensearchIngestion(
-                    self.ingestion_config,
-                )
+                return OpensearchIngestion(self.ingestion_config)
             case BaseIngestion.SupportedIngestionSources.SPLUNK:
                 return SplunkIngestion(
                     self.ingestion_config,
                     self.mapping,
                 )
             case _:
-               raise ValueError(f"Unsupported ingestion source: {self.active_ingestion}")
+                raise ValueError(
+                    f"Unsupported ingestion source: {self.active_ingestion}"
+                )
