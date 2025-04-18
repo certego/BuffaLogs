@@ -9,42 +9,55 @@ from impossible_travel.ingestion.splunk_ingestion import SplunkIngestion
 
 
 class IngestionFactory:
+    """Factory to build the right ingestion class from config."""
+
     def __init__(self):
         config = self._read_config()
+        # enum whose .value matches the JSON key
         self.active_ingestion = BaseIngestion.SupportedIngestionSources(config["active_ingestion"])
-        self.ingestion_config = config[config["active_ingestion"]]
-        # default mapping: Elasticsearch mapping
-        self.mapping = self.ingestion_config.get("custom_mapping", config["elasticsearch"]["custom_mapping"])
+        src_conf = config[self.active_ingestion.value]
+
+        # resolve mapping: if placeholder, use common; else use specific dict
+        raw_map = src_conf.get("custom_mapping")
+        common = config.get("common_custom_mapping", {})
+        # compute the actual mapping dict for our own use
+        if isinstance(raw_map, str) and raw_map == "${common_custom_mapping}":
+            self.mapping = common
+        else:
+            self.mapping = raw_map or common
+
+        self.ingestion_config = src_conf
 
     def _read_config(self) -> dict:
-        """
-        Read the ingestion configuration file
-
-        :return : the configuration dict
-        :rtype: dict
-        """
-        with open(
-            os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
-            mode="r",
-            encoding="utf-8",
-        ) as f:
+        """Load and validate ingestion.json."""
+        path = os.path.join(
+            settings.CERTEGO_BUFFALOGS_CONFIG_PATH,
+            "buffalogs",
+            "ingestion.json",
+        )
+        with open(path, "r", encoding="utf-8") as f:
             config = json.load(f)
-        if config["active_ingestion"] not in [i.value for i in BaseIngestion.SupportedIngestionSources]:
-            raise ValueError(f"The ingestion source: {config['active_ingestion']} is not supported")
-        if not config.get(config["active_ingestion"]):
-            raise ValueError(f"The configuration for the {config['active_ingestion']} must be implemented")
+
+        allowed = [s.value for s in BaseIngestion.SupportedIngestionSources]
+        active = config.get("active_ingestion")
+        if active not in allowed:
+            raise ValueError(f"Ingestion source '{active}' is not supported")
+        if not config.get(active):
+            raise ValueError(f"Configuration for '{active}' must be implemented")
+
         return config
 
     def get_ingestion_class(self):
-        """
-        Return the ingestion class
-        """
+        """Return the instantiated ingestion class for the active backend."""
+        cfg = self.ingestion_config
+        mapping = self.mapping
+
         match self.active_ingestion:
             case BaseIngestion.SupportedIngestionSources.ELASTICSEARCH:
-                return ElasticsearchIngestion(self.ingestion_config, self.mapping)
+                return ElasticsearchIngestion(cfg, mapping)
             case BaseIngestion.SupportedIngestionSources.OPENSEARCH:
-                return OpensearchIngestion(self.ingestion_config)
+                return OpensearchIngestion(cfg, mapping)
             case BaseIngestion.SupportedIngestionSources.SPLUNK:
-                return SplunkIngestion(self.ingestion_config, self.mapping)
+                return SplunkIngestion(cfg, mapping)
             case _:
                 raise ValueError(f"Unsupported ingestion source: {self.active_ingestion}")

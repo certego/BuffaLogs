@@ -1,9 +1,11 @@
+import json
 import logging
+import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 
-from impossible_travel.models import User
+from django.conf import settings
 
 
 class BaseIngestion(ABC):
@@ -26,7 +28,18 @@ class BaseIngestion(ABC):
     def __init__(self, ingestion_config, mapping):
         super().__init__()
         self.ingestion_config = ingestion_config
-        self.mapping = mapping
+        # Resolve any "${common_custom_mapping}" placeholder here
+        if isinstance(mapping, str) and mapping == "${common_custom_mapping}":
+            cfg_path = os.path.join(
+                settings.CERTEGO_BUFFALOGS_CONFIG_PATH,
+                "buffalogs",
+                "ingestion.json",
+            )
+            with open(cfg_path, "r", encoding="utf-8") as f:
+                full_cfg = json.load(f)
+            self.mapping = full_cfg.get("common_custom_mapping", {})
+        else:
+            self.mapping = mapping or {}
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     @abstractmethod
