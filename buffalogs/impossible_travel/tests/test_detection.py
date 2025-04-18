@@ -357,23 +357,30 @@ class DetectionTestCase(TestCase):
         self.assertEqual("High", db_user.risk_score)
         alerts_user = db_user.alert_set.all().order_by("created")
         self.assertEqual(12, alerts_user.count())
-        self.assertEqual(AlertDetectionType.ATYPICAL_COUNTRY, alerts_user[6].name)
-        self.assertEqual(AlertDetectionType.ATYPICAL_COUNTRY, alerts_user[7].name)
-        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, alerts_user[8].name)
-        self.assertEqual("User risk_score increased for User: Lorena Goldoni, who changed risk_score from Medium to High", alerts_user[7].description)
-        # add some other alerts
-        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description6")
-        # no USER_RISK_THRESHOLD alert
-        self.assertFalse(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
-        self.assertEqual("High", db_user.risk_score)
-        self.assertEqual(9, db_user.alert_set.count())
-        self.assertEqual(AlertDetectionType.IMP_TRAVEL, alerts_user[8].name)
-        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description6")
-        # no USER_RISK_THRESHOLD alert
-        self.assertFalse(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
-        self.assertEqual("High", db_user.risk_score)
-        self.assertEqual(10, db_user.alert_set.count())
+        # the first 9 alerts have been checked in the previous function, called also at the beginning of this test
         self.assertEqual(AlertDetectionType.IMP_TRAVEL, alerts_user[9].name)
+        self.assertEqual("Test_Description7", alerts_user[9].description)
+        self.assertEqual(AlertDetectionType.USER_RISK_THRESHOLD, alerts_user[10].name)
+        self.assertEqual("User risk_score increased for User: Lorena Goldoni, who changed risk_score from Medium to High", alerts_user[10].description)
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL, alerts_user[11].name)
+        self.assertEqual("Test_Description8", alerts_user[11].description)
+        # add some other alerts
+        alert = Alert.objects.create(user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description9")
+        # no USER_RISK_THRESHOLD alert
+        self.assertFalse(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertEqual("High", db_user.risk_score)
+        self.assertEqual(13, db_user.alert_set.count())
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL, alerts_user[12].name)
+        self.assertEqual("Test_Description9", alerts_user[12].description)
+        alert = Alert.objects.create(
+            user=db_user, name=AlertDetectionType.IMP_TRAVEL, login_raw_data=self.raw_data_IMP_TRAVEL, description="Test_Description10"
+        )
+        # no USER_RISK_THRESHOLD alert
+        self.assertFalse(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertEqual("High", db_user.risk_score)
+        self.assertEqual(14, db_user.alert_set.count())
+        self.assertEqual(AlertDetectionType.IMP_TRAVEL, alerts_user[13].name)
+        self.assertEqual("Test_Description10", alerts_user[13].description)
 
     def test_set_alert(self):
         db_config = Config.objects.get(id=1)
@@ -656,4 +663,4 @@ class DetectionTestCase(TestCase):
         self.assertEqual(1, UsersIP.objects.filter(user=db_user, ip="203.0.113.11").count())
         # Third part: no new alerts because all the ips have already been used
         detection.check_fields(db_user, fields3)
-        self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime.datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
+        self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime.datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())  #
