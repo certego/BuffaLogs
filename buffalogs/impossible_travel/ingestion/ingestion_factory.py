@@ -79,7 +79,4 @@ class IngestionFactory:
                     self.mapping,
                 )
             case _:
-                raise ValueError(
-                    f"Unsupported ingestion source: "
-                    f"{self.active_ingestion}"
-                )
+               raise ValueError(f"Unsupported ingestion source: {self.active_ingestion}")
