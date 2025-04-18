@@ -2,7 +2,6 @@ import json
 import os
 
 from django.conf import settings
-
 from impossible_travel.ingestion.base_ingestion import BaseIngestion
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
 from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
