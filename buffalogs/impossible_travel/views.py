@@ -197,51 +197,37 @@ def alerts_line_chart_api(request):
     if is_naive(end_date):
         end_date = make_aware(end_date)
 
-    date_range = []
-    date_str = []
     result = {}
     delta_timestamp = end_date - start_date
     if delta_timestamp.days < 1:
         result["Timeframe"] = "hour"
-        while start_date <= end_date:
-            date_range.append(start_date)
-            date_str.append(start_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
-            start_date = start_date + timedelta(minutes=59, seconds=59)
-            date_range.append(start_date)
-            start_date = start_date + timedelta(seconds=1)
-        for i in range(0, len(date_str) - 1, 1):
-            result[date_str[i]] = Alert.objects.filter(login_raw_data__timestamp__range=(date_str[i], date_str[i + 1])).count()
-    elif delta_timestamp.days >= 1 and delta_timestamp.days <= 31:
+        result.update(aggregate_alerts_interval(start_date, end_date, timedelta(hours=1), "%Y-%m-%dT%H:%M:%SZ"))
+    elif delta_timestamp.days <= 31:
         result["Timeframe"] = "day"
-        while start_date.day < end_date.day:
-            start_date = datetime(start_date.year, start_date.month, start_date.day, 0, 0)
-            date_range.append(start_date)
-            start_date = start_date + timedelta(hours=23, minutes=59, seconds=59)
-            date_range.append(start_date)
-            start_date = start_date + timedelta(seconds=1)
-        start_date = datetime(start_date.year, start_date.month, start_date.day, 0, 0)
-        date_range.append(start_date)
-        date_range.append(end_date)
-        for i in range(0, len(date_range) - 1, 2):
-            date = str(date_range[i].year) + "-" + str(date_range[i].month) + "-" + str(date_range[i].day)
-            result[date] = Alert.objects.filter(login_raw_data__timestamp__range=(date_range[i].isoformat(), date_range[i + 1].isoformat())).count()
+        result.update(aggregate_alerts_interval(start_date, end_date, timedelta(days=1), "%Y-%m-%d"))
     else:
         result["Timeframe"] = "month"
-        start_date = timezone.datetime(start_date.year, start_date.month, 1)
+        result.update(aggregate_alerts_interval(start_date, end_date, relativedelta(months=1), "%Y-%m"))
 
-        if is_naive(start_date):
-            start_date = make_aware(start_date)
+    result = {key: value for key, value in result.items()}
 
-        while start_date <= end_date:
-            date_range.append(datetime(start_date.year, start_date.month, 1))
-            date_range.append(datetime(start_date.year, start_date.month, calendar.monthrange(start_date.year, start_date.month)[1]))
-            date_str.append(start_date.strftime("%Y-%m"))
-            start_date = start_date + relativedelta(months=1)
-        for i in range(0, len(date_range) - 1, 2):
-            date = str(date_range[i].year) + "-" + str(date_range[i].month)
-            result[date] = Alert.objects.filter(login_raw_data__timestamp__range=(date_range[i].isoformat(), date_range[i + 1].isoformat())).count()
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
+
+
+def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
+    """
+    Helper function to aggregate alerts over an interval
+    """
+    current_date = start_date
+    aggregated_data = {}
+
+    while current_date < end_date:
+        next_date = current_date + interval
+        count = Alert.objects.filter(login_raw_data__timestamp__range=(current_date.isoformat(), next_date.isoformat())).count()
+        aggregated_data[current_date.strftime(date_fmt)] = count
+        current_date = next_date
+    return aggregated_data
 
 
 @require_http_methods(["GET"])

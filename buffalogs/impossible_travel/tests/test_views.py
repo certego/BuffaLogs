@@ -183,7 +183,7 @@ class TestViews(APITestCase):
     def test_alerts_line_chart_api_day(self):
         start = datetime(2023, 6, 19, 0, 0)
         end = datetime(2023, 6, 20, 23, 59, 59)
-        dict_expected_result = {"Timeframe": "day", "2023-6-19": 2, "2023-6-20": 3}
+        dict_expected_result = {"Timeframe": "day", "2023-06-19": 2, "2023-06-20": 3}
         response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
@@ -191,7 +191,7 @@ class TestViews(APITestCase):
     def test_alerts_line_chart_api_month(self):
         start = datetime(2023, 5, 1, 0, 0)
         end = datetime(2023, 6, 30, 23, 59, 59)
-        dict_expected_result = {"Timeframe": "month", "2023-5": 1, "2023-6": 5}
+        dict_expected_result = {"Timeframe": "month", "2023-05": 1, "2023-06": 5}
         response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
