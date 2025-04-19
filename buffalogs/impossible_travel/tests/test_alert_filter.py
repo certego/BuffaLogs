@@ -361,3 +361,11 @@ class TestAlertFilter(TestCase):
             ],
             db_alert.filter_type,
         )
+
+    def test_match_filters_uaparsed_none_os(self):
+        # test with a user_agent that has "None" as os
+        db_config = Config.objects.create(id=1)
+        none_agent = "Mozilla/5.0 (compatible; MSAL 1.0) PKeyAuth/1.0"
+        db_alert = Alert.objects.get(user__username="Lorena Goldoni")
+        db_alert.login_raw_data["agent"] = none_agent
+        alert_filter.match_filters(alert=db_alert, app_config=db_config)
