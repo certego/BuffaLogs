@@ -1,5 +1,6 @@
 import logging
 
+from datetime import datetime
 from django.conf import settings
 from impossible_travel.ingestion.base_ingestion import BaseIngestion
 
@@ -14,18 +15,32 @@ class OpensearchIngestion(BaseIngestion):
     Concrete implementation of the BaseIngestion class for Opensearch ingestion source
     """
 
-    def __init__(self, ingestion_config: dict):
-        super().__init__()
-        self.opensearch_config = ingestion_config
+    def __init__(self, ingestion_config: dict, mapping: dict):
+        """
+        Constructor for the Opensearch Ingestion object
+        """
+        super().__init__(ingestion_config, mapping)
         # create the opensearch host connection
         self.client = OpenSearch(
-            hosts=[self.opensearch_config["url"]],
-            timeout=self.opensearch_config["timeout"],
+            hosts=[self.ingestion_config["url"]],
+            timeout=self.ingestion_config["timeout"],
             verify_certs=False,
         )
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
-    def process_users(self, start_date, end_date) -> list:
+    def process_users(self, start_date: datetime, end_date) -> list:
+        """
+            Concrete implementation of the BaseIngestion.process_users abstract method
+
+            :param start_date: the initial datetime from which the users are considered
+            :type start_date: datetime (with tzinfo=datetime.timezone.utc)
+            :param end_date: the final datetime within which the users are considered
+            :type end_date: datetime (with tzinfo=datetime.timezone.utc)
+
+            :return: list of users strings that logged in Opensearch
+            :rtype: list
+            """
+        # response = None
         self.logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
         users_list = []
         query = {
@@ -40,10 +55,12 @@ class OpensearchIngestion(BaseIngestion):
                     ]
                 }
             },
-            "aggs": {"login_user": {"terms": {"field": "user.name.keyword", "size": self.opensearch_config["bucket_size"]}}},
+            # making change to already committed code on the basis that the dynamic templates stores all strings as keywords so having user.name.keyword will cause program to fail
+            "aggs": {
+                "login_user": {"terms": {"field": "user.name", "size": self.ingestion_config["bucket_size"]}}},
         }
         try:
-            response = self.client.search(index=self.opensearch_config["indexes"], body=query)
+            response = self.client.search(index=self.ingestion_config["indexes"], body=query)
         except ConnectionError:
             self.logger.error(f"Failed to establish a connection with host: {self.client}")
         except TimeoutError:
@@ -56,8 +73,18 @@ class OpensearchIngestion(BaseIngestion):
                 users_list.append(user["key"])
         return users_list
 
-    def process_user_logins(self, start_date, end_date, username):
+    def process_user_logins(self, start_date: datetime, end_date: datetime, username: str) -> list:
+        """
+        Concrete implementation of the BaseIngestion.process_user_logins abstract method
+
+        :param username: Username of the user that logged in
+        :param start_date: the initial datetime from which the logins of the user are considered
+        :param end_date: the final datetime within which the logins of the user are considered
+        :return: list of the logins (dictionaries) for that specified username
+        :rtype: list of dicts
+        """
         response = []
+        user_logins = []
         query = {
             "query": {
                 "bool": {
@@ -84,50 +111,29 @@ class OpensearchIngestion(BaseIngestion):
                 "_id",
                 "source.intelligence_category",
             ],
-            "size": self.opensearch_config["bucket_size"],
+            "size": self.ingestion_config["bucket_size"],
         }
         try:
-            response = self.client.search(index=self.opensearch_config["indexes"], body=query)
+            response = self.client.search(index=self.ingestion_config["indexes"], body=query)
         except ConnectionError:
-            self.logger.error(f"Failed to establish a connection with host: {self.client}")
+            self.logger.error(f"Failed to establish a connection with host:{self.client}")
         except TimeoutError:
-            self.logger.error(f"Timeout reached for the host: {self.client}")
+            self.logger.error(f"Timeout reached for the host:{self.client}")
         except Exception as e:
-            self.logger.error(f"Exception while quering opensearch: {e}")
+            self.logger.error(f"Exception while querying opensearch:{e}")
         else:
-            self.logger.info(f"Got {len(response['hits']['hits'])} logins for the user {username} to be normalized")
-        return response["hits"]["hits"]
+            # Process hits into standardized format
+            self.logger.info(f"Got {len(response['hits']['hits'])} logins or the user {username} to be normalized")
 
-    def normalize_fields(self, logins_response):
-        fields = []
-        for hit in logins_response:
-            if "_source" in hit:
-                # meta
-                tmp = {}
-                tmp["id"] = hit["_id"]
-                if hit["_index"].split("-")[0] == "fw":
-                    tmp["index"] = "fw-proxy"
-                else:
-                    tmp["index"] = hit["_index"].split("-")[0]
+            for hit in response["hits"]["hits"]:
+                tmp = {
+                    "_index": "fw-proxy" if hit.get("_index",
+                                                    "").startswith("fw-") else hit.get("_index",
+                                                                                       "").split("-")[0],
+                    "_id": hit["_id"],
+                }
+                # Add source data to the tmp dict
+                tmp.update(hit["_source"])
+                user_logins.append(tmp)
 
-                # record
-                data = hit["_source"]
-                tmp["timestamp"] = data["@timestamp"]
-                tmp["ip"] = data["source"]["ip"]
-                if "user_agent" in data:
-                    tmp["agent"] = data["user_agent"]["original"]
-                else:
-                    tmp["agent"] = ""
-                if "as" in data["source"]:
-                    tmp["organization"] = data["source"]["as"]["organization"]["name"]
-                if "geo" in data["source"]:
-                    if "location" in data["source"]["geo"] and "country_name" in data["source"]["geo"]:
-                        tmp["lat"] = data["source"]["geo"]["location"]["lat"]
-                        tmp["lon"] = data["source"]["geo"]["location"]["lon"]
-                        tmp["country"] = data["source"]["geo"]["country_name"]
-                    else:
-                        tmp["lat"] = None
-                        tmp["lon"] = None
-                        tmp["country"] = ""
-                    fields.append(tmp)  # up to now: no geo info --> login discard
-        return fields
+        return user_logins
