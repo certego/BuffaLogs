@@ -66,6 +66,12 @@ class ConfigAdminForm(forms.ModelForm):
         required=False,
         help_text="Hold down “Control”, or “Command” on a Mac, to select more than one.",
     )
+    risk_score_increment_alerts = MultiChoiceArrayField(
+        base_field=forms.CharField(),
+        choices=AlertDetectionType.choices,
+        required=True,
+        help_text="Hold down “Control”, or “Command” on a Mac, to select more than one.",
+    )
     alert_minimum_risk_score = ShortLabelChoiceField(choices=UserRiskScoreType.choices)
     threshold_user_risk_alert = ShortLabelChoiceField(choices=UserRiskScoreType.choices)
 
