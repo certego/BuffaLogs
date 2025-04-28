@@ -29,34 +29,38 @@ def clean_models_periodically():
 
 
 @shared_task(name="BuffalogsProcessLogsTask")
-def process_logs():
+def process_logs(start_date=None, end_date=None):
     """Set the datetime range within which the users must be considered and start the detection"""
     ingestion_factory = IngestionFactory()
     ingestion = ingestion_factory.get_ingestion_class()
     date_ranges = []
-    now = timezone.now()
-    process_task, _ = TaskSettings.objects.get_or_create(
-        task_name=process_logs.__name__,
-        defaults={
-            "end_date": now - timedelta(minutes=1),
-            "start_date": now - timedelta(minutes=30),
-        },
-    )
 
-    if (now - process_task.end_date).days < 1:
-        # Recovering old data avoiding task time limit
-        for _ in range(6):
-            start_date = process_task.end_date
-            end_date = start_date + timedelta(minutes=30)
-            if end_date < now:
-                date_ranges.append((start_date, end_date))
-                process_task.end_date = end_date
-    else:
-        logger.info(f"Data lost from {process_task.end_date} to now")
-        end_date = now - timedelta(minutes=1)
-        start_date = end_date - timedelta(minutes=30)
+    if start_date and end_date:
         date_ranges.append((start_date, end_date))
-        process_task.end_date = end_date
+    else:
+        now = timezone.now()
+        process_task, _ = TaskSettings.objects.get_or_create(
+            task_name=process_logs.__name__,
+            defaults={
+                "end_date": now - timedelta(minutes=1),
+                "start_date": now - timedelta(minutes=30),
+            },
+        )
+
+        if (now - process_task.end_date).days < 1:
+            # Recovering old data avoiding task time limit
+            for _ in range(6):
+                start_date = process_task.end_date
+                end_date = start_date + timedelta(minutes=30)
+                if end_date < now:
+                    date_ranges.append((start_date, end_date))
+                    process_task.end_date = end_date
+        else:
+            logger.info(f"Data lost from {process_task.end_date} to now")
+            end_date = now - timedelta(minutes=1)
+            start_date = end_date - timedelta(minutes=30)
+            date_ranges.append((start_date, end_date))
+            process_task.end_date = end_date
 
     if date_ranges:
 
