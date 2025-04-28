@@ -1,23 +1,28 @@
 import { deleteCookie, getCookie } from 'cookies-next';
 
+interface TokenPayload {
+  access_token?: string;
+  refresh_token?: string;
+}
+
 export function removeToken(): void {
-  deleteCookie("user");;
+  deleteCookie("user");
 }
 
-export function getToken(): String | undefined {
-  const authCookie= getCookie("user");
-  if(typeof authCookie === 'string') {
-    const tokens = JSON.parse(authCookie);
-    return tokens?.access_token;
+export function getToken(): string | undefined {
+  const authCookie = getCookie("user");
+  if (typeof authCookie === "string") {
+    const tokens = JSON.parse(authCookie) as TokenPayload;
+    return tokens.access_token;
   }
   return undefined;
 }
 
-export function getRefreshToken(): String | undefined  {
-  const authCookie= getCookie('user');;
-  if(typeof authCookie === 'string') {
-    const tokens = JSON.parse(authCookie);
-    return tokens?.refresh_token;
+export function getRefreshToken(): string | undefined {
+  const authCookie = getCookie("user");
+  if (typeof authCookie === "string") {
+    const tokens = JSON.parse(authCookie) as TokenPayload;
+    return tokens.refresh_token;
   }
   return undefined;
-} 
+}
