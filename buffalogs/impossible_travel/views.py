@@ -26,7 +26,8 @@ def _load_data(name):
 def user_view(template_name):
     def view_decorator(func):
         def wrapper(request, pk_user):
-            context = {"pk_user": pk_user}
+            user = get_object_or_404(User, pk=pk_user)
+            context = {"pk_user": pk_user, "user": user}
             extra_context = func(request, pk_user) if func else {}
             if extra_context:
                 context.update(extra_context)

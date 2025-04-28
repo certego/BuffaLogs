@@ -4,21 +4,28 @@
 {% block title %} All logins {% endblock %} 
 
 {% block head_content %} 
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/styles/ag-grid.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/styles/ag-theme-alpine.css">
-     
-    <link rel="stylesheet" href="{% static 'css/unique_logins.css' %}"> 
-
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/styles/ag-theme-alpine.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {% endblock %} 
 
 {% block body_content %}
+<div class="p-3 rounded h-100 bg-grey">
+	<div class="container-title d-flex justify-content-between align-items-center text-light bg-grey">
+		<b> User: {{ user.username }} </b>
+		<i class="fa fa-info-circle" aria-hidden="true"></i>
+		<div>
+        		<a href="{% url 'alerts' pk_user=pk_user %}" class="text-info text-decoration-none">Alerts</a>
+	 		<a href="{% url 'all_logins' pk_user=pk_user %}" class="text-info mr-3 text-decoration-none">All Logins</a>
+    		</div>
 
-<div class="float-container">
-  
-  <div id="myGrid" class="ag-theme-alpine-dark"></div>
-  
+	</div>
+	<div class="container-graphic mt-3"> 
+          		<div id="myGrid" class="ag-theme-alpine-dark"></div>
+	</div>
 </div>
-
 {% endblock %} 
 
 {% block extend_scripts %} 
