@@ -1,13 +1,16 @@
 import json
 import os
+from collections import defaultdict
 from datetime import timedelta
 
 import pygal
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
+from django.db.models import Count
 from django.utils import timezone
-from impossible_travel.models import Alert, User
+from impossible_travel.models import Alert, Login, User
 from pygal.style import Style
+from pygal_maps_world.maps import World
 
 
 def _load_data(name):
@@ -16,22 +19,54 @@ def _load_data(name):
     return data
 
 
+pie_custom_style = Style(
+    background="transparent",
+    plot_background="transparent",
+    foreground="#dee2e6",
+    foreground_strong="#dee2e6",
+    foreground_subtle="#dee2e6",
+    transition="400ms ease-in",
+    opacity="0.7",
+    opacity_hover="0.9",
+    colors=("#3174b0", "#8753de", "#f59c1a", "#ff3333"),
+    value_colors=("#fff"),
+    legend_font_size=25,
+    tooltip_font_size=25,
+)
+line_custom_style = Style(
+    background="transparent",
+    plot_background="transparent",
+    foreground="#dee2e6",
+    foreground_strong="#ffffff",
+    foreground_subtle="#aaaaaa",
+    opacity=".7",
+    opacity_hover=".9",
+    transition="400ms ease-in",
+    colors=("#3174b0", "#408fa8"),
+    tooltip_font_size=20,
+    x_labels_font_size=20,
+)
+
+world_custom_style = Style(
+    background="transparent",
+    plot_background="transparent",
+    foreground="#dee2e6",
+    foreground_strong="#dee2e6",
+    foreground_subtle="#dee2e6",
+    opacity=".7",
+    opacity_hover=".9",
+    transition="400ms ease-in",
+    colors=("#3174b0", "#00acac", "#408fa8"),
+    value_font_size=1,
+    tooltip_font_size=2.5,
+    major_label_font_size=1,
+    label_font_size=1,
+    value_label_font_size=4,
+)
+
+
 def users_pie_chart(start, end):
-    custom_style = Style(
-        background="transparent",
-        plot_background="transparent",
-        foreground="#dee2e6",
-        foreground_strong="#dee2e6",
-        foreground_subtle="#dee2e6",
-        transition="400ms ease-in",
-        opacity="0.7",
-        opacity_hover="0.9",
-        colors=("#3174b0", "#8753de", "#f59c1a", "#ff3333"),
-        value_colors=("#fff"),
-        legend_font_size=25,
-        tooltip_font_size=25,
-    )
-    pie_chart = pygal.Pie(style=custom_style, width=1000, height=650)
+    pie_chart = pygal.Pie(style=pie_custom_style, width=1000, height=650)
 
     pie_chart.add("No risk", User.objects.filter(updated__range=(start, end), risk_score="No risk").count())
     pie_chart.add("Low", User.objects.filter(updated__range=(start, end), risk_score="Low").count())
@@ -105,24 +140,8 @@ def alerts_line_chart(start, end):
 
 
 def world_map_chart(start, end):
-    custom_style = Style(
-        background="transparent",
-        plot_background="transparent",
-        foreground="#dee2e6",
-        foreground_strong="#dee2e6",
-        foreground_subtle="#dee2e6",
-        opacity=".7",
-        opacity_hover=".9",
-        transition="400ms ease-in",
-        colors=("#3174b0", "#00acac", "#408fa8"),
-        value_font_size=1,
-        tooltip_font_size=2.5,
-        major_label_font_size=1,
-        label_font_size=1,
-        value_label_font_size=4,
-    )
     map_chart = pygal.maps.world.World(  # pylint: disable=no-member
-        style=custom_style,
+        style=world_custom_style,
         width=380,
         height=130,
         show_legend=False,
@@ -139,3 +158,86 @@ def world_map_chart(start, end):
             tmp[key] = country_alerts
     map_chart.add("Alerts", tmp)
     return map_chart.render_data_uri()
+
+
+# -> user personal login activity dashboard
+def user_login_timeline_chart(user, start, end):
+    logins = Login.objects.filter(user=user, timestamp__range=(start, end))
+    chart = pygal.DateTimeLine(x_label_rotation=20, style=line_custom_style, title="Login Timeline", width=1000, height=650)
+    chart.add("Logins", [(l.timestamp, 1) for l in logins])
+    return chart.render(disable_xml_declaration=True)
+
+
+def user_device_usage_chart(user, start, end):
+    devices = Login.objects.filter(user=user, timestamp__range=(start, end)).values("user_agent").annotate(count=Count("id"))
+
+    pie_chart = pygal.Pie(style=pie_custom_style, legend=True, show_labels=False, width=1000, height=650)
+    pie_chart.title = "Device Usage"
+    for d in devices:
+        pie_chart.add(d["user_agent"], d["count"])
+    return pie_chart.render(disable_xml_declaration=True)
+
+
+def user_login_frequency_chart(user, start, end):
+
+    total_days = (end - start).days + 1
+    days = [start + timedelta(days=i) for i in range(total_days)]
+
+    daily_counts = {day.date(): 0 for day in days}
+
+    for login in Login.objects.filter(user=user, timestamp__range=(start, end)):
+        login_day = login.timestamp.date()
+        if login_day in daily_counts:
+            daily_counts[login_day] += 1
+        else:
+            daily_counts[login_day] = 1
+
+    line_chart = pygal.Line(style=line_custom_style, width=1000, height=650)
+    line_chart.title = f"Login Frequency ({start.date()} to {end.date()})"
+    line_chart.x_labels = [d.date().isoformat() for d in days]
+    line_chart.x_title = "Date"
+    line_chart.y_title = "Number of Logins"
+    login_values = [daily_counts.get(d.date(), 0) for d in days]
+    line_chart.add("Logins", login_values)
+
+    return line_chart.render(disable_xml_declaration=True)
+
+
+def user_time_of_day_chart(user, start, end):
+    counts = defaultdict(lambda: defaultdict(int))
+    qs = Login.objects.filter(user=user, timestamp__range=(start, end))
+    for l in qs:
+        h = l.timestamp.hour
+        w = l.timestamp.weekday()
+        counts[h][w] += 1
+
+    chart = pygal.StackedBar(style=line_custom_style, width=1000, height=650)
+    chart.title = "Hourly Logins by Weekday"
+    chart.x_labels = [f"{h:02d}:00" for h in range(24)]
+
+    weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    for idx, name in enumerate(weekdays):
+        data = [counts[h].get(idx, 0) for h in range(24)]
+        chart.add(name, data)
+    return chart.render(disable_xml_declaration=True)
+
+
+def user_geo_distribution_chart(user, start, end):
+    logins = Login.objects.filter(user=user, timestamp__range=(start, end))
+    country_data = logins.values("country").annotate(count=Count("id"))
+
+    countries = _load_data("countries")
+    name_to_code = {v.lower(): k for k, v in countries.items()}
+
+    country_dict = {}
+    for entry in country_data:
+        country_name = entry["country"].lower()
+        code = name_to_code.get(country_name)
+        if code:
+            country_dict[code] = entry["count"]
+
+    world_chart = World(style=world_custom_style, width=1000, height=650)
+    world_chart.title = "Login Locations"
+    world_chart.add("Logins", country_dict)
+
+    return world_chart.render_data_uri()
