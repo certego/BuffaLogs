@@ -164,7 +164,7 @@ def world_map_chart(start, end):
 def user_login_timeline_chart(user, start, end):
     logins = Login.objects.filter(user=user, timestamp__range=(start, end))
     chart = pygal.DateTimeLine(x_label_rotation=20, style=line_custom_style, title="Login Timeline", width=1000, height=650)
-    chart.add("Logins", [(l.timestamp, 1) for l in logins])
+    chart.add("Logins", [(login.timestamp, 1) for login in logins])
     return chart.render(disable_xml_declaration=True)
 
 
@@ -206,9 +206,9 @@ def user_login_frequency_chart(user, start, end):
 def user_time_of_day_chart(user, start, end):
     counts = defaultdict(lambda: defaultdict(int))
     qs = Login.objects.filter(user=user, timestamp__range=(start, end))
-    for l in qs:
-        h = l.timestamp.hour
-        w = l.timestamp.weekday()
+    for login in qs:
+        h = login.timestamp.hour
+        w = login.timestamp.weekday()
         counts[h][w] += 1
 
     chart = pygal.StackedBar(style=line_custom_style, width=1000, height=650)

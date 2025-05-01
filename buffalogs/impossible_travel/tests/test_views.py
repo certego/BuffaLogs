@@ -473,7 +473,7 @@ class TestViews(APITestCase):
                         user=db_user,
                         event_id=f"geo_test_{country}_{i}",
                         index="cloud",
-                        ip=f"192.168.{offset}.{i+1}",
+                        ip=f"192.168.{offset}.{i + 1}",
                         timestamp=base_timestamp + timedelta(hours=offset + i),
                         latitude=details["lat"],
                         longitude=details["lon"],
