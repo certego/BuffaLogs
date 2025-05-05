@@ -1,4 +1,14 @@
 ## 2.x.x
+### 2.2.0
+#### Features
+* Added the `Config.risk_score_increment_alerts` field in order to permit the selection of the alerts type which increment the User risk_score value (Default: ["New Country", "Anonymous IP Login", "Atypical Country", "Imp Travel"])
+#### Changes
+* Refactored the duplication of similar logic for processing date ranges, constructing API URLs, and error handling in the `requestdata.ts` file (by community - @eshant742)
+* Refactored some functions in the `views.py` in order to provide more consistent timezone handling and to not rely on a fixed datetime string format (by community - @kunalsz)
+* Refactored the user login dashboard in order to be compliant to the UI (by community - @noble47)
+#### Bugfix
+* Fixed the mismatch leading to TypeScript type‐checking errors and in order to follow the TS best practices (by community - @eshant742)
+
 ### 2.1.2
 ### Bugfix
 * Handled splunklib import because it's a library not mandatory (if the default ingestion source used is Elasticsearch)
@@ -23,6 +33,7 @@
 * Fixed the homepage resposive behaviour (by community - @ragupari)
 * Fixed the "TypeError unique_logins() got an unexpected keyword argument 'pk_user'" in the frontend (by community - @drona-gyawali)
 * Fixed the `csrf_token` reference in the frontend homepage, required by forms to protect against Cross-Site Request Forgery (CSRF) attacks (by community - @drona-gyawali)
+
 ### 2.0.0
 #### Features
 * Added the `Atypical Country` alert type, with the addition of the customizable field: **Config.atypical_country_days** in order to set from how many days a login from a Country is considered "Atypical"

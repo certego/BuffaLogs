@@ -122,6 +122,10 @@ def get_default_vip_users():
     return list(settings.CERTEGO_BUFFALOGS_VIP_USERS)
 
 
+def get_default_risk_score_increment_alerts():
+    return list(settings.CERTEGO_BUFFALOGS_RISK_SCORE_INCREMENT_ALERTS)
+
+
 class Config(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -152,6 +156,13 @@ class Config(models.Model):
         blank=False,
         default=UserRiskScoreType.NO_RISK,
         help_text="Select the risk_score that users should have at least to send the alerts",
+    )
+    risk_score_increment_alerts = ArrayField(
+        models.CharField(max_length=50, choices=AlertDetectionType.choices, blank=False),
+        default=get_default_risk_score_increment_alerts,
+        blank=False,
+        null=False,
+        help_text="List of alert types to consider to increase the user risk_score",
     )
 
     # Detection filters - location
