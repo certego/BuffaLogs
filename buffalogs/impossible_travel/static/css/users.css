@@ -1,8 +1,42 @@
-#myGrid{
-    width: 80%;
-    position: absolute;
-    left: 300px;
-    padding: 50px;
-}
-
-
+#content {
+    background-color: #dee2e6;
+    padding: 20px;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  
+  .users-container .bg-grey {
+    background-color: #5c83a4 !important;
+    min-height: 400px;
+    margin-bottom: 20px;
+  }
+  
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 150px);
+  }
+  
+  .login-timeline {
+    height: 50px;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 768px) {
+    .users-grid {
+      grid-template-columns: 1fr;
+      max-height: none;
+    }
+    
+    .users-container .bg-grey {
+      min-height: 300px;
+    }
+  }
+  
+  #reportrange {
+    z-index: 1000;
+    margin-bottom: 2rem;
+    position: relative;
+  }

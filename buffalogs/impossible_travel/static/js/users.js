@@ -1,135 +1,50 @@
-document.addEventListener( "DOMContentLoaded", function () {
-    
-    const columns = [
-        { 
-            field: "user",
-            headerName: "Username",
-            resizable: true,
-            editable: true,
-            sortable: true,
-            unSortIcon: true,
-            filter: true,
-        }, 
-        { 
-            field: "last_login",
-            headerName: "Last Login",
-            resizable: true,
-            sortable: true,
-            unSortIcon: true,
-            editable: true,
-            filter: true,
-        }, 
-        { 
-            field: "risk_score",
-            headerName: "Risk Score",
-            resizable: true,
-            editable: true,
-            sortable:  true,
-            unSortIcon: true,
-            filter: true,
-        }, 
-        { 
-            field: "logins_num",
-            headerName: "Unique Logins",
-            cellRenderer: function(params) {
-                const eDiv = document.createElement('a');
-                eDiv.setAttribute("href",`${window.location.href}${params.data.id}/unique_logins`);
-                eDiv.innerText = `unique logins (${params.data.logins_num})`;
-                console.log(params)
-                return eDiv;
+document.addEventListener("DOMContentLoaded", function() {
+    const initDateRangePicker = () => {
+        const reportRangeElement = document.getElementById('reportrange');
+        if (!reportRangeElement) return;
+
+        const endDate = reportRangeElement.dataset.enddate ?
+            moment(new Date(reportRangeElement.dataset.enddate)) :
+            moment().endOf('day');
+            
+        const startDate = reportRangeElement.dataset.startdate ?
+            moment(new Date(reportRangeElement.dataset.startdate)) :
+            moment().subtract(7, 'days').startOf('day');
+
+        $('#reportrange').daterangepicker({
+            startDate: startDate,
+            endDate: endDate,
+            maxDate: moment().endOf('day'),
+            ranges: {
+                'Today': [moment().startOf('day'), moment().endOf('day')],
+                'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+                'Last 7 Days': [moment().subtract(6, 'days').startOf('day'), moment().endOf('day')],
+                'Last 30 Days': [moment().subtract(29, 'days').startOf('day'), moment().endOf('day')],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
             },
-            resizable: true,
-            sortable: true,
-            unSortIcon: true,
-        },
-        {
-            headerName: "All Logins",
-            cellRenderer: function(params) {
-                const eDiv = document.createElement('a');
-                eDiv.setAttribute("href",`${window.location.href}${params.data.id}/all_logins`);
-                eDiv.innerText = `All logins`;
-                return eDiv;
-            },
-            resizable: true,
-        }, 
-        { 
-            field: "alerts_num",
-            headerName: "Alerts",
-            cellRenderer: function(params) {
-                const eDiv = document.createElement('a');
-                eDiv.setAttribute("href",`${window.location.href}${params.data.id}/alerts`);
-                eDiv.innerText = `alerts (${params.data.alerts_num})`;
-                return eDiv;
-            },
-            resizable: true,
-            sortable: true,
-            unSortIcon: true,
-        },
-    ]
+            locale: {
+                format: 'MMM D, YYYY'
+            }
+        }, function(start, end) {
+            document.getElementById('startDate').value = start.format('YYYY-MM-DD');
+            document.getElementById('endDate').value = end.format('YYYY-MM-DD');
+            document.getElementById('analysisForm').submit();
+        });
 
-    function fetch_request() {
-        fetch("/get_users", {method: 'GET', headers: {"Accept":"application/json", 
-            "X-Requested-With":"XMLHttpRequest"}})
-        // gestisci il successo
-        .then(response => response.json())  // converti a json
-        .then((data) => {
-            gridOptions.rowData = (JSON.parse(data));
-            gridOptions.api.setRowData(JSON.parse(data));
-        })  
-        .catch(err => console.log('Request Failed', err)); // gestisci gli errori
-    }
 
-    // Grid options (to customize grid)
-    const gridOptions = {
-        columnDefs: columns,
-        rowData: undefined,
-        //To mantain column order even if updated data has different order
-        maintainColumnOrder: true,
-        //To avoid column movement with mouse
-        suppressMovableColumns: true,
+        $('#reportrange span').html(startDate.format('MMM D, YYYY') + ' - ' + endDate.format('MMM D, YYYY'));
+    };
 
-        stopEditingWhenCellsLoseFocus: true,
-        enterMovesDownAfterEdit: true,
-        undoRedoCellEditing: true,
-        undoRedoCellEditingLimit: 10,
-        cacheQuickFilter: true,
-
-        suppressMultiSort:true,
-        accentedSort:true,
-
-        defaultColDef:{
-            resizable: false,
-            editable:false,
-            filter: false,
-        },
-
-        //Pagination options
-        pagination: true,
-        paginationPageSize: 20,
-
-        domLayout: 'autoHeight',
-
-        //Row selection
-        rowSelection: "multiple",
-        suppressRowClickSelection: true,
-        suppressCellSelection: true,
-
-        enableBrowserTooltips: true,
-
-        //Performance
-        
-
-        onGridReady: event => {
-            fetch_request();
+    const setupEventListeners = () => {
+        const userSelect = document.getElementById('userSelect');
+        if (userSelect) {
+            userSelect.addEventListener('change', function() {
+                document.getElementById('analysisForm').submit();
+            });
         }
     };
 
-    // get div to host the grid
-    const eGridDiv = document.getElementById("myGrid");
-    // new grid instance, passing in the hosting DIV and Grid Options
-    new agGrid.Grid(eGridDiv, gridOptions);  
-
-
-    gridOptions.api.sizeColumnsToFit();
-})
-
+    initDateRangePicker();
+    setupEventListeners();
+});

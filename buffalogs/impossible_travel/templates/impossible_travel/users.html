@@ -5,24 +5,115 @@
 
 {% block head_content %}
 
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/styles/ag-grid.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/styles/ag-theme-alpine.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <link rel="stylesheet" href="{% static 'css/users.css' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {% endblock %}
 
 {% block body_content %}
+<form method="POST" id="analysisForm">
+  {% csrf_token %}
+  <div class="container-fluid">
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <select name="user_id" class="btn bg-grey text-light" id="userSelect">
+          <option value="">Select User</option>
+          {% for user in users %}
+          <option value="{{ user.id }}" 
+              {% if selected_user and user.id == selected_user.id %}selected{% endif %}>
+              {{ user.username }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-8">
+        <input type="hidden" name="start_date" id="startDate">
+        <input type="hidden" name="end_date" id="endDate">
+        <div id="reportrange" data-startdate="{{start_date}}" data-enddate="{{end_date}}">
+          <a href="#" class="btn bg-grey me-2 text-truncate text-light" id="daterange-filter">
+            <i class="fa fa-calendar"></i> 
+            <span></span> <i class="fa fa-caret-down"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% if selected_user %}
+    <div class="row">
+      <div class="col-12 mb-4">
+        <div class="p-3 rounded bg-grey">
+          <div class="container-title d-flex justify-content-between align-items-center text-light">
+            <b>Geographic Distribution</b>
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+          </div>
+          <div class="container-graphic mt-3">
+            <object 
+            type="image/svg+xml" 
+            data="{{ charts.geo|safe }}"
+            style="width: 100%; height: 300px;">            
+            </object>
+          </div>
+        </div>
+      </div>
 
-  <div class="float-container">
+      <div class="col-md-6 mb-4">
+        <div class="p-3 rounded bg-grey">
+          <div class="container-title d-flex justify-content-between align-items-center text-light">
+            <b>Login Timeline</b>
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+          </div>
+          <div class="container-graphic mt-3">
+            {{ charts.timeline|safe }}
+          </div>
+        </div>
+      </div>
 
-    <div id="myGrid" class="ag-theme-alpine-dark"></div>
+      <div class="col-md-6 mb-4">
+        <div class="p-3 rounded bg-grey">
+          <div class="container-title d-flex justify-content-between align-items-center text-light">
+            <b>Device Usage</b>
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+          </div>
+          <div class="container-graphic mt-3">
+            {{ charts.device|safe }}
+          </div>
+        </div>
+      </div>
 
+      <div class="col-md-6 mb-4">
+        <div class="p-3 rounded bg-grey">
+          <div class="container-title d-flex justify-content-between align-items-center text-light">
+            <b>Time-of-Day Pattern</b>
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+          </div>
+          <div class="container-graphic mt-3">
+            {{ charts.time_of_day|safe }}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <div class="p-3 rounded bg-grey">
+          <div class="container-title d-flex justify-content-between align-items-center text-light">
+            <b>Login Frequency</b>
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+          </div>
+          <div class="container-graphic mt-3">
+            {{ charts.frequency|safe }}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </div>
-
 {% endblock %}
 
 {% block extend_scripts %}
-  <!-- Include the JS for AG Grid -->
-  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/dist/ag-grid-community.min.noStyle.js"></script>
-  <script src="{% static 'js/users.js' %}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="{% static 'js/users.js' %}"></script>
 {% endblock %}
