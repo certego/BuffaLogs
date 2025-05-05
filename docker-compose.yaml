@@ -94,6 +94,25 @@ services:
             - buffalogs_postgres
             - buffalogs_rabbitmq
 
+    buffalogs_frontend:
+        container_name: buffalogs_frontend
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        ports:
+            - "3000:3000"
+        environment:
+            - NODE_ENV=development
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        stdin_open: true
+        tty: true
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:3000"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
 volumes:
 
     buffalogs_postgres_data:
