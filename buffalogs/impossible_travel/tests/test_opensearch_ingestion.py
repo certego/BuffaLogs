@@ -224,7 +224,7 @@ class OpensearchIngestionTestCase(TestCase):
         opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config,
                                                   mapping=self.opensearch_config["custom_mapping"])
         returned_users = opensearch_ingestor.process_users(start_date, end_date)
-        self.assertEqual(0, len(returned_users)) 
+        self.assertEqual(0, len(returned_users))
 
     def test_process_users_data(self):
         # Test the function process_users with data in OpenSearch
