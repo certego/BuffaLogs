@@ -1,7 +1,6 @@
 import logging
 
 from datetime import datetime
-from django.conf import settings
 from impossible_travel.ingestion.base_ingestion import BaseIngestion
 
 try:
@@ -84,7 +83,7 @@ class OpensearchIngestion(BaseIngestion):
         :return: list of the logins (dictionaries) for that specified username
         :rtype: list of dicts
         """
-        response = None # Initialize the response variable
+        response = None  # Initialize the response variable
         user_logins = []
         query = {
             "query": {
