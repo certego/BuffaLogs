@@ -40,7 +40,7 @@ class OpensearchIngestion(BaseIngestion):
             :return: list of users strings that logged in Opensearch
             :rtype: list
             """
-        # response = None
+        response = None  # Initialize the response variable
         self.logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
         users_list = []
         query = {
@@ -67,7 +67,8 @@ class OpensearchIngestion(BaseIngestion):
             self.logger.error(f"Timeout reached for the host: {self.client}")
         except Exception as e:
             self.logger.error(f"Exception while quering opensearch: {e}")
-        else:
+        # Only access response if it exists
+        if response and 'aggregations' in response and 'login_user' in response['aggregations']:
             self.logger.info(f"Successfully got {len(response['aggregations']['login_user']['buckets'])} users")
             for user in response["aggregations"]["login_user"]["buckets"]:
                 users_list.append(user["key"])
@@ -83,7 +84,7 @@ class OpensearchIngestion(BaseIngestion):
         :return: list of the logins (dictionaries) for that specified username
         :rtype: list of dicts
         """
-        response = []
+        response = None # Initialize the response variable
         user_logins = []
         query = {
             "query": {
@@ -121,7 +122,8 @@ class OpensearchIngestion(BaseIngestion):
             self.logger.error(f"Timeout reached for the host:{self.client}")
         except Exception as e:
             self.logger.error(f"Exception while querying opensearch:{e}")
-        else:
+        # only access response if it exists and has the expected structure
+        if response and 'hits' in response and 'hits' in response['hits']:
             # Process hits into standardized format
             self.logger.info(f"Got {len(response['hits']['hits'])} logins or the user {username} to be normalized")
 
