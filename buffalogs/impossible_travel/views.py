@@ -1,5 +1,6 @@
 import json
 import os
+import csv
 from collections import defaultdict
 from datetime import timedelta
 
@@ -232,6 +233,40 @@ def users_pie_chart_api(request):
     }
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
+
+# --- Added: CSV export endpoint
+@require_http_methods(["GET"])
+def export_alerts_csv(request):
+    """
+    Export alerts as CSV for a given ISO8601 start/end window.
+    """
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+    if not start or not end:
+        return HttpResponseBadRequest("Missing 'start' or 'end' parameter")
+    try:
+        start_dt = parse_datetime(start)
+        end_dt = parse_datetime(end)
+        if is_naive(start_dt): start_dt = make_aware(start_dt)
+        if is_naive(end_dt):   end_dt = make_aware(end_dt)
+    except Exception:
+        return HttpResponseBadRequest("Invalid date format for 'start' or 'end'")
+
+    alerts = Alert.objects.filter(created__range=(start_dt, end_dt))
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="alerts.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['timestamp', 'username', 'alert_name', 'description', 'is_filtered'])
+    for a in alerts:
+        writer.writerow([
+            a.login_raw_data.get('timestamp'),
+            a.user.username,
+            a.name,
+            a.description,
+            getattr(a, 'is_filtered', False),
+        ])
+    return response
 
 
 @require_http_methods(["GET"])
