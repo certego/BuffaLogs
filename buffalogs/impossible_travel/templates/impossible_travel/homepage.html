@@ -20,9 +20,17 @@
   </form>
   <div class="d-flex justify-content-lg-start justify-content-center" id="reportrange" data-startdate="{{startdate}}" data-enddate="{{enddate}}">
     <a href="#" class="btn bg-grey me-2 text-truncate text-light" id="daterange-filter">
-      <i class="fa fa-calendar"></i> 
+      <i class="fa fa-calendar"></i>
       <span></span> <i class="fa fa-caret-down"></i>
     </a>
+        <!-- Download CSV button -->
+   <form id="export-csv-form" method="get" action="{% url 'export_alerts_csv' %}" class="d-inline">
+      <input type="hidden" name="start" id="export-start" value="{{ iso_start }}">
+      <input type="hidden" name="end"   id="export-end"   value="{{ iso_end }}">
+      <button type="submit" class="btn btn-secondary">
+        <i class="bi bi-download"></i> Download CSV
+      </button>
+    </form>
   </div>
 
   <div class="row">

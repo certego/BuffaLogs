@@ -1,3 +1,4 @@
+import csv
 import json
 import os
 from collections import defaultdict
@@ -55,13 +56,16 @@ def homepage(request):
     world_map_context = None
     alerts_line_context = None
     if request.method == "GET":
-        date_range = []
         now = timezone.now()
-        end_str = now.strftime("%B %-d, %Y")
+        # human-readable strings for display
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         start_str = start.strftime("%B %-d, %Y")
-        date_range.append(start)
-        date_range.append(now)
+        end_str = now.strftime("%B %-d, %Y")
+
+        # ISO strings for machine use (CSV export)
+        iso_start = start.isoformat()
+        iso_end = now.isoformat()
+
         users_pie_context = users_pie_chart(start, now)
         alerts_line_context = alerts_line_chart(start, now)
         world_map_context = world_map_chart(start, now)
@@ -76,17 +80,21 @@ def homepage(request):
         alerts_line_context = alerts_line_chart(start, end)
         world_map_context = world_map_chart(start, end)
 
-    return render(
-        request,
-        "impossible_travel/homepage.html",
-        {
-            "startdate": start_str,
-            "enddate": end_str,
-            "users_pie_context": users_pie_context,
-            "world_map_context": world_map_context,
-            "alerts_line_context": alerts_line_context,
-        },
-    )
+        return render(
+            request,
+            "impossible_travel/homepage.html",
+            {
+                # human-readable
+                "startdate": start_str,
+                "enddate": end_str,
+                # ISO (for the CSV-export hidden inputs)
+                "iso_start": iso_start,
+                "iso_end": iso_end,
+                "users_pie_context": users_pie_context,
+                "world_map_context": world_map_context,
+                "alerts_line_context": alerts_line_context,
+            },
+        )
 
 
 def users(request):
@@ -232,6 +240,55 @@ def users_pie_chart_api(request):
     }
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
+
+
+@require_http_methods(["GET"])
+def export_alerts_csv(request):
+    """
+    Export alerts as CSV for a given ISO8601 start/end window.
+    """
+    start = request.GET.get("start")
+    end = request.GET.get("end")
+
+    if not start or not end:
+        return HttpResponseBadRequest("Missing 'start' or 'end' parameter")
+
+    # Restore any "+" signs that URL-decoding may have turned into spaces
+    start = start.replace(" ", "+")
+    end = end.replace(" ", "+")
+
+    try:
+        start_dt = isoparse(start)
+        end_dt = isoparse(end)
+
+        if is_naive(start_dt):
+            start_dt = make_aware(start_dt)
+        if is_naive(end_dt):
+            end_dt = make_aware(end_dt)
+
+    except (ValueError, TypeError):
+        return HttpResponseBadRequest("Invalid date format for 'start' or 'end'")
+
+    alerts = Alert.objects.filter(created__range=(start_dt, end_dt))
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="alerts.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["timestamp", "username", "alert_name", "description", "is_filtered"])
+
+    for alert in alerts:
+        writer.writerow(
+            [
+                alert.login_raw_data.get("timestamp"),
+                alert.user.username,
+                alert.name,
+                alert.description,
+                getattr(alert, "is_filtered", False),
+            ]
+        )
+
+    return response
 
 
 @require_http_methods(["GET"])

@@ -166,6 +166,9 @@ document.addEventListener( "DOMContentLoaded", function () {
 
 function cb(start, end) {
     $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        // Keep CSV-export inputs in sync
+    $('#export-start').val(start.toISOString());
+    $('#export-end').val(end.toISOString());
 }
 
 // Initialize date range picker
