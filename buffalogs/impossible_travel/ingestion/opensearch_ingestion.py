@@ -29,16 +29,16 @@ class OpensearchIngestion(BaseIngestion):
 
     def process_users(self, start_date: datetime, end_date) -> list:
         """
-            Concrete implementation of the BaseIngestion.process_users abstract method
+        Concrete implementation of the BaseIngestion.process_users abstract method
 
-            :param start_date: the initial datetime from which the users are considered
-            :type start_date: datetime (with tzinfo=datetime.timezone.utc)
-            :param end_date: the final datetime within which the users are considered
-            :type end_date: datetime (with tzinfo=datetime.timezone.utc)
+        :param start_date: the initial datetime from which the users are considered
+        :type start_date: datetime (with tzinfo=datetime.timezone.utc)
+        :param end_date: the final datetime within which the users are considered
+        :type end_date: datetime (with tzinfo=datetime.timezone.utc)
 
-            :return: list of users strings that logged in Opensearch
-            :rtype: list
-            """
+        :return: list of users strings that logged in Opensearch
+        :rtype: list
+        """
         response = None  # Initialize the response variable
         self.logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
         users_list = []
@@ -55,8 +55,7 @@ class OpensearchIngestion(BaseIngestion):
                 }
             },
             # making change to already committed code on the basis that the dynamic templates stores all strings as keywords so having user.name.keyword will cause program to fail
-            "aggs": {
-                "login_user": {"terms": {"field": "user.name", "size": self.ingestion_config["bucket_size"]}}},
+            "aggs": {"login_user": {"terms": {"field": "user.name", "size": self.ingestion_config["bucket_size"]}}},
         }
         try:
             response = self.client.search(index=self.ingestion_config["indexes"], body=query)
@@ -67,7 +66,7 @@ class OpensearchIngestion(BaseIngestion):
         except Exception as e:
             self.logger.error(f"Exception while quering opensearch: {e}")
         # Only access response if it exists
-        if response and 'aggregations' in response and 'login_user' in response['aggregations']:
+        if response and "aggregations" in response and "login_user" in response["aggregations"]:
             self.logger.info(f"Successfully got {len(response['aggregations']['login_user']['buckets'])} users")
             for user in response["aggregations"]["login_user"]["buckets"]:
                 users_list.append(user["key"])
@@ -122,15 +121,13 @@ class OpensearchIngestion(BaseIngestion):
         except Exception as e:
             self.logger.error(f"Exception while querying opensearch:{e}")
         # only access response if it exists and has the expected structure
-        if response and 'hits' in response and 'hits' in response['hits']:
+        if response and "hits" in response and "hits" in response["hits"]:
             # Process hits into standardized format
             self.logger.info(f"Got {len(response['hits']['hits'])} logins or the user {username} to be normalized")
 
             for hit in response["hits"]["hits"]:
                 tmp = {
-                    "_index": "fw-proxy" if hit.get("_index",
-                                                    "").startswith("fw-") else hit.get("_index",
-                                                                                       "").split("-")[0],
+                    "_index": "fw-proxy" if hit.get("_index", "").startswith("fw-") else hit.get("_index", "").split("-")[0],
                     "_id": hit["_id"],
                 }
                 # Add source data to the tmp dict
