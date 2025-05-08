@@ -501,7 +501,7 @@ class TestViews(APITestCase):
             expected_count = details["count"]
             if country_code in data["countries"]:
                 self.assertGreaterEqual(data["countries"][country_code], expected_count, f"Expected at least {expected_count} logins for country {country}")
-                
+
     def test_export_alerts_csv(self):
         """Test the CSV export endpoint returns the correct headers and only intended rows."""
         # Identify our target alerts
@@ -527,18 +527,18 @@ class TestViews(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check headers
-        self.assertEqual(response['Content-Type'], 'text/csv')
-        self.assertIn('attachment; filename="alerts.csv"', response['Content-Disposition'])
+        self.assertEqual(response["Content-Type"], "text/csv")
+        self.assertIn('attachment; filename="alerts.csv"', response["Content-Disposition"])
 
         # Parse CSV
-        lines = response.content.decode('utf-8').splitlines()
-        header = lines[0].split(',')
-        self.assertEqual(header, ['timestamp', 'username', 'alert_name', 'description', 'is_filtered'])
+        lines = response.content.decode("utf-8").splitlines()
+        header = lines[0].split(",")
+        self.assertEqual(header, ["timestamp", "username", "alert_name", "description", "is_filtered"])
 
         # Expect exactly two data rows
         self.assertEqual(len(lines) - 1, 2)
         # Check that our specific timestamps are present in the rows
         rows = lines[1:]
-        vals = [r.split(',')[0] for r in rows]
-        self.assertIn(alert1.login_raw_data['timestamp'], vals)
-        self.assertIn(alert2.login_raw_data['timestamp'], vals)
+        vals = [r.split(",")[0] for r in rows]
+        self.assertIn(alert1.login_raw_data["timestamp"], vals)
+        self.assertIn(alert2.login_raw_data["timestamp"], vals)
