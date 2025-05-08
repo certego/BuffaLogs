@@ -501,3 +501,44 @@ class TestViews(APITestCase):
             expected_count = details["count"]
             if country_code in data["countries"]:
                 self.assertGreaterEqual(data["countries"][country_code], expected_count, f"Expected at least {expected_count} logins for country {country}")
+                
+    def test_export_alerts_csv(self):
+        """Test the CSV export endpoint returns the correct headers and only intended rows."""
+        # Identify our target alerts
+        alert1 = Alert.objects.get(login_raw_data__timestamp="2023-05-20T11:45:01.229Z")
+        alert2 = Alert.objects.get(login_raw_data__timestamp="2023-06-20T10:17:33.358Z")
+        # Define window
+        now = datetime.now(timezone.utc)
+        past = now - timedelta(days=1)
+        # Push all other alerts outside the window to avoid noise
+        Alert.objects.exclude(pk__in=[alert1.pk, alert2.pk]).update(created=past - timedelta(days=2))
+
+        # Set desired created timestamps
+        alert1.created = past
+        alert1.save()
+        alert2.created = now
+        alert2.save()
+
+        # Query our endpoint
+        start = past.isoformat()
+        end = now.isoformat()
+        url = f"{reverse('export_alerts_csv')}?start={start}&end={end}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check headers
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertIn('attachment; filename="alerts.csv"', response['Content-Disposition'])
+
+        # Parse CSV
+        lines = response.content.decode('utf-8').splitlines()
+        header = lines[0].split(',')
+        self.assertEqual(header, ['timestamp', 'username', 'alert_name', 'description', 'is_filtered'])
+
+        # Expect exactly two data rows
+        self.assertEqual(len(lines) - 1, 2)
+        # Check that our specific timestamps are present in the rows
+        rows = lines[1:]
+        vals = [r.split(',')[0] for r in rows]
+        self.assertIn(alert1.login_raw_data['timestamp'], vals)
+        self.assertIn(alert2.login_raw_data['timestamp'], vals)
