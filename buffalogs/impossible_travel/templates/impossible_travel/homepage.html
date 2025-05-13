@@ -27,7 +27,7 @@
    <form id="export-csv-form" method="get" action="{% url 'export_alerts_csv' %}" class="d-inline">
       <input type="hidden" name="start" id="export-start" value="{{ iso_start }}">
       <input type="hidden" name="end"   id="export-end"   value="{{ iso_end }}">
-      <button type="submit" class="btn btn-secondary">
+      <button type="submit" class="btn bg-grey me-2 text-truncate text-light">
         <i class="bi bi-download"></i> Download CSV
       </button>
     </form>

@@ -70,6 +70,20 @@ def homepage(request):
         alerts_line_context = alerts_line_chart(start, now)
         world_map_context = world_map_chart(start, now)
 
+        return render(
+            request,
+            "impossible_travel/homepage.html",
+            {
+                "startdate": start_str,
+                "enddate": end_str,
+                "iso_start": iso_start,
+                "iso_end": iso_end,
+                "users_pie_context": users_pie_context,
+                "world_map_context": world_map_context,
+                "alerts_line_context": alerts_line_context,
+            },
+        )
+
     elif request.method == "POST":
         date_range = json.loads(request.POST["date_range"])
         start = parse_datetime(date_range[0])
