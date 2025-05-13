@@ -1,4 +1,12 @@
 ## 2.x.x
+### 2.3.0
+#### Features
+* Added some useful charts in the homepage to help detect user login behavior (by community - @drona-gyawali)
+* Dockerized the Node Js frontend (by community - @drona-gyawali)
+* Added the possibility to export the alerts in a CSV format from the homepage (by community - @eshant742)
+#### Bugfix
+* Fixed the detection using custom start_date and end_date in the impossible_travel management command (by community - @rskbansal)
+* Fixed the homepage ValueError given by the lack of a return statement in the view (by community - @drona-gyawali)
 ### 2.2.0
 #### Features
 * Added the `Config.risk_score_increment_alerts` field in order to permit the selection of the alerts type which increment the User risk_score value (Default: ["New Country", "Anonymous IP Login", "Atypical Country", "Imp Travel"])
