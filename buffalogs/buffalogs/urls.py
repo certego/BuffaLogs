@@ -34,7 +34,13 @@ urlpatterns = [
     path("users_pie_chart_api/", views.users_pie_chart_api, name="users_pie_chart_api"),
     path("alerts_line_chart_api/", views.alerts_line_chart_api, name="alerts_line_chart_api"),
     path("world_map_chart_api/", views.world_map_chart_api, name="world_map_chart_api"),
+    path("api/export_alerts_csv/", views.export_alerts_csv, name="export_alerts_csv"),
     path("alerts_api/", views.alerts_api, name="alerts_api"),
     path("risk_score_api/", views.risk_score_api, name="risk_score_api"),
     path("authentication/", include("authentication.urls")),
+    path("users/<int:pk>/login-timeline/", views.user_login_timeline_api, name="login_timeline_api"),
+    path("users/<int:pk>/device-usage/", views.user_device_usage_api, name="device_usage_api"),
+    path("users/<int:pk>/login-frequency/", views.user_login_frequency_api, name="login_frequency_api"),
+    path("users/<int:pk>/time-of-day/", views.user_time_of_day_api, name="time_of_day_api"),
+    path("users/<int:pk>/geo-distribution/", views.user_geo_distribution_api, name="geo_distribution_api"),
 ]
