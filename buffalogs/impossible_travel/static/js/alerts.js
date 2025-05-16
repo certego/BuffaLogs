@@ -7,22 +7,64 @@ document.addEventListener( "DOMContentLoaded", function () {
             resizable: true,
             sortable: true,
             unSortIcon: true,
-            editable: true,
+            editable: false,
+            flex: 1,
+        },
+        { 
+            field: "created",
+            headerName: "Created At",
+            resizable: true,
+            sortable: true,
+            filter: true,
+            editable: false,
+            flex: 1,
+        },
+        {
+            field: "notified",
+            headerName: "Notified",
+            resizable: true,
+            sortable: true,
+            filter: true,
+            editable: false,
+            width: 130,
+            cellRenderer: (params) => params.value ? 'Yes' : 'No',
+        },
+        {
+            field: "triggered_by",
+            headerName: "Triggered By",
+            resizable: true,
+            filter: true,
+            editable: false,
+            flex: 1,
         },
         { 
             field: "rule_name",
-            headerName: "Alert Rule Name",
+            headerName: "Name",
             resizable: true,
             filter: true,
+            editable: false,
+            flex: 1,
         },
         {
             field: "rule_desc",
-            headerName: "Alert Rule Description",
+            headerName: "Description",
             resizable: true,
             filter: true,
-            minWidth: 900,
+            editable: false,
+            minWidth: 300,
+            flex: 2,
         },
-    ]
+        {
+            field: "is_vip",
+            headerName: "VIP",
+            resizable: true,
+            filter: true,
+            width: 130,
+            editable: false,
+            cellRenderer: (params) => params.value ? 'VIP' : '—',
+        },
+    ];
+    
 
     function fetch_request() {
         fetch(window.location.href+"/get_alerts", {method: 'GET', headers: {"Accept":"application/json", 
@@ -30,10 +72,10 @@ document.addEventListener( "DOMContentLoaded", function () {
         // gestisci il successo
         .then(response => response.json())  // converti a json
         .then((data) => {
-            console.log(data)
-            gridOptions.rowData = (JSON.parse(data));   //JSON.parse(data)
-            gridOptions.api.setRowData(JSON.parse(data));
-        })  
+            console.log(data);
+            gridOptions.api.setRowData(data);
+        })
+        
         .catch(err => console.log('Request Failed', err)); // gestisci gli errori
     }
     
