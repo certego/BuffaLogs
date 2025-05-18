@@ -34,7 +34,7 @@ def load_ingestion_config_data():
 
 
 def load_example_data(name):
-    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "opensearch/", name + ".json")) as file:
+    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "elasticsearch/", name + ".json")) as file:
         data = json.load(file)
     return data
 
@@ -147,7 +147,7 @@ class OpensearchIngestionTestCase(TestCase):
         self._load_test_data_on_opensearch(data_to_be_added=self.user2_test_data, index="fw-proxy-test_data")
 
     def _load_example_template_on_opensearch(self, template_to_be_added):
-        response = self.os.indices.put_index_template(name="example_template", body=template_to_be_added)
+        response = self.os.indices.put_template(name="example_template", body=template_to_be_added)
         self.assertTrue(response["acknowledged"])
 
     def _load_test_data_on_opensearch(self, data_to_be_added: List[dict], index: str):
