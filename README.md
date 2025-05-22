@@ -81,60 +81,6 @@ After that, there are two ways of running BuffaLogs, depending on your system co
 
 *For further examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/3.-Example)*
 
-##   Logs Structure
-
-BuffaLogs is able to analyse logs coming from any source, provided that it complies with the Elastic Common Schema and with the given structure: 
-
-    ```
-    {
-        "index": "<elastic_index>",
-        "id": "<log_id>",
-        "timestamp": "<log_timestamp>",
-        "user": {
-            "name": "<user_name>"
-        },
-        "source": {
-            "geo": {
-                "country_name": "<country_origin_log>",
-                "location": {
-                    "lat": "<log_latitude>",
-                    "lon": "<log_longitude>"
-                }
-            },
-            "as": {
-                "organization": {
-                    "name": "<ISP_name>"
-                }
-            },
-            "ip": "<log_source_ip>",
-            "intelligence_category": "<intelligence_category>"
-        },
-        "user_agent": {
-            "original": "<log_device_user_agent>"
-        },
-        "event": {
-            "type": "start",
-            "category": "authentication",
-            "outcome": "success"
-        }
-    }
-
-    ```
-
-##  REST APIs
-
-Five views were implemented using DRF - Django-Rest Framework, in order to provide the possible to query and produce the charts data.
-In particular, the supplied APIs are:
-| **API's name**| **API result**|
-|---|---|
-| *users_pie_chart_api* | It returns the association between the risk level and the number of users with that risk score |
-| *alerts_line_chart_api* | It provides the number of alerts triggered in a particular timeframe |
-| *world_map_chart_api* | It supplies the relation of countries and the number of alerts triggered from them |
-| *alerts_api* | It offers the details about the alerts generated in the provided interval |
-| *risk_score_api* | It provides the association between user and risk level for the users whose risk changed in the requested timeframe |
-
-*For further details: [Wiki - REST APIs](https://github.com/certego/BuffaLogs/wiki/5.-REST-APIs)*
-
 ##  Uninstall
 
 To uninstall and remove all files, delete all containers with:
@@ -142,9 +88,6 @@ To uninstall and remove all files, delete all containers with:
 sudo docker-compose down -v
 ```
 Then you can safely delete this repository.
-
-##  Contribution
-BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](CONTRIBUTING.md) before making any changes to the project.
 
 ## Release
 1. If needed, update the requirements in the `requirements.txt` and also into the `setup.cfg` file
@@ -157,5 +100,14 @@ BuffaLogs is an Open Source project and was developed in order to allow enrichme
 ## Licence
 This project is protected by the Apache Licence 2.0.
 
+##  Contribution
+BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](CONTRIBUTING.md) before making any changes to the project.
+
+## Authors and Maintainers
+- [Federico Foschini](https://github.com/ManofWax) – Administrator, Software Architect, and Code Reviewer
+- [Lorena Goldoni](https://github.com/Lorygold) – Lead Author, Principal Maintainer, and Code Reviewer
+- [Abheek Tripathy](https://github.com/abheektripathy) – Google Summer of Code 2024 contributor
+- [Onunwa Goodness](https://github.com/Noble-47) – Google Summer of Code 2025 contributor
+- [Kunal Gurtatta](https://github.com/kunalsz) – Google Summer of Code 2025 contributor
 
 [def]: docs/
