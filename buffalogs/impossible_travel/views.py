@@ -203,9 +203,11 @@ def get_unique_logins(request, pk_user):
 
 def get_alerts(request):
     context = []
-
+    countries = _load_data("countries")
     alerts_data = Alert.objects.select_related("user").all().order_by("-created")
     for alert in alerts_data:
+        country_code = alert.login_raw_data.get("country", "").lower()
+        country_name = countries.get(country_code, "Unknown")
         tmp = {
             "timestamp": alert.login_raw_data.get("timestamp"),
             "created": alert.created,
@@ -214,6 +216,8 @@ def get_alerts(request):
             "rule_name": alert.name,
             "rule_desc": alert.description,
             "is_vip": alert.is_vip,
+            "country": country_name,
+            "severity_type": alert.user.risk_score,
         }
         context.append(tmp)
 

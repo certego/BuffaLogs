@@ -1,31 +1,101 @@
 {% extends "impossible_travel/base.html" %} 
 {% load static %} 
-
 {% block title %} Alerts {% endblock %} 
-
 {% block head_content %} 
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/styles/ag-grid.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/styles/ag-theme-alpine.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="{% static 'css/alerts.css' %}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{% endblock %} 
-
+ 
+{% endblock %}
 {% block body_content %}
 <div class="p-3 rounded h-100 bg-grey">
-	<div class="container-title d-flex justify-content-between align-items-center text-light bg-grey">
-		<i class="fa fa-info-circle" aria-hidden="true"></i>
-	</div>
-	<div class="container-graphic mt-3"> 
-          	<div id="myGrid" class="ag-theme-alpine-dark"></div>
-	</div>
+ <div class="container-title d-flex justify-content-between align-items-center text-light bg-grey mb-3">
+ </div>
+ 
+ <!-- Filter Section -->
+ <div class="filter-section text-light">
+   <div class="d-flex justify-content-between align-items-center mb-3">
+     <h5 class="m-0">Filters</h5>
+     <button id="clear-all-filters" class="btn btn-sm btn-outline-light">
+       <i class="bi bi-x-circle"></i> Clear All
+     </button>
+   </div>
+   
+   <div class="filter-container">
+     <!-- Search Bar -->
+     <div class="filter-group">
+       <label for="search-input">Search</label>
+       <div class="input-group">
+         <input type="text" id="search-input" class="form-control" placeholder="Search alerts...">
+         <button class="btn btn-outline-secondary" type="button" id="search-button">
+           <i class="bi bi-search"></i>
+         </button>
+       </div>
+     </div>
+     
+     <!-- Alert Type Filter -->
+     <div class="filter-group">
+       <label for="alert-type-filter">Alert Type</label>
+       <select id="alert-type-filter" class="form-select">
+         <option value="">All Types</option>
+       </select>
+     </div>
+     
+     <!-- Severity Filter -->
+     <div class="filter-group">
+       <label for="severity-filter">Severity</label>
+       <select id="severity-filter" class="form-select">
+         <option value="">All Severities</option>
+       </select>
+     </div>
+
+     <div class="filter-group">
+      <label for="country-filter">Country</label>
+      <select id="country-filter" class="form-select">
+        <option value="">Country</option>
+      </select>
+    </div>
+    
+     <!-- Date Range Filter -->
+     <div class="filter-group">
+       <label for="date-range">Date Range</label>
+       <div class="input-group">
+         <input type="text" id="date-range" class="form-control" placeholder="Select date range">
+         <button class="btn btn-outline-secondary" type="button" id="clear-date-range">
+           <i class="bi bi-x"></i>
+         </button>
+       </div>
+     </div>
+          
+     <!-- VIP Filter -->
+     <div class="filter-group" style="display: inline-block; vertical-align: top; margin-left: 10px;">
+      <label for="vip-filter" style="display: block; margin-bottom: 4px;">VIP Status</label>
+      <select id="vip-filter" class="form-select" style="width: auto; display: block;">
+        <option value="">All</option>
+        <option value="true">VIP Only</option>
+        <option value="false">Non-VIP Only</option>
+      </select>
+    </div>
+
+   <!-- Active Filters Display -->
+   <div class="active-filters">
+     <div id="active-filters-container" class="d-flex flex-wrap"></div>
+   </div>
+ </div>
+ 
+ <!-- Grid Container -->
+ <div class="container-graphic mt-3">
+   <div id="myGrid" class="ag-theme-alpine-dark"></div>
+ </div>
 </div>
 {% endblock %} 
-
-
 {% block extend_scripts %} 
-    <!-- Include the JS for AG Grid -->
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@29.3.3/dist/ag-grid-community.min.noStyle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="{% static 'js/alerts.js' %}"></script>
 {% endblock %}
