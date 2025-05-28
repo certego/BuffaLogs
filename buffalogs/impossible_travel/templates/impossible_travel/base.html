@@ -40,8 +40,14 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'users' %}active{% endif %}" href="{% url 'users' %}">
-                                <i class="bi bi-people-fill"></i>
+                                <i class="bi bi-people"></i>
                                 <span>Users</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'alerts' %}active{% endif %}" href="{% url 'alerts' %}">
+                                <i class="bi bi-bell"></i>
+                                <span>Alerts</span>
                             </a>
                         </li>
                     </ul>
@@ -66,7 +72,9 @@
                             {% if request.resolver_match.url_name == 'homepage' %}
                                 Dashboard
                             {% elif request.resolver_match.url_name == 'users' %}
-                                Users
+                                Login Activity Dashboard
+                            {% elif request.resolver_match.url_name == 'alerts' %}
+                                Alerts Details
                             {% endif %}
                         </h1>
                     </div>
