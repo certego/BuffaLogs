@@ -56,6 +56,9 @@
     },
     "microsoftteams" : {
         "webhook_url" : "https://example.com/webhook/id/webhook/unique-id/token"
+    },
+    "googlechat" : {
+        "webhook_url" : "https://chat.googleapis.com/v1/spaces/WEBHOOK"
     }
 
 }
