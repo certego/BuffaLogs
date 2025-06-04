@@ -3,6 +3,7 @@ import json
 import os
 from collections import defaultdict
 from datetime import timedelta
+from functools import wraps
 
 from dateutil.parser import isoparse
 from dateutil.relativedelta import relativedelta
@@ -36,10 +37,18 @@ def _load_data(name):
 
 def user_view(template_name):
     def view_decorator(func):
-        def wrapper(request, pk_user):
-            user = get_object_or_404(User, pk=pk_user)
-            context = {"pk_user": pk_user, "user": user}
-            extra_context = func(request, pk_user) if func else {}
+        @wraps(func)
+        def wrapper(request, pk_user=None):
+            context = {}
+            if pk_user is not None:
+                user = get_object_or_404(User, pk=pk_user)
+                context.update({"pk_user": pk_user, "user": user})
+            # fx can be supported with and without additional args(pk_users)
+            if pk_user is not None:
+                extra_context = func(request, pk_user)
+            else:
+                extra_context = func(request)
+
             if extra_context:
                 context.update(extra_context)
             return render(request, template_name, context)
@@ -162,7 +171,7 @@ def all_logins(request, pk_user):
 
 
 @user_view("impossible_travel/alerts.html")
-def alerts(request, pk_user):
+def alerts(request):
     return {}
 
 
@@ -192,17 +201,27 @@ def get_unique_logins(request, pk_user):
     return JsonResponse(json.dumps(context, default=str), safe=False)
 
 
-def get_alerts(request, pk_user):
+def get_alerts(request):
     context = []
-    alerts_data = Alert.objects.filter(user_id=pk_user).values()
-    for raw in range(len(alerts_data) - 1, -1, -1):
+    countries = _load_data("countries")
+    alerts_data = Alert.objects.select_related("user").all().order_by("-created")
+    for alert in alerts_data:
+        country_code = alert.login_raw_data.get("country", "").lower()
+        country_name = countries.get(country_code, "Unknown")
         tmp = {
-            "timestamp": alerts_data[raw]["login_raw_data"]["timestamp"],
-            "rule_name": alerts_data[raw]["name"],
-            "rule_desc": alerts_data[raw]["description"],
+            "timestamp": alert.login_raw_data.get("timestamp"),
+            "created": alert.created,
+            "notified": alert.notified,
+            "triggered_by": alert.user.username,
+            "rule_name": alert.name,
+            "rule_desc": alert.description,
+            "is_vip": alert.is_vip,
+            "country": country_name,
+            "severity_type": alert.user.risk_score,
         }
         context.append(tmp)
-    return JsonResponse(json.dumps(context, default=str), safe=False)
+
+    return JsonResponse(context, safe=False, json_dumps_params={"default": str})
 
 
 def get_users(request):

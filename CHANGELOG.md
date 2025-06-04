@@ -1,4 +1,8 @@
 ## 2.x.x
+### 2.4.0
+#### Features
+* Added tests for the Opensearch ingestion source (by community - @sofie204)
+* Added a new "alerts" page in the frontend with charts and filters (by community - @drona-gyawali)
 ### 2.3.0
 #### Features
 * Added some useful charts in the homepage to help detect user login behavior (by community - @drona-gyawali)
