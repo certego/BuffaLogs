@@ -56,6 +56,11 @@
     },
     "microsoftteams" : {
         "webhook_url" : "https://example.com/webhook/id/webhook/unique-id/token"
+    },
+    "rocketchat" : {
+        "webhook_url" : "YOUR_WEBHOOK_URL",
+        "username" : "YOUR_USERNAME",
+        "channel" : "#YOUR_CHANNEL"
     }
 
 }

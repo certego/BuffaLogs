@@ -18,6 +18,7 @@ class BaseAlerting(ABC):
         PUSHOVER = "pushover"
         DISCORD = "discord"
         MICROSOFTTEAMS = "microsoftteams"
+        ROCKETCHAT = "rocketchat"
 
     def __init__(self):
         super().__init__()
