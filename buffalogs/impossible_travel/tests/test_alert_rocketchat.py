@@ -10,7 +10,7 @@ class TestRocketChatAlerting(TestCase):
     def setUp(self):
         """Set up test data before running tests."""
 
-        self.rocketchat_config = {"webhook_url": "YOUR_WEBHOOK_URL", "username": "YOUR_USERNAME", "channel": "#YOUR_CHANNEL"}
+        self.rocketchat_config = {"webhook_url": "https://example.com/webhook/", "username": "YOUR_USERNAME", "channel": "#YOUR_CHANNEL"}
         self.rocketchat_alerting = RocketChatAlerting(self.rocketchat_config)
 
         # Create a dummy user
@@ -31,12 +31,12 @@ class TestRocketChatAlerting(TestCase):
 
         expected_payload = rocketchat_message = {
             "text": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
-            "username": "#YOUR_USERNAME",
+            "username": "YOUR_USERNAME",
             "channel": "#YOUR_CHANNEL",
         }
 
         mock_post.assert_called_once_with(
-            "YOU_WEBHOOK_URL",
+            "https://example.com/webhook/",
             data=expected_payload,
         )
 
