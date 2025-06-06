@@ -19,6 +19,7 @@ class BaseAlerting(ABC):
         DISCORD = "discord"
         MICROSOFTTEAMS = "microsoftteams"
         ROCKETCHAT = "rocketchat"
+        GOOGLECHAT = "googlechat"
 
     def __init__(self):
         super().__init__()
