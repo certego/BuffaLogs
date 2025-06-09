@@ -39,6 +39,8 @@ class Login(models.Model):
     index = models.TextField()
     event_id = models.TextField()
     ip = models.TextField()
+    outcome = models.CharField(max_length=15, default="success")
+    count = models.PositiveIntegerField(default=1)
 
 
 class Alert(models.Model):
