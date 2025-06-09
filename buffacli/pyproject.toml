@@ -1,0 +1,25 @@
+[project]
+name = "buffacli"
+version = "0.0.1"
+description = "A CLI tool for interacting with BuffaLogs"
+authors = [
+    { name = "Your Name", email = "you@example.com" }
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "typer",
+    "requests",
+    "rich"
+]
+
+[project.scripts]
+buffa = "buffacli.buffa:app"  # Exposes `buffa` command via Typer
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests*"]
