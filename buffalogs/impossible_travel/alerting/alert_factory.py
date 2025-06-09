@@ -8,6 +8,7 @@ from impossible_travel.alerting.dummy_alerting import DummyAlerting
 from impossible_travel.alerting.email_alerting import EmailAlerting
 from impossible_travel.alerting.googlechat_alerting import GoogleChatAlerting
 from impossible_travel.alerting.http_request import HTTPRequestAlerting
+from impossible_travel.alerting.mattermost_alerting import MattermostAlerting
 from impossible_travel.alerting.microsoft_teams_alerter import MicrosoftTeamsAlerting
 from impossible_travel.alerting.pushover_alerting import PushoverAlerting
 from impossible_travel.alerting.rocketchat_alerting import RocketChatAlerting
@@ -66,5 +67,7 @@ class AlertFactory:
                 return RocketChatAlerting(self.alert_config)
             case BaseAlerting.SupportedAlerters.GOOGLECHAT:
                 return GoogleChatAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.MATTERMOST:
+                return MattermostAlerting(self.alert_config)
             case _:
                 raise ValueError(f"Unsupported alerter: {self.active_alerter}")

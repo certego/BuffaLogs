@@ -64,6 +64,10 @@
     },
     "googlechat" : {
         "webhook_url" : "https://chat.googleapis.com/v1/spaces/WEBHOOK"
+    },
+    "mattermost" : {
+        "webhook_url" : "http://your-webhook-url",
+        "username" : "Buffalogs_Alert"
     }
 
 }

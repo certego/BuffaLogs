@@ -20,6 +20,7 @@ class BaseAlerting(ABC):
         MICROSOFTTEAMS = "microsoftteams"
         ROCKETCHAT = "rocketchat"
         GOOGLECHAT = "googlechat"
+        MATTERMOST = "mattermost"
 
     def __init__(self):
         super().__init__()
