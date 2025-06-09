@@ -10,6 +10,7 @@ from impossible_travel.alerting.googlechat_alerting import GoogleChatAlerting
 from impossible_travel.alerting.http_request import HTTPRequestAlerting
 from impossible_travel.alerting.microsoft_teams_alerter import MicrosoftTeamsAlerting
 from impossible_travel.alerting.pushover_alerting import PushoverAlerting
+from impossible_travel.alerting.rocketchat_alerting import RocketChatAlerting
 from impossible_travel.alerting.slack_alerter import SlackAlerter
 from impossible_travel.alerting.telegram_alerting import TelegramAlerting
 from impossible_travel.alerting.webhook import WebHookAlerting
@@ -61,6 +62,8 @@ class AlertFactory:
                 return DiscordAlerting(self.alert_config)
             case BaseAlerting.SupportedAlerters.MICROSOFTTEAMS:
                 return MicrosoftTeamsAlerting(self.alert_config)
+            case BaseAlerting.SupportedAlerters.ROCKETCHAT:
+                return RocketChatAlerting(self.alert_config)
             case BaseAlerting.SupportedAlerters.GOOGLECHAT:
                 return GoogleChatAlerting(self.alert_config)
             case _:
