@@ -36,9 +36,8 @@ class TestPushoverAlerting(TestCase):
 
         mock_post.assert_called_once_with("https://api.pushover.net/1/messages.json", data=expected_payload)
 
-    """Use only one test at a time,usage of both test creates an error which maybe happens because
-    You are running real alert sending (which changes database state) in the same test run as unit tests (which expect a fresh database).
+    # Use only one test at a time,usage of both test creates an error which maybe happens because
+    # You are running real alert sending (which changes database state) in the same test run as unit tests (which expect a fresh database).
     def test_send_actual_alert(self):
-        #Sending actual alert message to the chat
+        # Sending actual alert message to the chat
         self.pushover_alerting.notify_alerts()
-    """

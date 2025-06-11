@@ -7,7 +7,7 @@ from impossible_travel.models import Alert
 
 class MicrosoftTeamsAlerting(BaseAlerting):
     """
-    Concrete implementation of the BaseQuery class for MicrosoftTeams.
+    Concrete implementation of the BaseQuery class for MicrosoftTeamsAlerting.
     """
 
     def __init__(self, alert_config: dict):
@@ -16,8 +16,10 @@ class MicrosoftTeamsAlerting(BaseAlerting):
         """
         super().__init__()
         self.webhook_url = alert_config.get("webhook_url")
+
         if not self.webhook_url:
-            raise ValueError("Microsoft Teams webhook URL is missing in configuration.")
+            self.logger.error("MicrosoftTeams Alerter configuration is missing required fields.")
+            raise ValueError("MicrosoftTeams Alerter configuration is missing required fields.")
 
     def notify_alerts(self):
         """
@@ -26,24 +28,23 @@ class MicrosoftTeamsAlerting(BaseAlerting):
         try:
             alerts = Alert.objects.filter(notified=False)
             for alert in alerts:
+                alert_msg = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
                 message_card = {
                     "@type": "MessageCard",
                     "@context": "http://schema.org/extensions",
                     "themeColor": "FF0000",
-                    "title": f"Security Alert: {alert.name}",
-                    "text": f"{alert.description}\n\nstay safe, BuffaLogs",
+                    "title": f"Login Anomaly Alert: {alert.name}",
+                    "text": alert_msg,
                 }
 
-                response = requests.post(
+                resp = requests.post(
                     self.webhook_url,
                     headers={"Content-Type": "application/json"},
                     data=json.dumps(message_card),
                 )
-
-                response.raise_for_status()
-                self.logger.info("Alerting %s", alert.name)
+                resp.raise_for_status()
+                self.logger.info(f"MicrosoftTeams alert sent: {alert.name}")
                 alert.notified = True
                 alert.save()
-
-        except requests.exceptions.RequestException as e:
-            self.logger.error(f"API error: {str(e)}")
+        except requests.RequestException as e:
+            self.logger.error(f"MicrosoftTeams alert failed for {alert.name}: {str(e)}")
