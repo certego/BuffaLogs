@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - buffacli
 
 # discard previous execution if you commit to a branch that is already running
 concurrency:
