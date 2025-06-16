@@ -2,16 +2,16 @@ import json
 from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
-from impossible_travel.alerting.discord_alerting import DiscordAlerting
+from impossible_travel.alerting.mattermost_alerting import MattermostAlerting
 from impossible_travel.models import Alert, Login, User
 
 
-class TestDiscordAlerting(TestCase):
+class TestMattermostAlerting(TestCase):
     def setUp(self):
         """Set up test data before running tests."""
 
-        self.discord_config = {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs Alert"}
-        self.discord_alerting = DiscordAlerting(self.discord_config)
+        self.mattermost_config = {"webhook_url": "http://your-webhook-url", "username": "Buffalogs_Alert"}
+        self.mattermost_alerting = MattermostAlerting(self.mattermost_config)
 
         # Create a dummy user
         self.user = User.objects.create(username="testuser")
@@ -27,25 +27,18 @@ class TestDiscordAlerting(TestCase):
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        self.discord_alerting.notify_alerts()
+        self.mattermost_alerting.notify_alerts()
 
         expected_payload = {
-            "username": "BuffaLogs Alert",
-            "embeds": [
-                {
-                    "title": "Login Anomaly Alert: Imp Travel",
-                    "description": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
-                    "color": 16711680,
-                }
-            ],
+            "text": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+            "username": "Buffalogs_Alert",
         }
 
         mock_post.assert_called_once_with(
-            "https://discord.com/api/webhooks/WEBHOOK",
-            headers={"Content-Type": "application/json"},
-            data=json.dumps(expected_payload),
+            "http://your-webhook-url",
+            json=expected_payload,
         )
 
     def test_send_actual_alert(self):
         # Sending actual alert message to the chat
-        self.discord_alerting.notify_alerts()
+        self.mattermost_alerting.notify_alerts()

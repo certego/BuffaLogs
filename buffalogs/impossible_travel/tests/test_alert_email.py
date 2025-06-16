@@ -16,6 +16,7 @@ class TestEmailAlerting(TestCase):
             "email_host_user": "SENDER_EMAIL_ADDRESS",
             "email_host_password": "SENDER_APP_PASSWORD",
             "default_from_email": "BuffaLogs Alerts SENDER_EMAIL_ADDRESS",
+            "recipient_list": ["RECEIVER_EMAIL_ADDRESS"],
         }
         self.email_alerting = EmailAlerting(self.email_config)
 

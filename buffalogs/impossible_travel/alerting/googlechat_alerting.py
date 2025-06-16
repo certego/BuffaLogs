@@ -5,15 +5,18 @@ from impossible_travel.models import Alert
 
 class GoogleChatAlerting(BaseAlerting):
     """
-    Implementation of the BaseAlerting class for GoogleChat Alerts.
+    Concrete implementation of the BaseQuery class for GoogleChatAlerting.
     """
 
     def __init__(self, alert_config: dict):
         """
-        Initialize the GoogleChat Alerting class.
+        Constructor for the GoogleChat Alerter query object.
         """
         super().__init__()
         self.webhook_url = alert_config.get("webhook_url")
+        if not self.webhook_url:
+            self.logger.error("GoogleChat Alerter configuration is missing required fields.")
+            raise ValueError("GoogleChat Alerter configuration is missing required fields.")
 
     def notify_alerts(self):
         """
@@ -44,11 +47,11 @@ class GoogleChatAlerting(BaseAlerting):
                     ]
                 }
 
-                response = requests.post(self.webhook_url, json=message)
-
-                self.logger.info("Alert:%s sent to GoogleChat", alert.name)
+                resp = requests.post(self.webhook_url, json=message)
+                resp.raise_for_status()
+                self.logger.info(f"GoogleChat alert sent: {alert.name}")
                 alert.notified = True
                 alert.save()
 
-        except Exception as e:
-            self.logger.error(f"Error sending GoogleChat alert: {str(e)}")
+        except requests.RequestException as e:
+            self.logger.error(f"GoogleChat alert failed for {alert.name}: {str(e)}")

@@ -1,0 +1,193 @@
+import json
+from datetime import timedelta
+
+from dateutil.relativedelta import relativedelta
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
+from django.shortcuts import render
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import is_naive, make_aware
+from django.views.decorators.http import require_http_methods
+from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
+from impossible_travel.models import Alert, Login, User
+from impossible_travel.views.utils import aggregate_alerts_interval, load_data
+
+
+def homepage(request):
+    end_str = timezone.now()
+    start_str = end_str - timedelta(days=1)
+    users_pie_context = None
+    world_map_context = None
+    alerts_line_context = None
+    if request.method == "GET":
+        now = timezone.now()
+        # human-readable strings for display
+        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_str = start.strftime("%B %-d, %Y")
+        end_str = now.strftime("%B %-d, %Y")
+
+        # ISO strings for machine use (CSV export)
+        iso_start = start.isoformat()
+        iso_end = now.isoformat()
+
+        users_pie_context = users_pie_chart(start, now)
+        alerts_line_context = alerts_line_chart(start, now)
+        world_map_context = world_map_chart(start, now)
+
+        return render(
+            request,
+            "impossible_travel/homepage.html",
+            {
+                "startdate": start_str,
+                "enddate": end_str,
+                "iso_start": iso_start,
+                "iso_end": iso_end,
+                "users_pie_context": users_pie_context,
+                "world_map_context": world_map_context,
+                "alerts_line_context": alerts_line_context,
+            },
+        )
+
+    elif request.method == "POST":
+        date_range = json.loads(request.POST["date_range"])
+        start = parse_datetime(date_range[0])
+        start_str = start.strftime("%B %-d, %Y")
+        end = parse_datetime(date_range[1])
+        end_str = end.strftime("%B %-d, %Y")
+        users_pie_context = users_pie_chart(start, end)
+        alerts_line_context = alerts_line_chart(start, end)
+        world_map_context = world_map_chart(start, end)
+
+        return render(
+            request,
+            "impossible_travel/homepage.html",
+            {
+                # human-readable
+                "startdate": start_str,
+                "enddate": end_str,
+                # ISO (for the CSV-export hidden inputs)
+                "iso_start": iso_start,
+                "iso_end": iso_end,
+                "users_pie_context": users_pie_context,
+                "world_map_context": world_map_context,
+                "alerts_line_context": alerts_line_context,
+            },
+        )
+
+
+@require_http_methods(["GET"])
+def users_pie_chart_api(request):
+    start_date = parse_datetime(request.GET.get("start", ""))
+    end_date = parse_datetime(request.GET.get("end", ""))
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
+    result = {
+        "no_risk": User.objects.filter(updated__range=(start_date, end_date), risk_score="No risk").count(),
+        "low": User.objects.filter(updated__range=(start_date, end_date), risk_score="Low").count(),
+        "medium": User.objects.filter(updated__range=(start_date, end_date), risk_score="Medium").count(),
+        "high": User.objects.filter(updated__range=(start_date, end_date), risk_score="High").count(),
+    }
+    data = json.dumps(result)
+    return HttpResponse(data, content_type="json")
+
+
+@require_http_methods(["GET"])
+def world_map_chart_api(request):
+    start_date = parse_datetime(request.GET.get("start", ""))
+    end_date = parse_datetime(request.GET.get("end", ""))
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
+    countries = load_data("countries")
+    result = []
+    tmp = []
+    for key, value in countries.items():
+        country_alerts = Alert.objects.filter(
+            login_raw_data__timestamp__range=(start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")),
+            login_raw_data__country=value,
+        )
+        if country_alerts:
+            for alert in country_alerts:
+                if [alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]] not in tmp:
+                    tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
+                    result.append(
+                        {
+                            "country": key,
+                            "lat": alert.login_raw_data["lat"],
+                            "lon": alert.login_raw_data["lon"],
+                            "alerts": Alert.objects.filter(
+                                login_raw_data__country=value, login_raw_data__lat=alert.login_raw_data["lat"], login_raw_data__lon=alert.login_raw_data["lon"]
+                            ).count(),
+                        }
+                    )
+    data = json.dumps(result)
+    return HttpResponse(data, content_type="json")
+
+
+@require_http_methods(["GET"])
+def alerts_line_chart_api(request):
+    start_date = parse_datetime(request.GET.get("start", ""))
+    end_date = parse_datetime(request.GET.get("end", ""))
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
+    result = {}
+    delta_timestamp = end_date - start_date
+    if delta_timestamp.days < 1:
+        result["Timeframe"] = "hour"
+        result.update(aggregate_alerts_interval(start_date, end_date, timedelta(hours=1), "%Y-%m-%dT%H:%M:%SZ"))
+    elif delta_timestamp.days <= 31:
+        result["Timeframe"] = "day"
+        result.update(aggregate_alerts_interval(start_date, end_date, timedelta(days=1), "%Y-%m-%d"))
+    else:
+        result["Timeframe"] = "month"
+        result.update(aggregate_alerts_interval(start_date, end_date, relativedelta(months=1), "%Y-%m"))
+
+    result = {key: value for key, value in result.items()}
+
+    data = json.dumps(result)
+    return HttpResponse(data, content_type="json")
+
+
+@require_http_methods(["GET"])
+def user_login_timeline_api(request, pk):
+    """
+    API endpoint to retrieve a timeline of user logins within a specified date range.
+
+    Args:
+        request: The HTTP request object containing GET parameters 'start' and 'end' for the date range.
+        pk: The primary key of the user.
+
+    Returns:
+        JsonResponse: A JSON object containing a list of login timestamps for the user.
+    """
+    start_date = parse_datetime(request.GET.get("start", ""))
+    end_date = parse_datetime(request.GET.get("end", ""))
+
+    if not start_date or not end_date:
+        return HttpResponseBadRequest("Missing start or end date")
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return HttpResponseNotFound("User not found")
+
+    logins = Login.objects.filter(user=user, timestamp__range=(start_date, end_date)).values_list("timestamp", flat=True)
+    login_times = [login.isoformat() for login in logins]
+
+    return JsonResponse({"logins": login_times})
