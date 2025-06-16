@@ -1,0 +1,73 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Buffacli
+
+on:
+  push:
+    branches: [ buffacli ]
+  pull_request:
+    branches: [ buffacli ]
+
+jobs:
+  detect-changes:
+    name: Detect changes
+    runs-on: ubuntu-24.04
+    outputs:
+      python_code: ${{steps.diff_check.outputs.python_code}}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.base_ref }}
+      - uses: actions/checkout@v3
+        with:
+          clean: false
+      - name: Generate diffs
+        id: diff_check
+        run: |
+          git branch -a --list | cat
+          PYTHON_CODE_CHANGES=$(git diff --compact-summary origin/${{ github.base_ref }} -- buffacli/* | wc -l)
+          echo "::set-output name=python_code::$PYTHON_CODE_CHANGES"
+
+  build:
+    runs-on: ubuntu-24.04
+    needs: [ "detect-changes" ]
+    if: ${{ needs.detect-changes.outputs.python_code > 0 }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+    - name: "Cache venv"
+      id: cache_venv
+      uses: actions/cache@v3
+      with:
+        path: venv
+        key: pip-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
+    - name: Install dependencies
+      if: steps.cache_venv.outputs.cache-hit != 'true'
+      run: |
+        if [ -d "venv" ]; then rm -rf venv; fi
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install flake8 black isort pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: "Lint with black"
+      run: |
+        source venv/bin/activate
+        black ./buffacli --config .github/configurations/python_linters/.black --check --diff
+    - name: Lint with flake8
+      run: |
+        source venv/bin/activate
+        flake8 ./buffacli --config .github/configurations/python_linters/.flake8 --show-source
+    - name: "Isort check"
+      run: |
+        source venv/bin/activate
+        isort ./buffacli --sp .github/configurations/python_linters/.isort.cfg --profile black --filter-files --check-only --diff
+    - name: Test with pytest
+      run: |
+        source ./venv/bin/activate
+        pytest test_buffacli.py
