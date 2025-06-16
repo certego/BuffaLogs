@@ -16,7 +16,7 @@ jobs:
   detect-changes:
     uses: ./.github/workflows/_detect_changes.yml
     with:
-      backend_directories: buffalogs .github build
+      backend_directories: buffalogs .github build buffacli
       frontend_directories: frontend .github
       ubuntu_version: 24.04
 
@@ -95,3 +95,51 @@ jobs:
         ["3.12"]
       max_timeout: 7
       ubuntu_version: 24.04
+
+  buffacli-python:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.backend > 0 }}
+    uses: ./.github/workflows/_python.yml
+    secrets: inherit
+    with:
+      working_directory: buffacli
+      use_black: true
+      use_isort: true
+      use_flake8: true
+      use_pylint: false
+      use_bandit: false
+      use_autoflake: false
+
+      run_codeql: false
+
+      requirements_path: buffacli/requirements.txt
+      django_settings_module: buffalogs.settings.settings
+
+      check_migrations: true
+      check_requirements_licenses: false
+
+      use_postgres: true
+      postgres_db: buffalogs
+      postgres_user: default_user
+      postgres_password: password
+      postgres_version: 15
+      use_memcached: false
+      use_elastic_search: true
+      elasticsearch_version: 7.17.27
+      use_rabbitmq: false
+      use_mongo: false
+      use_celery: false
+
+      # celery_app: python_test.celery
+      # celery_queues: default
+
+      use_coverage: true
+      upload_coverage: false
+      # tags_for_slow_tests: main
+      # tags_for_manual_tests: manual
+
+      python_versions: >-
+        ["3.12"]
+      max_timeout: 7
+      ubuntu_version: 24.04
+
