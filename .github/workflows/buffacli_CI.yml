@@ -4,8 +4,6 @@
 name: Buffacli
 
 on:
-  push:
-    branches: [ buffacli ]
   pull_request:
     branches: [ buffacli ]
 
@@ -16,10 +14,10 @@ jobs:
     outputs:
       python_code: ${{steps.diff_check.outputs.python_code}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.base_ref }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           clean: false
       - name: Generate diffs
@@ -29,20 +27,20 @@ jobs:
           PYTHON_CODE_CHANGES=$(git diff --compact-summary origin/${{ github.base_ref }} -- buffacli/* | wc -l)
           echo "::set-output name=python_code::$PYTHON_CODE_CHANGES"
 
-  build:
+  run-tests:
     runs-on: ubuntu-24.04
     needs: [ "detect-changes" ]
     if: ${{ needs.detect-changes.outputs.python_code > 0 }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.12"
     - name: "Cache venv"
       id: cache_venv
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: venv
         key: pip-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
