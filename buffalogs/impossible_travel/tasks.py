@@ -69,6 +69,7 @@ def process_logs(start_date=None, end_date=None):
             process_task.start_date = start_date
             process_task.end_date = end_date
             process_task.save()
+            print("Code useless change to Test CI")
 
             usernames_list = ingestion.process_users(start_date, end_date)
 
