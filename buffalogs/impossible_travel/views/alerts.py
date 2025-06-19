@@ -6,6 +6,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
+from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, User
 from impossible_travel.views.utils import load_data
 
@@ -61,6 +62,7 @@ def export_alerts_csv(request):
 
 @require_http_methods(["GET"])
 def alerts_api(request):
+    """Filter alerts by created datetime range."""
     result = []
     start_date = parse_datetime(request.GET.get("start", ""))
     end_date = parse_datetime(request.GET.get("end", ""))
@@ -78,7 +80,8 @@ def alerts_api(request):
     return HttpResponse(data, content_type="json")
 
 
-def get_alerts(request):
+def get_user_alerts(request):
+    """Return all alerts detected for user."""
     context = []
     countries = load_data("countries")
     alerts_data = Alert.objects.select_related("user").all().order_by("-created")
@@ -102,6 +105,7 @@ def get_alerts(request):
 
 
 def get_last_alerts(request):
+    """Return the last 25 alerts detected."""
     context = []
     alerts_list = Alert.objects.all()[:25]
     for alert in alerts_list:
@@ -112,3 +116,10 @@ def get_last_alerts(request):
         }
         context.append(tmp)
     return JsonResponse(json.dumps(context, default=str), safe=False)
+
+
+@require_http_methods(["GET"])
+def alert_types(request):
+    """Return all supported alert types."""
+    alert_types = [{"alert_type": alert.value, "description": alert.label} for alert in AlertDetectionType]
+    return JsonResponse(alert_types, safe=False, json_dumps_params={"default": str})
