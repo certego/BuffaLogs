@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from django.test import TestCase
+from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.microsoft_teams_alerting import MicrosoftTeamsAlerting
 from impossible_travel.models import Alert, Login, User
 
@@ -11,7 +12,7 @@ class TestMicrosoftTeamsAlerting(TestCase):
     def setUp(self):
         """Set up test data before running tests."""
 
-        self.teams_config = self._readConfig()
+        self.teams_config = BaseAlerting.read_config("microsoftteams")
         self.teams_alerting = MicrosoftTeamsAlerting(self.teams_config)
 
         # Create a dummy user
@@ -20,13 +21,6 @@ class TestMicrosoftTeamsAlerting(TestCase):
 
         # Create an alert
         self.alert = Alert.objects.create(name="Imp Travel", user=self.user, notified=False, description="Impossible travel detected", login_raw_data={})
-
-    def _readConfig(self):
-        """Read the configuration file."""
-        config_path = "../config/buffalogs/alerting.json"
-        with open(config_path, mode="r", encoding="utf-8") as f:
-            config = json.load(f)
-        return config.get("microsoftteams", {})
 
     @patch("requests.post")
     def test_send_alert(self, mock_post):

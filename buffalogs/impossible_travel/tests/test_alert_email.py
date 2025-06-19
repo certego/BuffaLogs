@@ -2,6 +2,7 @@ import json
 
 from django.core import mail
 from django.test import TestCase, override_settings
+from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.email_alerting import EmailAlerting
 from impossible_travel.models import Alert, Login, User
 
@@ -10,7 +11,7 @@ class TestEmailAlerting(TestCase):
 
     def setUp(self):
         """Set up test data before running tests."""
-        self.email_config = self._readConfig()
+        self.email_config = BaseAlerting.read_config("email")
         self.email_alerting = EmailAlerting(self.email_config)
 
         # Create a dummy user
@@ -19,13 +20,6 @@ class TestEmailAlerting(TestCase):
 
         # Create an alert
         self.alert = Alert.objects.create(name="Imp Travel", user=self.user, notified=False, description="Impossible travel detected", login_raw_data={})
-
-    def _readConfig(self):
-        """Read the configuration file."""
-        config_path = "../config/buffalogs/alerting.json"
-        with open(config_path, mode="r", encoding="utf-8") as f:
-            config = json.load(f)
-        return config.get("email", {})
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_email_args(self):
