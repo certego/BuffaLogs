@@ -1,10 +1,13 @@
 import unittest
 
 
-class BuffacliTestCase(unittest.TestCase):
+class BuffaTestCase(unittest.TestCase):
     """Class to tests buffa.py file"""
 
     def setUp(self):
+        pass
+
+    def test_main(self):
         pass
 
 
