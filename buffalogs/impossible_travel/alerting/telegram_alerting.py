@@ -41,4 +41,4 @@ class TelegramAlerting(BaseAlerting):
                 alert.notified = True
                 alert.save()
             except requests.RequestException as e:
-                self.logger.error(f"Telegram alert failed for {alert.name}: {str(e)}")
+                self.logger.exception(f"Telegram alert failed for {alert.name}: {str(e)}")

@@ -53,4 +53,4 @@ class EmailAlerting(BaseAlerting):
                 alert.notified = True
                 alert.save()
             except Exception as e:
-                self.logger.error(f"Email alert failed for {alert.name}: {str(e)}")
+                self.logger.exception(f"Email alert failed for {alert.name}: {str(e)}")
