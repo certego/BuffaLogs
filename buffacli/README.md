@@ -42,9 +42,9 @@ pip install buffacli
 ## 📝 Usage
 
 ```bash
-buffa config set-risk-threshold --user admin --threshold 0.75
-buffa logs query --date 2025-06-01 
-buffa alert configure --enable webhook
+buffacli config set-risk-threshold --user admin --threshold 0.75
+buffacli logs query --date 2025-06-01 
+buffacli alert configure --enable webhook
 ```
 
-Run `buffa --help` for a full list of available commands and options.
+Run `buffacli --help` for a full list of available commands and options.

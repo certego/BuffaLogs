@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-buffa = "buffacli.buffa:app"  # Exposes `buffa` command via Typer
+buffacli = "buffacli.buffacli:app"  # Exposes `buffacli` command via Typer
 
 [build-system]
 requires = ["setuptools"]
