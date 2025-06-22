@@ -25,11 +25,9 @@ class MattermostAlerting(BaseAlerting):
         Execute the alerter operation.
         """
         alerts = Alert.objects.filter(notified=False)
-        if not alerts.exists():
-            return
 
-        try:
-            for alert in alerts:
+        for alert in alerts:
+            try:
                 message = {
                     "text": f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs",
                     "username": self.username,
@@ -40,5 +38,5 @@ class MattermostAlerting(BaseAlerting):
                 self.logger.info(f"Mattermost alert sent: {alert.name}")
                 alert.notified = True
                 alert.save()
-        except requests.RequestException as e:
-            self.logger.error(f"Mattermost alert failed for {alert.name}: {str(e)}")
+            except requests.RequestException as e:
+                self.logger.exception(f"Mattermost alert failed for {alert.name}: {str(e)}")
