@@ -122,15 +122,15 @@ This command allows you to customize BuffaCLI to better match your environment a
 buffacli setup [OPTIONS]
 
 ### Options:
-  * **--buffalogs-url**
-    _data type:_ TEXT
-    _default:_ http://127.0.0.1:8000
-    Sets the base URL for communicating with BuffaLogs API. 
+* **--buffalogs-url**
+    * _data type:_ TEXT
+    * _default:_ `http://127.0.0.1:8000`
+    * Sets the base URL for communicating with BuffaLogs API. 
 
  * **--config-file** 
-    _data type:_ FILE PATH
-    _default:_ `~/.buffacli.conf`
-    Path to the configuration file (e.g., buffacli.conf) that contains setup parameters.
+    * _data type:_ PATH
+    * _default:_ `~/.buffacli.conf`
+    * Path to the configuration file (e.g., buffacli.conf) that contains setup parameters.
 
 ### Example:
 - Set the BuffaLogs URL:
