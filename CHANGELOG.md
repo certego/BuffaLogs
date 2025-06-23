@@ -1,3 +1,8 @@
+## 2.6.x
+### 2.6.0
+#### Features
+* Updated some Python dependencies
+
 ## 2.5.x
 ### 2.5.0
 #### Features
