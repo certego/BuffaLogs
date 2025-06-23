@@ -1,6 +1,7 @@
 ## 2.5.x
 ### 2.5.0
 #### Features
+* Added some tests to the alerters (Google Summer of Code 2025 - @kunalsz)
 * Added the `alert_types` API endpoint to list the supported alert types (Google Summer of Code 2025 - @noble47)
 * Added Mattermost as new alerter type (Google Summer of Code 2025 - @kunalsz)
 * Added RocketChat as new alerter type (Google Summer of Code 2025 - @kunalsz)
