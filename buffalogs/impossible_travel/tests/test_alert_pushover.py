@@ -31,11 +31,9 @@ class TestPushoverAlerting(TestCase):
 
         self.pushover_alerting.notify_alerts()
 
-        expected_payload = {
-            "token": self.pushover_config["api_key"],
-            "user": self.pushover_config["user_key"],
-            "message": "Login Anomaly Alert: Imp Travel\nDear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
-        }
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
+        expected_payload = {"token": self.pushover_config["api_key"], "user": self.pushover_config["user_key"], "message": expected_alert_msg}
 
         mock_post.assert_called_once_with("https://api.pushover.net/1/messages.json", data=expected_payload)
 

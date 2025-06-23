@@ -28,10 +28,11 @@ class DiscordAlerting(BaseAlerting):
         """
         alerts = Alert.objects.filter(notified=False)
         for alert in alerts:
-            alert_msg = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
+            alert_title, alert_description = self.alert_message_formatter(alert)
+
             discord_message = {
                 "username": self.username,
-                "embeds": [{"title": f"Login Anomaly Alert: {alert.name}", "description": alert_msg, "color": 16711680}],  # red
+                "embeds": [{"title": alert_title, "description": alert_description, "color": 16711680}],  # red
             }
             headers = {"Content-Type": "application/json"}
             try:

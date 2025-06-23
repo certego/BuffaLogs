@@ -27,13 +27,14 @@ class MicrosoftTeamsAlerting(BaseAlerting):
         """
         alerts = Alert.objects.filter(notified=False)
         for alert in alerts:
-            alert_msg = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
+            alert_title, alert_description = self.alert_message_formatter(alert)
+
             message_card = {
                 "@type": "MessageCard",
                 "@context": "http://schema.org/extensions",
                 "themeColor": "FF0000",
-                "title": f"Login Anomaly Alert: {alert.name}",
-                "text": alert_msg,
+                "title": alert_title,
+                "text": alert_description,
             }
             try:
                 resp = requests.post(

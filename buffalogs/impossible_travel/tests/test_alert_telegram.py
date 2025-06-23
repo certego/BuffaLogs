@@ -33,6 +33,8 @@ class TestTelegramAlerting(TestCase):
 
         # url expected where request made
         expected_url = f"https://api.telegram.org/bot{self.telegram_config['bot_token']}/sendMessage"
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
 
         # Check that requests.post was called twice for each alert (1 chat_ids x 1 alerts = 1)
         self.assertEqual(mock_post.call_count, 1)
@@ -44,7 +46,7 @@ class TestTelegramAlerting(TestCase):
                 {
                     "json": {
                         "chat_id": f"{self.telegram_config['chat_ids'][0]}",
-                        "text": "Login Anomaly Alert: Imp Travel\nDear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+                        "text": expected_alert_msg,
                     }
                 },
             )

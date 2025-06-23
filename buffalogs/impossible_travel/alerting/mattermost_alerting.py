@@ -27,9 +27,12 @@ class MattermostAlerting(BaseAlerting):
         alerts = Alert.objects.filter(notified=False)
 
         for alert in alerts:
+            alert_title, alert_description = self.alert_message_formatter(alert)
+            alert_msg = alert_title + "\n\n" + alert_description
+
             try:
                 message = {
-                    "text": f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs",
+                    "text": alert_msg,
                     "username": self.username,
                 }
 
