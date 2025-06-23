@@ -66,6 +66,10 @@ How to create and submit a PR:
     ```bash
     bandit -c .github/configurations/python_linters/.bandit.yaml .
     ```
+    *   FawltyDeps
+    ```bash
+    fawltydeps --detailed
+    ```
 
 3.  **IF** your changes include differences in the template view, **include sceenshots of the before and after**.
 4.  **Test your changes**: Run any existing tests with the command below and create new tests if needed. Whether tests exist or not, make sure your changes don’t break the project.
