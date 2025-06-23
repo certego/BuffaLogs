@@ -39,8 +39,16 @@ class Login(models.Model):
     index = models.TextField()
     event_id = models.TextField()
     ip = models.TextField()
-    outcome = models.CharField(max_length=15, default="success")
-    count = models.PositiveIntegerField(default=1)
+    outcome = models.CharField(max_length=15, default="success", help_text="The outcome of the login attempt")
+    aggregated_login_count = models.PositiveIntegerField(
+        default=1, help_text="The number of unique aggregated login attempts matching during the aggregation window."
+    )
+    window_start = models.DateTimeField(null=True, help_text="The start timestamp of the time window during which these unique aggregated login was observed.")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user_id", "index", "country", "user_agent", "outcome", "window_start"], name="unique_login_aggregation")
+        ]
 
 
 class Alert(models.Model):
@@ -205,7 +213,9 @@ class Config(models.Model):
         default=UserRiskScoreType.NO_RISK,
         help_text="Select the risk_score that a user should overcome to send the 'USER_RISK_THRESHOLD' alert",
     )
-
+    bruteforce_window = models.PositiveIntegerField(
+        default=settings.CERTEGO_BUFFALOGS_BRUTEFORCE_MINUTES_RANGE, help_text="The time window in minutes used to detect potential brute-force login attempts."
+    )
     distance_accepted = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED,
         help_text="Minimum distance (in Km) between two logins after which the impossible travel detection starts",
