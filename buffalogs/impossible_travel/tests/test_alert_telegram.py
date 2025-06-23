@@ -4,16 +4,16 @@ from unittest.mock import MagicMock, patch
 import requests
 from django.test import TestCase
 from impossible_travel.alerting.base_alerting import BaseAlerting
-from impossible_travel.alerting.pushover_alerting import PushoverAlerting
+from impossible_travel.alerting.telegram_alerting import TelegramAlerting
 from impossible_travel.models import Alert, Login, User
 
 
-class TestPushoverAlerting(TestCase):
+class TestTelegramAlerting(TestCase):
     def setUp(self):
         """Set up test data before running tests."""
 
-        self.pushover_config = BaseAlerting.read_config("pushover")
-        self.pushover_alerting = PushoverAlerting(self.pushover_config)
+        self.telegram_config = BaseAlerting.read_config("telegram")
+        self.telegram_alerting = TelegramAlerting(self.telegram_config)
 
         # Create a dummy user
         self.user = User.objects.create(username="testuser")
@@ -29,27 +29,40 @@ class TestPushoverAlerting(TestCase):
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        self.pushover_alerting.notify_alerts()
+        self.telegram_alerting.notify_alerts()
 
-        expected_payload = {
-            "token": self.pushover_config["api_key"],
-            "user": self.pushover_config["user_key"],
-            "message": "Login Anomaly Alert: Imp Travel\nDear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
-        }
+        # url expected where request made
+        expected_url = f"https://api.telegram.org/bot{self.telegram_config['bot_token']}/sendMessage"
 
-        mock_post.assert_called_once_with("https://api.pushover.net/1/messages.json", data=expected_payload)
+        # Check that requests.post was called twice for each alert (1 chat_ids x 1 alerts = 1)
+        self.assertEqual(mock_post.call_count, 1)
+
+        # calls made
+        calls = [
+            (
+                (expected_url,),
+                {
+                    "json": {
+                        "chat_id": f"{self.telegram_config['chat_ids'][0]}",
+                        "text": "Login Anomaly Alert: Imp Travel\nDear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+                    }
+                },
+            )
+        ]
+
+        mock_post.assert_has_calls(calls, any_order=True)
 
     @patch("requests.post")
     def test_no_alerts(self, mock_post):
         """Test that no alerts are sent when there are no alerts to notify"""
         Alert.objects.all().update(notified=True)
-        self.pushover_alerting.notify_alerts()
+        self.telegram_alerting.notify_alerts()
         self.assertEqual(mock_post.call_count, 0)
 
     def test_improper_config(self):
         """Test that an error is raised if the configuration is not correct"""
         with self.assertRaises(ValueError):
-            PushoverAlerting({})
+            TelegramAlerting({})
 
     @patch("requests.post")
     def test_alert_network_failure(self, mock_post):
@@ -57,7 +70,7 @@ class TestPushoverAlerting(TestCase):
         # Simulate network/API failure
         mock_post.side_effect = requests.RequestException()
 
-        self.pushover_alerting.notify_alerts()
+        self.telegram_alerting.notify_alerts()
 
         # Reload the alert from DB to check its state
         alert = Alert.objects.get(pk=self.alert.pk)
@@ -65,4 +78,4 @@ class TestPushoverAlerting(TestCase):
 
     def test_send_actual_alert(self):
         """Test sending an actual alert"""
-        self.pushover_alerting.notify_alerts()
+        self.telegram_alerting.notify_alerts()

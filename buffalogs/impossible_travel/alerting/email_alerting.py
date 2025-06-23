@@ -6,23 +6,27 @@ from impossible_travel.models import Alert
 
 class EmailAlerting(BaseAlerting):
     """
-    Implementation of the BaseAlerting class for Email Alerts.
+    Concrete implementation of the BaseQuery class for EmailAlerting.
     """
 
     def __init__(self, alert_config: dict):
         """
-        Initialize the Email Alerting class with email settings.
+        Constructor for the Email Alerter query object.
         """
         super().__init__()
-        self.recipient_list = ["RECEIVER_EMAIL_ADDRESS"]
+        self.recipient_list = alert_config.get("recipient_list")
         self.email_config = alert_config
         self._configure_email_settings()
+
+        if not self.recipient_list or not self.email_config:
+            self.logger.error("Email Alerter configuration is missing required fields.")
+            raise ValueError("Email Alerter configuration is missing required fields.")
 
     def _configure_email_settings(self):
         """Dynamically set Django email settings without reconfiguring."""
 
         email_settings = {
-            "EMAIL_BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+            "EMAIL_BACKEND": self.email_config.get("email_backend"),
             "EMAIL_HOST": self.email_config.get("email_server"),
             "EMAIL_PORT": self.email_config.get("email_port"),
             "EMAIL_USE_TLS": self.email_config.get("email_use_tls"),
@@ -37,22 +41,16 @@ class EmailAlerting(BaseAlerting):
 
     def notify_alerts(self):
         """
-        Send email alerts for anomalies.
+        Execute the alerter operation.
         """
         alerts = Alert.objects.filter(notified=False)
-        if not alerts.exists():
-            return
-
-        # Establish SMTP connection
-        try:
-            for alert in alerts:
-                subject = f"Login Anomaly Alert: {alert.name}"
-                body = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
-
+        for alert in alerts:
+            subject = f"Login Anomaly Alert: {alert.name}"
+            body = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
+            try:
                 send_mail(subject, body, self.email_config.get("DEFAULT_FROM_EMAIL"), self.recipient_list)  # 1 if sent,0 if not
-                self.logger.info(f"Email Alert Sent: {alert.name} to {self.recipient_list}")
+                self.logger.info(f"Email alert Sent: {alert.name} to {self.recipient_list}")
                 alert.notified = True
                 alert.save()
-
-        except Exception as e:
-            self.logger.error(f"Error sending email alert: {str(e)}")
+            except Exception as e:
+                self.logger.exception(f"Email alert failed for {alert.name}: {str(e)}")

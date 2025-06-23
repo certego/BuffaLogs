@@ -1,5 +1,8 @@
+import json
+
 from django.core import mail
 from django.test import TestCase, override_settings
+from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.email_alerting import EmailAlerting
 from impossible_travel.models import Alert, Login, User
 
@@ -8,15 +11,7 @@ class TestEmailAlerting(TestCase):
 
     def setUp(self):
         """Set up test data before running tests."""
-        self.email_config = {
-            "email_backend": "django.core.mail.backends.locmem.EmailBackend",
-            "email_server": "smtp.gmail.com",
-            "email_port": 587,
-            "email_use_tls": True,
-            "email_host_user": "SENDER_EMAIL_ADDRESS",
-            "email_host_password": "SENDER_APP_PASSWORD",
-            "default_from_email": "BuffaLogs Alerts SENDER_EMAIL_ADDRESS",
-        }
+        self.email_config = BaseAlerting.read_config("email")
         self.email_alerting = EmailAlerting(self.email_config)
 
         # Create a dummy user
@@ -39,8 +34,20 @@ class TestEmailAlerting(TestCase):
 
         self.assertEqual(email.subject, "Login Anomaly Alert: Imp Travel")
         self.assertEqual(email.body, "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs")
-        self.assertEqual(email.from_email, "BuffaLogs Alerts SENDER_EMAIL_ADDRESS")
-        self.assertEqual(email.to, ["RECEIVER_EMAIL_ADDRESS"])
+        self.assertEqual(email.from_email, "BuffaLogs Alerts SENDER_EMAIL")
+        self.assertEqual(email.to, ["RECEIVER_EMAIL_ADDRESS", "RECEIVER_EMAIL_ADDRESS_2"])
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_no_alerts(self):
+        """Test that no alerts are sent when there are no alerts to notify"""
+        Alert.objects.all().update(notified=True)
+        self.email_alerting.notify_alerts()
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_improper_config(self):
+        """Test that an error is raised if the configuration is not correct"""
+        with self.assertRaises(ValueError):
+            EmailAlerting({})
 
     def test_send_email(self):
         """Actually sending the email to the recepient's address."""

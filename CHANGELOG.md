@@ -1,8 +1,23 @@
-## 2.x.x
+## 2.5.x
+### 2.5.0
+#### Features
+* Added some tests to the alerters (Google Summer of Code 2025 - @kunalsz)
+* Added the `alert_types` API endpoint to list the supported alert types (Google Summer of Code 2025 - @noble47)
+* Added Mattermost as new alerter type (Google Summer of Code 2025 - @kunalsz)
+* Added RocketChat as new alerter type (Google Summer of Code 2025 - @kunalsz)
+* Added GoogleChat as new alerter type (Google Summer of Code 2025 - @kunalsz)
+#### Changes
+* Created the `views` module in order to split the APIs
+#### Bugfix
+* Installed the curl command into the frontend Docker container to fix the healthcheck error
+
+## 2.4.x
 ### 2.4.0
 #### Features
 * Added tests for the Opensearch ingestion source (by community - @sofie204)
 * Added a new "alerts" page in the frontend with charts and filters (by community - @drona-gyawali)
+
+### 2.3.x
 ### 2.3.0
 #### Features
 * Added some useful charts in the homepage to help detect user login behavior (by community - @drona-gyawali)
@@ -11,6 +26,8 @@
 #### Bugfix
 * Fixed the detection using custom start_date and end_date in the impossible_travel management command (by community - @rskbansal)
 * Fixed the homepage ValueError given by the lack of a return statement in the view (by community - @drona-gyawali)
+
+### 2.2.x
 ### 2.2.0
 #### Features
 * Added the `Config.risk_score_increment_alerts` field in order to permit the selection of the alerts type which increment the User risk_score value (Default: ["New Country", "Anonymous IP Login", "Atypical Country", "Imp Travel"])
@@ -21,6 +38,7 @@
 #### Bugfix
 * Fixed the mismatch leading to TypeScript type‐checking errors and in order to follow the TS best practices (by community - @eshant742)
 
+### 2.1.x
 ### 2.1.2
 ### Bugfix
 * Handled splunklib import because it's a library not mandatory (if the default ingestion source used is Elasticsearch)
@@ -46,6 +64,7 @@
 * Fixed the "TypeError unique_logins() got an unexpected keyword argument 'pk_user'" in the frontend (by community - @drona-gyawali)
 * Fixed the `csrf_token` reference in the frontend homepage, required by forms to protect against Cross-Site Request Forgery (CSRF) attacks (by community - @drona-gyawali)
 
+### 2.0.x
 ### 2.0.0
 #### Features
 * Added the `Atypical Country` alert type, with the addition of the customizable field: **Config.atypical_country_days** in order to set from how many days a login from a Country is considered "Atypical"

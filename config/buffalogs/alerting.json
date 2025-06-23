@@ -1,14 +1,11 @@
 {
     "active_alerter": "discord",
     "slack": {
-        "enabled": true,
-        "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
-        "channel": "#your-channel-name"
+        "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
     },
-    "telegram": {
-        "api_base_url": "https://api.telegram.org",
-        "bot_token": "your_bot_token",
-        "chat_id": "your_chat_id"
+    "telegram":{
+        "bot_token":"BOT_TOKEN",
+        "chat_ids" : ["CHAT_ID"]
     },
     "dummy": {
         "config_field_example": "value_example"
@@ -20,7 +17,8 @@
         "email_use_tls" : "True",
         "email_host_user" : "SENDER_EMAIL",
         "email_host_password" : "SENDER_APP_PASSWORD",
-        "default_from_email" : "BuffaLogs Alerts SENDER_EMAIL"
+        "default_from_email" : "BuffaLogs Alerts SENDER_EMAIL",
+        "recipient_list" : ["RECEIVER_EMAIL_ADDRESS", "RECEIVER_EMAIL_ADDRESS_2"]
     },
     "http_request" : {
         "name" : "",
@@ -52,10 +50,23 @@
         }
     },
     "discord" : {
-        "webhook_url" : "https://discord.com/api/webhooks/WEBHOOK"
+        "webhook_url" : "https://discord.com/api/webhooks/WEBHOOK",
+        "username" : "BuffaLogs_Alert"
     },
     "microsoftteams" : {
         "webhook_url" : "https://example.com/webhook/id/webhook/unique-id/token"
+    },
+    "rocketchat" : {
+        "webhook_url" : "https://example.com/webhook/",
+        "username" : "YOUR_USERNAME",
+        "channel" : "#YOUR_CHANNEL"
+    },
+    "googlechat" : {
+        "webhook_url" : "https://chat.googleapis.com/v1/spaces/WEBHOOK"
+    },
+    "mattermost" : {
+        "webhook_url" : "http://your-webhook-url",
+        "username" : "Buffalogs_Alert"
     }
 
 }

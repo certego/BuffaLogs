@@ -4,16 +4,16 @@ from unittest.mock import MagicMock, patch
 import requests
 from django.test import TestCase
 from impossible_travel.alerting.base_alerting import BaseAlerting
-from impossible_travel.alerting.pushover_alerting import PushoverAlerting
+from impossible_travel.alerting.slack_alerting import SlackAlerting
 from impossible_travel.models import Alert, Login, User
 
 
-class TestPushoverAlerting(TestCase):
+class TestSlackAlerting(TestCase):
     def setUp(self):
         """Set up test data before running tests."""
 
-        self.pushover_config = BaseAlerting.read_config("pushover")
-        self.pushover_alerting = PushoverAlerting(self.pushover_config)
+        self.slack_config = BaseAlerting.read_config("slack")
+        self.slack_alerting = SlackAlerting(self.slack_config)
 
         # Create a dummy user
         self.user = User.objects.create(username="testuser")
@@ -29,27 +29,35 @@ class TestPushoverAlerting(TestCase):
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        self.pushover_alerting.notify_alerts()
+        self.slack_alerting.notify_alerts()
 
         expected_payload = {
-            "token": self.pushover_config["api_key"],
-            "user": self.pushover_config["user_key"],
-            "message": "Login Anomaly Alert: Imp Travel\nDear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+            "attachments": [
+                {
+                    "title": "Login Anomaly Alert: Imp Travel",
+                    "text": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+                    "color": "#ff0000",
+                }
+            ]
         }
 
-        mock_post.assert_called_once_with("https://api.pushover.net/1/messages.json", data=expected_payload)
+        mock_post.assert_called_once_with(
+            self.slack_config["webhook_url"],
+            headers={"Content-Type": "application/json"},
+            json=expected_payload,
+        )
 
     @patch("requests.post")
     def test_no_alerts(self, mock_post):
         """Test that no alerts are sent when there are no alerts to notify"""
         Alert.objects.all().update(notified=True)
-        self.pushover_alerting.notify_alerts()
+        self.slack_alerting.notify_alerts()
         self.assertEqual(mock_post.call_count, 0)
 
     def test_improper_config(self):
         """Test that an error is raised if the configuration is not correct"""
         with self.assertRaises(ValueError):
-            PushoverAlerting({})
+            SlackAlerting({})
 
     @patch("requests.post")
     def test_alert_network_failure(self, mock_post):
@@ -57,7 +65,7 @@ class TestPushoverAlerting(TestCase):
         # Simulate network/API failure
         mock_post.side_effect = requests.RequestException()
 
-        self.pushover_alerting.notify_alerts()
+        self.slack_alerting.notify_alerts()
 
         # Reload the alert from DB to check its state
         alert = Alert.objects.get(pk=self.alert.pk)
@@ -65,4 +73,4 @@ class TestPushoverAlerting(TestCase):
 
     def test_send_actual_alert(self):
         """Test sending an actual alert"""
-        self.pushover_alerting.notify_alerts()
+        self.slack_alerting.notify_alerts()
