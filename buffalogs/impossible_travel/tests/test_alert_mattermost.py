@@ -31,8 +31,11 @@ class TestMattermostAlerting(TestCase):
 
         self.mattermost_alerting.notify_alerts()
 
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
+
         expected_payload = {
-            "text": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+            "text": expected_alert_msg,
             "username": self.mattermost_config["username"],
         }
 

@@ -47,3 +47,19 @@ class BaseAlerting(ABC):
         with open(config_path, mode="r", encoding="utf-8") as f:
             config = json.load(f)
         return config.get(alerter_key, {})
+
+    @staticmethod
+    def alert_message_formatter(alert):
+        """
+        Format the alert message for notification.
+        """
+        alert_title = f"BuffaLogs - Login Anomaly Alert: {alert.name} for user {alert.user.username}"
+        alert_description = (
+            f"Dear admin,\nAn unusual login activity has been detected:\n\n"
+            f"User: {alert.user.username}\n"
+            f"Alert type: {alert.name}\n"
+            f"Alert description: {alert.description}\n\n"
+            f"The raw data relating to the login that triggered the alert is:\n{alert.login_raw_data}\n\n"
+            "Stay Safe,\nBuffalogs"
+        )
+        return alert_title, alert_description

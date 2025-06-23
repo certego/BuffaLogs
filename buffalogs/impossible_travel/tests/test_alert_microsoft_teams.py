@@ -31,12 +31,14 @@ class TestMicrosoftTeamsAlerting(TestCase):
 
         self.teams_alerting.notify_alerts()
 
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+
         expected_payload = {
             "@type": "MessageCard",
             "@context": "http://schema.org/extensions",
             "themeColor": "FF0000",
-            "title": "Login Anomaly Alert: Imp Travel",
-            "text": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+            "title": expected_alert_title,
+            "text": expected_alert_description,
         }
 
         mock_post.assert_called_once_with(

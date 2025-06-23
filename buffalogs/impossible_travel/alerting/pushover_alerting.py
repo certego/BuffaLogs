@@ -26,9 +26,9 @@ class PushoverAlerting(BaseAlerting):
         """
         alerts = Alert.objects.filter(notified=False)
         for alert in alerts:
-            alert_msg = (
-                f"Login Anomaly Alert: {alert.name}\nDear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
-            )
+            alert_title, alert_description = self.alert_message_formatter(alert)
+            alert_msg = alert_title + "\n\n" + alert_description
+
             payload = {"token": self.api_key, "user": self.user_key, "message": alert_msg}
             try:
                 resp = requests.post("https://api.pushover.net/1/messages.json", data=payload)

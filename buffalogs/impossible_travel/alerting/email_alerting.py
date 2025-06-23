@@ -45,10 +45,10 @@ class EmailAlerting(BaseAlerting):
         """
         alerts = Alert.objects.filter(notified=False)
         for alert in alerts:
-            subject = f"Login Anomaly Alert: {alert.name}"
-            body = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
+            alert_title, alert_description = self.alert_message_formatter(alert)
+
             try:
-                send_mail(subject, body, self.email_config.get("DEFAULT_FROM_EMAIL"), self.recipient_list)  # 1 if sent,0 if not
+                send_mail(alert_title, alert_description, self.email_config.get("DEFAULT_FROM_EMAIL"), self.recipient_list)  # 1 if sent,0 if not
                 self.logger.info(f"Email alert Sent: {alert.name} to {self.recipient_list}")
                 alert.notified = True
                 alert.save()

@@ -31,12 +31,14 @@ class TestDiscordAlerting(TestCase):
 
         self.discord_alerting.notify_alerts()
 
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+
         expected_payload = {
             "username": self.discord_config["username"],
             "embeds": [
                 {
-                    "title": "Login Anomaly Alert: Imp Travel",
-                    "description": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+                    "title": expected_alert_title,
+                    "description": expected_alert_description,
                     "color": 16711680,
                 }
             ],
