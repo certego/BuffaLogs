@@ -11,6 +11,7 @@ from impossible_travel.validators import validate_ips_or_network, validate_strin
 class User(models.Model):
     risk_score = models.CharField(choices=UserRiskScoreType.choices, max_length=30, null=False, default=UserRiskScoreType.NO_RISK)
     username = models.TextField(unique=True, db_index=True)
+    email = models.EmailField(max_length=255, unique=True, db_index=True, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

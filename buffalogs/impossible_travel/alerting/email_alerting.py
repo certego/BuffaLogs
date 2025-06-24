@@ -47,6 +47,7 @@ class EmailAlerting(BaseAlerting):
         for alert in alerts:
             alert_title, alert_description = self.alert_message_formatter(alert)
 
+            # Email for admin
             try:
                 send_mail(alert_title, alert_description, self.email_config.get("DEFAULT_FROM_EMAIL"), self.recipient_list)  # 1 if sent,0 if not
                 self.logger.info(f"Email alert Sent: {alert.name} to {self.recipient_list}")
@@ -54,3 +55,24 @@ class EmailAlerting(BaseAlerting):
                 alert.save()
             except Exception as e:
                 self.logger.exception(f"Email alert failed for {alert.name}: {str(e)}")
+
+            # Email for user
+            if alert.user.email:
+                alert_title = f"BuffaLogs - Login Anomaly Alert: {alert.name}"
+                alert_description = (
+                    f"Dear {alert.user.username},\nAn unusual login activity has been detected:\n\n"
+                    f"Alert type: {alert.name}\n"
+                    f"Description: {alert.description}\n"
+                    f"Please check your account for any suspicious activity.\n\n"
+                    "Stay Safe,\nBuffalogs"
+                )
+                try:
+                    send_mail(
+                        alert_title,
+                        alert_description,
+                        self.email_config.get("DEFAULT_FROM_EMAIL"),
+                        [alert.user.email],
+                    )
+                    self.logger.info(f"Email alert Sent: {alert.name} to {alert.user.email}")
+                except Exception as e:
+                    self.logger.exception(f"Email alert failed for user {alert.user.username}: {str(e)}")
