@@ -23,11 +23,17 @@ console = Console()
 
 
 @app.command()
-def alert_types(format_option: Annotated[FormatOptions, typer.Option("--format", "-f", help="specify display format")] = FormatOptions.table):
+def alert_types(
+    format_option: Annotated[FormatOptions, typer.Option("--format", "-f", help="specify display format")] = "table",
+    include_description: Annotated[bool, typer.Option(help="Include alert types description.")] = False,
+):
     """Display supported alert types."""
     url = urljoin(root_url, "api/alert_types")
     alert_types = requests.get(url).json()
-    format_option.formatter(alert_types, title="Supported Alert Types", headers=["alert_type", "description"])
+    if include_description:
+        format_option.formatter(alert_types, title="Supported Alert Types", headers=["alert_type", "description"])
+    else:
+        format_option.formatter(alert_types, title="Supported Alert Types", headers=["alert_type"])
 
 
 @app.command()

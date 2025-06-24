@@ -55,7 +55,7 @@ BuffaCLI allows users to configure various settings to tailor the tool to their 
 To specify a custom configuration file:
 
 ```bash
-buffa setup --config-path /path/to/custom/config.conf
+buffacli setup --config-path /path/to/custom/config.conf
 ```
 
 The config file must be in the **`config format`** (such as `.ini`, `.conf`, etc.), and any field defined in this file will override the default configuration.
@@ -140,8 +140,8 @@ buffacli setup [OPTIONS]
   
 - Use a configuration file:
   ```bash
-    buffa setup --config-file /path/to/config.json
+    buffacli setup --config-file /path/to/config.json
   ```
   
 
-Run `buffa --help` for a full list of available commands and options.
+Run `buffacli --help` for a full list of available commands and options.
