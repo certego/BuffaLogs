@@ -15,7 +15,7 @@ class TestEmailAlerting(TestCase):
         self.email_alerting = EmailAlerting(self.email_config)
 
         # Create a dummy user
-        self.user = User.objects.create(username="testuser")
+        self.user = User.objects.create(username="testuser", email="testuser@test.com")
         Login.objects.create(user=self.user, id=self.user.id)
 
         # Create an alert
@@ -27,17 +27,27 @@ class TestEmailAlerting(TestCase):
         self.email_alerting.notify_alerts()
 
         # Verify that an email was sent
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 2)
 
         # Verify email content
-        email = mail.outbox[0]
+        emailToAdmin = mail.outbox[0]
+        emailToUser = mail.outbox[1]
 
         expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_from_email = self.email_config.get("default_from_email")
+        expected_recipient = self.email_config.get("recipient_list")
 
-        self.assertEqual(email.subject, expected_alert_title)
-        self.assertEqual(email.body, expected_alert_description)
-        self.assertEqual(email.from_email, "BuffaLogs Alerts SENDER_EMAIL")
-        self.assertEqual(email.to, ["RECEIVER_EMAIL_ADDRESS", "RECEIVER_EMAIL_ADDRESS_2"])
+        # Checks for email sent to admin
+        self.assertEqual(emailToAdmin.subject, expected_alert_title)
+        self.assertEqual(emailToAdmin.body, expected_alert_description)
+        self.assertEqual(emailToAdmin.from_email, expected_from_email)
+        self.assertEqual(emailToAdmin.to, expected_recipient)
+
+        # Checks for email sent to user
+        self.assertEqual(emailToUser.subject, "BuffaLogs - Login Anomaly Alert: Imp Travel")
+        self.assertIn("Dear testuser", emailToUser.body)
+        self.assertEqual(emailToUser.from_email, expected_from_email)
+        self.assertEqual(emailToUser.to, [self.user.email])
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_no_alerts(self):
