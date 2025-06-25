@@ -18,6 +18,10 @@ class EmailAlerting(BaseAlerting):
         self.email_config = alert_config
         self._configure_email_settings()
 
+        if not self.recipient_list or not self.email_config:
+            self.logger.error("Email Alerter configuration is missing required fields.")
+            raise ValueError("Email Alerter configuration is missing required fields.")
+
     def _configure_email_settings(self):
         """Dynamically set Django email settings without reconfiguring."""
 
@@ -40,18 +44,13 @@ class EmailAlerting(BaseAlerting):
         Execute the alerter operation.
         """
         alerts = Alert.objects.filter(notified=False)
-        if not alerts.exists():
-            return
-
-        try:
-            for alert in alerts:
-                subject = f"Login Anomaly Alert: {alert.name}"
-                body = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
-
+        for alert in alerts:
+            subject = f"Login Anomaly Alert: {alert.name}"
+            body = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
+            try:
                 send_mail(subject, body, self.email_config.get("DEFAULT_FROM_EMAIL"), self.recipient_list)  # 1 if sent,0 if not
                 self.logger.info(f"Email alert Sent: {alert.name} to {self.recipient_list}")
                 alert.notified = True
                 alert.save()
-
-        except Exception as e:
-            self.logger.error(f"Email alert failed for {alert.name}: {str(e)}")
+            except Exception as e:
+                self.logger.exception(f"Email alert failed for {alert.name}: {str(e)}")

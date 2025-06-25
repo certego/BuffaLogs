@@ -1,6 +1,9 @@
+import json
 from unittest.mock import MagicMock, patch
 
+import requests
 from django.test import TestCase
+from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.pushover_alerting import PushoverAlerting
 from impossible_travel.models import Alert, Login, User
 
@@ -9,7 +12,7 @@ class TestPushoverAlerting(TestCase):
     def setUp(self):
         """Set up test data before running tests."""
 
-        self.pushover_config = {"api_key": "API_KEY", "user_key": "USER_TOKEN"}
+        self.pushover_config = BaseAlerting.read_config("pushover")
         self.pushover_alerting = PushoverAlerting(self.pushover_config)
 
         # Create a dummy user
@@ -29,15 +32,37 @@ class TestPushoverAlerting(TestCase):
         self.pushover_alerting.notify_alerts()
 
         expected_payload = {
-            "token": "API_KEY",
-            "user": "USER_TOKEN",
+            "token": self.pushover_config["api_key"],
+            "user": self.pushover_config["user_key"],
             "message": "Login Anomaly Alert: Imp Travel\nDear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
         }
 
         mock_post.assert_called_once_with("https://api.pushover.net/1/messages.json", data=expected_payload)
 
-    # Use only one test at a time,usage of both test creates an error which maybe happens because
-    # You are running real alert sending (which changes database state) in the same test run as unit tests (which expect a fresh database).
+    @patch("requests.post")
+    def test_no_alerts(self, mock_post):
+        """Test that no alerts are sent when there are no alerts to notify"""
+        Alert.objects.all().update(notified=True)
+        self.pushover_alerting.notify_alerts()
+        self.assertEqual(mock_post.call_count, 0)
+
+    def test_improper_config(self):
+        """Test that an error is raised if the configuration is not correct"""
+        with self.assertRaises(ValueError):
+            PushoverAlerting({})
+
+    @patch("requests.post")
+    def test_alert_network_failure(self, mock_post):
+        """Test that alert is not marked as notified if there are any Network Fails"""
+        # Simulate network/API failure
+        mock_post.side_effect = requests.RequestException()
+
+        self.pushover_alerting.notify_alerts()
+
+        # Reload the alert from DB to check its state
+        alert = Alert.objects.get(pk=self.alert.pk)
+        self.assertFalse(alert.notified)
+
     def test_send_actual_alert(self):
-        # Sending actual alert message to the chat
+        """Test sending an actual alert"""
         self.pushover_alerting.notify_alerts()

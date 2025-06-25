@@ -41,4 +41,4 @@ class DiscordAlerting(BaseAlerting):
                 alert.notified = True
                 alert.save()
             except requests.RequestException as e:
-                self.logger.error(f"Discord alert failed for {alert.name}: {str(e)}")
+                self.logger.exception(f"Discord alert failed for {alert.name}: {str(e)}")
