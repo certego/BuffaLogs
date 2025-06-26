@@ -64,7 +64,11 @@ jobs:
 
       run_codeql: false
 
-      requirements_path: buffalogs/requirements.txt
+      requirements_path: |
+        [
+          "buffalogs/requirements.txt",
+          "buffalogs/requirements_opt.txt"
+        ]
       django_settings_module: buffalogs.settings.settings
 
       check_migrations: true

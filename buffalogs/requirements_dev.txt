@@ -1,4 +1,5 @@
 # === Development-only dependencies (no production) ===
+mypy-extensions>=1.1.0           # (dev) Defines extensions to the Python standard library typing module that are supported by the mypy type checker and the mypyc compiler
 pre-commit>=4.2.0                # (dev) Git hook manager for running linters, formatters, and other checks before commit
 pipdeptree>=2.26.0               # (dev) CLI tool to visualize and inspect dependency tree of installed Python packages
 requests>=2.32.3                 # (dev) currently, the alerting module is used only in dev/tests, not in prod
