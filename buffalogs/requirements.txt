@@ -2,6 +2,8 @@
 Django>=4.2.22                        # Main Django framework (web application, ORM, admin, etc.)
 djangorestframework>=3.16             # Django REST Framework for building RESTful APIs
 djangorestframework-simplejwt>=5.4.0  # JWT authentication support for DRF
+django-cors-headers>=4.7.0            # (dev) Enables CORS headers for frontend-backend separation during development
+
 
 # === Task Queue / Background Jobs ===
 celery>=5.5.3                     # Distributed task queue for asynchronous jobs (e.g., scheduled ingestion)
