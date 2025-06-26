@@ -5,7 +5,7 @@ from celery.utils.log import get_task_logger
 from django.utils import timezone
 from impossible_travel.alerting.alert_factory import AlertFactory
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
-from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
+from impossible_travel.models import Alert, Config, Login, TaskSettings, User
 from impossible_travel.modules import detection
 
 logger = get_task_logger(__name__)

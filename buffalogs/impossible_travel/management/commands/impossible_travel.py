@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 
 from django.core.management.base import BaseCommand
-from impossible_travel.models import TaskSettings
 from impossible_travel.tasks import process_logs
 
 logger = logging.getLogger()

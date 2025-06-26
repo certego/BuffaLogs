@@ -5,7 +5,6 @@ from django.conf import settings
 from django.test import TestCase
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
-from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
 
 
 def load_test_data(name):

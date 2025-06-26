@@ -1,12 +1,10 @@
 import json
-import os
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest import mock
 
 from django.test import TestCase
 from impossible_travel.alerting.http_request import PERMITTED_LOGIN_FIELD_LIST, HTTPRequestAlerting, generate_batch
-from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, User
 
 
@@ -64,7 +62,7 @@ def get_test_server():
     server_address = ("127.0.0.1", 8000)
     try:
         server = HTTPServer(server_address, SimpleHTTPRequestHandler)
-    except Exception as e:
+    except Exception:
         return None
     server.received_data = None
     return server

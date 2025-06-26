@@ -1,6 +1,9 @@
 import json
 
-import requests
+try:
+    import requests
+except ImportError:
+    pass
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 

@@ -1,9 +1,11 @@
-autoflake==2.3.1
-bandit==1.7.9
-black==24.8.0
-isort==5.13.2
-flake8==7.1.1
-# Temporarily disabled due to incompatibility with Python 3.12
+# === Code Quality & Formatting Tools ===
+autoflake==2.3.1               # Automatically removes unused imports and unused variables
+bandit==1.8.3                  # Security linter to find common security issues in Python code
+black==25.1.0                  # Opinionated code formatter enforcing consistent style
+isort==6.0.1                  # Sorts and organizes Python imports automatically
+fawltydeps==0.20.0             # Detects unused and missing dependencies in requirements files
+flake8==7.1.2                  # Python style guide enforcement (PEP8) and linting tool
 #flake8-django @ git+https://github.com/terencehonles/flake8-django.git@a6e369e89d275dfd5514f2aa9d091aa36c5ff84b
-pylint==3.2.6
-pylint-django==2.5.5
+                               # Django-specific linting rules (disabled temporarily due to Python 3.12 incompatibility)
+pylint==3.3.5                  # Highly configurable code analysis tool for error detection and coding standards
+pylint-django==2.6.1           # Django plugin for pylint, adds Django-specific checks and best practices
