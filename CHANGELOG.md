@@ -2,6 +2,7 @@
 ### 2.6.0
 #### Features
 * Updated some Python dependencies
+* Added FawltyDeps linter - dependency checker for Python that finds undeclared and/or unused 3rd-party dependencies- for local dev
 
 ## 2.5.x
 ### 2.5.0
