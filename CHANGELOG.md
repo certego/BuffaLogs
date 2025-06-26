@@ -3,6 +3,9 @@
 #### Features
 * Updated some Python dependencies
 * Added FawltyDeps linter - dependency checker for Python that finds undeclared and/or unused 3rd-party dependencies- for local dev
+#### Changes
+* Added `requirements_opt.txt` file that collects the Python dependencies used only with specific configurations
+* Updated elasticsearch and Kibana docker image versions to 7.17.28
 
 ## 2.5.x
 ### 2.5.0
