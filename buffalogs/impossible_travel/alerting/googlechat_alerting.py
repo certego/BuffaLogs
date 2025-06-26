@@ -26,11 +26,9 @@ class GoogleChatAlerting(BaseAlerting):
         Execute the alerter operation.
         """
         alerts = Alert.objects.filter(notified=False)
-        if not alerts.exists():
-            return
 
-        try:
-            for alert in alerts:
+        for alert in alerts:
+            try:
                 message = {
                     "cards": [
                         {
@@ -56,5 +54,5 @@ class GoogleChatAlerting(BaseAlerting):
                 alert.notified = True
                 alert.save()
 
-        except requests.RequestException as e:
-            self.logger.error(f"GoogleChat alert failed for {alert.name}: {str(e)}")
+            except requests.RequestException as e:
+                self.logger.exception(f"GoogleChat alert failed for {alert.name}: {str(e)}")

@@ -45,4 +45,4 @@ class SlackAlerting(BaseAlerting):
                 alert.notified = True
                 alert.save()
             except requests.RequestException as e:
-                self.logger.error(f"Slack alert failed for {alert.name}: {str(e)}")
+                self.logger.exception(f"Slack alert failed for {alert.name}: {str(e)}")

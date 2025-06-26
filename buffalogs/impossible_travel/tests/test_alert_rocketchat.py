@@ -1,6 +1,8 @@
 from unittest.mock import MagicMock, patch
 
+import requests
 from django.test import TestCase
+from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.rocketchat_alerting import RocketChatAlerting
 from impossible_travel.models import Alert, Login, User
 
@@ -9,7 +11,7 @@ class TestRocketChatAlerting(TestCase):
     def setUp(self):
         """Set up test data before running tests."""
 
-        self.rocketchat_config = {"webhook_url": "https://example.com/webhook/", "username": "YOUR_USERNAME", "channel": "#YOUR_CHANNEL"}
+        self.rocketchat_config = BaseAlerting.read_config("rocketchat")
         self.rocketchat_alerting = RocketChatAlerting(self.rocketchat_config)
 
         # Create a dummy user
@@ -30,15 +32,39 @@ class TestRocketChatAlerting(TestCase):
 
         expected_payload = rocketchat_message = {
             "text": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
-            "username": "YOUR_USERNAME",
-            "channel": "#YOUR_CHANNEL",
+            "username": self.rocketchat_config["username"],
+            "channel": self.rocketchat_config["channel"],
         }
 
         mock_post.assert_called_once_with(
-            "https://example.com/webhook/",
+            self.rocketchat_config["webhook_url"],
             data=expected_payload,
         )
 
+    @patch("requests.post")
+    def test_no_alerts(self, mock_post):
+        """Test that no alerts are sent when there are no alerts to notify"""
+        Alert.objects.all().update(notified=True)
+        self.rocketchat_alerting.notify_alerts()
+        self.assertEqual(mock_post.call_count, 0)
+
+    def test_improper_config(self):
+        """Test that an error is raised if the configuration is not correct"""
+        with self.assertRaises(ValueError):
+            RocketChatAlerting({})
+
+    @patch("requests.post")
+    def test_alert_network_failure(self, mock_post):
+        """Test that alert is not marked as notified if there are any Network Fails"""
+        # Simulate network/API failure
+        mock_post.side_effect = requests.RequestException()
+
+        self.rocketchat_alerting.notify_alerts()
+
+        # Reload the alert from DB to check its state
+        alert = Alert.objects.get(pk=self.alert.pk)
+        self.assertFalse(alert.notified)
+
     def test_send_actual_alert(self):
-        # Sending actual alert message to the chat
+        """Test sending an actual alert"""
         self.rocketchat_alerting.notify_alerts()

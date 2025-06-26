@@ -39,4 +39,4 @@ class RocketChatAlerting(BaseAlerting):
                 alert.notified = True
                 alert.save()
             except requests.RequestException as e:
-                self.logger.error(f"RocketChat alert failed for {alert.name}: {str(e)}")
+                self.logger.exception(f"RocketChat alert failed for {alert.name}: {str(e)}")

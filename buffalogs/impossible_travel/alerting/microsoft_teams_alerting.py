@@ -28,18 +28,17 @@ class MicrosoftTeamsAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        try:
-            alerts = Alert.objects.filter(notified=False)
-            for alert in alerts:
-                alert_msg = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
-                message_card = {
-                    "@type": "MessageCard",
-                    "@context": "http://schema.org/extensions",
-                    "themeColor": "FF0000",
-                    "title": f"Login Anomaly Alert: {alert.name}",
-                    "text": alert_msg,
-                }
-
+        alerts = Alert.objects.filter(notified=False)
+        for alert in alerts:
+            alert_msg = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
+            message_card = {
+                "@type": "MessageCard",
+                "@context": "http://schema.org/extensions",
+                "themeColor": "FF0000",
+                "title": f"Login Anomaly Alert: {alert.name}",
+                "text": alert_msg,
+            }
+            try:
                 resp = requests.post(
                     self.webhook_url,
                     headers={"Content-Type": "application/json"},
@@ -49,5 +48,5 @@ class MicrosoftTeamsAlerting(BaseAlerting):
                 self.logger.info(f"MicrosoftTeams alert sent: {alert.name}")
                 alert.notified = True
                 alert.save()
-        except requests.RequestException as e:
-            self.logger.error(f"MicrosoftTeams alert failed for {alert.name}: {str(e)}")
+            except requests.RequestException as e:
+                self.logger.exception(f"MicrosoftTeams alert failed for {alert.name}: {str(e)}")
