@@ -81,7 +81,7 @@ jobs:
       postgres_version: 15
       use_memcached: false
       use_elastic_search: true
-      elasticsearch_version: 7.17.27
+      elasticsearch_version: 7.17.28
       use_rabbitmq: false
       use_mongo: false
       use_celery: false
