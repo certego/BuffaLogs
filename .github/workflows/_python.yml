@@ -390,10 +390,7 @@ jobs:
       - name: Install requirements
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
         run: |
-          echo "${{ inputs.requirements_path }}" | jq -r '.[]' | while read path; do
-            echo "Installing $path"
-            pip install -r "$path"
-          done
+          pip install -r ${{ inputs.requirements_path }}
           pip install -r requirements-dev.txt
           pip install -r requirements-linters.txt
           pip install -r requirements-docs.txt
