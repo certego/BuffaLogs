@@ -16,7 +16,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
-from impossible_travel.views import alerts, charts, logins, users
+from impossible_travel.views import alerts, charts, ingestion, logins, users
 
 urlpatterns = [
     path("", charts.homepage, name="homepage"),
@@ -44,4 +44,7 @@ urlpatterns = [
     path("authentication/", include("authentication.urls")),
     path("api/export_alerts_csv/", alerts.export_alerts_csv, name="export_alerts_csv"),
     path("api/alert_types/", alerts.alert_types, name="alert_types"),
+    path("api/ingestion/sources/", ingestion.get_ingestion_sources, name="ingestion_sources_api"),
+    path("api/ingestion/active_ingestion_source/", ingestion.get_active_ingestion_source, name="active_ingestion_source_api"),
+    path("api/ingestion/<str:source>/", ingestion.ingestion_source_config, name="ingestion_source_config_api"),
 ]
