@@ -1,5 +1,7 @@
 ## 2.6.x
 ### 2.6.0
+#### Features
+* Added healthcheck to the Postgres Docker container
 #### Changes
 * Moved documentation from Wiki to the project docs folder
 
