@@ -13,38 +13,55 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
 from django.contrib import admin
 from django.urls import include, path
 from impossible_travel.views import alerts, charts, ingestion, logins, users
 
 urlpatterns = [
-    path("", charts.homepage, name="homepage"),
+    # Admin and homepage
     path("admin/", admin.site.urls),
-    path("homepage/", charts.homepage, name="homepage"),
+    path("", charts.homepage, name="homepage"),
+    path("homepage/", charts.homepage, name="homepage"),  # Duplicate for flexibility
+
+    # User-related views
     path("users/", users.users, name="users"),
-    path("get_users/", users.get_users, name="get_users"),
+    path("get_users/", users.get_users, name="get_users"),  # Could be merged later
+
+    # Alerts-related views
     path("get_last_alerts/", alerts.get_last_alerts, name="get_last_alerts"),
-    path("users/<int:pk_user>/unique_logins/get_unique_logins", logins.get_unique_logins, name="get_unique_logins"),
-    path("users/<int:pk_user>/unique_logins", users.unique_logins, name="unique_logins"),
-    path("users/<int:pk_user>/all_logins/get_all_logins", logins.get_all_logins, name="get_all_logins"),
-    path("users/<int:pk_user>/all_logins", users.all_logins, name="all_logins"),
-    path("users/alerts/get_alerts", alerts.get_user_alerts, name="get_alerts"),
-    path("users/alerts", users.alerts, name="alerts"),
-    path("users_pie_chart_api/", charts.users_pie_chart_api, name="users_pie_chart_api"),
+    path("users/alerts/", users.alerts, name="alerts"),
+    path("users/alerts/get_alerts/", alerts.get_user_alerts, name="get_alerts"),
+    path("alerts_api/", alerts.alerts_api, name="alerts_api"),
+    path("api/export_alerts_csv/", alerts.export_alerts_csv, name="export_alerts_csv"),
+    path("api/alert_types/", alerts.alert_types, name="alert_types"),
+
+    # User login detail views (grouped by user ID)
+    path("users/<int:pk_user>/unique_logins/", users.unique_logins, name="unique_logins"),
+    path("users/<int:pk_user>/unique_logins/get_unique_logins/", logins.get_unique_logins, name="get_unique_logins"),
+    path("users/<int:pk_user>/all_logins/", users.all_logins, name="all_logins"),
+    path("users/<int:pk_user>/all_logins/get_all_logins/", logins.get_all_logins, name="get_all_logins"),
+
+    # User behavior analytics (timeline, charts)
     path("users/<int:pk>/login-timeline/", charts.user_login_timeline_api, name="login_timeline_api"),
     path("users/<int:pk>/device-usage/", users.user_device_usage_api, name="device_usage_api"),
     path("users/<int:pk>/login-frequency/", users.user_login_frequency_api, name="login_frequency_api"),
     path("users/<int:pk>/time-of-day/", users.user_time_of_day_api, name="time_of_day_api"),
     path("users/<int:pk>/geo-distribution/", users.user_geo_distribution_api, name="geo_distribution_api"),
-    path("risk_score_api/", users.risk_score_api, name="risk_score_api"),
+
+    # Chart data endpoints
+    path("users_pie_chart_api/", charts.users_pie_chart_api, name="users_pie_chart_api"),
     path("alerts_line_chart_api/", charts.alerts_line_chart_api, name="alerts_line_chart_api"),
     path("world_map_chart_api/", charts.world_map_chart_api, name="world_map_chart_api"),
-    path("alerts_api/", alerts.alerts_api, name="alerts_api"),
-    path("authentication/", include("authentication.urls")),
-    path("api/export_alerts_csv/", alerts.export_alerts_csv, name="export_alerts_csv"),
-    path("api/alert_types/", alerts.alert_types, name="alert_types"),
+
+    # Risk scoring
+    path("risk_score_api/", users.risk_score_api, name="risk_score_api"),
+
+    # Ingestion configuration and source API
     path("api/ingestion/sources/", ingestion.get_ingestion_sources, name="ingestion_sources_api"),
     path("api/ingestion/active_ingestion_source/", ingestion.get_active_ingestion_source, name="active_ingestion_source_api"),
     path("api/ingestion/<str:source>/", ingestion.ingestion_source_config, name="ingestion_source_config_api"),
+
+    # Authentication routes (modular include)
+    path("authentication/", include("authentication.urls")),
 ]
+# Note: The order of urlpatterns matters. More specific patterns should come before more general ones.
