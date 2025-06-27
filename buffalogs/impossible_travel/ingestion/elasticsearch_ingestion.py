@@ -38,7 +38,6 @@ class ElasticsearchIngestion(BaseIngestion):
             Search(index=self.ingestion_config["indexes"])
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
             .query("match", **{"event.category": "authentication"})
-            .query("match", **{"event.outcome": "success"})
             .query("match", **{"event.type": "start"})
             .query("exists", field="user.name")
         )
@@ -82,13 +81,13 @@ class ElasticsearchIngestion(BaseIngestion):
             .filter("range", **{"@timestamp": {"gte": start_date, "lt": end_date}})
             .query("match", **{"user.name": username})
             .query("match", **{"event.category": "authentication"})
-            .query("match", **{"event.outcome": "success"})
             .query("match", **{"event.type": "start"})
             .query("exists", field="source.ip")
             .source(
                 includes=[
                     "user.name",
                     "@timestamp",
+                    "event.outcome",
                     "source.geo.location.lat",
                     "source.geo.location.lon",
                     "source.geo.country_name",

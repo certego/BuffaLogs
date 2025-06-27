@@ -39,6 +39,16 @@ class Login(models.Model):
     index = models.TextField()
     event_id = models.TextField()
     ip = models.TextField()
+    outcome = models.CharField(max_length=15, default="success", help_text="The outcome of the login attempt")
+    aggregated_login_count = models.PositiveIntegerField(
+        default=1, help_text="The number of unique aggregated login attempts matching during the aggregation window."
+    )
+    window_start = models.DateTimeField(null=True, help_text="The start timestamp of the time window during which these unique aggregated login was observed.")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user_id", "index", "country", "user_agent", "outcome", "window_start"], name="unique_login_aggregation")
+        ]
 
 
 class Alert(models.Model):
