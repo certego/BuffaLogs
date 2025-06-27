@@ -1,3 +1,8 @@
+## 2.6.x
+### 2.6.0
+#### Changes
+* Moved documentation from Wiki to the project docs folder
+
 ## 2.5.x
 ### 2.5.0
 #### Features
