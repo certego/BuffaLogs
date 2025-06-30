@@ -5,7 +5,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import jwt
 from django.test import TestCase
-from impossible_travel.alerting.webhook import WEBHOOKS_DEFAULT_ALGORITHM, WEBHOOKS_DEFAULT_ISSUER_ID, WEBHOOKS_DEFAULT_TOKEN_EXPIRATION, WebHookAlerting
+from impossible_travel.alerting.webhook import WEBHOOKS_DEFAULT_ALGORITHM, WEBHOOKS_DEFAULT_ISSUER_ID, WebHookAlerting
 from impossible_travel.models import Alert, User
 
 AUDIENCE = "test_service"
@@ -56,7 +56,7 @@ def get_test_server():
     server_address = ("127.0.0.1", 8000)
     try:
         server = HTTPServer(server_address, WebhookRequestHandler)
-    except Exception as e:
+    except Exception:
         return None
     server.decoded_token = None
     return server

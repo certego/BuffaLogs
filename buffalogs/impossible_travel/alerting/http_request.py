@@ -1,7 +1,10 @@
 import os
 from functools import partial
 
-import requests
+try:
+    import requests
+except ImportError:
+    pass
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert

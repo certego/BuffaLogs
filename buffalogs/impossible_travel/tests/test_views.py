@@ -375,7 +375,7 @@ class TestViews(APITestCase):
 
         login_counts = {datetime.fromisoformat(entry["date"]).date(): entry["count"] for entry in data["daily_logins"]}
         print(login_counts)
-        base_date_key = base_date.date()
+        base_date.date()
         next_day_key = (base_date + timedelta(days=1)).date()
         expected_counts = {
             base_date.date(): daily_counts.get(0, 0) + 2,  # 2 existing logins on base date

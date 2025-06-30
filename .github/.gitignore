@@ -10,3 +10,4 @@ venv.bak/
 .idea
 celerybeat-schedule
 celerybeat-schedule.*
+*.egg-info/
