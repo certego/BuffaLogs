@@ -1,6 +1,7 @@
 ## 2.6.x
 ### 2.6.0
 #### Changes
+* Converted the Elasticsearch fake data (for tests) generator script into a Django Management Command
 * Moved documentation from Wiki to the project docs folder
 
 ## 2.5.x
