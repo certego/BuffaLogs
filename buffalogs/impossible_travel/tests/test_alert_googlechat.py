@@ -30,21 +30,13 @@ class TestGoogleChatAlerting(TestCase):
 
         self.googlechat_alerting.notify_alerts()
 
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+
         expected_payload = {
             "cards": [
                 {
-                    "header": {"title": "Login Anomaly Alert", "subtitle": "Imp Travel"},
-                    "sections": [
-                        {
-                            "widgets": [
-                                {
-                                    "textParagraph": {
-                                        "text": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs"
-                                    }
-                                }
-                            ]
-                        }
-                    ],
+                    "header": {"title": expected_alert_title},
+                    "sections": [{"widgets": [{"textParagraph": {"text": expected_alert_description}}]}],
                 }
             ]
         }

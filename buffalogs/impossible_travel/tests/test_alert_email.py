@@ -32,8 +32,10 @@ class TestEmailAlerting(TestCase):
         # Verify email content
         email = mail.outbox[0]
 
-        self.assertEqual(email.subject, "Login Anomaly Alert: Imp Travel")
-        self.assertEqual(email.body, "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs")
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+
+        self.assertEqual(email.subject, expected_alert_title)
+        self.assertEqual(email.body, expected_alert_description)
         self.assertEqual(email.from_email, "BuffaLogs Alerts SENDER_EMAIL")
         self.assertEqual(email.to, ["RECEIVER_EMAIL_ADDRESS", "RECEIVER_EMAIL_ADDRESS_2"])
 

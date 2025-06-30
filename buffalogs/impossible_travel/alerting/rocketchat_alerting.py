@@ -30,7 +30,9 @@ class RocketChatAlerting(BaseAlerting):
         """
         alerts = Alert.objects.filter(notified=False)
         for alert in alerts:
-            alert_msg = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
+            alert_title, alert_description = self.alert_message_formatter(alert)
+            alert_msg = alert_title + "\n\n" + alert_description
+
             rocketchat_message = {"text": alert_msg, "username": self.username, "channel": self.channel}
             try:
                 resp = requests.post(self.webhook_url, data=rocketchat_message)

@@ -30,11 +30,12 @@ class TestSlackAlerting(TestCase):
 
         self.slack_alerting.notify_alerts()
 
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
         expected_payload = {
             "attachments": [
                 {
-                    "title": "Login Anomaly Alert: Imp Travel",
-                    "text": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+                    "title": expected_alert_title,
+                    "text": expected_alert_description,
                     "color": "#ff0000",
                 }
             ]
