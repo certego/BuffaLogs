@@ -110,7 +110,7 @@ def get_default_ignored_ips():
     return list(settings.CERTEGO_BUFFALOGS_IGNORED_IPS)
 
 
-def get_default_ignored_ISPs():  # pylint: disable=invalid-name
+def get_default_ignored_ISPs():  
     return list(settings.CERTEGO_BUFFALOGS_IGNORED_ISPS)
 
 
@@ -229,7 +229,7 @@ class Config(models.Model):
     def clean(self):
         if not self.pk and Config.objects.exists():
             raise ValidationError("A Config object already exist - it is possible just to modify it, not to create a new one")
-        # Config.id=1 always
+        
         self.pk = 1
 
     def save(self, *args, **kwargs):
