@@ -2,7 +2,6 @@ import json
 
 from django.test import Client
 from django.urls import reverse
-from impossible_travel.constants import AlertDetectionType
 from rest_framework.test import APITestCase
 
 

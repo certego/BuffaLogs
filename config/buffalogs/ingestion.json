@@ -18,7 +18,8 @@
             "source.geo.country_name": "country",
             "source.geo.location.lat": "lat",
             "source.geo.location.lon": "lon"
-        }
+        },
+	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
     },
     "opensearch": {
         "url": "http://opensearch:9200/",
@@ -38,7 +39,8 @@
             "source.geo.country_name": "country",
             "source.geo.location.lat": "lat",
             "source.geo.location.lon": "lon"
-        }
+        },
+	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
     },
     "splunk": {
         "host": "splunk",
@@ -60,6 +62,7 @@
             "source.as.organization.name": "organization",
             "_id": "id",
             "index": "index"
-        }
+        },
+	"__custom_fields__" : ["host","port", "scheme", "username", "password", "timeout", "indexes"]
       }
 }
