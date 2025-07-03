@@ -1,6 +1,3 @@
-from io import StringIO
-from unittest.mock import MagicMock, patch
-
 from django.conf import settings
 from django.core.management import CommandError, call_command
 from django.db.models.fields import Field
@@ -146,7 +143,3 @@ class ManagementCommandsTestCase(TestCase):
         field_float, value_float = parse_field_value("vel_accepted=55.7")
         self.assertEqual(field_float, "vel_accepted")
         self.assertEqual(value_float, 55.7)
-
-    # === Tests for setup_config.py mgmt command - normalize_choice_value function ===
-    def test_normalize_choice_value_CommandError(self):
-        pass
