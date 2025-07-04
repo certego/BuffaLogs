@@ -35,8 +35,10 @@ def as_table(content: DataModel, title: str):
     """
     Prints out a table representation of content.
 
-    Content is a dictionary representation of the API response and must be
-    in the format:
+    Args:
+        content [DataModel]: Must implement the `.table` property
+
+    Expected format (of `.table` return value):
         {
             'header_1'  : [row_1, row_2, row_3],
             'header_2' : [row_1, row_2, row_3]
@@ -52,7 +54,15 @@ def as_table(content: DataModel, title: str):
 
 
 def as_json(content: DataModel, title: str):
-    "Prints out the raw JSON representation of the API response."
+    """
+    Prints out the raw JSON representation of the API response.
+
+    Args:
+        content [DataModel] : Must implement the `.json` property
+        title : str
+
+    Expected Format (of `.json` return value) : Any valid dictionary object
+    """
     json_format = json.dumps(content.json, indent=2)
     json_format = json_format[1:-1]
     json_output = re.sub(r'(".*?":)', r"[bold cyan]\1[/bold cyan]", json_format)

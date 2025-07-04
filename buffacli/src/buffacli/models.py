@@ -1,3 +1,5 @@
+import json
+
 from buffacli import config
 from yarl import URL
 
@@ -23,7 +25,7 @@ class DataModel:
 
     @property
     def raw(self):
-        return self.content
+        return json.dumps(self.content)
 
 
 class AlertType(DataModel):
@@ -47,7 +49,7 @@ class AlertType(DataModel):
 
 class Ingestion(DataModel):
 
-    def __init__(self, content: dict | list[dict], active_ingestion: bool = False, source: str | None = None):
+    def __init__(self, content: dict | list[dict]):
         self.content = content
 
     @property
