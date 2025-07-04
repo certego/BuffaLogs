@@ -15,7 +15,7 @@ class TestEmailAlerting(TestCase):
         self.email_alerting = EmailAlerting(self.email_config)
 
         # Create a dummy user
-        self.user = User.objects.create(username="testuser", email="testuser@test.com")
+        self.user = User.objects.create(username="testuser")
         Login.objects.create(user=self.user, id=self.user.id)
 
         # Create an alert
@@ -35,19 +35,20 @@ class TestEmailAlerting(TestCase):
 
         expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
         expected_from_email = self.email_config.get("default_from_email")
-        expected_recipient = self.email_config.get("recipient_list")
+        expected_recipient_list_admins = self.email_config.get("recipient_list_admins")
+        expected_recipient_list_users = self.email_config.get("recipient_list_users")
 
         # Checks for email sent to admin
         self.assertEqual(emailToAdmin.subject, expected_alert_title)
         self.assertEqual(emailToAdmin.body, expected_alert_description)
         self.assertEqual(emailToAdmin.from_email, expected_from_email)
-        self.assertEqual(emailToAdmin.to, expected_recipient)
+        self.assertEqual(emailToAdmin.to, expected_recipient_list_admins)
 
         # Checks for email sent to user
         self.assertEqual(emailToUser.subject, "BuffaLogs - Login Anomaly Alert: Imp Travel")
         self.assertIn("Dear testuser", emailToUser.body)
         self.assertEqual(emailToUser.from_email, expected_from_email)
-        self.assertEqual(emailToUser.to, [self.user.email])
+        self.assertEqual(emailToUser.to, [expected_recipient_list_users[self.user.username]])
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_no_alerts(self):
