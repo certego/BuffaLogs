@@ -2,6 +2,7 @@ import re
 from ipaddress import AddressValueError, IPv4Address, IPv4Network
 
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 def validate_string_or_regex(value):
@@ -31,3 +32,26 @@ def validate_ips_or_network(value):
                 IPv4Network(item)
             except AddressValueError:
                 raise ValidationError(f"The IP address {item} is not a valid IP")
+
+
+def validate_countries_names(value):
+    """
+    Validator for the allowed_countries field.
+    Ensures each entry is either a valid ISO 3166-1 country name or Alpha-2 code.
+    """
+
+    from impossible_travel.views.utils import get_country_validation_sets
+
+    VALID_COUNTRY_NAMES, VALID_COUNTRY_CODES = get_country_validation_sets()
+
+    if not isinstance(value, list):
+        raise ValidationError(_("allowed_countries must be a list."))
+
+    invalid_entries = []
+    for country in value:
+        if country not in VALID_COUNTRY_NAMES and country not in VALID_COUNTRY_CODES:
+            invalid_entries.append(country)
+
+    if invalid_entries:
+        readable_invalids = ", ".join(invalid_entries)
+        raise ValidationError(_(f"The following entries are not valid countries or ISO codes: {readable_invalids}"))
