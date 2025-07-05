@@ -3,7 +3,6 @@ import os
 
 from django.conf import settings
 from django.test import TestCase
-from impossible_travel.ingestion.base_ingestion import BaseIngestion
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
 
 

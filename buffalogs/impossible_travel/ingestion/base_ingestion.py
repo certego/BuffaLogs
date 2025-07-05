@@ -3,8 +3,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 
-from impossible_travel.models import User
-
 
 class BaseIngestion(ABC):
     """
