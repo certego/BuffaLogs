@@ -18,7 +18,8 @@
         "email_host_user" : "SENDER_EMAIL",
         "email_host_password" : "SENDER_APP_PASSWORD",
         "default_from_email" : "BuffaLogs Alerts SENDER_EMAIL",
-        "recipient_list" : ["RECEIVER_EMAIL_ADDRESS", "RECEIVER_EMAIL_ADDRESS_2"]
+        "recipient_list_admins" : ["RECEIVER_EMAIL_ADDRESS", "RECEIVER_EMAIL_ADDRESS_2"],
+        "recipient_list_users": {"testuser": "testuser@test.com"}
     },
     "http_request" : {
         "name" : "",
