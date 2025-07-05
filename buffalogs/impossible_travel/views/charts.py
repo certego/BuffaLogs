@@ -111,7 +111,7 @@ def world_map_chart_api(request):
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
             login_raw_data__timestamp__range=(start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")),
-            login_raw_data__country=value,
+            login_raw_data__country__iexact=key,
         )
         if country_alerts:
             for alert in country_alerts:
@@ -119,16 +119,17 @@ def world_map_chart_api(request):
                     tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
                     result.append(
                         {
-                            "country": key,
+                            "country": value.lower(),
                             "lat": alert.login_raw_data["lat"],
                             "lon": alert.login_raw_data["lon"],
                             "alerts": Alert.objects.filter(
-                                login_raw_data__country=value, login_raw_data__lat=alert.login_raw_data["lat"], login_raw_data__lon=alert.login_raw_data["lon"]
+                                login_raw_data__country__iexact=key,
+                                login_raw_data__lat=alert.login_raw_data["lat"],
+                                login_raw_data__lon=alert.login_raw_data["lon"],
                             ).count(),
                         }
                     )
-    data = json.dumps(result)
-    return HttpResponse(data, content_type="json")
+    return HttpResponse(json.dumps(result), content_type="application/json")
 
 
 @require_http_methods(["GET"])
