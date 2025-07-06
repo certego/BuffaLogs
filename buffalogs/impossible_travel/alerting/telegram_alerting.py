@@ -1,4 +1,7 @@
-import requests
+try:
+    import requests
+except ImportError:
+    pass
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -27,9 +30,9 @@ class TelegramAlerting(BaseAlerting):
         """
         alerts = Alert.objects.filter(notified=False)
         for alert in alerts:
-            alert_msg = (
-                f"Login Anomaly Alert: {alert.name}\nDear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
-            )
+            alert_title, alert_description = self.alert_message_formatter(alert)
+            alert_msg = alert_title + "\n\n" + alert_description
+
             try:
                 # sending alerts to all the trusted chat ids
                 for chat_id in self.chat_ids:

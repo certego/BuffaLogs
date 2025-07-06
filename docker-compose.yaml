@@ -12,6 +12,11 @@ services:
             - buffalogs_postgres_data:/var/lib/postgresql/data
         ports:
             - "5433:5432"
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "default_user", "-d", "buffalogs"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
     buffalogs_nginx:
         container_name: buffalogs_nginx

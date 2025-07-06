@@ -1,4 +1,3 @@
-import json
 from unittest.mock import MagicMock, patch
 
 import requests
@@ -31,8 +30,10 @@ class TestRocketChatAlerting(TestCase):
 
         self.rocketchat_alerting.notify_alerts()
 
-        expected_payload = rocketchat_message = {
-            "text": "Dear user,\n\nAn unusual login activity has been detected:\n\nImpossible travel detected\n\nStay Safe,\nBuffalogs",
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
+        expected_payload = {
+            "text": expected_alert_msg,
             "username": self.rocketchat_config["username"],
             "channel": self.rocketchat_config["channel"],
         }

@@ -1,4 +1,7 @@
-import requests
+try:
+    import requests
+except ImportError:
+    pass
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -25,22 +28,13 @@ class GoogleChatAlerting(BaseAlerting):
         alerts = Alert.objects.filter(notified=False)
 
         for alert in alerts:
+            alert_title, alert_description = self.alert_message_formatter(alert)
             try:
                 message = {
                     "cards": [
                         {
-                            "header": {"title": "Login Anomaly Alert", "subtitle": alert.name},
-                            "sections": [
-                                {
-                                    "widgets": [
-                                        {
-                                            "textParagraph": {
-                                                "text": f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
-                                            }
-                                        }
-                                    ]
-                                }
-                            ],
+                            "header": {"title": alert_title},
+                            "sections": [{"widgets": [{"textParagraph": {"text": alert_description}}]}],
                         }
                     ]
                 }

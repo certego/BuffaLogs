@@ -8,8 +8,6 @@ from impossible_travel.models import Login, User
 
 
 def get_all_logins(request, pk_user):
-    context = []
-    count = 0
     end_date = timezone.now()
     start_date = end_date + timedelta(days=-365)
     user_obj = User.objects.filter(id=pk_user)

@@ -1,4 +1,7 @@
-import requests
+try:
+    import requests
+except ImportError:
+    pass
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -26,11 +29,12 @@ class SlackAlerting(BaseAlerting):
         alerts = Alert.objects.filter(notified=False)
 
         for alert in alerts:
+            alert_title, alert_description = self.alert_message_formatter(alert)
             alert_msg = {
                 "attachments": [
                     {
-                        "title": f"Login Anomaly Alert: {alert.name}",
-                        "text": f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs",
+                        "title": alert_title,
+                        "text": alert_description,
                         "color": "#ff0000",
                     }
                 ]
