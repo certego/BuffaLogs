@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from impossible_travel.validators import validate_countries_names, validate_ips_or_network, validate_string_or_regex
+from impossible_travel.models import get_default_allowed_countries
 
 
 class ValidatorsTest(TestCase):
@@ -100,3 +101,11 @@ class ValidatorsTest(TestCase):
             # string instead of list
             validate_countries_names("Italy")
         self.assertIn("allowed_countries must be a list", str(context.exception))
+
+    def test_validate_countries_names_default_value(self):
+        """Test that the default allowed countries pass validation"""
+        default_countries = get_default_allowed_countries()
+        try:
+            validate_countries_names(default_countries)
+        except ValidationError:
+            self.fail("validate_countries_names raised ValidationError unexpectedly for default allowed countries!")

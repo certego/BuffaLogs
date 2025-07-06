@@ -34,13 +34,27 @@ def validate_ips_or_network(value):
                 raise ValidationError(f"The IP address {item} is not a valid IP")
 
 
+def get_country_validation_sets():
+    """
+    Loads country data from countries.json and returns a tuple:
+    (VALID_COUNTRY_NAMES, VALID_COUNTRY_CODES)
+    """
+    from impossible_travel.views.utils import load_data
+
+    try:
+        data = load_data("countries")
+        valid_country_names = set(data.keys())
+        valid_country_codes = set(data.values())
+        return valid_country_names, valid_country_codes
+    except FileNotFoundError:
+        return set(), set()
+
+
 def validate_countries_names(value):
     """
     Validator for the allowed_countries field.
     Ensures each entry is either a valid ISO 3166-1 country name or Alpha-2 code.
     """
-
-    from impossible_travel.views.utils import get_country_validation_sets
 
     VALID_COUNTRY_NAMES, VALID_COUNTRY_CODES = get_country_validation_sets()
 
