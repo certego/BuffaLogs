@@ -21,7 +21,7 @@ and `option` is one of the following:
 | `-o`   | Override   | Overwrites the VALUE for a given existing Config FIELD.                     |
 | `-a`   | Append     | Append the VALUE to the FIELD [only for list fields]                        |
 | `-r`   | Remove     | Removes the given VALUE from the targeted Config field.                     |
-
+| `--set-default-values` | - | Reset the default values to all the fields                           |
 
 ## Examples
 
