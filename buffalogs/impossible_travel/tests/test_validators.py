@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from impossible_travel.validators import validate_countries_names, validate_ips_or_network, validate_string_or_regex
 from impossible_travel.models import get_default_allowed_countries
+from impossible_travel.validators import validate_countries_names, validate_ips_or_network, validate_string_or_regex
 
 
 class ValidatorsTest(TestCase):
