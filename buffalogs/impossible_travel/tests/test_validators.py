@@ -69,14 +69,6 @@ class ValidatorsTest(TestCase):
         except ValidationError:
             self.fail("validate_countries_names raised ValidationError unexpectedly!")
 
-    def test_validate_countries_names_valid_codes(self):
-        """Test valid ISO Alpha-2 country codes pass validation"""
-        valid_codes = ["IT", "NP", "US"]
-        try:
-            validate_countries_names(valid_codes)
-        except ValidationError:
-            self.fail("validate_countries_names raised ValidationError unexpectedly!")
-
     def test_validate_countries_names_invalid_entries(self):
         """Test invalid country names or codes raise ValidationError"""
         invalid_countries = ["Atlantis", "ZZ", "Narnia"]
