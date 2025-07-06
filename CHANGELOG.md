@@ -1,6 +1,7 @@
 ## 2.6.x
 ### 2.6.0
 #### Features
+* Updated the `setup_config` django mgmt command to customize all the possible fields in the Config model
 * Updated some Python dependencies
 * Added FawltyDeps linter - dependency checker for Python that finds undeclared and/or unused 3rd-party dependencies- for local dev
 #### Changes
