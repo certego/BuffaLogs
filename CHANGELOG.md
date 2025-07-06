@@ -5,12 +5,11 @@
 * Created new ingestion API endpoints that let users view and configure log ingestion (Google Summer of Code 2025 - @noble47)
 * Updated some Python dependencies
 * Updated elasticsearch and Kibana docker image versions to 7.17.28
-* * Added healthcheck to the Postgres Docker container
+* Added healthcheck to the Postgres Docker container
 * Added FawltyDeps linter - dependency checker for Python that finds undeclared and/or unused 3rd-party dependencies - for local dev
 * Develop a standard alert message formatter to take in all the necessary inputs, ensures a consistent message structure across all alerting platforms (Google Summer of Code 2025 - @kunalsz)
 #### Changes
 * Added `requirements_opt.txt` file that collects the Python dependencies used only with specific configurations
-#### Changes
 * Converted the Elasticsearch fake data (for tests) generator script into a Django Management Command
 * Moved documentation from Wiki to the project docs folder
 
