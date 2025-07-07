@@ -93,7 +93,4 @@ def process_logs(start_date=None, end_date=None):
 def notify_alerts():
     active_alerters = AlertFactory().get_alert_classes()
     for alerter in active_alerters:
-        # Reset the notified status to False for each alerter
-        Alert.objects.all().update(notified=False)
-        # This will again set the notified status to True
         alerter.notify_alerts()

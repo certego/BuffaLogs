@@ -23,7 +23,13 @@ class TestAlertFactory(TestCase):
         Login.objects.create(user=self.user, id=self.user.id)
 
         # Create an alert
-        self.alert = Alert.objects.create(name="Imp Travel", user=self.user, notified=False, description="Impossible travel detected", login_raw_data={})
+        self.alert = Alert.objects.create(
+            name="Imp Travel",
+            user=self.user,
+            notified_status={"telegram": False, "slack": False, "discord": False},
+            description="Impossible travel detected",
+            login_raw_data={},
+        )
 
     def test_read_config(self):
         with patch.object(AlertFactory, "_read_config", return_value=self.config):
@@ -38,8 +44,6 @@ class TestAlertFactory(TestCase):
             alert_factory = AlertFactory()
             active_alerters = alert_factory.get_alert_classes()
             for alerter in active_alerters:
-                # Reset the notified status to false for each test
-                Alert.objects.all().update(notified=False)
                 # This will again set the notified status to True
                 alerter.notify_alerts()
 
@@ -53,8 +57,6 @@ class TestAlertFactory(TestCase):
             alert_factory = AlertFactory()
             active_alerters = alert_factory.get_alert_classes()
             for alerter in active_alerters:
-                # Reset the notified status to false for each test
-                Alert.objects.all().update(notified=False)
                 alerter.notify_alerts()
 
                 expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)

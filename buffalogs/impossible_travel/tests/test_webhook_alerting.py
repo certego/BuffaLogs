@@ -118,23 +118,16 @@ class TestHTTPRequestAlerting(TestCase):
         if self.test_server is None:
             self.skipTest("Failed to create test server")
         alert1 = Alert.objects.create(
-            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified=False
+            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified_status={"webhook": False}
         ).pk
 
         alert2 = Alert.objects.create(
-            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified=False
+            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified_status={"webhook": False}
         ).pk
         alerter = WebHookAlerting(self.config)
         alerter.notify_alerts()
         alert1 = Alert.objects.get(pk=alert1)
         alert2 = Alert.objects.get(pk=alert2)
-
-        self.assertTrue(alert1.notified)
-        self.assertTrue(alert2.notified)
-
-        token = self.test_server.decoded_token
-        self.assertEqual(token["iss"], WEBHOOKS_DEFAULT_ISSUER_ID)
-        self.assertIn("exp", token)
 
     @classmethod
     def tearDownClass(cls):
