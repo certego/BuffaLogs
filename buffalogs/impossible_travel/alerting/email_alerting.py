@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db.models import Q
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -44,7 +45,7 @@ class EmailAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(notified=False)
+        alerts = Alert.objects.filter(Q(notified_status__email=False) | ~Q(notified_status__has_key="email"))
         for alert in alerts:
             alert_title, alert_description = self.alert_message_formatter(alert)
 
@@ -71,5 +72,5 @@ class EmailAlerting(BaseAlerting):
                 except Exception as e:
                     self.logger.exception(f"Email alert failed for {alert.name}: {str(e)}")
 
-            alert.notified = True
+            alert.notified_status["email"] = True
             alert.save()

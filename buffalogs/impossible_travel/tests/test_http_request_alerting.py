@@ -144,11 +144,19 @@ class TestHTTPRequestAlerting(TestCase):
         fields = ["name", "user", "description"]
         login_data = ["lat", "lon"]
         alert1 = Alert.objects.create(
-            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified=False
+            name="New Device",
+            user=self.user,
+            login_raw_data={"lat": 40.7128, "lon": -74.0060},
+            description="test alert",
+            notified_status={"http_request": False},
         )
 
         alert2 = Alert.objects.create(
-            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified=False
+            name="Imp Travel",
+            user=self.user,
+            login_raw_data={"lat": 51.5074, "lon": -0.1278},
+            description="test alert",
+            notified_status={"http_request": False},
         )
         alerter = HTTPRequestAlerting(self.config)
         serialized = alerter.serialize_alerts([alert1, alert2], fields, login_data)
@@ -178,11 +186,19 @@ class TestHTTPRequestAlerting(TestCase):
         test_endpoint = "http://localhost:5000/alert"
 
         alert1 = Alert.objects.create(
-            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified=False
+            name="New Device",
+            user=self.user,
+            login_raw_data={"lat": 40.7128, "lon": -74.0060},
+            description="test alert",
+            notified_status={"http_request": False},
         )
 
         alert2 = Alert.objects.create(
-            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified=False
+            name="Imp Travel",
+            user=self.user,
+            login_raw_data={"lat": 51.5074, "lon": -0.1278},
+            description="test alert",
+            notified_status={"http_request": False},
         )
 
         alerts = [alert1, alert2]
@@ -193,8 +209,8 @@ class TestHTTPRequestAlerting(TestCase):
         alert1 = Alert.objects.get(pk=alert1.pk)
         alert2 = Alert.objects.get(pk=alert2.pk)
 
-        self.assertTrue(alert1.notified)
-        self.assertTrue(alert2.notified)
+        self.assertTrue(alert1.notified_status["http_request"])
+        self.assertTrue(alert2.notified_status["http_request"])
 
     @mock.patch("requests.post", side_effect=mocked_request_post_failure)
     def test_alerts_are_not_marked_as_notified_for_failed_request(self, mock_request):
@@ -202,11 +218,19 @@ class TestHTTPRequestAlerting(TestCase):
         test_endpoint = "http://localhost:5000/alert"
 
         alert1 = Alert.objects.create(
-            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified=False
+            name="New Device",
+            user=self.user,
+            login_raw_data={"lat": 40.7128, "lon": -74.0060},
+            description="test alert",
+            notified_status={"http_request": False},
         )
 
         alert2 = Alert.objects.create(
-            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified=False
+            name="Imp Travel",
+            user=self.user,
+            login_raw_data={"lat": 51.5074, "lon": -0.1278},
+            description="test alert",
+            notified_status={"http_request": False},
         )
 
         alerts = [alert1, alert2]
@@ -217,18 +241,26 @@ class TestHTTPRequestAlerting(TestCase):
         alert1 = Alert.objects.get(pk=alert1.pk)
         alert2 = Alert.objects.get(pk=alert2.pk)
 
-        self.assertFalse(alert1.notified)
-        self.assertFalse(alert2.notified)
+        self.assertFalse(alert1.notified_status["http_request"])
+        self.assertFalse(alert2.notified_status["http_request"])
 
     def test_notify_with_simple_server(self):
         if self.test_server is None:
             self.skipTest("Failed to create test server")
         alert1 = Alert.objects.create(
-            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified=False
+            name="New Device",
+            user=self.user,
+            login_raw_data={"lat": 40.7128, "lon": -74.0060},
+            description="test alert",
+            notified_status={"http_request": False},
         ).pk
 
         alert2 = Alert.objects.create(
-            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified=False
+            name="Imp Travel",
+            user=self.user,
+            login_raw_data={"lat": 51.5074, "lon": -0.1278},
+            description="test alert",
+            notified_status={"http_request": False},
         ).pk
         alerter = HTTPRequestAlerting(self.config)
         alerter.notify_alerts()
@@ -256,8 +288,8 @@ class TestHTTPRequestAlerting(TestCase):
         alert1 = Alert.objects.get(pk=alert1)
         alert2 = Alert.objects.get(pk=alert2)
 
-        self.assertTrue(alert1.notified)
-        self.assertTrue(alert2.notified)
+        self.assertTrue(alert1.notified_status["http_request"])
+        self.assertTrue(alert2.notified_status["http_request"])
 
     @classmethod
     def tearDownClass(cls):

@@ -19,7 +19,9 @@ class TestMattermostAlerting(TestCase):
         Login.objects.create(user=self.user, id=self.user.id)
 
         # Create an alert
-        self.alert = Alert.objects.create(name="Imp Travel", user=self.user, notified=False, description="Impossible travel detected", login_raw_data={})
+        self.alert = Alert.objects.create(
+            name="Imp Travel", user=self.user, notified_status={"mattermost": False}, description="Impossible travel detected", login_raw_data={}
+        )
 
     @patch("requests.post")
     def test_send_alert(self, mock_post):
@@ -46,7 +48,9 @@ class TestMattermostAlerting(TestCase):
     @patch("requests.post")
     def test_no_alerts(self, mock_post):
         """Test that no alerts are sent when there are no alerts to notify"""
-        Alert.objects.all().update(notified=True)
+        for alert in Alert.objects.all():
+            alert.notified_status["mattermost"] = True
+            alert.save()
         self.mattermost_alerting.notify_alerts()
         self.assertEqual(mock_post.call_count, 0)
 
@@ -65,7 +69,7 @@ class TestMattermostAlerting(TestCase):
 
         # Reload the alert from DB to check its state
         alert = Alert.objects.get(pk=self.alert.pk)
-        self.assertFalse(alert.notified)
+        self.assertFalse(alert.notified_status["mattermost"])
 
     def test_send_actual_alert(self):
         """Test sending an actual alert"""
