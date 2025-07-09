@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from impossible_travel.validators import validate_ips_or_network, validate_string_or_regex
+from impossible_travel.models import get_default_allowed_countries
+from impossible_travel.validators import validate_countries_names, validate_ips_or_network, validate_string_or_regex
 
 
 class ValidatorsTest(TestCase):
@@ -59,3 +60,44 @@ class ValidatorsTest(TestCase):
         """Testing the function validate_ips_or_network with incorrect values"""
         with self.assertRaises(ValidationError):
             validate_ips_or_network(["12.45.5"])
+
+    def test_validate_countries_names_valid_names(self):
+        """Test valid ISO country names pass validation"""
+        valid_countries = ["Italy", "Nepal", "United States"]
+        try:
+            validate_countries_names(valid_countries)
+        except ValidationError:
+            self.fail("validate_countries_names raised ValidationError unexpectedly!")
+
+    def test_validate_countries_names_invalid_entries(self):
+        """Test invalid country names or codes raise ValidationError"""
+        invalid_countries = ["Atlantis", "ZZ", "Narnia"]
+        with self.assertRaises(ValidationError) as context:
+            validate_countries_names(invalid_countries)
+        for invalid in invalid_countries:
+            self.assertIn(invalid, str(context.exception))
+
+    def test_validate_countries_names_mixed_valid_and_invalid(self):
+        """Test mixed valid and invalid entries raise ValidationError listing invalids"""
+        mixed = ["Italy", "XX", "Nepal", "UnknownLand"]
+        with self.assertRaises(ValidationError) as context:
+            validate_countries_names(mixed)
+        self.assertIn("XX", str(context.exception))
+        self.assertIn("UnknownLand", str(context.exception))
+        # valid names shouldn't appear in error
+        self.assertNotIn("Italy", str(context.exception))
+
+    def test_validate_countries_names_invalid_type(self):
+        """Test non-list inputs raise ValidationError"""
+        with self.assertRaises(ValidationError) as context:
+            # string instead of list
+            validate_countries_names("Italy")
+        self.assertIn("allowed_countries must be a list", str(context.exception))
+
+    def test_validate_countries_names_default_value(self):
+        """Test that the default allowed countries pass validation"""
+        default_countries = get_default_allowed_countries()
+        try:
+            validate_countries_names(default_countries)
+        except ValidationError:
+            self.fail("validate_countries_names raised ValidationError unexpectedly for default allowed countries!")
