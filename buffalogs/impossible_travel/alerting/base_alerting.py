@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from abc import ABC, abstractmethod
 from enum import Enum
 
@@ -63,3 +64,19 @@ class BaseAlerting(ABC):
             "Stay Safe,\nBuffalogs"
         )
         return alert_title, alert_description
+
+    @staticmethod
+    def send_with_exponential_backoff(send_func, max_retries=3, base_delay=1, *args, **kwargs):
+        """
+        Tries to send an alert using send_func, retries with exponential backoff if not successful.
+        """
+        logger = logging.getLogger(send_func.__module__)
+        for attempt in range(max_retries):
+            success = send_func(*args, **kwargs)
+            if success:
+                return True
+            wait_time = base_delay * (2**attempt)
+            logger.warning(f"Send attempt {attempt + 1} failed, retrying in {wait_time}s...")
+            time.sleep(wait_time)
+        logger.error(f"Failed to send alert after {max_retries} attempts.")
+        return False

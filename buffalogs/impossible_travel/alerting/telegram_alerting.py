@@ -25,24 +25,28 @@ class TelegramAlerting(BaseAlerting):
             self.logger.error("Telegram Alerter configuration is missing required fields.")
             raise ValueError("Telegram Alerter configuration is missing required fields.")
 
+    def send_message(self, alert):
+        alert_title, alert_description = self.alert_message_formatter(alert)
+        alert_msg = alert_title + "\n\n" + alert_description
+        try:
+            # sending alerts to all the trusted chat ids
+            for chat_id in self.chat_ids:
+                payload = {"chat_id": chat_id, "text": alert_msg}
+                resp = requests.post(self.url, json=payload)
+                resp.raise_for_status()
+
+            self.logger.info(f"Telegram alert sent: {alert.name}")
+            alert.notified_status["telegram"] = True
+            alert.save()
+        except requests.RequestException as e:
+            self.logger.exception(f"Telegram alert failed for {alert.name}: {str(e)}")
+
+        return alert.notified_status["telegram"]
+
     def notify_alerts(self):
         """
         Execute the alerter operation.
         """
         alerts = Alert.objects.filter(Q(notified_status__telegram=False) | ~Q(notified_status__has_key="telegram"))
         for alert in alerts:
-            alert_title, alert_description = self.alert_message_formatter(alert)
-            alert_msg = alert_title + "\n\n" + alert_description
-
-            try:
-                # sending alerts to all the trusted chat ids
-                for chat_id in self.chat_ids:
-                    payload = {"chat_id": chat_id, "text": alert_msg}
-                    resp = requests.post(self.url, json=payload)
-                    resp.raise_for_status()
-
-                self.logger.info(f"Telegram alert sent: {alert.name}")
-                alert.notified_status["telegram"] = True
-                alert.save()
-            except requests.RequestException as e:
-                self.logger.exception(f"Telegram alert failed for {alert.name}: {str(e)}")
+            self.send_with_exponential_backoff(self.send_message, alert=alert)
