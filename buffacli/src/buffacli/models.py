@@ -5,7 +5,6 @@ from yarl import URL
 
 
 class DataModel:
-    root = URL(config.get_buffalogs_url())
 
     @property
     def table(self):
@@ -62,7 +61,33 @@ class Ingestion(DataModel):
         elif isinstance(self.content, list):
             structure = {}
             structure["sources"] = [data["source"] for data in self.content]
-            structure["fields"] = [data["fields"] for data in self.content]
+            structure["fields"] = [", ".join(data["fields"]) for data in self.content]
+        else:
+            raise TypeError(f"Expected type List or Dict for content, got {type(self.content)}")
+        return structure
+
+
+class Alerters(DataModel):
+
+    def __init__(self, content: dict | list[dict]):
+        if isinstance(content, list):
+            self.content = [alerter for alerter in content if alerter["alerter"] != "dummy"]
+        elif isinstance(content, dict):
+            self.content = content
+        else:
+            raise TypeError(f"Expected type list or dict for content, got {type(content)}")
+
+    @property
+    def table(self):
+        if isinstance(self.content, dict):
+            structure = {"fields": [], "": []}
+            for key, value in self.content["fields"].items():
+                structure["fields"].append(key)
+                structure[""].append(value)
+        elif isinstance(self.content, list):
+            structure = {}
+            structure["alerter"] = [data["alerter"] for data in self.content]
+            structure["fields"] = [", ".join(data["fields"]) for data in self.content]
         else:
             raise TypeError(f"Expected type List or Dict for content, got {type(self.content)}")
         return structure
