@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 
 def mock_read_config(key: str | None = None):
     config = {
-        "active_alerter": "discord",
+        "active_alerters": ["discord"],
         "slack": {"webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"},
         "telegram": {"bot_token": "BOT_TOKEN", "chat_ids": ["CHAT_ID"]},
         "dummy": {"config_field_example": "value_example"},
@@ -92,7 +92,7 @@ class TestAlertAPI(APITestCase):
 
     @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
     def test_get_active_alerter(self, mock_writer):
-        expected = {"alerter": "discord", "configuration_fields": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"}}
+        expected = [{"alerter": "discord", "fields": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"}}]
         response = self.client.get(reverse("active_alerter_api"))
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -100,7 +100,7 @@ class TestAlertAPI(APITestCase):
 
     @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
     def test_get_alerter_config(self, mock_writer):
-        expected = {"alerter": "discord", "configuration_fields": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"}}
+        expected = {"alerter": "discord", "fields": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"}}
         response = self.client.get(reverse("alerter_config_api", kwargs={"alerter": "discord"}))
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)

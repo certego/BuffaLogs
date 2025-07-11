@@ -140,7 +140,7 @@ def serialize_config(config_dict):
 @require_http_methods(["GET"])
 def get_alerters(request):
     config = read_config()
-    config.pop("active_alerter")
+    config.pop("active_alerters")
     alerters = [
         {"alerter": alerter, "fields": [field for field in config[alerter].keys() if field != "options"], "options": list(config[alerter].get("options", []))}
         for alerter in config.keys()
@@ -152,9 +152,9 @@ def get_alerters(request):
 @require_http_methods(["GET"])
 def get_active_alerter(request):
     alert_config = read_config()
-    active_alerter = alert_config["active_alerter"]
-    alerter_config = alert_config[active_alerter]
-    return JsonResponse({"alerter": active_alerter, "configuration_fields": alerter_config}, json_dumps_params={"default": str})
+    active_alerters = alert_config["active_alerters"]
+    alerter_config = [{"alerter": alerter, "fields": alert_config[alerter]} for alerter in active_alerters]
+    return JsonResponse(alerter_config, safe=False, json_dumps_params={"default": str})
 
 
 def alerter_config(request, alerter):
@@ -164,7 +164,7 @@ def alerter_config(request, alerter):
         return JsonResponse({"message": f"Unsupported alerter - {alerter}"}, status=400)
 
     if request.method == "GET":
-        content = {"alerter": alerter, "configuration_fields": dict((field, alerter_config[field]) for field in alerter_config.keys())}
+        content = {"alerter": alerter, "fields": dict((field, alerter_config[field]) for field in alerter_config.keys())}
         return JsonResponse(content, json_dumps_params={"default": str})
 
     if request.method == "POST":
