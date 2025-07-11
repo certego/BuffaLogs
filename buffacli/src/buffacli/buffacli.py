@@ -2,7 +2,8 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-from buffacli import config, show
+from buffacli import config
+from buffacli.commands import show
 
 app = typer.Typer()
 
