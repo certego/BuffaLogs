@@ -1,5 +1,7 @@
 import json
 import os
+from functools import partial
+from pathlib import Path
 
 from django.conf import settings
 from impossible_travel.models import Alert
@@ -24,3 +26,24 @@ def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
         aggregated_data[current_date.strftime(date_fmt)] = count
         current_date = next_date
     return aggregated_data
+
+
+def read_config(filename: str, key: str | None = None):
+    config_path = Path(settings.CERTEGO_BUFFALOGS_CONFIG_PATH) / f"buffalogs/{filename}"
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+        if key:
+            return config[key]
+        return config
+
+
+def write_config(filename, key: str, updates: dict[str, str]):
+    config_path = Path(settings.CERTEGO_BUFFALOGS_CONFIG_PATH) / f"buffalogs/{filename}"
+    config = read_config(filename)
+    config[key] = updates
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(f, config, indent=2)
+
+
+def get_config_read_write(config_filename):
+    return (partial(read_config, filename=config_filename), partial(write_config, filename=config_filename))
