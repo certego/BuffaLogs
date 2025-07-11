@@ -20,8 +20,12 @@ from impossible_travel.alerting.webhook import WebHookAlerting
 class AlertFactory:
     def __init__(self) -> None:
         config = self._read_config()
-        self.active_alerter = BaseAlerting.SupportedAlerters(config["active_alerter"])
-        self.alert_config = config[config["active_alerter"]]
+        alerters = config.get("active_alerters")
+        self.active_alerters = []
+        self.alert_configs = []
+        for alerter in alerters:
+            self.active_alerters.append(BaseAlerting.SupportedAlerters(alerter))
+            self.alert_configs.append(config[alerter])
 
     def _read_config(self) -> dict:
         """
@@ -33,41 +37,31 @@ class AlertFactory:
             encoding="utf-8",
         ) as f:
             config = json.load(f)
-        if "active_alerter" not in config:
-            raise ValueError("active_alerter not found in alerting.json")
-        if config["active_alerter"] not in [e.value for e in BaseAlerting.SupportedAlerters]:
-            raise ValueError(f"active_alerter {config['active_alerter']} not supported")
-        if config[config["active_alerter"]] is None:
-            raise ValueError(f"Configuration for {config['active_alerter']} not found")
+        if "active_alerters" not in config:
+            raise ValueError("active_alerters not found in alerting.json")
+        for active_alerter in config["active_alerters"]:
+            if active_alerter not in [e.value for e in BaseAlerting.SupportedAlerters]:
+                raise ValueError(f"active_alerter {active_alerter} not supported")
+            if config[active_alerter] is None:
+                raise ValueError(f"Configuration for {active_alerter} not found")
         return config
 
-    def get_alert_class(self) -> BaseAlerting:
+    def get_alert_classes(self) -> BaseAlerting:
         """Creates and return an alerter using the abstract factory"""
 
-        match self.active_alerter:
-            case BaseAlerting.SupportedAlerters.DUMMY:
-                return DummyAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.SLACK:
-                return SlackAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.WEBHOOK:
-                return WebHookAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.HTTPREQUEST:
-                return HTTPRequestAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.TELEGRAM:
-                return TelegramAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.EMAIL:
-                return EmailAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.PUSHOVER:
-                return PushoverAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.DISCORD:
-                return DiscordAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.MICROSOFTTEAMS:
-                return MicrosoftTeamsAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.ROCKETCHAT:
-                return RocketChatAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.GOOGLECHAT:
-                return GoogleChatAlerting(self.alert_config)
-            case BaseAlerting.SupportedAlerters.MATTERMOST:
-                return MattermostAlerting(self.alert_config)
-            case _:
-                raise ValueError(f"Unsupported alerter: {self.active_alerter}")
+        alerter_map = {
+            BaseAlerting.SupportedAlerters.DUMMY: DummyAlerting,
+            BaseAlerting.SupportedAlerters.SLACK: SlackAlerting,
+            BaseAlerting.SupportedAlerters.WEBHOOK: WebHookAlerting,
+            BaseAlerting.SupportedAlerters.HTTPREQUEST: HTTPRequestAlerting,
+            BaseAlerting.SupportedAlerters.TELEGRAM: TelegramAlerting,
+            BaseAlerting.SupportedAlerters.EMAIL: EmailAlerting,
+            BaseAlerting.SupportedAlerters.PUSHOVER: PushoverAlerting,
+            BaseAlerting.SupportedAlerters.DISCORD: DiscordAlerting,
+            BaseAlerting.SupportedAlerters.MICROSOFTTEAMS: MicrosoftTeamsAlerting,
+            BaseAlerting.SupportedAlerters.ROCKETCHAT: RocketChatAlerting,
+            BaseAlerting.SupportedAlerters.GOOGLECHAT: GoogleChatAlerting,
+            BaseAlerting.SupportedAlerters.MATTERMOST: MattermostAlerting,
+        }
+
+        return [alerter_map[alerter](config) for alerter, config in zip(self.active_alerters, self.alert_configs)]

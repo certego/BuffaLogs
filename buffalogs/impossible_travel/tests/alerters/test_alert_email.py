@@ -19,7 +19,9 @@ class TestEmailAlerting(TestCase):
         Login.objects.create(user=self.user, id=self.user.id)
 
         # Create an alert
-        self.alert = Alert.objects.create(name="Imp Travel", user=self.user, notified=False, description="Impossible travel detected", login_raw_data={})
+        self.alert = Alert.objects.create(
+            name="Imp Travel", user=self.user, notified_status={"email": False}, description="Impossible travel detected", login_raw_data={}
+        )
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_email_args(self):
@@ -53,7 +55,9 @@ class TestEmailAlerting(TestCase):
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_no_alerts(self):
         """Test that no alerts are sent when there are no alerts to notify"""
-        Alert.objects.all().update(notified=True)
+        for alert in Alert.objects.all():
+            alert.notified_status["email"] = True
+            alert.save()
         self.email_alerting.notify_alerts()
         self.assertEqual(len(mail.outbox), 0)
 

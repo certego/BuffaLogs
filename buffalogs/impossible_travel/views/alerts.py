@@ -93,7 +93,7 @@ def get_user_alerts(request):
         tmp = {
             "timestamp": alert.login_raw_data.get("timestamp"),
             "created": alert.created,
-            "notified": alert.notified,
+            "notified": alert.notified_status,
             "triggered_by": alert.user.username,
             "rule_name": alert.name,
             "rule_desc": alert.description,

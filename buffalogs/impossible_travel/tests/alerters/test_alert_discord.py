@@ -20,7 +20,9 @@ class TestDiscordAlerting(TestCase):
         Login.objects.create(user=self.user, id=self.user.id)
 
         # Create an alert
-        self.alert = Alert.objects.create(name="Imp Travel", user=self.user, notified=False, description="Impossible travel detected", login_raw_data={})
+        self.alert = Alert.objects.create(
+            name="Imp Travel", user=self.user, notified_status={"discord": False}, description="Impossible travel detected", login_raw_data={}
+        )
 
     @patch("requests.post")
     def test_send_alert(self, mock_post):
@@ -53,7 +55,9 @@ class TestDiscordAlerting(TestCase):
     @patch("requests.post")
     def test_no_alerts(self, mock_post):
         """Test that no alerts are sent when there are no alerts to notify"""
-        Alert.objects.all().update(notified=True)
+        for alert in Alert.objects.all():
+            alert.notified_status["discord"] = True
+            alert.save()
         self.discord_alerting.notify_alerts()
         self.assertEqual(mock_post.call_count, 0)
 
@@ -72,7 +76,7 @@ class TestDiscordAlerting(TestCase):
 
         # Reload the alert from DB to check its state
         alert = Alert.objects.get(pk=self.alert.pk)
-        self.assertFalse(alert.notified)
+        self.assertFalse(alert.notified_status["discord"])
 
     def test_send_actual_alert(self):
         """Test sending an actual alert"""
