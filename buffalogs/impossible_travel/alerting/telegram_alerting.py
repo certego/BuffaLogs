@@ -2,6 +2,7 @@ try:
     import requests
 except ImportError:
     pass
+import backoff
 from django.db.models import Q
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
@@ -25,23 +26,21 @@ class TelegramAlerting(BaseAlerting):
             self.logger.error("Telegram Alerter configuration is missing required fields.")
             raise ValueError("Telegram Alerter configuration is missing required fields.")
 
+    @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
     def send_message(self, alert):
         alert_title, alert_description = self.alert_message_formatter(alert)
         alert_msg = alert_title + "\n\n" + alert_description
-        try:
-            # sending alerts to all the trusted chat ids
-            for chat_id in self.chat_ids:
-                payload = {"chat_id": chat_id, "text": alert_msg}
-                resp = requests.post(self.url, json=payload)
-                resp.raise_for_status()
 
-            self.logger.info(f"Telegram alert sent: {alert.name}")
-            alert.notified_status["telegram"] = True
-            alert.save()
-        except requests.RequestException as e:
-            self.logger.exception(f"Telegram alert failed for {alert.name}: {str(e)}")
+        # sending alerts to all the trusted chat ids
+        for chat_id in self.chat_ids:
+            payload = {"chat_id": chat_id, "text": alert_msg}
+            resp = requests.post(self.url, json=payload)
+            resp.raise_for_status()
+            return resp
 
-        return alert.notified_status["telegram"]
+        self.logger.info(f"Telegram alert sent: {alert.name}")
+        alert.notified_status["telegram"] = True
+        alert.save()
 
     def notify_alerts(self):
         """
@@ -49,4 +48,7 @@ class TelegramAlerting(BaseAlerting):
         """
         alerts = Alert.objects.filter(Q(notified_status__telegram=False) | ~Q(notified_status__has_key="telegram"))
         for alert in alerts:
-            self.send_with_exponential_backoff(self.send_message, alert=alert)
+            try:
+                self.send_message(alert)
+            except requests.RequestException as e:
+                self.logger.exception(f"Telegram alert failed for {alert.name}: {str(e)}")
