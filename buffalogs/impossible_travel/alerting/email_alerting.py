@@ -15,6 +15,7 @@ class EmailAlerting(BaseAlerting):
         Constructor for the Email Alerter query object.
         """
         super().__init__()
+        self.user_email_template_path = "alert_template_user_email.jinja"
         self.recipient_list_admins = alert_config.get("recipient_list_admins")
         self.recipient_list_users = alert_config.get("recipient_list_users")
         self.email_config = alert_config
@@ -58,14 +59,7 @@ class EmailAlerting(BaseAlerting):
 
             # Email for user
             if alert.user.username in list(self.recipient_list_users.keys()):
-                alert_title = f"BuffaLogs - Login Anomaly Alert: {alert.name}"
-                alert_description = (
-                    f"Dear {alert.user.username},\nAn unusual login activity has been detected:\n\n"
-                    f"Alert type: {alert.name}\n"
-                    f"Description: {alert.description}\n"
-                    f"Please check your account for any suspicious activity.\n\n"
-                    "Stay Safe,\nBuffalogs"
-                )
+                alert_title, alert_description = self.alert_message_formatter(alert, template_path=self.user_email_template_path)
                 try:
                     send_mail(alert_title, alert_description, self.email_config.get("DEFAULT_FROM_EMAIL"), [self.recipient_list_users[alert.user.username]])
                     self.logger.info(f"Email alert Sent: {alert.name} to {self.recipient_list_users[alert.user.username]}")

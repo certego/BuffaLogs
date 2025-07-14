@@ -1,0 +1,15 @@
+{% macro title(alert) -%}
+BuffaLogs - Login Anomaly Alert: {{alert.name}}
+{%- endmacro %}
+
+{% macro description(alert) -%}
+Dear {{alert.user.username}},
+An unusual login activity has been detected:
+
+Alert type: {{alert.name}}
+Description: {{alert.description}}
+Please check your account for any suspicious activity.
+
+Stay Safe,
+Buffalogs
+{%- endmacro %}
