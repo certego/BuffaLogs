@@ -1,3 +1,10 @@
+## 2.7.x
+### 2.7.0
+#### Features
+* Migrated from Elasticsearch client 7.x to 9.0.3
+#### Changes
+* Removed elasticsearch_dsl from requirements
+
 ## 2.6.x
 ### 2.6.0
 #### Features
