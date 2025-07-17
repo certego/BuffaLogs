@@ -1,73 +1,80 @@
-import json
-import os
 from datetime import datetime, timezone
-from typing import List
 
 import elasticsearch
-from django.conf import settings
 from django.test import TestCase
-from elasticsearch.helpers import bulk
 from elasticsearch_dsl import connections
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
-
-
-def load_ingestion_config_data():
-    with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
-        mode="r",
-        encoding="utf-8",
-    ) as f:
-        config_ingestion = json.load(f)
-    return config_ingestion
-
-
-def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data/", name + ".json")) as file:
-        data = json.load(file)
-    return data
-
-
-def load_elastic_template(name):
-    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "elasticsearch/", name + ".json")) as file:
-        data = json.load(file)
-    return data
+from impossible_travel.utils.ingestion_utils import bulk_write_documents, load_ingestion_config_data, load_template_data
+from impossible_travel.utils.test_utils import load_test_data
 
 
 class ElasticsearchIngestionTestCase(TestCase):
     def setUp(self):
         # executed once per test (at the beginning)
+        self._cleanup_test_indices(["cloud-test_data-*", "fw-proxy-test_data-*"])
+        # Load ingestion config
         self.ingestion_config = load_ingestion_config_data()
         self.elastic_config = self.ingestion_config["elasticsearch"]
         self.elastic_config["url"] = "http://localhost:9200"
+
+        # Create ES client and connection
+        self.es = elasticsearch.Elasticsearch(self.elastic_config["url"])
+        connections.create_connection(hosts=self.elastic_config["url"], timeout=self.elastic_config["timeout"])
+
+        # Load test data
         self.list_to_be_added_cloud = load_test_data("test_data_elasticsearch_cloud")
         self.list_to_be_added_fw_proxy = load_test_data("test_data_elasticsearch_fw_proxy")
-        self.es = elasticsearch.Elasticsearch(self.elastic_config["url"])
-        self.template = load_elastic_template("example_template")
-        connections.create_connection(hosts=self.elastic_config["url"], timeout=self.ingestion_config["elasticsearch"]["timeout"])
-        self._load_elastic_template_on_elastic(template_to_be_added=self.template)
-        # load test data into the 2 indexes: cloud-* and fw-proxy-*
-        self._load_test_data_on_elastic(data_to_be_added=self.list_to_be_added_cloud, index="cloud-test_data")
-        self._load_test_data_on_elastic(data_to_be_added=self.list_to_be_added_fw_proxy, index="fw-proxy-test_data")
 
-    def _load_elastic_template_on_elastic(self, template_to_be_added):
-        response = self.es.indices.put_index_template(name="example_template", body=template_to_be_added)
-        # check that the template has been uploaded correctly
+        # Load and upload template
+        response = load_template_data("example_template")
         self.assertTrue(response["acknowledged"])
 
-    def tearDown(self) -> None:
-        # executed once per test (at the end)
-        self.es.indices.delete(index="cloud-*", ignore=[404])
-        self.es.indices.delete(index="fw-proxy-*", ignore=[404])
+        # Load test data into indices
+        bulk_write_documents(self.es, "cloud-*", self.list_to_be_added_cloud)
+        bulk_write_documents(self.es, "fw-proxy-*", self.list_to_be_added_fw_proxy)
 
-    def _bulk_gendata(self, index: str, data_list: list):
-        for single_data in data_list:
-            yield {"_op_type": "index", "_id": f"log_id_{data_list.index(single_data)}", "_index": index, "_source": single_data}
+    def _cleanup_test_indices(self, patterns):
+        for pattern in patterns:
+            try:
+                indices = self.es.indices.get(index=pattern)
+                for index in indices:
+                    self.es.indices.delete(index=index)
+            except elasticsearch.exceptions.NotFoundError:
+                pass
 
-    def _load_test_data_on_elastic(self, data_to_be_added: List[dict], index: str):
-        bulk(self.es, self._bulk_gendata(index, data_to_be_added), refresh="true")
-        # check that the data on the Elastic index has been uploaded correctly
-        count = self.es.count(index=index)["count"]
-        self.assertTrue(count > 0)
+    def test_data_ingestion_cloud(self):
+        # testing that the cloud-test_data-* index has been loaded correctly and that it contains docs
+        index_pattern = "cloud-test_data-*"
+
+        # Check that test data is not empty
+        self.assertIsInstance(self.list_to_be_added_cloud, list, "Cloud test data is not a list")
+        self.assertGreater(len(self.list_to_be_added_cloud), 0, "No cloud test documents loaded into memory")
+
+        # Check that the index exists
+        self.assertTrue(self.es.indices.exists(index=index_pattern), f"Index '{index_pattern}' does not exist")
+
+        # Check that the index contains documents
+        response = self.es.search(index=index_pattern, body={"query": {"match_all": {}}})
+        doc_count = response["hits"]["total"]["value"]
+        print(f"Found {doc_count} documents in index '{index_pattern}'")
+        self.assertGreater(doc_count, 0, f"No documents found in index '{index_pattern}'")
+
+    def test_data_ingestion_fw_proxy(self):
+        # testing that the fw-proxy-test_data-* index has been loaded correctly and that it contains docs
+        index_pattern = "fw-proxy-test_data-*"
+
+        # Check that test data is not empty
+        self.assertIsInstance(self.list_to_be_added_fw_proxy, list, "FW proxy test data is not a list")
+        self.assertGreater(len(self.list_to_be_added_fw_proxy), 0, "No fw-proxy test documents loaded into memory")
+
+        # Check that the index exists
+        self.assertTrue(self.es.indices.exists(index=index_pattern), f"Index '{index_pattern}' does not exist")
+
+        # Check that the index contains documents
+        response = self.es.search(index=index_pattern, body={"query": {"match_all": {}}})
+        doc_count = response["hits"]["total"]["value"]
+        print(f"Found {doc_count} documents in index '{index_pattern}'")
+        self.assertGreater(doc_count, 0, f"No documents found in index '{index_pattern}'")
 
     def test_process_users_ConnectionError(self):
         # test the function process_users with the exception ConnectionError

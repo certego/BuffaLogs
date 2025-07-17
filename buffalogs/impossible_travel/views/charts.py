@@ -10,7 +10,7 @@ from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
 from impossible_travel.models import Alert, Login, User
-from impossible_travel.views.utils import aggregate_alerts_interval, load_data
+from impossible_travel.utils.views_utils import aggregate_alerts_interval, load_dashboard_data
 
 
 def homepage(request):
@@ -105,7 +105,7 @@ def world_map_chart_api(request):
     if is_naive(end_date):
         end_date = make_aware(end_date)
 
-    countries = load_data("countries")
+    countries = load_dashboard_data("countries")
     result = []
     tmp = []
     for key, value in countries.items():

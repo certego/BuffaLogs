@@ -1,52 +1,32 @@
-import json
-import os
 from datetime import datetime, timezone
-from typing import List
-from urllib.parse import urlparse
 
-from django.conf import settings
 from django.test import TestCase
 from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
-from opensearchpy import OpenSearch
-from opensearchpy.helpers import bulk
-
-
-def create_opensearch_client(config):
-    parsed = urlparse(config["url"])
-
-    return OpenSearch(
-        hosts=[{"host": parsed.hostname, "port": parsed.port}],
-        http_auth=(config["username"], config["password"]),
-        timeout=config.get("timeout", 30),
-        use_ssl=parsed.scheme == "https",
-        verify_certs=False,
-    )
-
-
-def load_ingestion_config_data():
-    with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
-        mode="r",
-        encoding="utf-8",
-    ) as f:
-        config_ingestion = json.load(f)
-    return config_ingestion
-
-
-def load_example_data(name):
-    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "elasticsearch/", name + ".json")) as file:
-        data = json.load(file)
-    return data
+from impossible_travel.utils.ingestion_utils import (
+    bulk_write_documents,
+    load_ingestion_config_data,
+    load_template_data,
+    opensearch_create_client,
+    upload_index_template,
+)
 
 
 class OpensearchIngestionTestCase(TestCase):
     def setUp(self):
-        # Executes once per test
+        # Load configuration and force localhost for test
         self.ingestion_config = load_ingestion_config_data()
         self.opensearch_config = self.ingestion_config["opensearch"]
         self.opensearch_config["url"] = "http://localhost:9200"
 
-        # test data for cloud index - users: Stitch, Jessica, bugs-bunny@organization.com
+        # Create OpenSearch client
+        self.os = opensearch_create_client(self.opensearch_config)
+
+        # Load and upload template
+        self.template_name = "example_template"
+        self.template_body = load_template_data(self.template_name)
+        upload_index_template(self.os, self.template_name, self.template_body)
+
+        # Define test documents
         self.user1_test_data = [
             {
                 "user.name": "Stitch",
@@ -138,32 +118,14 @@ class OpensearchIngestionTestCase(TestCase):
             },
         ]
 
-        self.os = create_opensearch_client(self.opensearch_config)
-        self.template = load_example_data("example_template")
-
-        self._load_example_template_on_opensearch(template_to_be_added=self.template)
-        # load test data into the 2 indexes: cloud-* and fw-proxy-*
-        self._load_test_data_on_opensearch(data_to_be_added=self.user1_test_data, index="cloud-test_data")
-        self._load_test_data_on_opensearch(data_to_be_added=self.user2_test_data, index="fw-proxy-test_data")
-
-    def _load_example_template_on_opensearch(self, template_to_be_added):
-        response = self.os.indices.put_index_template(name="example_template", body=template_to_be_added)
-        self.assertTrue(response["acknowledged"])
-
-    def _load_test_data_on_opensearch(self, data_to_be_added: List[dict], index: str):
-        bulk(self.os, self._bulk_gendata(index, data_to_be_added), refresh="true")
-        # Check that the data has been uploaded correctly
-        count = self.os.count(index=index)["count"]
-        self.assertTrue(count > 0)
+        # Index documents into OpenSearch using utility function
+        bulk_write_documents(client=self.os, index_prefix="cloud-*", documents=self.user1_test_data, refresh=True, create_if_missing=True)
+        bulk_write_documents(client=self.os, index_prefix="fw-proxy-*", documents=self.user2_test_data, refresh=True, create_if_missing=True)
 
     def tearDown(self) -> None:
         # executed once per test (at the end)
         self.os.indices.delete(index="cloud-*", ignore=[404])
         self.os.indices.delete(index="fw-proxy-*", ignore=[404])
-
-    def _bulk_gendata(self, index: str, data_list: list):
-        for single_data in data_list:
-            yield {"_op_type": "index", "_id": f"log_id_{data_list.index(single_data)}", "_index": index, "_source": single_data}
 
     def test_process_users_ConnectionError(self):
         self.opensearch_config["url"] = "http://doesntexist-url:8888"
@@ -291,7 +253,7 @@ class OpensearchIngestionTestCase(TestCase):
         ]
 
         index_name = "cloud-missing-ip-test"
-        self._load_test_data_on_opensearch(data_to_be_added=test_data, index=index_name)
+        bulk_write_documents(client=self.os, index_prefix=index_name, documents=test_data)
 
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 30, tzinfo=timezone.utc)
@@ -324,7 +286,7 @@ class OpensearchIngestionTestCase(TestCase):
         ]
 
         index_name = "cloud-mapping-test"
-        self._load_test_data_on_opensearch(data_to_be_added=test_data, index=index_name)
+        bulk_write_documents(client=self.os, index_prefix=index_name, documents=test_data)
 
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 30, tzinfo=timezone.utc)
