@@ -47,4 +47,7 @@ urlpatterns = [
     path("api/ingestion/sources/", ingestion.get_ingestion_sources, name="ingestion_sources_api"),
     path("api/ingestion/active_ingestion_source/", ingestion.get_active_ingestion_source, name="active_ingestion_source_api"),
     path("api/ingestion/<str:source>/", ingestion.ingestion_source_config, name="ingestion_source_config_api"),
+    path("api/alerters/active-alerter/", alerts.get_active_alerter, name="active_alerter_api"),
+    path("api/alerters/<str:alerter>/", alerts.alerter_config, name="alerter_config_api"),
+    path("api/alerters/", alerts.get_alerters, name="get_alerters"),
 ]
