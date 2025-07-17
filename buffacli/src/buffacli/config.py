@@ -3,6 +3,8 @@ import json
 import os
 from pathlib import Path
 
+from yarl import URL
+
 project_dir = Path(__file__).parent
 config_path = project_dir / "config.json"
 
@@ -36,4 +38,4 @@ def write_to_config(key, value):
 
 
 def get_buffalogs_url():
-    return os.environ.get("BUFFALOGS_URL") or read_from_config("buffalogs_url")
+    return URL(os.environ.get("BUFFALOGS_URL") or read_from_config("buffalogs_url"))
