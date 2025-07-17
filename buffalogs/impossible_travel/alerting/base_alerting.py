@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 from django.conf import settings
+from jinja2 import Environment, FileSystemLoader
 
 
 class BaseAlerting(ABC):
@@ -49,17 +50,12 @@ class BaseAlerting(ABC):
         return config.get(alerter_key, {})
 
     @staticmethod
-    def alert_message_formatter(alert):
+    def alert_message_formatter(alert, template_path="alert_template.jinja"):
         """
         Format the alert message for notification.
         """
-        alert_title = f"BuffaLogs - Login Anomaly Alert: {alert.name} for user {alert.user.username}"
-        alert_description = (
-            f"Dear admin,\nAn unusual login activity has been detected:\n\n"
-            f"User: {alert.user.username}\n"
-            f"Alert type: {alert.name}\n"
-            f"Alert description: {alert.description}\n\n"
-            f"The raw data relating to the login that triggered the alert is:\n{alert.login_raw_data}\n\n"
-            "Stay Safe,\nBuffalogs"
-        )
+        env = Environment(loader=FileSystemLoader(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/")))
+        template = env.get_template(template_path)
+        alert_title = template.module.title(alert)
+        alert_description = template.module.description(alert)
         return alert_title, alert_description
