@@ -68,4 +68,8 @@ jobs:
     - name: Test with pytest
       run: |
         source ./venv/bin/activate
+<<<<<<< Updated upstream
         pytest buffacli/
+=======
+        pytest buffacli/tests
+>>>>>>> Stashed changes
