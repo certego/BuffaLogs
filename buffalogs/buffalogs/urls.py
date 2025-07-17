@@ -57,4 +57,5 @@ urlpatterns = [
 
     # Authentication
     path("authentication/", include("authentication.urls")),
+
 ]
