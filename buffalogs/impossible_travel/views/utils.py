@@ -17,6 +17,7 @@ def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
     """
     Helper function to aggregate alerts over an interval
     """
+    print("change file for testing CI")
     current_date = start_date
     aggregated_data = {}
 
