@@ -1,3 +1,8 @@
+## 2.7.x
+### 2.7.0
+#### Features
+* Updated the `setup_config` django mgmt command to customize all the possible fields in the Config model
+
 ## 2.6.x
 ### 2.6.0
 #### Features
