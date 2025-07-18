@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from elasticsearch_dsl import Search, connections
+from elasticsearch.dsl import Search, connections
 from impossible_travel.ingestion.base_ingestion import BaseIngestion
 
 
@@ -16,7 +16,7 @@ class ElasticsearchIngestion(BaseIngestion):
         """
         super().__init__(ingestion_config, mapping)
         # create the elasticsearch host connection
-        connections.create_connection(hosts=self.ingestion_config["url"], timeout=self.ingestion_config["timeout"], verify_certs=False)
+        connections.create_connection(hosts=self.ingestion_config["url"], request_timeout=self.ingestion_config["timeout"], verify_certs=False)
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def process_users(self, start_date: datetime, end_date: datetime) -> list:

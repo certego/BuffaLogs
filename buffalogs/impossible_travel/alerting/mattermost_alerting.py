@@ -2,6 +2,7 @@ try:
     import requests
 except ImportError:
     pass
+import backoff
 from django.db.models import Q
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
@@ -24,6 +25,24 @@ class MattermostAlerting(BaseAlerting):
             self.logger.error("Mattermost Alerter configuration is missing required fields.")
             raise ValueError("Mattermost Alerter configuration is missing required fields.")
 
+    @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
+    def send_message(self, alert):
+        alert_title, alert_description = self.alert_message_formatter(alert)
+        alert_msg = alert_title + "\n\n" + alert_description
+
+        message = {
+            "text": alert_msg,
+            "username": self.username,
+        }
+
+        resp = requests.post(self.webhook_url, json=message)
+        resp.raise_for_status()
+        self.logger.info(f"Mattermost alert sent: {alert.name}")
+        alert.notified_status["mattermost"] = True
+        alert.save()
+
+        return resp
+
     def notify_alerts(self):
         """
         Execute the alerter operation.
@@ -31,19 +50,7 @@ class MattermostAlerting(BaseAlerting):
         alerts = Alert.objects.filter(Q(notified_status__mattermost=False) | ~Q(notified_status__has_key="mattermost"))
 
         for alert in alerts:
-            alert_title, alert_description = self.alert_message_formatter(alert)
-            alert_msg = alert_title + "\n\n" + alert_description
-
             try:
-                message = {
-                    "text": alert_msg,
-                    "username": self.username,
-                }
-
-                resp = requests.post(self.webhook_url, json=message)
-                resp.raise_for_status()
-                self.logger.info(f"Mattermost alert sent: {alert.name}")
-                alert.notified_status["mattermost"] = True
-                alert.save()
+                self.send_message(alert)
             except requests.RequestException as e:
                 self.logger.exception(f"Mattermost alert failed for {alert.name}: {str(e)}")

@@ -1,3 +1,4 @@
+import backoff
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Q
@@ -42,6 +43,13 @@ class EmailAlerting(BaseAlerting):
         for key, value in email_settings.items():
             setattr(settings, key, value)
 
+    @backoff.on_exception(backoff.expo, Exception, max_tries=5, base=2)
+    def send_message(self, alert_title, alert_description, recipient_list):
+        res = send_mail(alert_title, alert_description, self.email_config.get("DEFAULT_FROM_EMAIL"), recipient_list)
+        if res == 0:
+            raise Exception(f"Email alert failed to send to {recipient_list}")
+        return res
+
     def notify_alerts(self):
         """
         Execute the alerter operation.
@@ -52,7 +60,7 @@ class EmailAlerting(BaseAlerting):
 
             # Email for admin
             try:
-                send_mail(alert_title, alert_description, self.email_config.get("DEFAULT_FROM_EMAIL"), self.recipient_list_admins)  # 1 if sent,0 if not
+                self.send_message(alert_title, alert_description, self.recipient_list_admins)  # 1 if sent,0 if not
                 self.logger.info(f"Email alert Sent: {alert.name} to {self.recipient_list_admins}")
             except Exception as e:
                 self.logger.exception(f"Email alert failed for {alert.name}: {str(e)}")
@@ -61,7 +69,7 @@ class EmailAlerting(BaseAlerting):
             if alert.user.username in list(self.recipient_list_users.keys()):
                 alert_title, alert_description = self.alert_message_formatter(alert, template_path=self.user_email_template_path)
                 try:
-                    send_mail(alert_title, alert_description, self.email_config.get("DEFAULT_FROM_EMAIL"), [self.recipient_list_users[alert.user.username]])
+                    self.send_message(alert_title, alert_description, [self.recipient_list_users[alert.user.username]])
                     self.logger.info(f"Email alert Sent: {alert.name} to {self.recipient_list_users[alert.user.username]}")
                 except Exception as e:
                     self.logger.exception(f"Email alert failed for {alert.name}: {str(e)}")

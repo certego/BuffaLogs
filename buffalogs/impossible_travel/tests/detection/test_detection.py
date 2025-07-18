@@ -544,16 +544,19 @@ class DetectionTestCase(TestCase):
         self.assertEqual(0, Alert.objects.filter(~Q(filter_type=[])).count())
         self.assertEqual(len(total_alerts), len(total_alerts) - count_filtered_alerts)  # not filtered alerts
         self.assertEqual(len(total_alerts), Alert.objects.filter(filter_type=[]).count())
-        new_device_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE)
+
+        # ADD ORDER BY TO ENSURE CONSISTENT ORDERING
+        new_device_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).order_by("created")
         self.assertEqual(2, new_device_alerts_fields1.count())
-        new_country_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY)
+        new_country_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).order_by("created")
         self.assertEqual(2, new_country_alerts_fields1.count())
-        imp_travel_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
+        imp_travel_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL).order_by("created")
         self.assertEqual(3, imp_travel_alerts_fields1.count())
-        user_risk_threshold_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.USER_RISK_THRESHOLD)
+        user_risk_threshold_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.USER_RISK_THRESHOLD).order_by("created")
         self.assertEqual(3, user_risk_threshold_alerts_fields1.count())
-        anonymous_ip_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.ANONYMOUS_IP_LOGIN)
+        anonymous_ip_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.ANONYMOUS_IP_LOGIN).order_by("created")
         self.assertEqual(1, anonymous_ip_alerts_fields1.count())
+
         # check new_device alerts for fields1 logins
         self.assertEqual("New Device", new_device_alerts_fields1[0].name)
         self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z", new_device_alerts_fields1[0].description)
@@ -625,7 +628,7 @@ class DetectionTestCase(TestCase):
         detection.check_fields(db_user, fields2)
         self.assertEqual(16, Alert.objects.filter(user=db_user).count())
         # get new_device alerts relating to fields2 making query all_new_device_alerts - new_device_alerts_fields1
-        all_new_device_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE)
+        all_new_device_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).order_by("created")
         self.assertEqual(4, all_new_device_alerts.count())
         new_device_alerts_fields2 = all_new_device_alerts.exclude(id__in=new_device_alerts_fields1_ids).order_by("created")
         self.assertEqual(2, new_device_alerts_fields2.count())

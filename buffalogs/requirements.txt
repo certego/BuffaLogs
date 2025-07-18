@@ -1,5 +1,5 @@
 # === Core Framework ===
-Django>=4.2.22                        # Main Django framework (web application, ORM, admin, etc.)
+Django>=4.2.23                        # Main Django framework (web application, ORM, admin, etc.)
 djangorestframework>=3.16             # Django REST Framework for building RESTful APIs
 djangorestframework-simplejwt>=5.4.0  # JWT authentication support for DRF
 django-cors-headers>=4.7.0            # (dev) Enables CORS headers for frontend-backend separation during development
@@ -11,8 +11,7 @@ celery>=5.5.3                     # Distributed task queue for asynchronous jobs
 psycopg[binary]>=3.2.9           # PostgreSQL database adapter for Python (binary for better performance)
 
 # === Elasticsearch ===
-elasticsearch>=7.17.12           # Official low-level Python client for Elasticsearch
-elasticsearch-dsl>=7.4.1         # High-level DSL for querying and indexing Elasticsearch documents
+elasticsearch>=9.0.2           # Official low-level Python client for Elasticsearch
 
 # === Geo & Location ===
 geopy>=2.4.1                     # Library for geocoding and distance calculations via various APIs
@@ -35,3 +34,6 @@ PyYAML>=6.0.2                    # To handle yaml files
 
 # === Jinja2 ===
 Jinja2>=3.1.6                   # Templating engine for rendering alert messages
+
+# === Backoff ===
+backoff>=2.2.1                   # Library for retrying operations with exponential backoff
