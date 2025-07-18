@@ -22,7 +22,7 @@ class OpensearchIngestion(BaseIngestion):
         # create the opensearch host connection
         self.client = OpenSearch(
             hosts=[self.ingestion_config["url"]],
-            request_timeout=self.ingestion_config["timeout"],
+            timeout=self.ingestion_config["timeout"],
             verify_certs=False,
         )
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
