@@ -34,3 +34,6 @@ PyYAML>=6.0.2                    # To handle yaml files
 
 # === Jinja2 ===
 Jinja2>=3.1.6                   # Templating engine for rendering alert messages
+
+# === Backoff ===
+backoff>=2.2.1                   # Library for retrying operations with exponential backoff
