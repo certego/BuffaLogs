@@ -1,9 +1,14 @@
 ## 2.7.x
 ### 2.7.0
 #### Features
-* Migrated from Elasticsearch client 7.x to 9.0.3
+* Migrated from Elasticsearch client 7.x to 9.0.3 (also in the CI)
+* Implement an `alert_preferences` config, where users can choose which types of alerts they want to receive/prioritize (Google Summer of Code 2025 - @kunalsz)
+* Added customizable templates for alerting - Users will be able to define the format of alert messages with the help of placeholders (Google Summer of Code 2025 - @kunalsz)
 #### Changes
 * Removed elasticsearch_dsl from requirements
+* Refactored API and views module (Google Summer of Code 2025 - @noble47)
+* Updated `active_alerter` view function to handle multiple active alerters (Google Summer of Code 2025 - @noble47)
+* Refactored test - created validator, detection and task test modules (Google Summer of Code 2025 - @noble47)
 
 ## 2.6.x
 ### 2.6.0
