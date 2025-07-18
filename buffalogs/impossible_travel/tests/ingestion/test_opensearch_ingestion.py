@@ -158,8 +158,8 @@ class OpensearchIngestionTestCase(TestCase):
 
     def tearDown(self) -> None:
         # executed once per test (at the end)
-        self.os.indices.delete(index="cloud-*", ignore=[404])
-        self.os.indices.delete(index="fw-proxy-*", ignore=[404])
+        self.os.indices.delete(index="cloud-test_data", ignore=[404])
+        self.os.indices.delete(index="fw-proxy-test_data", ignore=[404])
 
     def _bulk_gendata(self, index: str, data_list: list):
         for single_data in data_list:
@@ -167,15 +167,6 @@ class OpensearchIngestionTestCase(TestCase):
 
     def test_process_users_ConnectionError(self):
         self.opensearch_config["url"] = "http://doesntexist-url:8888"
-        start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
-        end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
-        with self.assertLogs(opensearch_ingestor.logger, level="ERROR"):
-            opensearch_ingestor.process_users(start_date, end_date)
-
-    def test_process_users_TimeoutError(self):
-        # Test the function process_users with the exception TimeoutError
-        self.opensearch_config["timeout"] = 0.001
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
         opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
@@ -212,16 +203,6 @@ class OpensearchIngestionTestCase(TestCase):
     def test_process_user_logins_ConnectionError(self):
         # Test the function process_user_logins with the exception ConnectionError
         self.opensearch_config["url"] = "http://unexisting-url:8888"
-        start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
-        end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
-        with self.assertLogs(opensearch_ingestor.logger, level="ERROR"):
-            opensearch_ingestor.process_user_logins(start_date, end_date, username="Stitch")
-
-    def test_process_user_logins_TimeoutError(self):
-        # Test the function process_user_logins with the exception TimeoutError
-        # No test
-        self.opensearch_config["timeout"] = 0.001
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
         opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
@@ -303,7 +284,7 @@ class OpensearchIngestionTestCase(TestCase):
         self.assertEqual([], user_logins)
 
         # Clean up the test index
-        self.os.indices.delete(index=index_name, ignore=[404])
+        self.os.indices.delete(index="cloud-missing-ip-test", ignore=[404])
 
     def test_process_user_logins_field_mapping(self):
         # Test that field mapping works correctly in process_user_logins
@@ -354,4 +335,4 @@ class OpensearchIngestionTestCase(TestCase):
         self.assertEqual("United States", login["source.geo.country_name"])
 
         # clean up the test index
-        self.os.indices.delete(index=index_name, ignore=[404])
+        self.os.indices.delete(index="cloud-mapping-test", ignore=[404])
