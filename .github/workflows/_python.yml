@@ -194,7 +194,7 @@ on:
         description: Elasticsearch container version
         type: string
         required: false
-        default: 8.11.1
+        default: latest
       elasticsearch_port:
         description: Elasticsearch container port
         type: string

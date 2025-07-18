@@ -1,3 +1,15 @@
+## 2.7.x
+### 2.7.0
+#### Features
+* Migrated from Elasticsearch client 7.x to 9.0.3 (also in the CI)
+* Implement an `alert_preferences` config, where users can choose which types of alerts they want to receive/prioritize (Google Summer of Code 2025 - @kunalsz)
+* Added customizable templates for alerting - Users will be able to define the format of alert messages with the help of placeholders (Google Summer of Code 2025 - @kunalsz)
+#### Changes
+* Removed elasticsearch_dsl from requirements
+* Refactored API and views module (Google Summer of Code 2025 - @noble47)
+* Updated `active_alerter` view function to handle multiple active alerters (Google Summer of Code 2025 - @noble47)
+* Refactored test - created validator, detection and task test modules (Google Summer of Code 2025 - @noble47)
+
 ## 2.6.x
 ### 2.6.0
 #### Features
@@ -5,12 +17,11 @@
 * Created new ingestion API endpoints that let users view and configure log ingestion (Google Summer of Code 2025 - @noble47)
 * Updated some Python dependencies
 * Updated elasticsearch and Kibana docker image versions to 7.17.28
-* * Added healthcheck to the Postgres Docker container
+* Added healthcheck to the Postgres Docker container
 * Added FawltyDeps linter - dependency checker for Python that finds undeclared and/or unused 3rd-party dependencies - for local dev
 * Develop a standard alert message formatter to take in all the necessary inputs, ensures a consistent message structure across all alerting platforms (Google Summer of Code 2025 - @kunalsz)
 #### Changes
 * Added `requirements_opt.txt` file that collects the Python dependencies used only with specific configurations
-#### Changes
 * Converted the Elasticsearch fake data (for tests) generator script into a Django Management Command
 * Moved documentation from Wiki to the project docs folder
 
