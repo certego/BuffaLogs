@@ -8,7 +8,9 @@ from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, User
-from impossible_travel.views.utils import load_data
+from impossible_travel.views.utils import get_config_read_write, load_data
+
+read_config, write_config = get_config_read_write("alerting.json")
 
 
 @require_http_methods(["GET"])
@@ -91,7 +93,7 @@ def get_user_alerts(request):
         tmp = {
             "timestamp": alert.login_raw_data.get("timestamp"),
             "created": alert.created,
-            "notified": alert.notified,
+            "notified": alert.notified_status,
             "triggered_by": alert.user.username,
             "rule_name": alert.name,
             "rule_desc": alert.description,
@@ -123,3 +125,54 @@ def alert_types(request):
     """Return all supported alert types."""
     alert_types = [{"alert_type": alert.value, "description": alert.label} for alert in AlertDetectionType]
     return JsonResponse(alert_types, safe=False, json_dumps_params={"default": str})
+
+
+def serialize_config(config_dict):
+    data = {}
+    for key, value in config_dict.items():
+        if isinstance(value, dict):
+            data.update(value)
+            continue
+        data[key] = value
+    return data
+
+
+@require_http_methods(["GET"])
+def get_alerters(request):
+    config = read_config()
+    config.pop("active_alerters")
+    alerters = [
+        {"alerter": alerter, "fields": [field for field in config[alerter].keys() if field != "options"], "options": list(config[alerter].get("options", []))}
+        for alerter in config.keys()
+        if alerter != "dummy"
+    ]
+    return JsonResponse(alerters, safe=False, json_dumps_params={"default": str})
+
+
+@require_http_methods(["GET"])
+def get_active_alerter(request):
+    alert_config = read_config()
+    active_alerters = alert_config["active_alerters"]
+    alerter_config = [{"alerter": alerter, "fields": alert_config[alerter]} for alerter in active_alerters]
+    return JsonResponse(alerter_config, safe=False, json_dumps_params={"default": str})
+
+
+def alerter_config(request, alerter):
+    try:
+        alerter_config = read_config(key=alerter)
+    except KeyError:
+        return JsonResponse({"message": f"Unsupported alerter - {alerter}"}, status=400)
+
+    if request.method == "GET":
+        content = {"alerter": alerter, "fields": dict((field, alerter_config[field]) for field in alerter_config.keys())}
+        return JsonResponse(content, json_dumps_params={"default": str})
+
+    if request.method == "POST":
+        config_update = json.loads(request.body.decode("utf-8"))
+        error_fields = [field for field in config_update.keys() if field not in alerter_config.keys()]
+        if any(error_fields):
+            return JsonResponse({"message": f"Unexpected configuration fields - {error_fields}"}, status=400)
+        else:
+            alerter_config.update(config_update)
+            write_config(alerter, alerter_config)
+            return JsonResponse({"message": "Update successful"}, status=200)
