@@ -6,8 +6,8 @@ from typing import List
 import elasticsearch
 from django.conf import settings
 from django.test import TestCase
+from elasticsearch.dsl import connections
 from elasticsearch.helpers import bulk
-from elasticsearch_dsl import connections
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
 
 
@@ -43,7 +43,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.list_to_be_added_fw_proxy = load_test_data("test_data_elasticsearch_fw_proxy")
         self.es = elasticsearch.Elasticsearch(self.elastic_config["url"])
         self.template = load_elastic_template("example_template")
-        connections.create_connection(hosts=self.elastic_config["url"], timeout=self.ingestion_config["elasticsearch"]["timeout"])
+        connections.create_connection(hosts=self.elastic_config["url"], request_timeout=self.ingestion_config["elasticsearch"]["timeout"])
         self._load_elastic_template_on_elastic(template_to_be_added=self.template)
         # load test data into the 2 indexes: cloud-* and fw-proxy-*
         self._load_test_data_on_elastic(data_to_be_added=self.list_to_be_added_cloud, index="cloud-test_data")
@@ -56,8 +56,8 @@ class ElasticsearchIngestionTestCase(TestCase):
 
     def tearDown(self) -> None:
         # executed once per test (at the end)
-        self.es.indices.delete(index="cloud-*", ignore=[404])
-        self.es.indices.delete(index="fw-proxy-*", ignore=[404])
+        self.es.indices.delete(index="cloud-test_data", ignore=[404])
+        self.es.indices.delete(index="fw-proxy-test_data", ignore=[404])
 
     def _bulk_gendata(self, index: str, data_list: list):
         for single_data in data_list:
