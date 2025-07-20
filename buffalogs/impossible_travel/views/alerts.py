@@ -7,7 +7,7 @@ from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 
 from impossible_travel.constants import AlertDetectionType
-from impossible_travel.models import Alert
+from impossible_travel.models import Alert, User
 from impossible_travel.views.utils import load_data
 
 
