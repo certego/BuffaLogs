@@ -63,7 +63,7 @@ class TestIngestionAPIViews(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(expected, json.loads(response.content))
 
-    @mock.patch("impossible_travel.views.ingestion.write_ingestion_config", side_effect=mock_write_ingestion_config)
+    @mock.patch("impossible_travel.views.ingestion.write_config", side_effect=mock_write_ingestion_config)
     def test_update_ingestion_source_config(self, mock_writer):
         response = self.client.post(
             f"{reverse('ingestion_source_config_api', kwargs={'source' : 'elasticsearch'})}",

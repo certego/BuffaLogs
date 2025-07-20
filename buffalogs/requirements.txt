@@ -32,3 +32,6 @@ PyJWT>=2.10.1                    # JSON Web Token implementation (may be used di
 
 # === File handle utilities ===
 PyYAML>=6.0.2                    # To handle yaml files
+
+# === Jinja2 ===
+Jinja2>=3.1.6                   # Templating engine for rendering alert messages
