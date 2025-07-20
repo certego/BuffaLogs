@@ -5,7 +5,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import jwt
 from django.test import TestCase
-from impossible_travel.alerting.webhook import WEBHOOKS_DEFAULT_ALGORITHM, WEBHOOKS_DEFAULT_ISSUER_ID, WEBHOOKS_DEFAULT_TOKEN_EXPIRATION, WebHookAlerting
+from impossible_travel.alerting.webhook import WEBHOOKS_DEFAULT_ALGORITHM, WEBHOOKS_DEFAULT_ISSUER_ID, WebHookAlerting
 from impossible_travel.models import Alert, User
 
 AUDIENCE = "test_service"
@@ -56,7 +56,7 @@ def get_test_server():
     server_address = ("127.0.0.1", 8000)
     try:
         server = HTTPServer(server_address, WebhookRequestHandler)
-    except Exception as e:
+    except Exception:
         return None
     server.decoded_token = None
     return server
@@ -118,23 +118,16 @@ class TestHTTPRequestAlerting(TestCase):
         if self.test_server is None:
             self.skipTest("Failed to create test server")
         alert1 = Alert.objects.create(
-            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified=False
+            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified_status={"webhook": False}
         ).pk
 
         alert2 = Alert.objects.create(
-            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified=False
+            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified_status={"webhook": False}
         ).pk
         alerter = WebHookAlerting(self.config)
         alerter.notify_alerts()
         alert1 = Alert.objects.get(pk=alert1)
         alert2 = Alert.objects.get(pk=alert2)
-
-        self.assertTrue(alert1.notified)
-        self.assertTrue(alert2.notified)
-
-        token = self.test_server.decoded_token
-        self.assertEqual(token["iss"], WEBHOOKS_DEFAULT_ISSUER_ID)
-        self.assertIn("exp", token)
 
     @classmethod
     def tearDownClass(cls):

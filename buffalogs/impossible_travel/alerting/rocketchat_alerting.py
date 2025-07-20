@@ -1,4 +1,8 @@
-import requests
+try:
+    import requests
+except ImportError:
+    pass
+from django.db.models import Q
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -25,7 +29,7 @@ class RocketChatAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(notified=False)
+        alerts = Alert.objects.filter(Q(notified_status__rocketchat=False) | ~Q(notified_status__has_key="rocketchat"))
         for alert in alerts:
             alert_title, alert_description = self.alert_message_formatter(alert)
             alert_msg = alert_title + "\n\n" + alert_description
@@ -35,7 +39,7 @@ class RocketChatAlerting(BaseAlerting):
                 resp = requests.post(self.webhook_url, data=rocketchat_message)
                 resp.raise_for_status()
                 self.logger.info(f"RocketChat alert sent: {alert.name}")
-                alert.notified = True
+                alert.notified_status["rocketchat"] = True
                 alert.save()
             except requests.RequestException as e:
                 self.logger.exception(f"RocketChat alert failed for {alert.name}: {str(e)}")

@@ -1,6 +1,10 @@
 import json
 
-import requests
+try:
+    import requests
+except ImportError:
+    pass
+from django.db.models import Q
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -25,7 +29,7 @@ class MicrosoftTeamsAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(notified=False)
+        alerts = Alert.objects.filter(Q(notified_status__microsoftteams=False) | ~Q(notified_status__has_key="microsoftteams"))
         for alert in alerts:
             alert_title, alert_description = self.alert_message_formatter(alert)
 
@@ -44,7 +48,7 @@ class MicrosoftTeamsAlerting(BaseAlerting):
                 )
                 resp.raise_for_status()
                 self.logger.info(f"MicrosoftTeams alert sent: {alert.name}")
-                alert.notified = True
+                alert.notified_status["microsoftteams"] = True
                 alert.save()
             except requests.RequestException as e:
                 self.logger.exception(f"MicrosoftTeams alert failed for {alert.name}: {str(e)}")

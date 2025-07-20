@@ -1,26 +1,11 @@
 import json
-from pathlib import Path
 
 from django.conf import settings
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.views.decorators.http import require_http_methods
+from impossible_travel.views import utils
 
-
-def read_config(source_name: str | None = None):
-    config_path = Path(settings.CERTEGO_BUFFALOGS_CONFIG_PATH) / "buffalogs/ingestion.json"
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = json.load(f)
-        if source_name:
-            return config[source_name]
-        return config
-
-
-def write_ingestion_config(source_name: str, ingestion_config: dict[str, str]):
-    config_path = Path(settings.CERTEGO_BUFFALOGS_CONFIG_PATH) / "buffalogs/ingestion.json"
-    config = read_config()
-    config[source_name] = ingestion_config
-    with open(config_path, "w", encoding="utf-8") as f:
-        json.dump(f, config, indent=2)
+read_config, write_config = utils.get_config_read_write("ingestion.json")
 
 
 @require_http_methods(["GET"])
@@ -41,7 +26,7 @@ def get_active_ingestion_source(request):
 
 def ingestion_source_config(request, source):
     try:
-        ingestion_config = read_config(source)
+        ingestion_config = read_config(key=source)
     except KeyError:
         return JsonResponse({"message": f"Unsupported ingestion source - {source}"}, status=400)
 
@@ -56,5 +41,5 @@ def ingestion_source_config(request, source):
             return JsonResponse({"message": f"Unexpected configuration fields - {error_fields}"}, status=400)
         else:
             ingestion_config.update(config_update)
-            write_ingestion_config(source, ingestion_config)
+            write_config(source, ingestion_config)
             return JsonResponse({"message": "Update successful"}, status=200)

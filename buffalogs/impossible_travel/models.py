@@ -55,7 +55,7 @@ class Alert(models.Model):
         default=list,
         help_text="List of filters that disabled the related alert",
     )
-    notified = models.BooleanField(help_text="True when the alert has been notified by alerter", default=False)
+    notified_status = models.JSONField(default=dict, blank=True, help_text="Tracks each active_alerter status")
 
     @property
     def is_filtered(self):

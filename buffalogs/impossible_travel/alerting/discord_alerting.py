@@ -1,6 +1,10 @@
 import json
 
-import requests
+try:
+    import requests
+except ImportError:
+    pass
+from django.db.models import Q
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -26,7 +30,8 @@ class DiscordAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(notified=False)
+        # get all the alerts that have not been notified via Discord also the ones that don't have the key
+        alerts = Alert.objects.filter(Q(notified_status__discord=False) | ~Q(notified_status__has_key="discord"))
         for alert in alerts:
             alert_title, alert_description = self.alert_message_formatter(alert)
 
@@ -39,7 +44,7 @@ class DiscordAlerting(BaseAlerting):
                 resp = requests.post(self.webhook_url, headers=headers, data=json.dumps(discord_message))
                 resp.raise_for_status()
                 self.logger.info(f"Discord alert sent: {alert.name}")
-                alert.notified = True
+                alert.notified_status["discord"] = True
                 alert.save()
             except requests.RequestException as e:
                 self.logger.exception(f"Discord alert failed for {alert.name}: {str(e)}")
