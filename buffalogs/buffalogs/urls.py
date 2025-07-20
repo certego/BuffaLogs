@@ -55,6 +55,6 @@ urlpatterns = [
     path("api/ingestion/sources/active/", ingestion.get_active_ingestion_source, name="active_ingestion_source"),
     path("api/ingestion/sources/<str:source>/", ingestion.ingestion_source_config, name="source_config"),
 
-    # Authentication
+    
     path("authentication/", include("authentication.urls")),
 ]
