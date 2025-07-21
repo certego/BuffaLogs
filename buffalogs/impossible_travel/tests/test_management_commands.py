@@ -80,18 +80,26 @@ class ManagementCommandsTestCase(TestCase):
 
     def test_parse_field_value_CommandError(self):
         # Testing the parse_field_value function for the CommandError exception
+        # 1. Single element missing "="
         with self.assertRaises(CommandError) as cm:
-            call_command("setup_config", "ignored_users lorygold")
+            call_command("setup_config", "-a", "ignored_users lorygold")
         self.assertIn("Invalid syntax 'ignored_users lorygold': must be FIELD=VALUE", str(cm.exception))
+
+        # 2. List missing "="
         with self.assertRaises(CommandError) as cm:
-            call_command("setup_config", "enabled_users [lorygold]")
+            call_command("setup_config", "-a", "enabled_users [lorygold]")
         self.assertIn("Invalid syntax 'enabled_users [lorygold]': must be FIELD=VALUE", str(cm.exception))
+
+        # 3. Field not existing
+        with self.assertRaises(CommandError) as cm:
+            call_command("setup_config", "-a", "nonexistent_field=lorygold")
+        self.assertIn("Field 'nonexistent_field' does not exist", str(cm.exception))
 
     def test_parse_field_value_empty_list(self):
         # Testing the parse_field_value function with an empty list
         actual_field, actual_value = parse_field_value("enabled_users=[]")
         self.assertEqual(actual_field, "enabled_users")
-        self.assertEqual(actual_value, "[]")
+        self.assertListEqual(actual_value, [])
 
     def test_parse_field_value_list_single_value_correct(self):
         # Testing the parse_field_value function with a str values for a list field
@@ -103,7 +111,7 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(actual_value_list, ["lorygold"])
         actual_field_list2, actual_value_list2 = parse_field_value('vip_users=["lory", "gold"]')
         self.assertEqual(actual_field_list2, "vip_users")
-        self.assertEqual(actual_value_list2, ["lory", "gold"])
+        self.assertListEqual(actual_value_list2, ["lory", "gold"])
 
     def test_parse_field_value_list_multiple_values_correct(self):
         # Testing the parse_field_value function with multiple str/regex values for a str list field

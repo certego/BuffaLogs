@@ -11,6 +11,24 @@ from impossible_travel.models import Config
 logger = logging.getLogger()
 
 
+def _cast_value(val: str) -> Any:
+    val = val.strip().strip('"').strip("'")
+    # Try to cast to int
+    if val.isdigit():
+        return int(val)
+    # Try to cast to float
+    try:
+        return float(val)
+    except ValueError:
+        pass
+    # Try to cast to boolean
+    if val.lower() == "true":
+        return True
+    elif val.lower() == "false":
+        return False
+    return val
+
+
 def parse_field_value(item: str) -> Tuple[str, Any]:
     """Parse a string of the form FIELD=VALUE or FIELD=[val1,val2]"""
     if "=" not in item:
@@ -21,9 +39,9 @@ def parse_field_value(item: str) -> Tuple[str, Any]:
 
     if value.startswith("[") and value.endswith("]"):
         inner = value[1:-1].strip()
-        parsed = [v.strip() for v in inner.split(",") if v.strip()] if inner else []
+        parsed = [_cast_value(v) for v in inner.split(",") if v.strip()]
     else:
-        parsed = value
+        parsed = _cast_value(value)
 
     return field.strip(), parsed
 
