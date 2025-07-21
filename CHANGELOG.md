@@ -1,5 +1,10 @@
 ## 2.7.x
 ### 2.7.0
+#### Changes
+* Refacotring to centralized some utilities functions
+
+## 2.7.x
+### 2.7.0
 #### Features
 * Migrated from Elasticsearch client 7.x to 9.0.3 (also in the CI)
 * Implement an `alert_preferences` config, where users can choose which types of alerts they want to receive/prioritize (Google Summer of Code 2025 - @kunalsz)
