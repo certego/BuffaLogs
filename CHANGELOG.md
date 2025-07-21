@@ -1,7 +1,7 @@
 ## 2.7.x
 ### 2.7.0
 #### Changes
-* Refacotring to centralized some utilities functions
+* Refactoring to centralized some utilities functions
 
 ## 2.7.x
 ### 2.7.0
