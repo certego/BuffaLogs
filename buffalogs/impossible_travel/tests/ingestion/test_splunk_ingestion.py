@@ -1,21 +1,9 @@
-import json
-import os
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-from django.conf import settings
 from django.test import TestCase
 from impossible_travel.ingestion.splunk_ingestion import SplunkIngestion
-
-
-def load_ingestion_config_data():
-    with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
-        mode="r",
-        encoding="utf-8",
-    ) as f:
-        config_ingestion = json.load(f)
-    return config_ingestion
+from impossible_travel.tests.utils import load_ingestion_config_data
 
 
 class SplunkIngestionTestCase(TestCase):

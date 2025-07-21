@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.test import TestCase
 from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
+from impossible_travel.tests.utils import load_ingestion_config_data
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import bulk
 
@@ -21,16 +22,6 @@ def create_opensearch_client(config):
         use_ssl=parsed.scheme == "https",
         verify_certs=False,
     )
-
-
-def load_ingestion_config_data():
-    with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
-        mode="r",
-        encoding="utf-8",
-    ) as f:
-        config_ingestion = json.load(f)
-    return config_ingestion
 
 
 def load_example_data(name):

@@ -9,17 +9,7 @@ from django.test import TestCase
 from elasticsearch.dsl import connections
 from elasticsearch.helpers import bulk
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
-from impossible_travel.tests.utils import load_test_data
-
-
-def load_ingestion_config_data():
-    with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
-        mode="r",
-        encoding="utf-8",
-    ) as f:
-        config_ingestion = json.load(f)
-    return config_ingestion
+from impossible_travel.tests.utils import load_ingestion_config_data, load_test_data
 
 
 def load_elastic_template(name):
