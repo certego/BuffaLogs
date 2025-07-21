@@ -1,10 +1,7 @@
-import json
-import os
 from datetime import datetime, timezone
 from typing import List
 from urllib.parse import urlparse
 
-from django.conf import settings
 from django.test import TestCase
 from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
 from impossible_travel.tests.utils import load_index_template, load_ingestion_config_data

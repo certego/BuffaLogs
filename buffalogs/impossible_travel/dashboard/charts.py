@@ -7,10 +7,9 @@ from django.db.models import Count
 from django.utils import timezone
 from impossible_travel.models import Alert, Login, User
 from impossible_travel.views.utils import load_data
-from pygal.style import Style
 from pygal_maps_world.maps import World
 
-pie_custom_style = Style(
+pie_custom_style = pygal.Style(
     background="transparent",
     plot_background="transparent",
     foreground="#dee2e6",
@@ -24,7 +23,7 @@ pie_custom_style = Style(
     legend_font_size=25,
     tooltip_font_size=25,
 )
-line_custom_style = Style(
+line_custom_style = pygal.Style(
     background="transparent",
     plot_background="transparent",
     foreground="#dee2e6",
@@ -38,7 +37,7 @@ line_custom_style = Style(
     x_labels_font_size=20,
 )
 
-world_custom_style = Style(
+world_custom_style = pygal.Style(
     background="transparent",
     plot_background="transparent",
     foreground="#dee2e6",
@@ -67,7 +66,7 @@ def users_pie_chart(start, end):
 
 
 def alerts_line_chart(start, end):
-    custom_style = Style(
+    custom_style = pygal.Style(
         background="transparent",
         plot_background="transparent",
         foreground="#dee2e6",
