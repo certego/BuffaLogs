@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.test import TestCase
 from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
-from impossible_travel.tests.utils import load_ingestion_config_data
+from impossible_travel.tests.utils import load_index_template, load_ingestion_config_data
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import bulk
 
@@ -22,12 +22,6 @@ def create_opensearch_client(config):
         use_ssl=parsed.scheme == "https",
         verify_certs=False,
     )
-
-
-def load_example_data(name):
-    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "elasticsearch/", name + ".json")) as file:
-        data = json.load(file)
-    return data
 
 
 class OpensearchIngestionTestCase(TestCase):
@@ -130,7 +124,7 @@ class OpensearchIngestionTestCase(TestCase):
         ]
 
         self.os = create_opensearch_client(self.opensearch_config)
-        self.template = load_example_data("example_template")
+        self.template = load_index_template("example_template")
 
         self._load_example_template_on_opensearch(template_to_be_added=self.template)
         # load test data into the 2 indexes: cloud-* and fw-proxy-*

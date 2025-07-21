@@ -18,3 +18,9 @@ def load_ingestion_config_data():
     ) as f:
         config_ingestion = json.load(f)
     return config_ingestion
+
+
+def load_index_template(name):
+    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "elasticsearch/", name + ".json")) as file:
+        data = json.load(file)
+    return data
