@@ -4,12 +4,7 @@ import os
 from django.conf import settings
 from django.test import TestCase
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
-
-
-def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data/", name + ".json")) as file:
-        data = json.load(file)
-    return data
+from impossible_travel.tests.utils import load_test_data
 
 
 def load_ingestion_config_data():

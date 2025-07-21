@@ -9,6 +9,7 @@ from django.test import TestCase
 from elasticsearch.dsl import connections
 from elasticsearch.helpers import bulk
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
+from impossible_travel.tests.utils import load_test_data
 
 
 def load_ingestion_config_data():
@@ -19,12 +20,6 @@ def load_ingestion_config_data():
     ) as f:
         config_ingestion = json.load(f)
     return config_ingestion
-
-
-def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data/", name + ".json")) as file:
-        data = json.load(file)
-    return data
 
 
 def load_elastic_template(name):

@@ -1,20 +1,11 @@
-import json
-import os
 from datetime import timedelta
 
-from django.conf import settings
 from django.db import connection
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel import tasks
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, Login, User, UsersIP
-
-
-def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data", name + ".json")) as file:
-        data = json.load(file)
-    return data
 
 
 class TestTasks(TestCase):
