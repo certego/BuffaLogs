@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import timedelta
 
 import pygal
+import pygal.style
 from dateutil.relativedelta import relativedelta
 from django.db.models import Count
 from django.utils import timezone
@@ -9,7 +10,7 @@ from impossible_travel.models import Alert, Login, User
 from impossible_travel.views.utils import load_data
 from pygal_maps_world.maps import World
 
-pie_custom_style = pygal.Style(
+pie_custom_style = pygal.style.Style(
     background="transparent",
     plot_background="transparent",
     foreground="#dee2e6",
@@ -23,7 +24,7 @@ pie_custom_style = pygal.Style(
     legend_font_size=25,
     tooltip_font_size=25,
 )
-line_custom_style = pygal.Style(
+line_custom_style = pygal.style.Style(
     background="transparent",
     plot_background="transparent",
     foreground="#dee2e6",
@@ -37,7 +38,7 @@ line_custom_style = pygal.Style(
     x_labels_font_size=20,
 )
 
-world_custom_style = pygal.Style(
+world_custom_style = pygal.style.Style(
     background="transparent",
     plot_background="transparent",
     foreground="#dee2e6",
@@ -66,7 +67,7 @@ def users_pie_chart(start, end):
 
 
 def alerts_line_chart(start, end):
-    custom_style = pygal.Style(
+    custom_style = pygal.style.Style(
         background="transparent",
         plot_background="transparent",
         foreground="#dee2e6",
@@ -130,7 +131,7 @@ def alerts_line_chart(start, end):
 
 
 def world_map_chart(start, end):
-    map_chart = pygal.maps.world.World(  # pylint: disable=no-member
+    map_chart = pygal.maps.world.World(
         style=world_custom_style,
         width=380,
         height=130,
