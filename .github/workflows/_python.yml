@@ -286,7 +286,7 @@ jobs:
         if: inputs.check_requirements_licenses && steps.cache-virtualenv.outputs.cache-hit != 'true'
         id: license_check_report
         continue-on-error: true
-        uses: pilosus/action-pip-license-checker@v2
+        uses: pilosus/action-pip-license-checker@v3
         with:
           requirements: ${{ inputs.install_from }}/${{ inputs.requirements_path }}
           exclude: ${{ inputs.ignore_requirements_licenses_regex }}
