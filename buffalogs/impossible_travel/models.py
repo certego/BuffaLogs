@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
-from impossible_travel.validators import validate_ips_or_network, validate_string_or_regex
+from impossible_travel.validators import validate_countries_names, validate_ips_or_network, validate_string_or_regex
 
 
 class User(models.Model):
@@ -179,6 +179,7 @@ class Config(models.Model):
         blank=True,
         null=True,
         default=get_default_allowed_countries,
+        validators=[validate_countries_names],
         help_text="List of countries to exclude from the detection, because 'trusted' for the customer",
     )
 
