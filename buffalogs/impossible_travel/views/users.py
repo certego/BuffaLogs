@@ -5,7 +5,7 @@ from datetime import timedelta
 from dateutil.parser import isoparse
 from django.db.models import Count, Max
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
@@ -14,10 +14,6 @@ from impossible_travel.models import User, Login
 from impossible_travel.views.utils import load_data
 from impossible_travel.dashboard.charts import (
     user_login_timeline_chart,
-    # user_geo_distribution_chart,
-    # user_device_usage_chart,
-    # user_time_of_day_chart,
-    # user_login_frequency_chart,
 )
 
 @require_http_methods(["GET"])
@@ -130,7 +126,6 @@ def user_geo_distribution_api(request, id):
     return JsonResponse({"countries": counts})
 
 
-# Optional endpoint for user login charts (e.g. timeline, geo, etc.)
 @require_http_methods(["GET"])
 def user_login_timeline_api(request, id):
     start_date, end_date, error = _parse_date_range(request)
@@ -139,6 +134,27 @@ def user_login_timeline_api(request, id):
     user = get_object_or_404(User, pk=id)
     chart = user_login_timeline_chart(user, start_date, end_date)
     return JsonResponse({"timeline": chart if isinstance(chart, str) else chart.render(is_unicode=True)})
+
+
+# NEW Template-rendering views (for frontend pages) 
+
+def all_logins_page(request, pk_user):
+    """
+    Renders the All Logins page (frontend).
+    """
+    return render(request, "users/all_logins.html", {"pk_user": pk_user})
+
+def unique_logins_page(request, pk_user):
+    """
+    Renders the Unique Logins page (frontend).
+    """
+    return render(request, "users/unique_logins.html", {"pk_user": pk_user})
+
+def user_alerts_page(request, pk_user):
+    """
+    Renders the User Alerts page (frontend).
+    """
+    return render(request, "users/alerts.html", {"pk_user": pk_user})
 
 
 # Helper

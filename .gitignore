@@ -1,6 +1,6 @@
 *.log*
 *.pyc
 .vscode
-.venv
+.venv/
 dist/
 **/.DS_Store
