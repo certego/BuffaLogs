@@ -22,6 +22,7 @@ def get_ingestion_source(source: str):
 def get_ingestion_sources():
     return requests.get(ingestion_api / "sources").json()
 
+
 def get_alerters():
     return requests.get(alerters_api).json()
 

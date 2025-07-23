@@ -36,7 +36,10 @@ def ingestion(
 ):
     if active_ingestion:
         content = requests.get_active_ingestion_source()
-        format_option.print(content=Ingestion(content), title=f"Active Ingestion Source: {content['source']}")
+        format_option.print(
+            content=Ingestion(content),
+            title=f"Active Ingestion Source: {content['source']}",
+        )
 
     if source:
         ingestion_config = Ingestion(requests.get_ingestion_source(source))
@@ -45,7 +48,6 @@ def ingestion(
     if not (source or active_ingestion):
         ingestion_sources = requests.get_ingestion_sources()
         format_option.print(content=Ingestion(ingestion_sources), title="Ingestion Sources")
-
 
 
 @app.command()

@@ -13,7 +13,16 @@ app.add_typer(show.app, name="show")
 @app.command()
 def setup(
     buffalogs_url: Annotated[str, typer.Option(help="Base URL for buffalogs.")] = None,
-    config_path: Annotated[Path, typer.Option(exists=True, dir_okay=False, readable=True, resolve_path=True, help="ini config file path")] = None,
+    config_path: Annotated[
+        Path,
+        typer.Option(
+            exists=True,
+            dir_okay=False,
+            readable=True,
+            resolve_path=True,
+            help="ini config file path",
+        ),
+    ] = None,
 ):
     """Configure BuffaCLI-specific setups."""
     if buffalogs_url:
