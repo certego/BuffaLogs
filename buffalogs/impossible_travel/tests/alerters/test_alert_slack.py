@@ -32,7 +32,9 @@ class TestSlackAlerting(TestCase):
 
         self.slack_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(
+            self.alert, template_path="slack/alert_template.jinja", user_mention="<@slack_id>"
+        )
         expected_payload = {
             "attachments": [
                 {
