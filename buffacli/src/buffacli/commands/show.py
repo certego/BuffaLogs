@@ -3,7 +3,7 @@ from typing import Annotated
 import typer
 from buffacli import config, requests
 from buffacli.formatters import FormatOptions
-from buffacli.models import AlertType, Ingestion
+from buffacli.models import Alerters, AlertType, Ingestion
 
 help_text = (
     "This command group provides visibility into BuffaLogs'"
@@ -43,13 +43,27 @@ def ingestion(
         format_option.print(content=ingestion_config, title=f"Ingestion Source : {source}")
 
     if not (source or active_ingestion):
-        ingestion_sources = Ingestion(requests.get_ingestion_sources())
-        format_option.print(content=ingestion_sources, title="Ingestion Sources")
+        ingestion_sources = requests.get_ingestion_sources()
+        format_option.print(content=Ingestion(ingestion_sources), title="Ingestion Sources")
+
 
 
 @app.command()
 def alerters(
     format_option: Annotated[FormatOptions, typer.Option("--format", "-f", help="specify display format")] = "table",
+    active_alerter: Annotated[bool, typer.Option("--active", help="Print active ingestion source")] = False,
+    alerter: Annotated[str, typer.Option(help="Supported  alerter")] = None,
 ):
     """Display supported alerters."""
-    pass
+    if active_alerter:
+        content = requests.get_active_alerter()
+        for resp in content:
+            format_option.print(content=Alerters(resp), title=f"Active Alerters: {resp['alerter']}")
+
+    if alerter:
+        alerter_config = Alerters(requests.get_alerter_config(alerter))
+        format_option.print(content=alerter_config, title=f"Alerters : {alerter}")
+
+    if not (alerter or active_alerter):
+        alerters = requests.get_alerters()
+        format_option.print(content=Alerters(alerters), title="Alerters")

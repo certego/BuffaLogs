@@ -36,9 +36,9 @@ class TestIngestionModel(unittest.TestCase):
         expected_sources_format = {
             "sources": ["elasticsearch", "opensearch", "splunk"],
             "fields": [
-                ["url", "username", "password", "timeout", "indexes"],
-                ["url", "username", "password", "timeout", "indexes"],
-                ["host", "port", "scheme", "username", "password", "timeout", "indexes"],
+                "url, username, password, timeout, indexes",
+                "url, username, password, timeout, indexes",
+                "host, port, scheme, username, password, timeout, indexes",
             ],
         }
 
