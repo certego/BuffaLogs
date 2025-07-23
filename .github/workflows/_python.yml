@@ -503,7 +503,7 @@ jobs:
           else
             CMD="python -m unittest discover"
           fi
-          CMD="${CMD} --failfast"
+          CMD="${CMD} --verbosity=2"
           echo "Running command: ${CMD}"
           $CMD
         working-directory: ${{ inputs.working_directory }}
