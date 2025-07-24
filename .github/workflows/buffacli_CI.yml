@@ -69,4 +69,4 @@ jobs:
     - name: Test with pytest
       run: |
         source ./venv/bin/activate
-        PYTHONPATH=$(pwd) pytest buffacli/tests
+        pytest buffacli/tests
