@@ -45,6 +45,7 @@ jobs:
         path: venv
         key: pip-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
     - name: Install dependencies
+      working-directory: ${{ github.workspace }}
       if: steps.cache_venv.outputs.cache-hit != 'true'
       run: |
         if [ -d "venv" ]; then rm -rf venv; fi
@@ -67,6 +68,7 @@ jobs:
         source venv/bin/activate
         isort ./buffacli --sp .github/configurations/python_linters/.isort.cfg --profile black --filter-files --check-only --diff
     - name: Test with pytest
+      working-directory: ${{ github.workspace }}
       run: |
         source ./venv/bin/activate
-        pytest buffacli/tests
+        PYTHONPATH=$(pwd) pytest buffacli/tests
