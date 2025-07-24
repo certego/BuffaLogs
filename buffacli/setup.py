@@ -1,3 +1,6 @@
 from setuptools import setup
 
-setup()
+setup(
+    name="buffacli",
+    version="1.0.0",
+)
