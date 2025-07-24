@@ -6,6 +6,7 @@ from buffacli.models import Ingestion
 class TestIngestionModel(unittest.TestCase):
 
     def setUp(self):
+        print("testing CI")
         self.active_ingestion_response = {
             "source": "elasticsearch",
             "fields": {"url": "http://elasticsearch:9200/", "username": "foobar", "password": "bar", "timeout": 90, "indexes": "cloud-*, fw-proxy-*"},
