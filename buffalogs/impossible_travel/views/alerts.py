@@ -20,7 +20,7 @@ def _parse_datetime_param(param: str):
 
 
 @require_http_methods(["GET"])
-def export_alerts_csv(request):
+def get_export_alerts_csv(request):
     """Export alerts as CSV for a given ISO8601 start/end window."""
     start = request.GET.get("start")
     end = request.GET.get("end")
@@ -54,7 +54,7 @@ def export_alerts_csv(request):
 
 
 @require_http_methods(["GET"])
-def list_alerts(request):
+def get_list_alerts(request):
     """Filter all alerts by created datetime range."""
     start_date = parse_datetime(request.GET.get("start", ""))
     end_date = parse_datetime(request.GET.get("end", ""))
@@ -73,7 +73,7 @@ def list_alerts(request):
 
 
 @require_http_methods(["GET"])
-def user_alerts(request, id):
+def get_user_alerts(request, id):
     """Return all alerts detected for a specific user."""
     try:
         user = User.objects.get(pk=id)
@@ -102,7 +102,7 @@ def user_alerts(request, id):
 
 
 @require_http_methods(["GET"])
-def recent_alerts(request):
+def get_recent_alerts(request):
     """Return the most recent 25 alerts."""
     alerts = Alert.objects.select_related("user").order_by("-created")[:25]
     result = [{
@@ -115,7 +115,44 @@ def recent_alerts(request):
 
 
 @require_http_methods(["GET"])
-def alert_types(request):
+def get_alert_types(request):
     """Return all supported alert types."""
     types = [{"alert_type": a.value, "description": a.label} for a in AlertDetectionType]
     return JsonResponse(types, safe=False, json_dumps_params={"default": str})
+
+
+
+@require_http_methods(["GET"])
+def get_alerters_list(request):
+    """Return a list of all available alerters (detection types)."""
+    alerters = [
+        {"type": alert_type.value, "description": alert_type.label}
+        for alert_type in AlertDetectionType
+    ]
+    return JsonResponse(alerters, safe=False, json_dumps_params={"default": str})
+
+
+@require_http_methods(["GET"])
+def get_active_alerters(request):
+    """Return all currently active alerters (for now, all types are active)."""
+    active = [
+        {"type": alert_type.value, "description": alert_type.label, "active": True}
+        for alert_type in AlertDetectionType
+    ]
+    return JsonResponse(active, safe=False, json_dumps_params={"default": str})
+
+
+@require_http_methods(["GET"])
+def get_alerter_detail(request, type):
+    """Return detailed info for a specific alerter (by type)."""
+    try:
+        alert_type = next(a for a in AlertDetectionType if a.value == type)
+    except StopIteration:
+        return HttpResponseNotFound(f"Alerter type '{type}' not found")
+
+    detail = {
+        "type": alert_type.value,
+        "description": alert_type.label,
+        "configurable": False,  
+    }
+    return JsonResponse(detail, json_dumps_params={"default": str})

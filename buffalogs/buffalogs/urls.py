@@ -27,23 +27,27 @@ urlpatterns = [
     path("users/<int:pk_user>/alerts/", users.user_alerts_page, name="user_alerts_page"),
 
     
-    path("users/<int:pk_user>/all_logins/get_all_logins", logins.all_logins, name="get_all_logins"),
-    path("users/<int:pk_user>/unique_logins/get_all_unique_logins", logins.unique_logins, name="get_all_unique_logins"),
-    path("users/<int:pk_user>/alerts/get_alerts", alerts.user_alerts, name="get_alerts"),
+    path("users/<int:pk_user>/all_logins/get_all_logins", logins.get_all_logins, name="get_all_logins"),
+    path("users/<int:pk_user>/unique_logins/get_all_unique_logins", logins.get_unique_logins, name="get_all_unique_logins"),
+    path("users/<int:pk_user>/alerts/get_alerts", alerts.get_user_alerts, name="get_alerts"),
 
   
-    path("api/users/<int:id>/logins/unique/", logins.unique_logins, name="unique_logins"),
-    path("api/users/<int:id>/logins/all/", logins.all_logins, name="all_logins"),
+    path("api/users/<int:id>/logins/unique/", logins.get_unique_logins, name="unique_logins"),
+    path("api/users/<int:id>/logins/all/", logins.get_all_logins, name="all_logins"),
 
    
-    path("api/users/<int:id>/alerts/", alerts.user_alerts, name="user_alerts"),
-    path("api/alerts/", alerts.list_alerts, name="alerts_list"),
-    path("api/alerts/recent/", alerts.recent_alerts, name="alerts_recent"),
-    path("api/alerts/export/", alerts.export_alerts_csv, name="alerts_export"),
-    path("api/alerts/types/", alerts.alert_types, name="alert_types"),
+    path("api/users/<int:id>/alerts/", alerts.get_user_alerts, name="user_alerts"),
+    path("api/alerts/", alerts.get_list_alerts, name="alerts_list"),
+    path("api/alerts/recent/", alerts.get_recent_alerts, name="alerts_recent"),
+    path("api/alerts/export/", alerts.get_export_alerts_csv, name="alerts_export"),
+    path("api/alerts/types/", alerts.get_alert_types, name="alert_types"),
 
 
-    path("api/alerters/", alerts.alerters_list, name="alerters_list"),  
+  
+path("api/alerters/", alerts.get_alerters_list, name="alerters_list"),
+path("api/alerters/active/", alerts.get_active_alerters, name="active_alerters"),
+path("api/alerters/<str:type>/", alerts.get_alerter_detail, name="alerter_detail"),
+
 
    
     path("api/analytics/users/pie/", charts.users_pie_chart, name="users_pie_chart"),
