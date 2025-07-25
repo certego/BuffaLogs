@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from django.test import TestCase
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.rocketchat_alerting import RocketChatAlerting
 from impossible_travel.models import Alert, Login, User
@@ -20,7 +21,11 @@ class TestRocketChatAlerting(TestCase):
 
         # Create an alert
         self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"rocketchat": False}, description="Impossible travel detected", login_raw_data={}
+            name="Imp Travel",
+            user=self.user,
+            notified_status={"rocketchat": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @patch("requests.post")
@@ -32,8 +37,12 @@ class TestRocketChatAlerting(TestCase):
 
         self.rocketchat_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
-        expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
+        expected_alert_title, expected_alert_description = (
+            BaseAlerting.alert_message_formatter(self.alert)
+        )
+        expected_alert_msg = (
+            expected_alert_title + "\n\n" + expected_alert_description
+        )
         expected_payload = {
             "text": expected_alert_msg,
             "username": self.rocketchat_config["username"],

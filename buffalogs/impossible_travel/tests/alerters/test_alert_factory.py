@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from django.test import TestCase
+
 from impossible_travel.alerting.alert_factory import AlertFactory
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert, Login, User
@@ -26,13 +27,19 @@ class TestAlertFactory(TestCase):
         self.alert = Alert.objects.create(
             name="Imp Travel",
             user=self.user,
-            notified_status={"telegram": False, "slack": False, "discord": False},
+            notified_status={
+                "telegram": False,
+                "slack": False,
+                "discord": False,
+            },
             description="Impossible travel detected",
             login_raw_data={},
         )
 
     def test_read_config(self):
-        with patch.object(AlertFactory, "_read_config", return_value=self.config):
+        with patch.object(
+            AlertFactory, "_read_config", return_value=self.config
+        ):
             alert_factory = AlertFactory()
             active_alerters = alert_factory.get_alert_classes()
             self.assertEqual(len(active_alerters), 2)
@@ -40,7 +47,9 @@ class TestAlertFactory(TestCase):
             self.assertIn("TelegramAlerting", str(active_alerters[1]))
 
     def test_send_actual_alert(self):
-        with patch.object(AlertFactory, "_read_config", return_value=self.config):
+        with patch.object(
+            AlertFactory, "_read_config", return_value=self.config
+        ):
             alert_factory = AlertFactory()
             active_alerters = alert_factory.get_alert_classes()
             for alerter in active_alerters:
@@ -53,14 +62,20 @@ class TestAlertFactory(TestCase):
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        with patch.object(AlertFactory, "_read_config", return_value=self.config):
+        with patch.object(
+            AlertFactory, "_read_config", return_value=self.config
+        ):
             alert_factory = AlertFactory()
             active_alerters = alert_factory.get_alert_classes()
             for alerter in active_alerters:
                 alerter.notify_alerts()
 
-                expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
-                expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
+                expected_alert_title, expected_alert_description = (
+                    BaseAlerting.alert_message_formatter(self.alert)
+                )
+                expected_alert_msg = (
+                    expected_alert_title + "\n\n" + expected_alert_description
+                )
 
                 if alerter.__class__.__name__ == "SlackAlerting":
                     expected_payload = {

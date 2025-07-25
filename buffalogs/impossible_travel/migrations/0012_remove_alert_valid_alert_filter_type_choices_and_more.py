@@ -2,6 +2,7 @@
 
 import django.contrib.postgres.fields
 from django.db import migrations, models
+
 import impossible_travel.models
 import impossible_travel.validators
 
@@ -9,7 +10,10 @@ import impossible_travel.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("impossible_travel", "0011_alert_filter_type_alert_is_filtered_and_more"),
+        (
+            "impossible_travel",
+            "0011_alert_filter_type_alert_is_filtered_and_more",
+        ),
     ]
 
     operations = [
@@ -31,7 +35,9 @@ class Migration(migrations.Migration):
                 help_text="List of selected users (strings or regex patterns) on which the detection will perform - If this field is not empty, the ignored_users field is ignored",
                 null=True,
                 size=None,
-                validators=[impossible_travel.validators.validate_string_or_regex],
+                validators=[
+                    impossible_travel.validators.validate_string_or_regex
+                ],
             ),
         ),
         migrations.AlterField(
@@ -44,7 +50,9 @@ class Migration(migrations.Migration):
                 help_text="List of IPs to remove from the detection",
                 null=True,
                 size=None,
-                validators=[impossible_travel.validators.validate_ips_or_network],
+                validators=[
+                    impossible_travel.validators.validate_ips_or_network
+                ],
             ),
         ),
         migrations.AlterField(
@@ -57,7 +65,9 @@ class Migration(migrations.Migration):
                 help_text="List of users (strings or regex patterns) to be ignored from the detection",
                 null=True,
                 size=None,
-                validators=[impossible_travel.validators.validate_string_or_regex],
+                validators=[
+                    impossible_travel.validators.validate_string_or_regex
+                ],
             ),
         ),
         migrations.AddConstraint(

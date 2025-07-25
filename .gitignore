@@ -5,3 +5,7 @@
 ./venv/
 dist/
 **/.DS_Store
+flake8
+# project.toml
+.isort.cfg
+pyproject.toml

@@ -4,6 +4,7 @@ except ImportError:
     pass
 import backoff
 from django.db.models import Q
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -19,14 +20,22 @@ class TelegramAlerting(BaseAlerting):
         """
         super().__init__()
         BOT_TOKEN = alert_config.get("bot_token")
-        self.chat_ids = alert_config.get("chat_ids")  # only specific chat ids get alerts
+        self.chat_ids = alert_config.get(
+            "chat_ids"
+        )  # only specific chat ids get alerts
         self.url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
         if not BOT_TOKEN or not self.chat_ids:
-            self.logger.error("Telegram Alerter configuration is missing required fields.")
-            raise ValueError("Telegram Alerter configuration is missing required fields.")
+            self.logger.error(
+                "Telegram Alerter configuration is missing required fields."
+            )
+            raise ValueError(
+                "Telegram Alerter configuration is missing required fields."
+            )
 
-    @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
+    @backoff.on_exception(
+        backoff.expo, requests.RequestException, max_tries=5, base=2
+    )
     def send_message(self, alert):
         alert_title, alert_description = self.alert_message_formatter(alert)
         alert_msg = alert_title + "\n\n" + alert_description
@@ -46,9 +55,14 @@ class TelegramAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(Q(notified_status__telegram=False) | ~Q(notified_status__has_key="telegram"))
+        alerts = Alert.objects.filter(
+            Q(notified_status__telegram=False)
+            | ~Q(notified_status__has_key="telegram")
+        )
         for alert in alerts:
             try:
                 self.send_message(alert)
             except requests.RequestException as e:
-                self.logger.exception(f"Telegram alert failed for {alert.name}: {str(e)}")
+                self.logger.exception(
+                    f"Telegram alert failed for {alert.name}: {str(e)}"
+                )

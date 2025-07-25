@@ -12,12 +12,16 @@ def validate_string_or_regex(value):
 
     for item in value:
         if not isinstance(item, str):
-            raise ValidationError(f"The single element '{item}' in the '{value}' list field must be a string")
+            raise ValidationError(
+                f"The single element '{item}' in the '{value}' list field must be a string"
+            )
 
         try:
             re.compile(item)
         except re.error:
-            raise ValidationError(f"The single element '{item}' in the '{value}' list field is not a valid regex pattern")
+            raise ValidationError(
+                f"The single element '{item}' in the '{value}' list field is not a valid regex pattern"
+            )
 
 
 def validate_ips_or_network(value):
@@ -31,7 +35,9 @@ def validate_ips_or_network(value):
             try:
                 IPv4Network(item)
             except AddressValueError:
-                raise ValidationError(f"The IP address {item} is not a valid IP")
+                raise ValidationError(
+                    f"The IP address {item} is not a valid IP"
+                )
 
 
 def get_valid_country_names():
@@ -64,4 +70,8 @@ def validate_countries_names(value):
 
     if invalid_entries:
         readable_invalids = ", ".join(invalid_entries)
-        raise ValidationError(_(f"The following entries are not valid country names: {readable_invalids}"))
+        raise ValidationError(
+            _(
+                f"The following entries are not valid country names: {readable_invalids}"
+            )
+        )

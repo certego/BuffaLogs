@@ -2,13 +2,17 @@
 
 import django.contrib.postgres.fields
 from django.db import migrations, models
+
 import impossible_travel.models
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("impossible_travel", "0013_remove_alert_valid_alert_name_choice_and_more"),
+        (
+            "impossible_travel",
+            "0013_remove_alert_valid_alert_name_choice_and_more",
+        ),
     ]
 
     operations = [

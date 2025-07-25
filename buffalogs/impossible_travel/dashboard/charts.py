@@ -8,13 +8,21 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.db.models import Count
 from django.utils import timezone
-from impossible_travel.models import Alert, Login, User
 from pygal.style import Style
 from pygal_maps_world.maps import World
 
+from impossible_travel.models import Alert, Login, User
+
 
 def _load_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/dashboard/", name + ".json"), encoding="utf-8") as file:
+    with open(
+        os.path.join(
+            settings.CERTEGO_DJANGO_PROJ_BASE_DIR,
+            "impossible_travel/dashboard/",
+            name + ".json",
+        ),
+        encoding="utf-8",
+    ) as file:
         data = json.load(file)
     return data
 
@@ -68,10 +76,30 @@ world_custom_style = Style(
 def users_pie_chart(start, end):
     pie_chart = pygal.Pie(style=pie_custom_style, width=1000, height=650)
 
-    pie_chart.add("No risk", User.objects.filter(updated__range=(start, end), risk_score="No risk").count())
-    pie_chart.add("Low", User.objects.filter(updated__range=(start, end), risk_score="Low").count())
-    pie_chart.add("Medium", User.objects.filter(updated__range=(start, end), risk_score="Medium").count())
-    pie_chart.add("High", User.objects.filter(updated__range=(start, end), risk_score="High").count())
+    pie_chart.add(
+        "No risk",
+        User.objects.filter(
+            updated__range=(start, end), risk_score="No risk"
+        ).count(),
+    )
+    pie_chart.add(
+        "Low",
+        User.objects.filter(
+            updated__range=(start, end), risk_score="Low"
+        ).count(),
+    )
+    pie_chart.add(
+        "Medium",
+        User.objects.filter(
+            updated__range=(start, end), risk_score="Medium"
+        ).count(),
+    )
+    pie_chart.add(
+        "High",
+        User.objects.filter(
+            updated__range=(start, end), risk_score="High"
+        ).count(),
+    )
     return pie_chart.render(disable_xml_declaration=True)
 
 
@@ -89,7 +117,14 @@ def alerts_line_chart(start, end):
         tooltip_font_size=20,
         x_labels_font_size=20,
     )
-    line_chart = pygal.StackedBar(fill=True, show_legend=False, style=custom_style, width=1200, height=550, x_label_rotation=20)
+    line_chart = pygal.StackedBar(
+        fill=True,
+        show_legend=False,
+        style=custom_style,
+        width=1200,
+        height=550,
+        x_label_rotation=20,
+    )
     date_range = []
     alerts_in_range = []
     date_str = []
@@ -104,7 +139,10 @@ def alerts_line_chart(start, end):
         for i in range(0, len(date_range) - 2, 2):
             alerts_in_range.append(
                 Alert.objects.filter(
-                    login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+                    login_raw_data__timestamp__range=(
+                        date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                 ).count()
             )
     elif delta_timestamp.days >= 1 and delta_timestamp.days <= 31:
@@ -117,7 +155,10 @@ def alerts_line_chart(start, end):
         for i in range(0, len(date_range) - 2, 2):
             alerts_in_range.append(
                 Alert.objects.filter(
-                    login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+                    login_raw_data__timestamp__range=(
+                        date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                 ).count()
             )
     else:
@@ -131,7 +172,10 @@ def alerts_line_chart(start, end):
         for i in range(0, len(date_range) - 2, 2):
             alerts_in_range.append(
                 Alert.objects.filter(
-                    login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+                    login_raw_data__timestamp__range=(
+                        date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                 ).count()
             )
     line_chart.x_labels = map(str, date_str)
@@ -150,7 +194,11 @@ def world_map_chart(start, end):
     tmp = {}
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
-            login_raw_data__timestamp__range=(start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end.strftime("%Y-%m-%dT%H:%M:%S.%fZ")), login_raw_data__country=value
+            login_raw_data__timestamp__range=(
+                start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            ),
+            login_raw_data__country=value,
         ).count()
         if country_alerts == 0:
             tmp[key] = None
@@ -163,15 +211,31 @@ def world_map_chart(start, end):
 # -> user personal login activity dashboard
 def user_login_timeline_chart(user, start, end):
     logins = Login.objects.filter(user=user, timestamp__range=(start, end))
-    chart = pygal.DateTimeLine(x_label_rotation=20, style=line_custom_style, title="Login Timeline", width=1000, height=650)
+    chart = pygal.DateTimeLine(
+        x_label_rotation=20,
+        style=line_custom_style,
+        title="Login Timeline",
+        width=1000,
+        height=650,
+    )
     chart.add("Logins", [(login.timestamp, 1) for login in logins])
     return chart.render(disable_xml_declaration=True)
 
 
 def user_device_usage_chart(user, start, end):
-    devices = Login.objects.filter(user=user, timestamp__range=(start, end)).values("user_agent").annotate(count=Count("id"))
+    devices = (
+        Login.objects.filter(user=user, timestamp__range=(start, end))
+        .values("user_agent")
+        .annotate(count=Count("id"))
+    )
 
-    pie_chart = pygal.Pie(style=pie_custom_style, legend=True, show_labels=False, width=1000, height=650)
+    pie_chart = pygal.Pie(
+        style=pie_custom_style,
+        legend=True,
+        show_labels=False,
+        width=1000,
+        height=650,
+    )
     pie_chart.title = "Device Usage"
     for d in devices:
         pie_chart.add(d["user_agent"], d["count"])
@@ -185,7 +249,9 @@ def user_login_frequency_chart(user, start, end):
 
     daily_counts = {day.date(): 0 for day in days}
 
-    for login in Login.objects.filter(user=user, timestamp__range=(start, end)):
+    for login in Login.objects.filter(
+        user=user, timestamp__range=(start, end)
+    ):
         login_day = login.timestamp.date()
         if login_day in daily_counts:
             daily_counts[login_day] += 1

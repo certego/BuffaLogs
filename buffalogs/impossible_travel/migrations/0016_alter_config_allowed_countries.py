@@ -2,18 +2,22 @@
 
 import json
 import os
+
 import django.contrib.postgres.fields
+from django.db import migrations, models
+
 import impossible_travel.models
 import impossible_travel.validators
-from django.db import migrations, models
 
 
 def get_valid_countries():
     migration_dir = os.path.dirname(__file__)
-    json_path = os.path.join(migration_dir, '..', 'dashboard', 'countries.json')
+    json_path = os.path.join(
+        migration_dir, "..", "dashboard", "countries.json"
+    )
     json_path = os.path.normpath(json_path)
 
-    with open(json_path, 'r', encoding='utf-8') as f:
+    with open(json_path, "r", encoding="utf-8") as f:
         countries = json.load(f)
     return set(countries.values())
 
@@ -23,7 +27,9 @@ def clean_invalid_countries(apps, schema_editor):
     valid_countries = get_valid_countries()
     for config in Config.objects.all():
         if config.allowed_countries:
-            cleaned = [c for c in config.allowed_countries if c in valid_countries]
+            cleaned = [
+                c for c in config.allowed_countries if c in valid_countries
+            ]
             if cleaned != config.allowed_countries:
                 config.allowed_countries = cleaned
                 config.save(update_fields=["allowed_countries"])
@@ -32,7 +38,10 @@ def clean_invalid_countries(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("impossible_travel", "0015_remove_alert_notified_alert_notified_status"),
+        (
+            "impossible_travel",
+            "0015_remove_alert_notified_alert_notified_status",
+        ),
     ]
 
     operations = [
@@ -47,7 +56,9 @@ class Migration(migrations.Migration):
                 help_text="List of countries to exclude from the detection, because 'trusted' for the customer",
                 null=True,
                 size=None,
-                validators=[impossible_travel.validators.validate_countries_names],
+                validators=[
+                    impossible_travel.validators.validate_countries_names
+                ],
             ),
         ),
     ]

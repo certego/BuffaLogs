@@ -1,4 +1,5 @@
 from django.db.models import Q
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -20,7 +21,10 @@ class DummyAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(Q(notified_status__dummy=False) | ~Q(notified_status__has_key="dummy"))
+        alerts = Alert.objects.filter(
+            Q(notified_status__dummy=False)
+            | ~Q(notified_status__has_key="dummy")
+        )
         for a in alerts:
             # in a real alerters, this would be the place to send the alert
             self.logger.info("Alerting %s", a.name)
