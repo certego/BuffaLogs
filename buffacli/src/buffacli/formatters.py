@@ -5,8 +5,7 @@ import re
 from enum import Enum
 from typing import Any
 
-from buffacli.models.base import DataModel
-from buffacli.render import render
+from buffacli.models import DataModel
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
