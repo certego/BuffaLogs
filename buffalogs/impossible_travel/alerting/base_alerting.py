@@ -29,7 +29,9 @@ class BaseAlerting(ABC):
 
     def __init__(self):
         super().__init__()
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}"
+        )
 
     @abstractmethod
     def notify_alerts(self):
@@ -44,7 +46,9 @@ class BaseAlerting(ABC):
         """
         Read the configuration for a specific alerter from alerting.json.
         """
-        config_path = os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json")
+        config_path = os.path.join(
+            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"
+        )
         with open(config_path, mode="r", encoding="utf-8") as f:
             config = json.load(f)
         return config.get(alerter_key, {})
@@ -54,7 +58,13 @@ class BaseAlerting(ABC):
         """
         Format the alert message for notification.
         """
-        env = Environment(loader=FileSystemLoader(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/")))
+        env = Environment(
+            loader=FileSystemLoader(
+                os.path.join(
+                    settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/"
+                )
+            )
+        )
         template = env.get_template(template_path)
         alert_title = template.module.title(alert)
         alert_description = template.module.description(alert)

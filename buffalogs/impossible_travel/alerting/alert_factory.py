@@ -2,6 +2,7 @@ import json
 import os
 
 from django.conf import settings
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.discord_alerting import DiscordAlerting
 from impossible_travel.alerting.dummy_alerting import DummyAlerting
@@ -9,7 +10,9 @@ from impossible_travel.alerting.email_alerting import EmailAlerting
 from impossible_travel.alerting.googlechat_alerting import GoogleChatAlerting
 from impossible_travel.alerting.http_request import HTTPRequestAlerting
 from impossible_travel.alerting.mattermost_alerting import MattermostAlerting
-from impossible_travel.alerting.microsoft_teams_alerting import MicrosoftTeamsAlerting
+from impossible_travel.alerting.microsoft_teams_alerting import (
+    MicrosoftTeamsAlerting,
+)
 from impossible_travel.alerting.pushover_alerting import PushoverAlerting
 from impossible_travel.alerting.rocketchat_alerting import RocketChatAlerting
 from impossible_travel.alerting.slack_alerting import SlackAlerting
@@ -24,7 +27,9 @@ class AlertFactory:
         self.active_alerters = []
         self.alert_configs = []
         for alerter in alerters:
-            self.active_alerters.append(BaseAlerting.SupportedAlerters(alerter))
+            self.active_alerters.append(
+                BaseAlerting.SupportedAlerters(alerter)
+            )
             self.alert_configs.append(config[alerter])
 
     def _read_config(self) -> dict:
@@ -32,7 +37,10 @@ class AlertFactory:
         Read the configuration file.
         """
         with open(
-            os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"),
+            os.path.join(
+                settings.CERTEGO_BUFFALOGS_CONFIG_PATH,
+                "buffalogs/alerting.json",
+            ),
             mode="r",
             encoding="utf-8",
         ) as f:
@@ -40,10 +48,16 @@ class AlertFactory:
         if "active_alerters" not in config:
             raise ValueError("active_alerters not found in alerting.json")
         for active_alerter in config["active_alerters"]:
-            if active_alerter not in [e.value for e in BaseAlerting.SupportedAlerters]:
-                raise ValueError(f"active_alerter {active_alerter} not supported")
+            if active_alerter not in [
+                e.value for e in BaseAlerting.SupportedAlerters
+            ]:
+                raise ValueError(
+                    f"active_alerter {active_alerter} not supported"
+                )
             if config[active_alerter] is None:
-                raise ValueError(f"Configuration for {active_alerter} not found")
+                raise ValueError(
+                    f"Configuration for {active_alerter} not found"
+                )
         return config
 
     def get_alert_classes(self) -> BaseAlerting:
@@ -64,4 +78,9 @@ class AlertFactory:
             BaseAlerting.SupportedAlerters.MATTERMOST: MattermostAlerting,
         }
 
-        return [alerter_map[alerter](config) for alerter, config in zip(self.active_alerters, self.alert_configs)]
+        return [
+            alerter_map[alerter](config)
+            for alerter, config in zip(
+                self.active_alerters, self.alert_configs
+            )
+        ]

@@ -79,7 +79,12 @@ WSGI_APPLICATION = "buffalogs.wsgi.application"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"simple": {"format": "%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s"}, "reader_alert": {"format": "%(message)s"}},
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s"
+        },
+        "reader_alert": {"format": "%(message)s"},
+    },
     "handlers": {
         "null": {
             "level": "DEBUG",
@@ -96,7 +101,11 @@ LOGGING = {
         },
     },
     "loggers": {
-        "django": {"level": "DEBUG", "handlers": ["file_handler"], "propagate": True},
+        "django": {
+            "level": "DEBUG",
+            "handlers": ["file_handler"],
+            "propagate": True,
+        },
         "django.db.backends": {
             "handlers": ["null"],
             "propagate": False,
@@ -227,6 +236,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "BuffalogsProcessLogsTask",
         "schedule": crontab(minute=30),
     },
-    "clean_models_periodically": {"task": "BuffalogsCleanModelsPeriodicallyTask", "schedule": crontab(hour=23, minute=59)},
-    "notify_alerts": {"task": "NotifyAlertsTask", "schedule": crontab(minute=5)},
+    "clean_models_periodically": {
+        "task": "BuffalogsCleanModelsPeriodicallyTask",
+        "schedule": crontab(hour=23, minute=59),
+    },
+    "notify_alerts": {
+        "task": "NotifyAlertsTask",
+        "schedule": crontab(minute=5),
+    },
 }

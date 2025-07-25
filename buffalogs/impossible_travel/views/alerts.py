@@ -1,7 +1,13 @@
 import csv
 import json
+
 from dateutil.parser import isoparse
-from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse, HttpResponseNotFound
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+    JsonResponse,
+)
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
@@ -30,8 +36,10 @@ def get_export_alerts_csv(request):
     try:
         start_dt = isoparse(start.replace(" ", "+"))
         end_dt = isoparse(end.replace(" ", "+"))
-        if is_naive(start_dt): start_dt = make_aware(start_dt)
-        if is_naive(end_dt): end_dt = make_aware(end_dt)
+        if is_naive(start_dt):
+            start_dt = make_aware(start_dt)
+        if is_naive(end_dt):
+            end_dt = make_aware(end_dt)
     except (ValueError, TypeError):
         return HttpResponseBadRequest("Invalid date format")
 
@@ -40,15 +48,19 @@ def get_export_alerts_csv(request):
     response["Content-Disposition"] = 'attachment; filename="alerts.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(["timestamp", "username", "alert_name", "description", "is_filtered"])
+    writer.writerow(
+        ["timestamp", "username", "alert_name", "description", "is_filtered"]
+    )
     for alert in alerts:
-        writer.writerow([
-            alert.login_raw_data.get("timestamp"),
-            alert.user.username,
-            alert.name,
-            alert.description,
-            getattr(alert, "is_filtered", False),
-        ])
+        writer.writerow(
+            [
+                alert.login_raw_data.get("timestamp"),
+                alert.user.username,
+                alert.name,
+                alert.description,
+                getattr(alert, "is_filtered", False),
+            ]
+        )
 
     return response
 
@@ -59,15 +71,22 @@ def get_list_alerts(request):
     start_date = parse_datetime(request.GET.get("start", ""))
     end_date = parse_datetime(request.GET.get("end", ""))
 
-    if is_naive(start_date): start_date = make_aware(start_date)
-    if is_naive(end_date): end_date = make_aware(end_date)
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
 
-    alerts = Alert.objects.filter(created__range=(start_date, end_date)).select_related("user")
-    result = [{
-        "timestamp": alert.login_raw_data.get("timestamp"),
-        "username": alert.user.username,
-        "rule_name": alert.name,
-    } for alert in alerts]
+    alerts = Alert.objects.filter(
+        created__range=(start_date, end_date)
+    ).select_related("user")
+    result = [
+        {
+            "timestamp": alert.login_raw_data.get("timestamp"),
+            "username": alert.user.username,
+            "rule_name": alert.name,
+        }
+        for alert in alerts
+    ]
 
     return JsonResponse(result, safe=False)
 
@@ -86,17 +105,19 @@ def get_user_alerts(request, id):
     result = []
     for alert in alerts:
         country_code = alert.login_raw_data.get("country", "").lower()
-        result.append({
-            "timestamp": alert.login_raw_data.get("timestamp"),
-            "created": alert.created,
-            "notified": alert.notified_status,
-            "triggered_by": user.username,
-            "rule_name": alert.name,
-            "rule_desc": alert.description,
-            "is_vip": alert.is_vip,
-            "country": countries.get(country_code, "Unknown"),
-            "severity_type": user.risk_score,
-        })
+        result.append(
+            {
+                "timestamp": alert.login_raw_data.get("timestamp"),
+                "created": alert.created,
+                "notified": alert.notified_status,
+                "triggered_by": user.username,
+                "rule_name": alert.name,
+                "rule_desc": alert.description,
+                "is_vip": alert.is_vip,
+                "country": countries.get(country_code, "Unknown"),
+                "severity_type": user.risk_score,
+            }
+        )
 
     return JsonResponse(result, safe=False, json_dumps_params={"default": str})
 
@@ -105,11 +126,14 @@ def get_user_alerts(request, id):
 def get_recent_alerts(request):
     """Return the most recent 25 alerts."""
     alerts = Alert.objects.select_related("user").order_by("-created")[:25]
-    result = [{
-        "user": alert.user.username,
-        "timestamp": alert.login_raw_data.get("timestamp"),
-        "name": alert.name,
-    } for alert in alerts]
+    result = [
+        {
+            "user": alert.user.username,
+            "timestamp": alert.login_raw_data.get("timestamp"),
+            "name": alert.name,
+        }
+        for alert in alerts
+    ]
 
     return JsonResponse(result, safe=False)
 
@@ -117,9 +141,11 @@ def get_recent_alerts(request):
 @require_http_methods(["GET"])
 def get_alert_types(request):
     """Return all supported alert types."""
-    types = [{"alert_type": a.value, "description": a.label} for a in AlertDetectionType]
+    types = [
+        {"alert_type": a.value, "description": a.label}
+        for a in AlertDetectionType
+    ]
     return JsonResponse(types, safe=False, json_dumps_params={"default": str})
-
 
 
 @require_http_methods(["GET"])
@@ -129,14 +155,20 @@ def get_alerters_list(request):
         {"type": alert_type.value, "description": alert_type.label}
         for alert_type in AlertDetectionType
     ]
-    return JsonResponse(alerters, safe=False, json_dumps_params={"default": str})
+    return JsonResponse(
+        alerters, safe=False, json_dumps_params={"default": str}
+    )
 
 
 @require_http_methods(["GET"])
 def get_active_alerters(request):
     """Return all currently active alerters (for now, all types are active)."""
     active = [
-        {"type": alert_type.value, "description": alert_type.label, "active": True}
+        {
+            "type": alert_type.value,
+            "description": alert_type.label,
+            "active": True,
+        }
         for alert_type in AlertDetectionType
     ]
     return JsonResponse(active, safe=False, json_dumps_params={"default": str})
@@ -153,6 +185,6 @@ def get_alerter_detail(request, type):
     detail = {
         "type": alert_type.value,
         "description": alert_type.label,
-        "configurable": False,  
+        "configurable": False,
     }
     return JsonResponse(detail, json_dumps_params={"default": str})

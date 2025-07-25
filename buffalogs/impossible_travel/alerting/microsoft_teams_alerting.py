@@ -6,6 +6,7 @@ except ImportError:
     pass
 import backoff
 from django.db.models import Q
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -23,10 +24,16 @@ class MicrosoftTeamsAlerting(BaseAlerting):
         self.webhook_url = alert_config.get("webhook_url")
 
         if not self.webhook_url:
-            self.logger.error("MicrosoftTeams Alerter configuration is missing required fields.")
-            raise ValueError("MicrosoftTeams Alerter configuration is missing required fields.")
+            self.logger.error(
+                "MicrosoftTeams Alerter configuration is missing required fields."
+            )
+            raise ValueError(
+                "MicrosoftTeams Alerter configuration is missing required fields."
+            )
 
-    @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
+    @backoff.on_exception(
+        backoff.expo, requests.RequestException, max_tries=5, base=2
+    )
     def send_message(self, alert):
         alert_title, alert_description = self.alert_message_formatter(alert)
 
@@ -54,9 +61,14 @@ class MicrosoftTeamsAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(Q(notified_status__microsoftteams=False) | ~Q(notified_status__has_key="microsoftteams"))
+        alerts = Alert.objects.filter(
+            Q(notified_status__microsoftteams=False)
+            | ~Q(notified_status__has_key="microsoftteams")
+        )
         for alert in alerts:
             try:
                 self.send_message(alert)
             except requests.RequestException as e:
-                self.logger.exception(f"MicrosoftTeams alert failed for {alert.name}: {str(e)}")
+                self.logger.exception(
+                    f"MicrosoftTeams alert failed for {alert.name}: {str(e)}"
+                )

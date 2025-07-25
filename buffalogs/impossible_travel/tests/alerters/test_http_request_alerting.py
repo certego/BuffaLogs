@@ -4,7 +4,12 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest import mock
 
 from django.test import TestCase
-from impossible_travel.alerting.http_request import PERMITTED_LOGIN_FIELD_LIST, HTTPRequestAlerting, generate_batch
+
+from impossible_travel.alerting.http_request import (
+    PERMITTED_LOGIN_FIELD_LIST,
+    HTTPRequestAlerting,
+    generate_batch,
+)
 from impossible_travel.models import Alert, User
 
 
@@ -78,7 +83,9 @@ class TestHTTPRequestAlerting(TestCase):
     def setUpClass(cls):
         cls.test_server = get_test_server()
         if cls.test_server:
-            cls.server_thread = threading.Thread(target=run_test_server, args=(cls.test_server,), daemon=True)
+            cls.server_thread = threading.Thread(
+                target=run_test_server, args=(cls.test_server,), daemon=True
+            )
             cls.server_thread.start()
         super().setUpClass()
 
@@ -101,7 +108,9 @@ class TestHTTPRequestAlerting(TestCase):
         """Test that configuration works as expected with required fields."""
         alerter = HTTPRequestAlerting(self.config)
         self.assertEqual(alerter.alert_config["name"], "test_service")
-        self.assertEqual(alerter.alert_config["endpoint"], "http://127.0.0.1:8000")
+        self.assertEqual(
+            alerter.alert_config["endpoint"], "http://127.0.0.1:8000"
+        )
         self.assertIn("fields", alerter.alert_config)
         self.assertIn("login_data", alerter.alert_config)
         self.assertIn("token_variable_name", alerter.alert_config)
@@ -119,7 +128,13 @@ class TestHTTPRequestAlerting(TestCase):
         Test that unsupported or not permitted values for alert_types, fields and login_data are dropped.
         """
         config = self.config.copy()
-        config["options"]["fields"] = ["user", "description", "not_permitted_value", "created", "unsupported_value"]
+        config["options"]["fields"] = [
+            "user",
+            "description",
+            "not_permitted_value",
+            "created",
+            "unsupported_value",
+        ]
         config["options"]["login_data"] = "unknown_string_option"
         config["options"]["alert_types"] = "_all_"
         alerter = HTTPRequestAlerting(config)
@@ -132,7 +147,11 @@ class TestHTTPRequestAlerting(TestCase):
         """Test that generate_batch correctly groups alerts."""
         alerts = ["alert1", "alert2", "alert3", "alert4", "alert5"]
         batches = list(generate_batch(alerts, 2))
-        expected_batches = [["alert1", "alert2"], ["alert3", "alert4"], ["alert5"]]
+        expected_batches = [
+            ["alert1", "alert2"],
+            ["alert3", "alert4"],
+            ["alert5"],
+        ]
         self.assertEqual(batches, expected_batches)
 
         batches = list(generate_batch(alerts, -1))
@@ -159,7 +178,9 @@ class TestHTTPRequestAlerting(TestCase):
             notified_status={"http_request": False},
         )
         alerter = HTTPRequestAlerting(self.config)
-        serialized = alerter.serialize_alerts([alert1, alert2], fields, login_data)
+        serialized = alerter.serialize_alerts(
+            [alert1, alert2], fields, login_data
+        )
         expected_output = [
             {
                 "user": "test_user",
@@ -178,7 +199,12 @@ class TestHTTPRequestAlerting(TestCase):
         ]
 
         self.assertTrue(len(expected_output) == len(serialized))
-        self.assertTrue(all(expected == data for data, expected in zip(serialized, expected_output)))
+        self.assertTrue(
+            all(
+                expected == data
+                for data, expected in zip(serialized, expected_output)
+            )
+        )
 
     @mock.patch("requests.post", side_effect=mocked_requests_post_success)
     def test_alert_marked_as_notified(self, mock_request):
@@ -213,7 +239,9 @@ class TestHTTPRequestAlerting(TestCase):
         self.assertTrue(alert2.notified_status["http_request"])
 
     @mock.patch("requests.post", side_effect=mocked_request_post_failure)
-    def test_alerts_are_not_marked_as_notified_for_failed_request(self, mock_request):
+    def test_alerts_are_not_marked_as_notified_for_failed_request(
+        self, mock_request
+    ):
 
         test_endpoint = "http://localhost:5000/alert"
 
@@ -283,7 +311,12 @@ class TestHTTPRequestAlerting(TestCase):
 
         received_data = self.test_server.received_data
         self.assertTrue(len(expected_data) == len(received_data))
-        self.assertTrue(all(expected == data for data, expected in zip(received_data, expected_data)))
+        self.assertTrue(
+            all(
+                expected == data
+                for data, expected in zip(received_data, expected_data)
+            )
+        )
 
         alert1 = Alert.objects.get(pk=alert1)
         alert2 = Alert.objects.get(pk=alert2)

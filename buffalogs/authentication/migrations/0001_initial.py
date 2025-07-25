@@ -24,10 +24,15 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("password", models.CharField(max_length=128, verbose_name="password")),
+                (
+                    "password",
+                    models.CharField(max_length=128, verbose_name="password"),
+                ),
                 (
                     "last_login",
-                    models.DateTimeField(blank=True, null=True, verbose_name="last login"),
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="last login"
+                    ),
                 ),
                 (
                     "is_superuser",
@@ -39,11 +44,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "username",
-                    models.CharField(db_index=True, max_length=255, unique=True),
+                    models.CharField(
+                        db_index=True, max_length=255, unique=True
+                    ),
                 ),
                 (
                     "email",
-                    models.EmailField(db_index=True, max_length=255, unique=True),
+                    models.EmailField(
+                        db_index=True, max_length=255, unique=True
+                    ),
                 ),
                 ("is_staff", models.BooleanField(default=False)),
                 ("is_verified", models.BooleanField(default=False)),

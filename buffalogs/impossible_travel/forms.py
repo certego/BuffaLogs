@@ -38,8 +38,12 @@ class ShortLabelChoiceField(forms.ChoiceField):
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop("choices", [])
-        formatted_choices = [("", "---------")] + [(value, value) for value, _ in choices]
-        super().__init__(*args, choices=formatted_choices, required=False, **kwargs)
+        formatted_choices = [("", "---------")] + [
+            (value, value) for value, _ in choices
+        ]
+        super().__init__(
+            *args, choices=formatted_choices, required=False, **kwargs
+        )
 
 
 class UserAdminForm(forms.ModelForm):
@@ -72,8 +76,12 @@ class ConfigAdminForm(forms.ModelForm):
         required=True,
         help_text="Hold down “Control”, or “Command” on a Mac, to select more than one.",
     )
-    alert_minimum_risk_score = ShortLabelChoiceField(choices=UserRiskScoreType.choices)
-    threshold_user_risk_alert = ShortLabelChoiceField(choices=UserRiskScoreType.choices)
+    alert_minimum_risk_score = ShortLabelChoiceField(
+        choices=UserRiskScoreType.choices
+    )
+    threshold_user_risk_alert = ShortLabelChoiceField(
+        choices=UserRiskScoreType.choices
+    )
 
     class Meta:
         model = Config

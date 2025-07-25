@@ -3,18 +3,29 @@ import os
 
 from django.conf import settings
 from django.test import TestCase
-from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
+
+from impossible_travel.ingestion.elasticsearch_ingestion import (
+    ElasticsearchIngestion,
+)
 
 
 def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data/", name + ".json")) as file:
+    with open(
+        os.path.join(
+            settings.CERTEGO_DJANGO_PROJ_BASE_DIR,
+            "impossible_travel/tests/test_data/",
+            name + ".json",
+        )
+    ) as file:
         data = json.load(file)
     return data
 
 
 def load_ingestion_config_data():
     with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
+        os.path.join(
+            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"
+        ),
         mode="r",
         encoding="utf-8",
     ) as f:
@@ -30,11 +41,14 @@ class TestBaseIngestion(TestCase):
 
     def test_normalize_fields_elasticsearch_user1(self):
         # test the _normalize_fields() fields normalization for Elasticsearch login response user1
-        logins_returned_user1 = load_test_data("test_data_elasticsearch_returned_logins_user1")
+        logins_returned_user1 = load_test_data(
+            "test_data_elasticsearch_returned_logins_user1"
+        )
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user1)
         expected_result = [
             {
@@ -67,11 +81,14 @@ class TestBaseIngestion(TestCase):
 
     def test_normalize_fields_elasticsearch_user2(self):
         # test the _normalize_fields() fields normalization for Elasticsearch login response user2
-        logins_returned_user2 = load_test_data("test_data_elasticsearch_returned_logins_user2")
+        logins_returned_user2 = load_test_data(
+            "test_data_elasticsearch_returned_logins_user2"
+        )
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user2)
         expected_result = [
             {
@@ -92,11 +109,14 @@ class TestBaseIngestion(TestCase):
 
     def test_normalize_fields_elasticsearch_user3(self):
         # test the _normalize_fields() fields normalization for Elasticsearch login response user3
-        logins_returned_user3 = load_test_data("test_data_elasticsearch_returned_logins_user3")
+        logins_returned_user3 = load_test_data(
+            "test_data_elasticsearch_returned_logins_user3"
+        )
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user3)
         expected_result = [
             {
@@ -129,11 +149,14 @@ class TestBaseIngestion(TestCase):
 
     def test_normalize_fields_elasticsearch_user4(self):
         # test the _normalize_fields() fields normalization for Elasticsearch login response user4
-        logins_returned_user4 = load_test_data("test_data_elasticsearch_returned_logins_user4")
+        logins_returned_user4 = load_test_data(
+            "test_data_elasticsearch_returned_logins_user4"
+        )
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user4)
         expected_result = [
             {
@@ -166,11 +189,14 @@ class TestBaseIngestion(TestCase):
 
     def test_normalize_fields_elasticsearch_user5(self):
         # test the _normalize_fields() fields normalization for Elasticsearch login response user4
-        logins_returned_user5 = load_test_data("test_data_elasticsearch_returned_logins_user5")
+        logins_returned_user5 = load_test_data(
+            "test_data_elasticsearch_returned_logins_user5"
+        )
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user5)
         expected_result = [
             {
