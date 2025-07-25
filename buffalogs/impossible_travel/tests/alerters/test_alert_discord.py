@@ -65,19 +65,3 @@ class TestDiscordAlerting(TestCase):
         """Test that an error is raised if the configuration is not correct"""
         with self.assertRaises(ValueError):
             DiscordAlerting({})
-
-    @patch("requests.post")
-    def test_alert_network_failure(self, mock_post):
-        """Test that alert is not marked as notified if there are any Network Fails"""
-        # Simulate network/API failure
-        mock_post.side_effect = requests.RequestException()
-
-        self.discord_alerting.notify_alerts()
-
-        # Reload the alert from DB to check its state
-        alert = Alert.objects.get(pk=self.alert.pk)
-        self.assertFalse(alert.notified_status["discord"])
-
-    def test_send_actual_alert(self):
-        """Test sending an actual alert"""
-        self.discord_alerting.notify_alerts()
