@@ -6,13 +6,20 @@ from django.conf import settings
 from django.db import connection
 from django.test import TestCase
 from django.utils import timezone
+
 from impossible_travel import tasks
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, Login, User, UsersIP
 
 
 def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data", name + ".json")) as file:
+    with open(
+        os.path.join(
+            settings.CERTEGO_DJANGO_PROJ_BASE_DIR,
+            "impossible_travel/tests/test_data",
+            name + ".json",
+        )
+    ) as file:
         data = json.load(file)
     return data
 
@@ -33,15 +40,23 @@ class TestTasks(TestCase):
 
     def reset_auto_increment(self, model):
         # reset the id number sequence after each tearDown
-        table_name = model._meta.db_table  # get the django table name, es. if model=Alert --> table_name=impossible_travel_alert
+        table_name = (
+            model._meta.db_table
+        )  # get the django table name, es. if model=Alert --> table_name=impossible_travel_alert
         with connection.cursor() as cursor:
             # get the sequence name dinamically
-            cursor.execute(f"SELECT pg_get_serial_sequence('{table_name}', 'id'); ")  # noqa: E702
-            sequence_name = cursor.fetchone()[0]  # Estrai il nome della sequenza
+            cursor.execute(
+                f"SELECT pg_get_serial_sequence('{table_name}', 'id'); "
+            )  # noqa: E702
+            sequence_name = cursor.fetchone()[
+                0
+            ]  # Estrai il nome della sequenza
 
             if sequence_name:
                 # reset the id sequence starting from 1
-                cursor.execute(f"SELECT setval('{sequence_name}', 1, false); ")  # noqa: E702
+                cursor.execute(
+                    f"SELECT setval('{sequence_name}', 1, false); "
+                )  # noqa: E702
 
     def tearDown(self):
         # delete all alerts after each test, to clean the environment
@@ -52,8 +67,14 @@ class TestTasks(TestCase):
         """Testing clear_models_periodically() function"""
         user_obj = User.objects.create(username="Lorena")
         Login.objects.create(user=user_obj, timestamp=timezone.now())
-        UsersIP.objects.create(user=user_obj, ip=self.raw_data_NEW_COUNTRY["ip"])
-        Alert.objects.create(user=user_obj, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data=self.raw_data_NEW_COUNTRY)
+        UsersIP.objects.create(
+            user=user_obj, ip=self.raw_data_NEW_COUNTRY["ip"]
+        )
+        Alert.objects.create(
+            user=user_obj,
+            name=AlertDetectionType.NEW_COUNTRY.value,
+            login_raw_data=self.raw_data_NEW_COUNTRY,
+        )
         self.assertTrue(User.objects.filter(username="Lorena").exists())
         self.assertTrue(Login.objects.filter(user=user_obj).exists())
         self.assertTrue(Alert.objects.filter(user=user_obj).exists())

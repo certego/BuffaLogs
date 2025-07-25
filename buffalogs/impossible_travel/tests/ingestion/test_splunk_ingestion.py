@@ -5,12 +5,15 @@ from unittest.mock import MagicMock, patch
 
 from django.conf import settings
 from django.test import TestCase
+
 from impossible_travel.ingestion.splunk_ingestion import SplunkIngestion
 
 
 def load_ingestion_config_data():
     with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
+        os.path.join(
+            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"
+        ),
         mode="r",
         encoding="utf-8",
     ) as f:
@@ -84,7 +87,9 @@ class SplunkIngestionTestCase(TestCase):
         mock_results_reader = MagicMock()
         mock_results_reader.__iter__.return_value = mock_results
 
-        with patch("splunklib.results.ResultsReader", return_value=mock_results_reader):
+        with patch(
+            "splunklib.results.ResultsReader", return_value=mock_results_reader
+        ):
             mock_service.jobs.create.return_value = mock_job
             ingestor = SplunkIngestion(self.splunk_config, mapping={})
 
@@ -117,14 +122,18 @@ class SplunkIngestionTestCase(TestCase):
         mock_results_reader = MagicMock()
         mock_results_reader.__iter__.return_value = self.user1_test_data
 
-        with patch("splunklib.results.ResultsReader", return_value=mock_results_reader):
+        with patch(
+            "splunklib.results.ResultsReader", return_value=mock_results_reader
+        ):
             mock_service.jobs.create.return_value = mock_job
             ingestor = SplunkIngestion(self.splunk_config, mapping={})
 
             start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
             end_date = datetime(2025, 2, 26, 14, 0, tzinfo=timezone.utc)
 
-            result = ingestor.process_user_logins(start_date, end_date, "Stitch")
+            result = ingestor.process_user_logins(
+                start_date, end_date, "Stitch"
+            )
             self.assertEqual(len(result), 2)
             self.assertEqual(result[0]["user.name"], "Stitch")
             mock_service.jobs.create.assert_called_once()
@@ -139,7 +148,9 @@ class SplunkIngestionTestCase(TestCase):
         mock_results_reader = MagicMock()
         mock_results_reader.__iter__.return_value = []
 
-        with patch("splunklib.results.ResultsReader", return_value=mock_results_reader):
+        with patch(
+            "splunklib.results.ResultsReader", return_value=mock_results_reader
+        ):
             mock_service.jobs.create.return_value = mock_job
             ingestor = SplunkIngestion(self.splunk_config, mapping={})
 
@@ -177,7 +188,9 @@ class SplunkIngestionTestCase(TestCase):
         mock_results_reader = MagicMock()
         mock_results_reader.__iter__.return_value = test_data
 
-        with patch("splunklib.results.ResultsReader", return_value=mock_results_reader):
+        with patch(
+            "splunklib.results.ResultsReader", return_value=mock_results_reader
+        ):
             mock_service.jobs.create.return_value = mock_job
             ingestor = SplunkIngestion(self.splunk_config, mapping={})
             result = ingestor.process_user_logins(
@@ -197,7 +210,9 @@ class SplunkIngestionTestCase(TestCase):
         mock_results_reader = MagicMock()
         mock_results_reader.__iter__.return_value = self.user1_test_data
 
-        with patch("splunklib.results.ResultsReader", return_value=mock_results_reader):
+        with patch(
+            "splunklib.results.ResultsReader", return_value=mock_results_reader
+        ):
             mock_service.jobs.create.return_value = mock_job
             ingestor = SplunkIngestion(self.splunk_config, mapping={})
             result = ingestor.process_user_logins(
@@ -242,7 +257,9 @@ class SplunkIngestionTestCase(TestCase):
         self.assertEqual(len(normalized), 1)
         normalized_entry = normalized[0]
         self.assertEqual(normalized_entry["username"], "test_user")
-        self.assertEqual(normalized_entry["timestamp"], "2025-02-26T13:40:15.173Z")
+        self.assertEqual(
+            normalized_entry["timestamp"], "2025-02-26T13:40:15.173Z"
+        )
         self.assertEqual(normalized_entry["ip"], "192.168.1.1")
         self.assertEqual(normalized_entry["country"], "Japan")
         self.assertEqual(normalized_entry["lat"], 35.6762)

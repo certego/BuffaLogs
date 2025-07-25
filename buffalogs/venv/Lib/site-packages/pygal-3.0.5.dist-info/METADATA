@@ -1,0 +1,106 @@
+Metadata-Version: 2.1
+Name: pygal
+Version: 3.0.5
+Summary: A Python svg graph plotting library
+Home-page: https://www.pygal.org/
+Author: Florian Mounier / Kozea
+Author-email: community@kozea.fr
+License: GNU LGPL v3+
+Keywords: svg,chart,graph,diagram,plot,histogram,kiviat
+Platform: Any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Multimedia :: Graphics :: Presentation
+Provides: pygal
+Requires-Python: >=3.8
+Description-Content-Type: text/x-rst
+License-File: COPYING
+Requires-Dist: importlib-metadata
+Provides-Extra: docs
+Requires-Dist: sphinx ; extra == 'docs'
+Requires-Dist: sphinx-rtd-theme ; extra == 'docs'
+Requires-Dist: pygal-sphinx-directives ; extra == 'docs'
+Provides-Extra: lxml
+Requires-Dist: lxml ; extra == 'lxml'
+Provides-Extra: moulinrouge
+Requires-Dist: flask ; extra == 'moulinrouge'
+Requires-Dist: pygal-maps-ch ; extra == 'moulinrouge'
+Requires-Dist: pygal-maps-fr ; extra == 'moulinrouge'
+Requires-Dist: pygal-maps-world ; extra == 'moulinrouge'
+Provides-Extra: png
+Requires-Dist: cairosvg ; extra == 'png'
+Provides-Extra: test
+Requires-Dist: cairosvg ; extra == 'test'
+Requires-Dist: coveralls ; extra == 'test'
+Requires-Dist: lxml ; extra == 'test'
+Requires-Dist: pyquery ; extra == 'test'
+Requires-Dist: pytest ; extra == 'test'
+Requires-Dist: pytest-cov ; extra == 'test'
+Requires-Dist: ruff >=0.5.6 ; extra == 'test'
+
+# Pygal
+
+
+[![Build Status](https://travis-ci.org/Kozea/pygal.svg?branch=master)](https://travis-ci.org/Kozea/pygal)
+[![Coverage Status](https://coveralls.io/repos/Kozea/pygal/badge.svg?branch=master&service=github)](https://coveralls.io/github/Kozea/pygal?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/pygal/badge/?version=latest)](https://readthedocs.org/projects/pygal/?badge=latest)
+
+
+@@TOC@@
+
+## Description
+
+**pygal** is a dynamic SVG charting library written in python.
+All the documentation is on http://pygal.org
+
+
+## Installation
+
+As simple as::
+
+    $ pip install pygal
+
+
+## Test
+
+Pygal is tested with py.test::
+
+
+    $ pip install pytest
+    $ py.test
+
+
+## Contribute
+
+You are welcomed to fork the project and make pull requests.
+Be sure to create a branch for each feature, write tests if needed and run the current tests !
+
+
+You can also support the project:
+
+[![Flattr](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=paradoxxx_zero&url=https://github.com/Kozea/pygal&title=Pygal&tags=github&category=software)
+[![gittip](http://i.imgur.com/IKcQB2P.png)](https://www.gittip.com/paradoxxxzero/)
+
+
+
+## License
+
+Copyright © 2012-2016 Kozea
+LGPLv3:
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.

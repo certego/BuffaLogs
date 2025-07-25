@@ -4,6 +4,7 @@ except ImportError:
     pass
 import backoff
 from django.db.models import Q
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -23,15 +24,25 @@ class RocketChatAlerting(BaseAlerting):
         self.username = alert_config.get("username")
 
         if not self.webhook_url or not self.channel or not self.username:
-            self.logger.error("RocketChat Alerter configuration is missing required fields.")
-            raise ValueError("RocketChat Alerter configuration is missing required fields.")
+            self.logger.error(
+                "RocketChat Alerter configuration is missing required fields."
+            )
+            raise ValueError(
+                "RocketChat Alerter configuration is missing required fields."
+            )
 
-    @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
+    @backoff.on_exception(
+        backoff.expo, requests.RequestException, max_tries=5, base=2
+    )
     def send_message(self, alert):
         alert_title, alert_description = self.alert_message_formatter(alert)
         alert_msg = alert_title + "\n\n" + alert_description
 
-        rocketchat_message = {"text": alert_msg, "username": self.username, "channel": self.channel}
+        rocketchat_message = {
+            "text": alert_msg,
+            "username": self.username,
+            "channel": self.channel,
+        }
 
         resp = requests.post(self.webhook_url, data=rocketchat_message)
         resp.raise_for_status()
@@ -45,9 +56,14 @@ class RocketChatAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(Q(notified_status__rocketchat=False) | ~Q(notified_status__has_key="rocketchat"))
+        alerts = Alert.objects.filter(
+            Q(notified_status__rocketchat=False)
+            | ~Q(notified_status__has_key="rocketchat")
+        )
         for alert in alerts:
             try:
                 self.send_message(alert)
             except requests.RequestException as e:
-                self.logger.exception(f"RocketChat alert failed for {alert.name}: {str(e)}")
+                self.logger.exception(
+                    f"RocketChat alert failed for {alert.name}: {str(e)}"
+                )

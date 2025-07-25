@@ -10,7 +10,9 @@ from .models import User
 class RegisterSerializer(rfs.ModelSerializer):
     password = rfs.CharField(max_length=68, min_length=6, write_only=True)
 
-    default_error_messages = {"username": "The username should only contain alphanumeric characters"}
+    default_error_messages = {
+        "username": "The username should only contain alphanumeric characters"
+    }
 
     class Meta:
         model = User
@@ -24,7 +26,9 @@ class RegisterSerializer(rfs.ModelSerializer):
         if user_filtered_by_email:
             raise rfs.ValidationError("User with that email already exists")
 
-        user_filtered_by_username = User.objects.filter(username=username).first()
+        user_filtered_by_username = User.objects.filter(
+            username=username
+        ).first()
         if user_filtered_by_username:
             raise rfs.ValidationError("User with that username already exists")
 
@@ -45,7 +49,10 @@ class LoginSerializer(rfs.ModelSerializer):
     def get_tokens(self, obj):
         user = User.objects.get(email=obj["email"])
 
-        return {"refresh": user.tokens()["refresh"], "access": user.tokens()["access"]}
+        return {
+            "refresh": user.tokens()["refresh"],
+            "access": user.tokens()["access"],
+        }
 
     class Meta:
         model = User
@@ -64,7 +71,11 @@ class LoginSerializer(rfs.ModelSerializer):
         if not user:
             raise AuthenticationFailed("Invalid credentials, try again")
 
-        return {"email": user.email, "username": user.username, "tokens": user.tokens}
+        return {
+            "email": user.email,
+            "username": user.username,
+            "tokens": user.tokens,
+        }
 
 
 class LogoutSerializer(rfs.Serializer):

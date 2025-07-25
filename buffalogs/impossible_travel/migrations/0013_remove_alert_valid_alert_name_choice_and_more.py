@@ -2,6 +2,7 @@
 
 import django.contrib.postgres.fields
 from django.db import migrations, models
+
 import impossible_travel.models
 import impossible_travel.validators
 
@@ -155,7 +156,9 @@ class Migration(migrations.Migration):
                 help_text="List of selected users (strings or regex patterns) on which the detection will perform",
                 null=True,
                 size=None,
-                validators=[impossible_travel.validators.validate_string_or_regex],
+                validators=[
+                    impossible_travel.validators.validate_string_or_regex
+                ],
             ),
         ),
         migrations.AlterField(

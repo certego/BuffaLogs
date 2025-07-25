@@ -3,6 +3,7 @@ from datetime import timedelta
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.utils import timezone
+
 from impossible_travel.alerting.alert_factory import AlertFactory
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User
@@ -74,19 +75,27 @@ def process_logs(start_date=None, end_date=None):
 
             # for each user returned, get the related logins
             for username in usernames_list:
-                user_logins = ingestion.process_user_logins(start_date, end_date, username)
+                user_logins = ingestion.process_user_logins(
+                    start_date, end_date, username
+                )
 
                 parsed_logins = ingestion.normalize_fields(logins=user_logins)
 
-                logger.info(f"Got {len(parsed_logins)} actual useful logins for the user {username}")
+                logger.info(
+                    f"Got {len(parsed_logins)} actual useful logins for the user {username}"
+                )
 
                 # if valid logins have been found, add the user into the DB and start the detection
                 if parsed_logins:
-                    db_user, created = User.objects.get_or_create(username=username)
+                    db_user, created = User.objects.get_or_create(
+                        username=username
+                    )
                     if not created:
                         # Saving user anyway to update updated_at field in order to take track of the recent users seen
                         db_user.save()
-                    detection.check_fields(db_user=db_user, fields=parsed_logins)
+                    detection.check_fields(
+                        db_user=db_user, fields=parsed_logins
+                    )
 
 
 @shared_task(name="NotifyAlertsTask")

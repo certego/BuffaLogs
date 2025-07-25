@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.http import JsonResponse
 from django.utils import timezone
+
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.models import Login, User
 
@@ -15,7 +16,9 @@ def get_all_logins(request, pk_user):
     ingestion = IngestionFactory().get_ingestion_class()
     user_logins = ingestion.process_user_logins(start_date, end_date, username)
     normalized_user_logins = ingestion.normalize_fields(user_logins)
-    return JsonResponse(json.dumps(normalized_user_logins, default=str), safe=False)
+    return JsonResponse(
+        json.dumps(normalized_user_logins, default=str), safe=False
+    )
 
 
 def get_unique_logins(request, pk_user):

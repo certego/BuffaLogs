@@ -41,9 +41,13 @@ class UserRiskScoreType(models.TextChoices):
         :return : "lower", "equal" or "higher"
         :rtype: RiskComparisonType Enum
         """
-        if UserRiskScoreType.values.index(value) < UserRiskScoreType.values.index(threshold):
+        if UserRiskScoreType.values.index(
+            value
+        ) < UserRiskScoreType.values.index(threshold):
             return ComparisonType.LOWER
-        if UserRiskScoreType.values.index(value) == UserRiskScoreType.values.index(threshold):
+        if UserRiskScoreType.values.index(
+            value
+        ) == UserRiskScoreType.values.index(threshold):
             return ComparisonType.EQUAL
         return ComparisonType.HIGHER
 
@@ -90,7 +94,9 @@ class AlertFilterType(models.TextChoices):
     IGNORED_USER_FILTER = "ignored_users filter", _(
         "Alert filtered because the user is ignored - the user is in the Config.ignored_users list or Config.enabled_users list is populated"
     )
-    IGNORED_IP_FILTER = "ignored_ips filter", _("Alert filtered because the IP is ignored - the ip is in the Config.ignored_ips list")
+    IGNORED_IP_FILTER = "ignored_ips filter", _(
+        "Alert filtered because the IP is ignored - the ip is in the Config.ignored_ips list"
+    )
     ALLOWED_COUNTRY_FILTER = "allowed_countries filter", _(
         "Alert filtered because the country is whitelisted - the country is in the Config.allowed_countries list"
     )
@@ -103,8 +109,12 @@ class AlertFilterType(models.TextChoices):
     FILTERED_ALERTS = "filtered_alerts_types filter", _(
         "Alert filtered because this detection type is excluded - the Alert.name detection type is in the Config.filtered_alerts_types list"
     )
-    IS_MOBILE_FILTER = "ignore_mobile_logins filter", _("Alert filtered because the login is from a mobile device - Config.ignore_mobile_logins is True")
-    IGNORED_ISP_FILTER = "ignored_ISPs filter", _("Alert filtered because the ISP is whitelisted - The ISP is in the Config.ignored_ISPs list")
+    IS_MOBILE_FILTER = "ignore_mobile_logins filter", _(
+        "Alert filtered because the login is from a mobile device - Config.ignore_mobile_logins is True"
+    )
+    IGNORED_ISP_FILTER = "ignored_ISPs filter", _(
+        "Alert filtered because the ISP is whitelisted - The ISP is in the Config.ignored_ISPs list"
+    )
 
 
 class ComparisonType(models.TextChoices):

@@ -4,6 +4,7 @@ except ImportError:
     pass
 import backoff
 from django.db.models import Q
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -22,10 +23,16 @@ class MattermostAlerting(BaseAlerting):
         self.username = alert_config.get("username")
 
         if not self.webhook_url or not self.username:
-            self.logger.error("Mattermost Alerter configuration is missing required fields.")
-            raise ValueError("Mattermost Alerter configuration is missing required fields.")
+            self.logger.error(
+                "Mattermost Alerter configuration is missing required fields."
+            )
+            raise ValueError(
+                "Mattermost Alerter configuration is missing required fields."
+            )
 
-    @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
+    @backoff.on_exception(
+        backoff.expo, requests.RequestException, max_tries=5, base=2
+    )
     def send_message(self, alert):
         alert_title, alert_description = self.alert_message_formatter(alert)
         alert_msg = alert_title + "\n\n" + alert_description
@@ -47,10 +54,15 @@ class MattermostAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(Q(notified_status__mattermost=False) | ~Q(notified_status__has_key="mattermost"))
+        alerts = Alert.objects.filter(
+            Q(notified_status__mattermost=False)
+            | ~Q(notified_status__has_key="mattermost")
+        )
 
         for alert in alerts:
             try:
                 self.send_message(alert)
             except requests.RequestException as e:
-                self.logger.exception(f"Mattermost alert failed for {alert.name}: {str(e)}")
+                self.logger.exception(
+                    f"Mattermost alert failed for {alert.name}: {str(e)}"
+                )

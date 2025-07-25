@@ -3,19 +3,30 @@ import os
 
 from django.conf import settings
 from django.test import TestCase
-from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
+
+from impossible_travel.ingestion.elasticsearch_ingestion import (
+    ElasticsearchIngestion,
+)
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 
 
 def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data/", name + ".json")) as file:
+    with open(
+        os.path.join(
+            settings.CERTEGO_DJANGO_PROJ_BASE_DIR,
+            "impossible_travel/tests/test_data/",
+            name + ".json",
+        )
+    ) as file:
         data = json.load(file)
     return data
 
 
 def load_ingestion_config_data():
     with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
+        os.path.join(
+            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"
+        ),
         mode="r",
         encoding="utf-8",
     ) as f:
@@ -34,8 +45,16 @@ class IngestionFactoryTestCase(TestCase):
         self.assertIsNotNone(factory.active_ingestion.value)
         self.assertIsNot({}, factory.ingestion_config)
         self.assertIsInstance(factory.ingestion_config, dict)
-        self.assertEqual(self.ingestion_config["active_ingestion"], factory.active_ingestion.value)
-        self.assertDictEqual(self.ingestion_config[factory.active_ingestion.value]["custom_mapping"], factory.mapping)
+        self.assertEqual(
+            self.ingestion_config["active_ingestion"],
+            factory.active_ingestion.value,
+        )
+        self.assertDictEqual(
+            self.ingestion_config[factory.active_ingestion.value][
+                "custom_mapping"
+            ],
+            factory.mapping,
+        )
 
     def test_read_config_valid(self):
         # test correct config loading
@@ -50,4 +69,6 @@ class IngestionFactoryTestCase(TestCase):
         factory = IngestionFactory()
         ingestion_class = factory.get_ingestion_class()
         self.assertIsInstance(ingestion_class, ElasticsearchIngestion)
-        self.assertEqual(excpected_config["elasticsearch"], factory.ingestion_config)
+        self.assertEqual(
+            excpected_config["elasticsearch"], factory.ingestion_config
+        )

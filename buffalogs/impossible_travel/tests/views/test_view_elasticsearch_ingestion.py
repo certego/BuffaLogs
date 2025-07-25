@@ -7,12 +7,21 @@ from django.conf import settings
 from django.test import Client, TestCase
 from django.urls import reverse
 from elasticsearch import Elasticsearch
-from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
+
+from impossible_travel.ingestion.elasticsearch_ingestion import (
+    ElasticsearchIngestion,
+)
 from impossible_travel.models import User
 
 
 def read_config():
-    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"), mode="r", encoding="utf-8") as f:
+    with open(
+        os.path.join(
+            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"
+        ),
+        mode="r",
+        encoding="utf-8",
+    ) as f:
         config = json.load(f)
         config = config["elasticsearch"]
         config["url"] = "http://localhost:9200/"
@@ -31,11 +40,15 @@ class TestViewsElasticIngestion(TestCase):
         self.config = read_config()
         self.create_test_data()
 
-    @patch("impossible_travel.ingestion.ingestion_factory.IngestionFactory.get_ingestion_class")
+    @patch(
+        "impossible_travel.ingestion.ingestion_factory.IngestionFactory.get_ingestion_class"
+    )
     @patch("django.utils.timezone.now")
     def test_get_all_logins(self, mock_now, mock_get_ingestion_class):
         mock_now.return_value = datetime(1970, 1, 1, 0, 0) + timedelta(days=10)
-        mock_get_ingestion_class.return_value = ElasticsearchIngestion(ingestion_config=self.config, mapping=self.config["custom_mapping"])
+        mock_get_ingestion_class.return_value = ElasticsearchIngestion(
+            ingestion_config=self.config, mapping=self.config["custom_mapping"]
+        )
         url = reverse("get_all_logins", kwargs={"pk_user": self.user.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -49,13 +62,22 @@ class TestViewsElasticIngestion(TestCase):
             "@timestamp": "1970-01-01T00:00:00Z",
             "user": {"name": "test_user"},
             "source": {
-                "geo": {"country_name": "Test Country", "location": {"lat": 12.34, "lon": 56.78}},
+                "geo": {
+                    "country_name": "Test Country",
+                    "location": {"lat": 12.34, "lon": 56.78},
+                },
                 "as": {"organization": {"name": "Test ISP"}},
                 "ip": "192.168.1.1",
                 "intelligence_category": "Test Category",
             },
-            "user_agent": {"original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"},
-            "event": {"type": "start", "category": "authentication", "outcome": "success"},
+            "user_agent": {
+                "original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"
+            },
+            "event": {
+                "type": "start",
+                "category": "authentication",
+                "outcome": "success",
+            },
         }
 
         indicies = ["cloud", "fw-proxy"]

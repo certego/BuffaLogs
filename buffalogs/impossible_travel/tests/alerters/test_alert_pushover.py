@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from django.test import TestCase
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.pushover_alerting import PushoverAlerting
 from impossible_travel.models import Alert, Login, User
@@ -21,7 +22,11 @@ class TestPushoverAlerting(TestCase):
 
         # Create an alert
         self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"pushover": False}, description="Impossible travel detected", login_raw_data={}
+            name="Imp Travel",
+            user=self.user,
+            notified_status={"pushover": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @patch("requests.post")
@@ -33,11 +38,21 @@ class TestPushoverAlerting(TestCase):
 
         self.pushover_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
-        expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
-        expected_payload = {"token": self.pushover_config["api_key"], "user": self.pushover_config["user_key"], "message": expected_alert_msg}
+        expected_alert_title, expected_alert_description = (
+            BaseAlerting.alert_message_formatter(self.alert)
+        )
+        expected_alert_msg = (
+            expected_alert_title + "\n\n" + expected_alert_description
+        )
+        expected_payload = {
+            "token": self.pushover_config["api_key"],
+            "user": self.pushover_config["user_key"],
+            "message": expected_alert_msg,
+        }
 
-        mock_post.assert_called_once_with("https://api.pushover.net/1/messages.json", data=expected_payload)
+        mock_post.assert_called_once_with(
+            "https://api.pushover.net/1/messages.json", data=expected_payload
+        )
 
     @patch("requests.post")
     def test_no_alerts(self, mock_post):

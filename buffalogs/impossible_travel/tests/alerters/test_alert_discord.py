@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from django.test import TestCase
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.discord_alerting import DiscordAlerting
 from impossible_travel.models import Alert, Login, User
@@ -21,7 +22,11 @@ class TestDiscordAlerting(TestCase):
 
         # Create an alert
         self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"discord": False}, description="Impossible travel detected", login_raw_data={}
+            name="Imp Travel",
+            user=self.user,
+            notified_status={"discord": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @patch("requests.post")
@@ -33,7 +38,9 @@ class TestDiscordAlerting(TestCase):
 
         self.discord_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_title, expected_alert_description = (
+            BaseAlerting.alert_message_formatter(self.alert)
+        )
 
         expected_payload = {
             "username": self.discord_config["username"],

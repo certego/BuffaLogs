@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import requests
 from django.test import TestCase
+
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.googlechat_alerting import GoogleChatAlerting
 from impossible_travel.models import Alert, Login, User
@@ -20,7 +21,11 @@ class TestGoogleChatAlerting(TestCase):
 
         # Create an alert
         self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"googlechat": False}, description="Impossible travel detected", login_raw_data={}
+            name="Imp Travel",
+            user=self.user,
+            notified_status={"googlechat": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @patch("requests.post")
@@ -32,13 +37,25 @@ class TestGoogleChatAlerting(TestCase):
 
         self.googlechat_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_title, expected_alert_description = (
+            BaseAlerting.alert_message_formatter(self.alert)
+        )
 
         expected_payload = {
             "cards": [
                 {
                     "header": {"title": expected_alert_title},
-                    "sections": [{"widgets": [{"textParagraph": {"text": expected_alert_description}}]}],
+                    "sections": [
+                        {
+                            "widgets": [
+                                {
+                                    "textParagraph": {
+                                        "text": expected_alert_description
+                                    }
+                                }
+                            ]
+                        }
+                    ],
                 }
             ]
         }

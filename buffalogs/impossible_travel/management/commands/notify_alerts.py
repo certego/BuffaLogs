@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+
 from impossible_travel.tasks import notify_alerts
 
 

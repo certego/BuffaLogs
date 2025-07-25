@@ -25,7 +25,9 @@ class BaseIngestion(ABC):
         super().__init__()
         self.ingestion_config = ingestion_config
         self.mapping = mapping
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}"
+        )
 
     @abstractmethod
     def process_users(self, start_date: datetime, end_date: datetime) -> list:
@@ -43,7 +45,9 @@ class BaseIngestion(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def process_user_logins(self, start_date: datetime, end_date: datetime, username: str) -> list:
+    def process_user_logins(
+        self, start_date: datetime, end_date: datetime, username: str
+    ) -> list:
         """Abstract method that implement the extraction of the logins of the given user in the time range defined by (start_date, end_date)
         This method will be different implemented based on the ingestion source used.
 
