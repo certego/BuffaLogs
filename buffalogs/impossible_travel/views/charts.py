@@ -54,6 +54,8 @@ def homepage(request):
         start_str = start.strftime("%B %-d, %Y")
         end = parse_datetime(date_range[1])
         end_str = end.strftime("%B %-d, %Y")
+        iso_start = start.isoformat()
+        iso_end = end.isoformat()
         users_pie_context = users_pie_chart(start, end)
         alerts_line_context = alerts_line_chart(start, end)
         world_map_context = world_map_chart(start, end)
