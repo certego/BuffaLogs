@@ -8,19 +8,21 @@ from impossible_travel.models import Alert, Login, User
 
 
 class TestEmailAlerting(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """Set up test data once for all tests in this class."""
+        cls.email_config = BaseAlerting.read_config("email")
+        cls.email_alerting = EmailAlerting(cls.email_config)
 
-    def setUp(self):
-        """Set up test data before running tests."""
-        self.email_config = BaseAlerting.read_config("email")
-        self.email_alerting = EmailAlerting(self.email_config)
+        cls.user = User.objects.create(username="testuser")
+        Login.objects.create(user=cls.user, id=cls.user.id)
 
-        # Create a dummy user
-        self.user = User.objects.create(username="testuser")
-        Login.objects.create(user=self.user, id=self.user.id)
-
-        # Create an alert
-        self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"email": False}, description="Impossible travel detected", login_raw_data={}
+        cls.alert = Alert.objects.create(
+            name="Imp Travel",
+            user=cls.user,
+            notified_status={"email": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
@@ -48,7 +50,7 @@ class TestEmailAlerting(TestCase):
 
         # Checks for email sent to user
         self.assertEqual(emailToUser.subject, "BuffaLogs - Login Anomaly Alert: Imp Travel")
-        self.assertIn("Dear testuser", emailToUser.body)
+        self.assertIn(f"Dear {self.user.username}", emailToUser.body)
         self.assertEqual(emailToUser.from_email, expected_from_email)
         self.assertEqual(emailToUser.to, [expected_recipient_list_users[self.user.username]])
 

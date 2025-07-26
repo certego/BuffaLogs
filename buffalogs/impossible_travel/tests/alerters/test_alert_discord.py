@@ -9,38 +9,37 @@ from impossible_travel.models import Alert, Login, User
 
 
 class TestDiscordAlerting(TestCase):
-    def setUp(self):
-        """Set up test data before running tests."""
+    @classmethod
+    def setUpTestData(cls):
+        """Set up test data once for all tests."""
+        cls.discord_config = BaseAlerting.read_config("discord")
+        cls.discord_alerting = DiscordAlerting(cls.discord_config)
 
-        self.discord_config = BaseAlerting.read_config("discord")
-        self.discord_alerting = DiscordAlerting(self.discord_config)
+        cls.user = User.objects.create(username="testuser")
+        Login.objects.create(user=cls.user, id=cls.user.id)
 
-        # Create a dummy user
-        self.user = User.objects.create(username="testuser")
-        Login.objects.create(user=self.user, id=self.user.id)
-
-        # Create an alert
-        self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"discord": False}, description="Impossible travel detected", login_raw_data={}
+        cls.alert = Alert.objects.create(
+            name="Imp Travel",
+            user=cls.user,
+            notified_status={"discord": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @patch("requests.post")
     def test_send_alert(self, mock_post):
-        """Doesn't actually sends the Alert,a mock request is sent"""
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_post.return_value = mock_response
+        """Test that a properly formed alert is sent via POST"""
+        mock_post.return_value = MagicMock(status_code=200)
 
         self.discord_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
-
+        expected_title, expected_description = BaseAlerting.alert_message_formatter(self.alert)
         expected_payload = {
             "username": self.discord_config["username"],
             "embeds": [
                 {
-                    "title": expected_alert_title,
-                    "description": expected_alert_description,
+                    "title": expected_title,
+                    "description": expected_description,
                     "color": 16711680,
                 }
             ],
