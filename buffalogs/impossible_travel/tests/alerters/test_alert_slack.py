@@ -8,19 +8,19 @@ from impossible_travel.models import Alert, Login, User
 
 
 class TestSlackAlerting(TestCase):
-    def setUp(self):
-        """Set up test data before running tests."""
+    @classmethod
+    def setUpTestData(cls):
+        """Set up test data once for all tests in this class."""
+        cls.slack_config = BaseAlerting.read_config("slack")
+        cls.slack_alerting = SlackAlerting(cls.slack_config)
 
-        self.slack_config = BaseAlerting.read_config("slack")
-        self.slack_alerting = SlackAlerting(self.slack_config)
+        # Create shared test user and login
+        cls.user = User.objects.create(username="testuser")
+        Login.objects.create(user=cls.user, id=cls.user.id)
 
-        # Create a dummy user
-        self.user = User.objects.create(username="testuser")
-        Login.objects.create(user=self.user, id=self.user.id)
-
-        # Create an alert
-        self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"slack": False}, description="Impossible travel detected", login_raw_data={}
+        # Create alert
+        cls.alert = Alert.objects.create(
+            name="Imp Travel", user=cls.user, notified_status={"slack": False}, description="Impossible travel detected", login_raw_data={}
         )
 
     @patch("requests.post")

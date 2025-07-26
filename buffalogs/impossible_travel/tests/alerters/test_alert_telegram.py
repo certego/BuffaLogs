@@ -8,19 +8,19 @@ from impossible_travel.models import Alert, Login, User
 
 
 class TestTelegramAlerting(TestCase):
-    def setUp(self):
-        """Set up test data before running tests."""
+    @classmethod
+    def setUpTestData(cls):
+        """Set up test data once for all tests in this class."""
+        cls.telegram_config = BaseAlerting.read_config("telegram")
+        cls.telegram_alerting = TelegramAlerting(cls.telegram_config)
 
-        self.telegram_config = BaseAlerting.read_config("telegram")
-        self.telegram_alerting = TelegramAlerting(self.telegram_config)
+        # Create shared test user and login
+        cls.user = User.objects.create(username="testuser")
+        Login.objects.create(user=cls.user, id=cls.user.id)
 
-        # Create a dummy user
-        self.user = User.objects.create(username="testuser")
-        Login.objects.create(user=self.user, id=self.user.id)
-
-        # Create an alert
-        self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"telegram": False}, description="Impossible travel detected", login_raw_data={}
+        # Create alert
+        cls.alert = Alert.objects.create(
+            name="Imp Travel", user=cls.user, notified_status={"telegram": False}, description="Impossible travel detected", login_raw_data={}
         )
 
     @patch("requests.post")
@@ -39,21 +39,13 @@ class TestTelegramAlerting(TestCase):
 
         # Check that requests.post was called twice for each alert (1 chat_ids x 1 alerts = 1)
         self.assertEqual(mock_post.call_count, 1)
-
-        # calls made
-        calls = [
-            (
-                (expected_url,),
-                {
-                    "json": {
-                        "chat_id": f"{self.telegram_config['chat_ids'][0]}",
-                        "text": expected_alert_msg,
-                    }
-                },
-            )
-        ]
-
-        mock_post.assert_has_calls(calls, any_order=True)
+        mock_post.assert_called_with(
+            expected_url,
+            json={
+                "chat_id": f"{self.telegram_config['chat_ids'][0]}",
+                "text": expected_alert_msg,
+            },
+        )
 
     @patch("requests.post")
     def test_no_alerts(self, mock_post):
