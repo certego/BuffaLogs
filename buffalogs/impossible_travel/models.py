@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.postgres.fields import ArrayField
@@ -9,7 +11,12 @@ from impossible_travel.validators import validate_countries_names, validate_ips_
 
 
 class User(models.Model):
-    risk_score = models.CharField(choices=UserRiskScoreType.choices, max_length=30, null=False, default=UserRiskScoreType.NO_RISK)
+    risk_score = models.CharField(
+        choices=UserRiskScoreType.choices,
+        max_length=30,
+        null=False,
+        default=UserRiskScoreType.NO_RISK,
+    )
     username = models.TextField(unique=True, db_index=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -67,6 +74,77 @@ class Alert(models.Model):
     @admin.display(description="is_filtered", boolean=True)
     def is_filtered_field_display(self):
         return self.is_filtered
+
+    def serialize(self):
+        return {
+            "timestamp": self.login_raw_data.get("timestamp"),
+            "created": self.created.strftime("%y-%m-%d %H:%M:%S"),
+            "notified": bool(self.notified_status),
+            "triggered_by": self.user.username,
+            "rule_name": self.name,
+            "rule_desc": self.description,
+            "is_vip": self.is_vip,
+            "country": self.login_raw_data["country"].lower(),
+            "severity_type": self.user.risk_score,
+            "filter_type": self.filter_type,
+        }
+
+    @classmethod
+    def apply_filters(
+        cls,
+        *,
+        start_date: datetime = None,
+        end_date: datetime = None,
+        name: str = None,
+        username: str = None,
+        is_vip: bool = None,
+        notified: bool = None,
+        country_code: str = None,
+        login_start_time: datetime = None,
+        login_end_time: datetime = None,
+        ip: str = None,
+        user_agent: str = None,
+        min_risk_score: int = None,
+        max_risk_score: int = None,
+        risk_score: int = None,
+    ):
+        "Filters Alert objects."
+
+        query = cls.objects
+        if start_date:
+            query = query.filter(created__gte=start_date)
+        if end_date:
+            query = query.filter(created__lte=end_date)
+        if name:
+            query = query.filter(name__iexact=name)
+        if username:
+            query = query.filter(user__username__icontains=username)
+        if is_vip:
+            query = query.filter(is_vip=is_vip)
+        if notified is False:
+            query = query.filter(notified_status={})
+        if notified is True:
+            query = query.exclude(notified_status={})
+        if ip:
+            query = query.filter(login_raw_data__ip=ip)
+        if user_agent:
+            query = query.filter(login_raw_data__user_agent=user_agent)
+        if login_start_time:
+            query = query.filter(login_raw_data__timestamp__gte=login_start_time)
+        if login_end_time:
+            query = query.filter(login_raw_data__timestamp__lte=login_end_time)
+        if country_code:
+            query = query.filter(login_raw_data__country__iexact=country_code)
+        if risk_score:
+            risk_score = int(risk_score)
+            query = query.filter(user__risk_score=UserRiskScoreType.get_risk_level(risk_score))
+        elif min_risk_score or max_risk_score:
+            risk_range = UserRiskScoreType.get_range(
+                min_value=int(min_risk_score or 0),  # 0 is the lowest possible risk score
+                max_value=int(max_risk_score or 8),  # 8 is the highest possible risk score
+            )
+            query = query.filter(user__risk_score__in=risk_range)
+        return query.all()
 
     class Meta:
         constraints = [
@@ -147,9 +225,16 @@ class Config(models.Model):
         help_text="List of selected users (strings or regex patterns) on which the detection will perform",
     )
     vip_users = ArrayField(
-        models.CharField(max_length=50), blank=True, null=True, default=get_default_vip_users, help_text="List of users considered more sensitive"
+        models.CharField(max_length=50),
+        blank=True,
+        null=True,
+        default=get_default_vip_users,
+        help_text="List of users considered more sensitive",
     )
-    alert_is_vip_only = models.BooleanField(default=False, help_text="Flag to send alert only related to the users in the vip_users list")
+    alert_is_vip_only = models.BooleanField(
+        default=False,
+        help_text="Flag to send alert only related to the users in the vip_users list",
+    )
     alert_minimum_risk_score = models.CharField(
         choices=UserRiskScoreType.choices,
         max_length=30,
@@ -185,7 +270,11 @@ class Config(models.Model):
 
     # Detection filters - devices
     ignored_ISPs = ArrayField(
-        models.CharField(max_length=50), blank=True, null=True, default=get_default_ignored_ISPs, help_text="List of ISPs names to remove from the detection"
+        models.CharField(max_length=50),
+        blank=True,
+        null=True,
+        default=get_default_ignored_ISPs,
+        help_text="List of ISPs names to remove from the detection",
     )
     ignore_mobile_logins = models.BooleanField(default=False, help_text="Flag to ignore mobile devices from the detection")
 
@@ -214,18 +303,25 @@ class Config(models.Model):
         help_text="Minimum velocity (in Km/h) between two logins after which the impossible travel detection starts",
     )
     atypical_country_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS, help_text="Days after which a login from a country is considered atypical"
+        default=settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS,
+        help_text="Days after which a login from a country is considered atypical",
     )
     user_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS, help_text="Days after which the users will be removed from the db"
+        default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS,
+        help_text="Days after which the users will be removed from the db",
     )
     login_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS, help_text="Days after which the logins will be removed from the db"
+        default=settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS,
+        help_text="Days after which the logins will be removed from the db",
     )
     alert_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS, help_text="Days after which the alerts will be removed from the db"
+        default=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS,
+        help_text="Days after which the alerts will be removed from the db",
     )
-    ip_max_days = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS, help_text="Days after which the IPs will be removed from the db")
+    ip_max_days = models.PositiveIntegerField(
+        default=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS,
+        help_text="Days after which the IPs will be removed from the db",
+    )
 
     def clean(self):
         if not self.pk and Config.objects.exists():

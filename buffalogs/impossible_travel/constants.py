@@ -30,6 +30,13 @@ class UserRiskScoreType(models.TextChoices):
         raise ValueError("Risk value not valid")
 
     @classmethod
+    def get_range(cls, *, min_value: int = None, max_value: int = None):
+        min_value = min_value or 0
+        max_value = max_value or 8
+        risk_range = set(cls.get_risk_level(value) for value in range(min_value, max_value))
+        return risk_range
+
+    @classmethod
     def compare_risk(cls, threshold, value) -> str:
         """Function to check if the given value (risk_score in string) is lower, equal or higher than a given threshold
 
