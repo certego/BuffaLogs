@@ -1,36 +1,12 @@
-import json
-import os
 from datetime import datetime, timezone
 from typing import List
 
 import elasticsearch
-from django.conf import settings
 from django.test import TestCase
 from elasticsearch.dsl import connections
 from elasticsearch.helpers import bulk
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
-
-
-def load_ingestion_config_data():
-    with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
-        mode="r",
-        encoding="utf-8",
-    ) as f:
-        config_ingestion = json.load(f)
-    return config_ingestion
-
-
-def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data/", name + ".json")) as file:
-        data = json.load(file)
-    return data
-
-
-def load_elastic_template(name):
-    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "elasticsearch/", name + ".json")) as file:
-        data = json.load(file)
-    return data
+from impossible_travel.tests.utils import load_index_template, load_ingestion_config_data, load_test_data
 
 
 class ElasticsearchIngestionTestCase(TestCase):
@@ -42,7 +18,7 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.list_to_be_added_cloud = load_test_data("test_data_elasticsearch_cloud")
         self.list_to_be_added_fw_proxy = load_test_data("test_data_elasticsearch_fw_proxy")
         self.es = elasticsearch.Elasticsearch(self.elastic_config["url"])
-        self.template = load_elastic_template("example_template")
+        self.template = load_index_template("example_template")
         connections.create_connection(hosts=self.elastic_config["url"], request_timeout=self.ingestion_config["elasticsearch"]["timeout"])
         self._load_elastic_template_on_elastic(template_to_be_added=self.template)
         # load test data into the 2 indexes: cloud-* and fw-proxy-*
