@@ -66,7 +66,7 @@ def as_json(content: DataModel, title: str):
     json_format = json.dumps(content.json, indent=2)
     json_format = json_format[1:-1]
     json_output = re.sub(r'(".*?":)', r"[bold cyan]\1[/bold cyan]", json_format)
-    panel = Panel(json_output, title=title, expand=False)
+    panel = Panel(json_output, title=title, expand=True)
     return panel
 
 
@@ -75,6 +75,7 @@ class FormatOptions(str, Enum):
     def __new__(cls, value: str, formatter: callable):
         obj = str.__new__(cls)
         obj._value_ = value
+        obj.formatter = formatter
         obj.print = print_func(formatter)
         return obj
 
