@@ -3,7 +3,8 @@
 #### Features
 * Added the retry mechanism with exponential backoff for the alerting module (Google Summer of Code 2025 - @kunalsz)
 * Added the `country_name` validator (by community - @drona-gyawali)
-* Updated the CI linters versions
+* Updated the CI linters versions (compatible with requirements-linters.txt versions)
+* Upgraded Django to 5.2
 #### Changes
 * Updated the `setup_config` django mgmt command to customize all the possible fields in the Config model
 * Refactored the utils functions to centralize them
