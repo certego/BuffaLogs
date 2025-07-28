@@ -1,0 +1,153 @@
+from django.conf import settings
+from django.core.management import CommandError, call_command
+from django.db.models.fields import Field
+from django.test import TestCase
+from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
+from impossible_travel.management.commands.setup_config import Command, parse_field_value
+from impossible_travel.models import (
+    Config,
+    get_default_allowed_countries,
+    get_default_enabled_users,
+    get_default_ignored_ips,
+    get_default_ignored_ISPs,
+    get_default_ignored_users,
+    get_default_risk_score_increment_alerts,
+    get_default_vip_users,
+)
+
+
+class ManagementCommandsTestCase(TestCase):
+    def setUp(self):
+        self.config, _ = Config.objects.get_or_create(id=1)
+
+    # === Tests for setup_config.py mgmt command -
+
+    def test_options_values_passed(self):
+        parser = Command().create_parser("manage.py", "setup_config")
+        options = parser.parse_args(["-o", "allowed_countries=[IT,RO]", "-r", "ignored_users=[admin]", "-a", "alert_is_vip_only=True"])
+        self.assertEqual(options.override, ["allowed_countries=[IT,RO]"])
+        self.assertEqual(options.remove, ["ignored_users=[admin]"])
+        self.assertEqual(options.append, ["alert_is_vip_only=True"])
+
+    def test_handle_set_default_values(self):
+        # Testing the option --set-default-values
+        # Check that if new fields in the Config model have been added, they should be integrated into this test
+        config_editable_fields = [f.name for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created]
+        self.assertEqual(19, len(config_editable_fields))
+        # Put random values into fields
+        self.config.ignored_users = ["blabla", "user2"]
+        self.config.alert_is_vip_only = True
+        self.config.alert_minimum_risk_score = UserRiskScoreType.MEDIUM
+        self.config.risk_score_increment_alerts = [AlertDetectionType.NEW_COUNTRY, AlertDetectionType.ATYPICAL_COUNTRY]
+        self.config.ignored_ips = ["9.9.9.9", "4.5.4.5"]
+        self.config.ignored_ISPs = ["isp1"]
+        self.config.atypical_country_days = 80
+        self.config.save()
+        self.config.refresh_from_db()
+        # check that new random values have been correctly saved
+        self.assertListEqual(self.config.ignored_users, ["blabla", "user2"])
+        self.assertTrue(self.config.alert_is_vip_only)
+        self.assertEqual(self.config.alert_minimum_risk_score, "Medium")
+        self.assertListEqual(self.config.risk_score_increment_alerts, ["New Country", "Atypical Country"])
+        self.assertListEqual(self.config.ignored_ips, ["9.9.9.9", "4.5.4.5"])
+        self.assertListEqual(self.config.ignored_ISPs, ["isp1"])
+        self.assertEqual(self.config.atypical_country_days, 80)
+        # call the mgmt command with the --set-default-values option
+        call_command("setup_config", "--set-default-values")
+        self.config.refresh_from_db()
+        # check the corrispondence with the default values
+        self.assertListEqual(self.config.ignored_users, get_default_ignored_users())
+        self.assertListEqual(self.config.enabled_users, get_default_enabled_users())
+        self.assertListEqual(self.config.vip_users, get_default_vip_users())
+        self.assertFalse(self.config.alert_is_vip_only)
+        self.assertEqual(self.config.alert_minimum_risk_score, "No risk")
+        self.assertListEqual(self.config.risk_score_increment_alerts, get_default_risk_score_increment_alerts())
+        self.assertListEqual(self.config.ignored_ips, get_default_ignored_ips())
+        self.assertListEqual(self.config.allowed_countries, get_default_allowed_countries())
+        self.assertListEqual(self.config.ignored_ISPs, get_default_ignored_ISPs())
+        self.assertFalse(self.config.ignore_mobile_logins)
+        self.assertListEqual(self.config.filtered_alerts_types, [])
+        self.assertEqual(self.config.threshold_user_risk_alert, "No risk")
+        self.assertEqual(self.config.distance_accepted, settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED)
+        self.assertEqual(self.config.vel_accepted, settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED)
+        self.assertEqual(self.config.atypical_country_days, settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS)
+        self.assertEqual(self.config.user_max_days, settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS)
+        self.assertEqual(self.config.login_max_days, settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS)
+        self.assertEqual(self.config.alert_max_days, settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS)
+        self.assertEqual(self.config.ip_max_days, settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS)
+
+    # === Tests for setup_config.py mgmt command - parse_field_value function ===
+
+    def test_parse_field_value_CommandError(self):
+        # Testing the parse_field_value function for the CommandError exception
+        # 1. Single element missing "="
+        with self.assertRaises(CommandError) as cm:
+            call_command("setup_config", "-a", "ignored_users lorygold")
+        self.assertIn("Invalid syntax 'ignored_users lorygold': must be FIELD=VALUE", str(cm.exception))
+
+        # 2. List missing "="
+        with self.assertRaises(CommandError) as cm:
+            call_command("setup_config", "-a", "enabled_users [lorygold]")
+        self.assertIn("Invalid syntax 'enabled_users [lorygold]': must be FIELD=VALUE", str(cm.exception))
+
+        # 3. Field not existing
+        with self.assertRaises(CommandError) as cm:
+            call_command("setup_config", "-a", "nonexistent_field=lorygold")
+        self.assertIn("Field 'nonexistent_field' does not exist", str(cm.exception))
+
+    def test_parse_field_value_empty_list(self):
+        # Testing the parse_field_value function with an empty list
+        actual_field, actual_value = parse_field_value("enabled_users=[]")
+        self.assertEqual(actual_field, "enabled_users")
+        self.assertListEqual(actual_value, [])
+
+    def test_parse_field_value_list_single_value_correct(self):
+        # Testing the parse_field_value function with a str values for a list field
+        actual_field_str, actual_value_str = parse_field_value("enabled_users=admin")
+        self.assertEqual(actual_field_str, "enabled_users")
+        self.assertEqual(actual_value_str, "admin")
+        actual_field_list, actual_value_list = parse_field_value("ignored_users=[lorygold]")
+        self.assertEqual(actual_field_list, "ignored_users")
+        self.assertEqual(actual_value_list, ["lorygold"])
+        actual_field_list2, actual_value_list2 = parse_field_value('vip_users=["lory", "gold"]')
+        self.assertEqual(actual_field_list2, "vip_users")
+        self.assertListEqual(actual_value_list2, ["lory", "gold"])
+
+    def test_parse_field_value_list_multiple_values_correct(self):
+        # Testing the parse_field_value function with multiple str/regex values for a str list field
+        actual_field_list, actual_value_list = parse_field_value("enabled_users=[admin@gmaail.com, lory.gold, pluto123]")
+        self.assertEqual(actual_field_list, "enabled_users")
+        self.assertEqual(actual_value_list, ["admin@gmaail.com", "lory.gold", "pluto123"])
+        actual_field_regex, actual_value_regex = parse_field_value("enabled_users=[*1.@*, *@acompany_name.com, pluto]")
+        self.assertEqual(actual_field_regex, "enabled_users")
+        self.assertEqual(actual_value_regex, ["*1.@*", "*@acompany_name.com", "pluto"])
+
+    def test_parse_field_value_ignores_empty_values_in_list(self):
+        # Testing the parse_field_value function with some empty strings to be ignored
+        field, value = parse_field_value("key=[a, , b,,c ]")
+        self.assertEqual(field, "key")
+        self.assertEqual(value, ["a", "b", "c"])
+
+    def test_parse_field_value_list_with_inner_whitespace(self):
+        # Testing the parse_field_value function with inner whitespaces
+        field, value = parse_field_value("ips=[ 127.0.0.1 , 192.168.1.1 ]")
+        self.assertEqual(field, "ips")
+        self.assertEqual(value, ["127.0.0.1", "192.168.1.1"])
+
+    def test_parse_field_value_boolean(self):
+        # Testing the parse_field_value function with boolean value
+        field_lower, value_lower = parse_field_value("alert_is_vip_only=true")
+        self.assertEqual(field_lower, "alert_is_vip_only")
+        self.assertTrue(value_lower)
+        field_big, value_big = parse_field_value("ignore_mobile_logins=True")
+        self.assertEqual(field_big, "ignore_mobile_logins")
+        self.assertTrue(value_big)
+
+    def test_parse_field_value_numeric(self):
+        # Testing the parse_field_value function with numeric value
+        field_integer, value_integer = parse_field_value("distance_accepted=1000")
+        self.assertEqual(field_integer, "distance_accepted")
+        self.assertEqual(value_integer, 1000)
+        field_float, value_float = parse_field_value("vel_accepted=55.7")
+        self.assertEqual(field_float, "vel_accepted")
+        self.assertEqual(value_float, 55.7)
