@@ -2,7 +2,7 @@
 ### 2.8.0
 #### Features
 * Added the retry mechanism with exponential backoff for the alerting module (Google Summer of Code 2025 - @kunalsz)
-* Added the `country_name` validator (by community - @drona-gyawali)
+* Added the `country_name` validator to allow valid ISO 3166-1 country names and ISO 3166-1 Alpha-2 country codes (by community - @drona-gyawali)
 * Updated the CI linters versions (compatible with requirements-linters.txt versions)
 * Upgraded Django to 5.2
 #### Changes
