@@ -1,8 +1,5 @@
 import datetime
-import json
-import os
 
-from django.conf import settings
 from django.core.management import call_command
 from django.db.models import Q
 from django.test import TestCase
@@ -10,12 +7,7 @@ from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType
 from impossible_travel.models import Alert, Config, Login, User, UsersIP
 from impossible_travel.modules import detection
-
-
-def load_test_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/tests/test_data", name + ".json")) as file:
-        data = json.load(file)
-    return data
+from impossible_travel.tests.utils import load_test_data
 
 
 class DetectionTestCase(TestCase):

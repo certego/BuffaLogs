@@ -1,5 +1,3 @@
-import json
-
 from django.core import mail
 from django.test import TestCase, override_settings
 from impossible_travel.alerting.base_alerting import BaseAlerting
