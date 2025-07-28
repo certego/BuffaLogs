@@ -8,6 +8,7 @@
 #### Changes
 * Updated the `setup_config` django mgmt command to customize all the possible fields in the Config model
 * Refactored the utils functions to centralize them
+* Updated the licence classifier because deprecated
 #### Bugfix
 * Fixed the `TypeError: string indices must be integers, not 'str'` in the `ingestion.get_ingestion_sources` view
 
