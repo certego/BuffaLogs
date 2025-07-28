@@ -2,6 +2,8 @@
 ### 2.8.0
 #### Changes
 * Updated the `setup_config` django mgmt command to customize all the possible fields in the Config model
+#### Bugfix
+* Fixed the `TypeError: string indices must be integers, not 'str'` in the `ingestion.get_ingestion_sources` view
 
 ## 2.7.x
 ### 2.7.0

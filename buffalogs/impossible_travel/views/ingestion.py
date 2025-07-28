@@ -10,7 +10,11 @@ read_config, write_config = utils.get_config_read_write("ingestion.json")
 @require_http_methods(["GET"])
 def get_ingestion_sources(request):
     config = read_config()
-    ingestors = [{"source": ingestor, "fields": config[ingestor]["__custom_fields__"]} for ingestor in config.keys()]
+    ingestors = [
+        {"source": ingestor, "fields": config[ingestor]["__custom_fields__"]}
+        for ingestor, value in config.items()
+        if isinstance(value, dict) and "__custom_fields__" in value
+    ]
     return JsonResponse(ingestors, json_dumps_params={"default": str}, safe=False)
 
 
