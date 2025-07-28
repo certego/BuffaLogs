@@ -1,12 +1,10 @@
-import json
-import os
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-from django.conf import settings
 from django.test import TestCase
 
 from impossible_travel.ingestion.splunk_ingestion import SplunkIngestion
+<<<<<<< HEAD
 
 
 def load_ingestion_config_data():
@@ -19,6 +17,9 @@ def load_ingestion_config_data():
     ) as f:
         config_ingestion = json.load(f)
     return config_ingestion
+=======
+from impossible_travel.tests.utils import load_ingestion_config_data
+>>>>>>> develop
 
 
 class SplunkIngestionTestCase(TestCase):

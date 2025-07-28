@@ -1,5 +1,3 @@
-import json
-
 from django.core import mail
 from django.test import TestCase, override_settings
 
@@ -84,7 +82,3 @@ class TestEmailAlerting(TestCase):
         """Test that an error is raised if the configuration is not correct"""
         with self.assertRaises(ValueError):
             EmailAlerting({})
-
-    def test_send_email(self):
-        """Actually sending the email to the recepient's address."""
-        self.email_alerting.notify_alerts()

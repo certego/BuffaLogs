@@ -1,8 +1,5 @@
-import json
-import os
 from datetime import timedelta
 
-from django.conf import settings
 from django.db import connection
 from django.test import TestCase
 from django.utils import timezone
@@ -12,6 +9,7 @@ from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, Login, User, UsersIP
 
 
+<<<<<<< HEAD
 def load_test_data(name):
     with open(
         os.path.join(
@@ -24,6 +22,8 @@ def load_test_data(name):
     return data
 
 
+=======
+>>>>>>> develop
 class TestTasks(TestCase):
     fixtures = ["tests-fixture"]
     raw_data_NEW_COUNTRY = {

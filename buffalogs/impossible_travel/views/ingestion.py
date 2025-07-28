@@ -1,7 +1,6 @@
 import json
 
-from django.conf import settings
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
 from impossible_travel.views import utils
@@ -12,14 +11,12 @@ read_config, write_config = utils.get_config_read_write("ingestion.json")
 @require_http_methods(["GET"])
 def get_ingestion_sources(request):
     config = read_config()
-    active_ingestion = config.pop("active_ingestion")
     ingestors = [
         {"source": ingestor, "fields": config[ingestor]["__custom_fields__"]}
-        for ingestor in config.keys()
+        for ingestor, value in config.items()
+        if isinstance(value, dict) and "__custom_fields__" in value
     ]
-    return JsonResponse(
-        ingestors, json_dumps_params={"default": str}, safe=False
-    )
+    return JsonResponse(ingestors, json_dumps_params={"default": str}, safe=False)
 
 
 @require_http_methods(["GET"])
@@ -62,13 +59,7 @@ def ingestion_source_config(request, source):
             if field not in ingestion_config["__custom_fields__"]
         ]
         if any(error_fields):
-            return JsonResponse(
-                {
-                    "message": f"Unexpected configuration fields - {error_fields}"
-                },
-                status=400,
-            )
-        else:
-            ingestion_config.update(config_update)
-            write_config(source, ingestion_config)
-            return JsonResponse({"message": "Update successful"}, status=200)
+            return JsonResponse({"message": f"Unexpected configuration fields - {error_fields}"}, status=400)
+        ingestion_config.update(config_update)
+        write_config(source, ingestion_config)
+        return JsonResponse({"message": "Update successful"}, status=200)

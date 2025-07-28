@@ -3,6 +3,7 @@ from ipaddress import AddressValueError, IPv4Address, IPv4Network
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from impossible_travel.views.utils import read_config
 
 
 def validate_string_or_regex(value):
@@ -42,12 +43,11 @@ def validate_ips_or_network(value):
 
 def get_valid_country_names():
     """
-    Loads country data from countries.json and returns a set of valid country names.
+    Loads country data from countries_list.json and returns a set of valid country names.
     """
-    from impossible_travel.views.utils import load_data
 
     try:
-        data = load_data("countries")
+        data = read_config("countries_list.json")
         return set(data.keys())
     except FileNotFoundError:
         return set()

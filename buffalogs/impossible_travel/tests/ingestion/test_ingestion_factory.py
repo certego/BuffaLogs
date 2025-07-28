@@ -1,13 +1,10 @@
-import json
-import os
-
-from django.conf import settings
 from django.test import TestCase
 
 from impossible_travel.ingestion.elasticsearch_ingestion import (
     ElasticsearchIngestion,
 )
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
+<<<<<<< HEAD
 
 
 def load_test_data(name):
@@ -32,6 +29,9 @@ def load_ingestion_config_data():
     ) as f:
         config_ingestion = json.load(f)
     return config_ingestion
+=======
+from impossible_travel.tests.utils import load_ingestion_config_data
+>>>>>>> develop
 
 
 class IngestionFactoryTestCase(TestCase):

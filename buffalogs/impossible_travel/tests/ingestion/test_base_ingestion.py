@@ -1,8 +1,5 @@
-import json
-import os
-
-from django.conf import settings
 from django.test import TestCase
+<<<<<<< HEAD
 
 from impossible_travel.ingestion.elasticsearch_ingestion import (
     ElasticsearchIngestion,
@@ -31,6 +28,10 @@ def load_ingestion_config_data():
     ) as f:
         config_ingestion = json.load(f)
     return config_ingestion
+=======
+from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
+from impossible_travel.tests.utils import load_ingestion_config_data, load_test_data
+>>>>>>> develop
 
 
 class TestBaseIngestion(TestCase):

@@ -19,7 +19,7 @@ from impossible_travel.dashboard.charts import (
     user_login_timeline_chart,
 )
 from impossible_travel.models import Login, User
-from impossible_travel.views.utils import load_data
+from impossible_travel.views.utils import read_config
 
 
 @require_http_methods(["GET"])
@@ -156,7 +156,7 @@ def user_geo_distribution_api(request, id):
     )
     country_data = logins.values("country").annotate(count=Count("id"))
 
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     name_to_code = {v.lower(): k for k, v in countries.items()}
 
     counts = {

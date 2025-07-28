@@ -1,11 +1,13 @@
-import json
-import os
 from datetime import datetime, timezone
 from typing import List
 from urllib.parse import urlparse
 
-from django.conf import settings
 from django.test import TestCase
+<<<<<<< HEAD
+=======
+from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
+from impossible_travel.tests.utils import load_index_template, load_ingestion_config_data
+>>>>>>> develop
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import bulk
 
@@ -26,6 +28,7 @@ def create_opensearch_client(config):
     )
 
 
+<<<<<<< HEAD
 def load_ingestion_config_data():
     with open(
         os.path.join(
@@ -50,6 +53,8 @@ def load_example_data(name):
     return data
 
 
+=======
+>>>>>>> develop
 class OpensearchIngestionTestCase(TestCase):
     def setUp(self):
         # Executes once per test
@@ -151,7 +156,7 @@ class OpensearchIngestionTestCase(TestCase):
         ]
 
         self.os = create_opensearch_client(self.opensearch_config)
-        self.template = load_example_data("example_template")
+        self.template = load_index_template("example_template")
 
         self._load_example_template_on_opensearch(
             template_to_be_added=self.template

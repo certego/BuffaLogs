@@ -24,7 +24,22 @@ from impossible_travel.dashboard.charts import (
     world_map_chart as compute_world_map_chart,
 )
 from impossible_travel.models import Alert, Login, User
-from impossible_travel.views.utils import aggregate_alerts_interval, load_data
+from impossible_travel.views.utils import read_config
+
+
+def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
+    """
+    Helper function to aggregate alerts over an interval
+    """
+    current_date = start_date
+    aggregated_data = {}
+
+    while current_date < end_date:
+        next_date = current_date + interval
+        count = Alert.objects.filter(login_raw_data__timestamp__range=(current_date.isoformat(), next_date.isoformat())).count()
+        aggregated_data[current_date.strftime(date_fmt)] = count
+        current_date = next_date
+    return aggregated_data
 
 
 def homepage(request):
@@ -99,7 +114,7 @@ def world_map(request):
     if is_naive(end):
         end = make_aware(end)
 
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     result = []
     seen = set()
 

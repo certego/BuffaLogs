@@ -1,3 +1,22 @@
+## 2.8.x
+### 2.8.0
+#### Features
+* Added the retry mechanism with exponential backoff for the alerting module (Google Summer of Code 2025 - @kunalsz)
+* Added the `country_name` validator to allow valid ISO 3166-1 country names and ISO 3166-1 Alpha-2 country codes (by community - @drona-gyawali)
+* Updated the CI linters versions (compatible with requirements-linters.txt versions)
+* Upgraded Django to 5.2
+#### Changes
+* Updated the `setup_config` django mgmt command to customize all the possible fields in the Config model
+* Refactored the utils functions to centralize them
+* Updated the licence classifier because deprecated
+#### Bugfix
+* Fixed the `TypeError: string indices must be integers, not 'str'` in the `ingestion.get_ingestion_sources` view
+
+## 2.7.x
+### 2.7.0
+#### Changes
+* Refactoring to centralized some utilities functions
+
 ## 2.7.x
 ### 2.7.0
 #### Features

@@ -79,7 +79,3 @@ class TestRocketChatAlerting(TestCase):
         # Reload the alert from DB to check its state
         alert = Alert.objects.get(pk=self.alert.pk)
         self.assertFalse(alert.notified_status["rocketchat"])
-
-    def test_send_actual_alert(self):
-        """Test sending an actual alert"""
-        self.rocketchat_alerting.notify_alerts()

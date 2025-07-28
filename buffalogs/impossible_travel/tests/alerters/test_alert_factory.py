@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock, patch
 
-import requests
 from django.test import TestCase
 
 from impossible_travel.alerting.alert_factory import AlertFactory
