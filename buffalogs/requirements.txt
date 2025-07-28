@@ -1,6 +1,6 @@
 # === Core Framework ===
-Django>=4.2.23                        # Main Django framework (web application, ORM, admin, etc.)
-djangorestframework>=3.16             # Django REST Framework for building RESTful APIs
+Django>=5.2.4                         # Main Django framework (web application, ORM, admin, etc.)
+djangorestframework>=3.16.0           # Django REST Framework for building RESTful APIs
 djangorestframework-simplejwt>=5.4.0  # JWT authentication support for DRF
 django-cors-headers>=4.7.0            # (dev) Enables CORS headers for frontend-backend separation during development
 
