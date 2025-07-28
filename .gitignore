@@ -6,6 +6,6 @@
 dist/
 **/.DS_Store
 flake8
-# project.toml
+project.toml
 .isort.cfg
 pyproject.toml
