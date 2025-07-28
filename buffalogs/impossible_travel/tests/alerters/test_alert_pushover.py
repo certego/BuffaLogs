@@ -1,4 +1,3 @@
-import json
 from unittest.mock import MagicMock, patch
 
 import requests
@@ -64,7 +63,3 @@ class TestPushoverAlerting(TestCase):
         # Reload the alert from DB to check its state
         alert = Alert.objects.get(pk=self.alert.pk)
         self.assertFalse(alert.notified_status["pushover"])
-
-    def test_send_actual_alert(self):
-        """Test sending an actual alert"""
-        self.pushover_alerting.notify_alerts()

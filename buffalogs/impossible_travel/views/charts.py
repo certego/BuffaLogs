@@ -10,7 +10,22 @@ from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
 from impossible_travel.models import Alert, Login, User
-from impossible_travel.views.utils import aggregate_alerts_interval, load_data
+from impossible_travel.views.utils import read_config
+
+
+def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
+    """
+    Helper function to aggregate alerts over an interval
+    """
+    current_date = start_date
+    aggregated_data = {}
+
+    while current_date < end_date:
+        next_date = current_date + interval
+        count = Alert.objects.filter(login_raw_data__timestamp__range=(current_date.isoformat(), next_date.isoformat())).count()
+        aggregated_data[current_date.strftime(date_fmt)] = count
+        current_date = next_date
+    return aggregated_data
 
 
 def homepage(request):
@@ -105,13 +120,13 @@ def world_map_chart_api(request):
     if is_naive(end_date):
         end_date = make_aware(end_date)
 
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     result = []
     tmp = []
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
             login_raw_data__timestamp__range=(start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")),
-            login_raw_data__country=value,
+            login_raw_data__country__iexact=key,
         )
         if country_alerts:
             for alert in country_alerts:
@@ -119,16 +134,17 @@ def world_map_chart_api(request):
                     tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
                     result.append(
                         {
-                            "country": key,
+                            "country": value.lower(),
                             "lat": alert.login_raw_data["lat"],
                             "lon": alert.login_raw_data["lon"],
                             "alerts": Alert.objects.filter(
-                                login_raw_data__country=value, login_raw_data__lat=alert.login_raw_data["lat"], login_raw_data__lon=alert.login_raw_data["lon"]
+                                login_raw_data__country__iexact=key,
+                                login_raw_data__lat=alert.login_raw_data["lat"],
+                                login_raw_data__lon=alert.login_raw_data["lon"],
                             ).count(),
                         }
                     )
-    data = json.dumps(result)
-    return HttpResponse(data, content_type="json")
+    return HttpResponse(json.dumps(result), content_type="application/json")
 
 
 @require_http_methods(["GET"])

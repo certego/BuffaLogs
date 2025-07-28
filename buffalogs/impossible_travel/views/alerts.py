@@ -8,7 +8,7 @@ from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, User
-from impossible_travel.views.utils import get_config_read_write, load_data
+from impossible_travel.views.utils import get_config_read_write
 
 read_config, write_config = get_config_read_write("alerting.json")
 
@@ -85,7 +85,7 @@ def alerts_api(request):
 def get_user_alerts(request):
     """Return all alerts detected for user."""
     context = []
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     alerts_data = Alert.objects.select_related("user").all().order_by("-created")
     for alert in alerts_data:
         country_code = alert.login_raw_data.get("country", "").lower()
