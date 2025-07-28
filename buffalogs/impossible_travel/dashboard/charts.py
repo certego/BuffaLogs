@@ -1,25 +1,16 @@
-import json
-import os
 from collections import defaultdict
 from datetime import timedelta
 
 import pygal
+import pygal.style
 from dateutil.relativedelta import relativedelta
-from django.conf import settings
 from django.db.models import Count
 from django.utils import timezone
 from impossible_travel.models import Alert, Login, User
-from pygal.style import Style
+from impossible_travel.views.utils import load_data
 from pygal_maps_world.maps import World
 
-
-def _load_data(name):
-    with open(os.path.join(settings.CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel/dashboard/", name + ".json"), encoding="utf-8") as file:
-        data = json.load(file)
-    return data
-
-
-pie_custom_style = Style(
+pie_custom_style = pygal.style.Style(
     background="transparent",
     plot_background="transparent",
     foreground="#dee2e6",
@@ -33,7 +24,7 @@ pie_custom_style = Style(
     legend_font_size=25,
     tooltip_font_size=25,
 )
-line_custom_style = Style(
+line_custom_style = pygal.style.Style(
     background="transparent",
     plot_background="transparent",
     foreground="#dee2e6",
@@ -47,7 +38,7 @@ line_custom_style = Style(
     x_labels_font_size=20,
 )
 
-world_custom_style = Style(
+world_custom_style = pygal.style.Style(
     background="transparent",
     plot_background="transparent",
     foreground="#dee2e6",
@@ -76,7 +67,7 @@ def users_pie_chart(start, end):
 
 
 def alerts_line_chart(start, end):
-    custom_style = Style(
+    custom_style = pygal.style.Style(
         background="transparent",
         plot_background="transparent",
         foreground="#dee2e6",
@@ -140,13 +131,13 @@ def alerts_line_chart(start, end):
 
 
 def world_map_chart(start, end):
-    map_chart = pygal.maps.world.World(  # pylint: disable=no-member
+    map_chart = pygal.maps.world.World(
         style=world_custom_style,
         width=380,
         height=130,
         show_legend=False,
     )
-    countries = _load_data("countries")
+    countries = load_data("countries")
     tmp = {}
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
@@ -226,7 +217,7 @@ def user_geo_distribution_chart(user, start, end):
     logins = Login.objects.filter(user=user, timestamp__range=(start, end))
     country_data = logins.values("country").annotate(count=Count("id"))
 
-    countries = _load_data("countries")
+    countries = load_data("countries")
     name_to_code = {v.lower(): k for k, v in countries.items()}
 
     country_dict = {}

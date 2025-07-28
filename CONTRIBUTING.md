@@ -42,6 +42,11 @@ How to create and submit a PR:
     pip install pre-commit
     ```
     If you didn't install pre-commit, it is necessary to run linters manually:
+    Installing them:
+    ```bash
+        pip install ../.github/configurations/python_linters/requirements-linters.txt
+    ```
+    Running them (**flake8, black and isort are mandatory** because used also in the CI)
     *   Autoflake - tool to remove unused imports and unused variables
     ```bash
         autoflake -r -cd . --remove-all-unused-imports --remove-unused-variables --ignore-init-module-imports --ignore-pass-statements
@@ -56,7 +61,7 @@ How to create and submit a PR:
     ```
     *   Isort - utility to sort imports alphabetically, and automatically separated into sections and by type
     ```bash
-    isort --sp .github/configurations/python_linters/.isort.cfg --profile black .
+    isort --sp ../.github/configurations/python_linters/.isort.cfg --profile black .
     ```
     *   Pylint - a static code analyser for Python
     ```bash

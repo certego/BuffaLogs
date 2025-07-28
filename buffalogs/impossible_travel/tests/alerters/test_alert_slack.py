@@ -76,7 +76,3 @@ class TestSlackAlerting(TestCase):
         # Reload the alert from DB to check its state
         alert = Alert.objects.get(pk=self.alert.pk)
         self.assertFalse(alert.notified_status["slack"])
-
-    def test_send_actual_alert(self):
-        """Test sending an actual alert"""
-        self.slack_alerting.notify_alerts()
