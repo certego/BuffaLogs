@@ -19,7 +19,7 @@ from impossible_travel.dashboard.charts import (
     user_time_of_day_chart,
 )
 from impossible_travel.models import Login, User
-from impossible_travel.views.utils import load_data
+from impossible_travel.views.utils import read_config
 
 
 def get_users(request):
@@ -285,7 +285,7 @@ def user_geo_distribution_api(request, pk):
     logins = Login.objects.filter(user=user, timestamp__range=(start_date, end_date))
     country_data = logins.values("country").annotate(count=Count("id"))
 
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     name_to_code = {v.lower(): k for k, v in countries.items()}
 
     country_counts = {}
