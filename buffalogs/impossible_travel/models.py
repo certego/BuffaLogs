@@ -136,13 +136,14 @@ class Alert(models.Model):
         if country_code:
             query = query.filter(login_raw_data__country__iexact=country_code)
         if risk_score:
-            risk_score = int(risk_score)
-            query = query.filter(user__risk_score=UserRiskScoreType.get_risk_level(risk_score))
+            if isinstance(risk_score, int):
+                query = query.filter(user__risk_score=UserRiskScoreType.get_risk_level(risk_score))
+            elif isinstance(risk_score, str):
+                risk_score = risk_score.title()
+                query = query.filter(user_risk_score=UserRiskScoreType(risk_score))
+
         elif min_risk_score or max_risk_score:
-            risk_range = UserRiskScoreType.get_range(
-                min_value=int(min_risk_score or 0),  # 0 is the lowest possible risk score
-                max_value=int(max_risk_score or 8),  # 8 is the highest possible risk score
-            )
+            risk_range = UserRiskScoreType.get_range(min_value=min_risk_score, max_value=max_risk_score)
             query = query.filter(user__risk_score__in=risk_range)
         return query.all()
 

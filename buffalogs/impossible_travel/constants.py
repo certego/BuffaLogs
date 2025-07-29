@@ -17,6 +17,11 @@ class UserRiskScoreType(models.TextChoices):
     HIGH = "High", _("User has a high risk")
 
     @classmethod
+    def get_risk_threshold(cls, value: str):
+        threshold = {cls.NO_RISK: 0, cls.LOW: 3, cls.MEDIUM: 6, cls.HIGH: 7}
+        return threshold[cls(value.strip().title())]
+
+    @classmethod
     def get_risk_level(cls, value: int):
         # map risk value
         if value == 0:
@@ -30,9 +35,13 @@ class UserRiskScoreType(models.TextChoices):
         raise ValueError("Risk value not valid")
 
     @classmethod
-    def get_range(cls, *, min_value: int = None, max_value: int = None):
+    def get_range(cls, *, min_value: int | str = None, max_value: int | str = None):
         min_value = min_value or 0
         max_value = max_value or 8
+        if isinstance(min_value, str):
+            min_value = cls.get_risk_threshold(min_value)
+        if isinstance(max_value, str):
+            max_value = cls.get_risk_threshold(max_value)
         risk_range = set(cls.get_risk_level(value) for value in range(min_value, max_value))
         return risk_range
 

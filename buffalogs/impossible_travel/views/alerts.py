@@ -76,6 +76,15 @@ def alerts_api(request):
         notified = True if request.GET.get("notified").lower() == "true" else False
     else:
         notified = None
+    risk_score = request.GET.get("risk_score")
+    min_risk_score = request.GET.get("min_risk_score")
+    max_risk_score = request.GET.get("max_risk_score")
+    if risk_score:
+        risk_score = int(risk_score) if risk_score.isnumeric() else risk_score.title()
+    if min_risk_score:
+        min_risk_score = int(min_risk_score) if min_risk_score.isnumeric() else min_risk_score.title()
+    if max_risk_score:
+        max_risk_score = int(max_risk_score) if max_risk_score.isnumeric() else max_risk_score.title()
     filters = dict(
         start_date=start_date,
         end_date=end_date,
@@ -88,9 +97,9 @@ def alerts_api(request):
         login_end_time=request.GET.get("login_end_date"),
         ip=request.GET.get("ip"),
         user_agent=request.GET.get("user_agent"),
-        risk_score=request.GET.get("risk_score"),
-        min_risk_score=request.GET.get("min_risk_score"),
-        max_risk_score=request.GET.get("max_risk_score"),
+        risk_score=risk_score,
+        min_risk_score=min_risk_score,
+        max_risk_score=max_risk_score,
     )
     alerts = Alert.apply_filters(**filters)
     data = [alert.serialize() for alert in alerts]
