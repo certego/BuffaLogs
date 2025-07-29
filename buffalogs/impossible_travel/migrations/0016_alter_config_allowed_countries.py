@@ -2,6 +2,7 @@
 
 import json
 import os
+from django.conf import settings
 import django.contrib.postgres.fields
 import impossible_travel.models
 import impossible_travel.validators
@@ -9,11 +10,11 @@ from django.db import migrations, models
 
 
 def get_valid_countries():
-    migration_dir = os.path.dirname(__file__)
-    json_path = os.path.join(migration_dir, '..', 'dashboard', 'countries.json')
-    json_path = os.path.normpath(json_path)
-
-    with open(json_path, 'r', encoding='utf-8') as f:
+    with open(
+        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/countries_list.json"),
+        mode="r",
+        encoding="utf-8",
+    ) as f:
         countries = json.load(f)
     return set(countries.values())
 

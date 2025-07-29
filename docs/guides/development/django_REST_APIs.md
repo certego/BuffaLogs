@@ -68,7 +68,7 @@ Request using start=2023-05-01T00:00:00Z and end=2023-06-31:23:59:59Z
 ### World map chart API
 | **API's name**| **API input**| **API output** |
 |---|---|---|
-| `world_map_chart_api` | `start` and `end` datetime captured in the URL: `world_map_chart_api/start=...&end=...` | a list of dictionaries containing all the alerts triggered with the country (saved in the `impossible_travel/dashboard/countries.json` file), the latitude, the longitude and the number of alerts triggered from that place |
+| `world_map_chart_api` | `start` and `end` datetime captured in the URL: `world_map_chart_api/start=...&end=...` | a list of dictionaries containing all the alerts triggered with the country (saved in the `config/buffalogs/countries_list.json` file), the latitude, the longitude and the number of alerts triggered from that place |
 
 Example:
 ```

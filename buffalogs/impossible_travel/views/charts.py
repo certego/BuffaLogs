@@ -10,7 +10,22 @@ from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
 from impossible_travel.models import Alert, Login, User
-from impossible_travel.views.utils import aggregate_alerts_interval, load_data
+from impossible_travel.views.utils import read_config
+
+
+def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
+    """
+    Helper function to aggregate alerts over an interval
+    """
+    current_date = start_date
+    aggregated_data = {}
+
+    while current_date < end_date:
+        next_date = current_date + interval
+        count = Alert.objects.filter(login_raw_data__timestamp__range=(current_date.isoformat(), next_date.isoformat())).count()
+        aggregated_data[current_date.strftime(date_fmt)] = count
+        current_date = next_date
+    return aggregated_data
 
 
 def homepage(request):
@@ -107,7 +122,7 @@ def world_map_chart_api(request):
     if is_naive(end_date):
         end_date = make_aware(end_date)
 
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     result = []
     tmp = []
     for key, value in countries.items():

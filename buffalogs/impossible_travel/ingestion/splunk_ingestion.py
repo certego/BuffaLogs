@@ -2,8 +2,7 @@ import logging
 from datetime import datetime
 
 try:
-    import splunklib.client as client
-    import splunklib.results as results
+    from splunklib import client, results
 except ImportError:
     pass
 from impossible_travel.ingestion.base_ingestion import BaseIngestion

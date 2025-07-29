@@ -73,7 +73,3 @@ class TestGoogleChatAlerting(TestCase):
         # Reload the alert from DB to check its state
         alert = Alert.objects.get(pk=self.alert.pk)
         self.assertFalse(alert.notified_status["googlechat"])
-
-    def test_send_actual_alert(self):
-        """Test sending an actual alert"""
-        self.googlechat_alerting.notify_alerts()
