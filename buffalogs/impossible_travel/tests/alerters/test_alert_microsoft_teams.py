@@ -9,19 +9,19 @@ from impossible_travel.models import Alert, Login, User
 
 
 class TestMicrosoftTeamsAlerting(TestCase):
-    def setUp(self):
-        """Set up test data before running tests."""
+    @classmethod
+    def setUpTestData(cls):
+        """Set up test data once for all tests in this class."""
+        cls.teams_config = BaseAlerting.read_config("microsoftteams")
+        cls.teams_alerting = MicrosoftTeamsAlerting(cls.teams_config)
 
-        self.teams_config = BaseAlerting.read_config("microsoftteams")
-        self.teams_alerting = MicrosoftTeamsAlerting(self.teams_config)
+        # Create shared user and login
+        cls.user = User.objects.create(username="testuser")
+        Login.objects.create(user=cls.user, id=cls.user.id)
 
-        # Create a dummy user
-        self.user = User.objects.create(username="testuser")
-        Login.objects.create(user=self.user, id=self.user.id)
-
-        # Create an alert
-        self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"microsoftteams": False}, description="Impossible travel detected", login_raw_data={}
+        # Create shared alert
+        cls.alert = Alert.objects.create(
+            name="Imp Travel", user=cls.user, notified_status={"microsoftteams": False}, description="Impossible travel detected", login_raw_data={}
         )
 
     @patch("requests.post")
