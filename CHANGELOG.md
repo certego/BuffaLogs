@@ -1,3 +1,8 @@
+## 2.9.x
+### 2.9.0
+#### Changes
+* Removed deprecated reviewers field from dependabot (doc [here](https://github.blog/changelog/2025-04-29-dependabot-reviewers-configuration-option-being-replaced-by-code-owners/))
+
 ## 2.8.x
 ### 2.8.1
 #### Changes
@@ -19,11 +24,6 @@
 
 ## 2.7.x
 ### 2.7.0
-#### Changes
-* Refactoring to centralized some utilities functions
-
-## 2.7.x
-### 2.7.0
 #### Features
 * Migrated from Elasticsearch client 7.x to 9.0.3 (also in the CI)
 * Implement an `alert_preferences` config, where users can choose which types of alerts they want to receive/prioritize (Google Summer of Code 2025 - @kunalsz)
@@ -33,6 +33,7 @@
 * Refactored API and views module (Google Summer of Code 2025 - @noble47)
 * Updated `active_alerter` view function to handle multiple active alerters (Google Summer of Code 2025 - @noble47)
 * Refactored test - created validator, detection and task test modules (Google Summer of Code 2025 - @noble47)
+* Refactoring to centralized some utilities functions
 
 ## 2.6.x
 ### 2.6.0
