@@ -8,19 +8,19 @@ from impossible_travel.models import Alert, Login, User
 
 
 class TestRocketChatAlerting(TestCase):
-    def setUp(self):
-        """Set up test data before running tests."""
+    @classmethod
+    def setUpTestData(cls):
+        """Set up test data once for all tests in this class."""
+        cls.rocketchat_config = BaseAlerting.read_config("rocketchat")
+        cls.rocketchat_alerting = RocketChatAlerting(cls.rocketchat_config)
 
-        self.rocketchat_config = BaseAlerting.read_config("rocketchat")
-        self.rocketchat_alerting = RocketChatAlerting(self.rocketchat_config)
+        # Shared test user and login
+        cls.user = User.objects.create(username="testuser")
+        Login.objects.create(user=cls.user, id=cls.user.id)
 
-        # Create a dummy user
-        self.user = User.objects.create(username="testuser")
-        Login.objects.create(user=self.user, id=self.user.id)
-
-        # Create an alert
-        self.alert = Alert.objects.create(
-            name="Imp Travel", user=self.user, notified_status={"rocketchat": False}, description="Impossible travel detected", login_raw_data={}
+        # Alert shared across test cases
+        cls.alert = Alert.objects.create(
+            name="Imp Travel", user=cls.user, notified_status={"rocketchat": False}, description="Impossible travel detected", login_raw_data={}
         )
 
     @patch("requests.post")

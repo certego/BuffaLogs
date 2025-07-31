@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 
 
-def mock_read_config(key: str | None = None):
+def mock_read_config(filename: str, key: str | None = None):
     config = {
         "active_alerters": ["discord"],
         "slack": {"webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"},
@@ -35,7 +35,7 @@ def mock_read_config(key: str | None = None):
     return config
 
 
-def mock_write_config(key: str, updates: dict[str, str]):
+def mock_write_config(filename: str, key: str, updates: dict[str, str]):
     pass
 
 

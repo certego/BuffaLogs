@@ -1,4 +1,9 @@
 ## 2.8.x
+### 2.8.1
+#### Changes
+* Tests refactor - improved Testalerters performance using setUpTestData class method (by community - @drona-gyawali)
+#### Bugfix
+* Fixed alerts view - Added missing filename to `read_config` and `write_config` calls (Google Summer of Code 2025 - @noble47)
 ### 2.8.0
 #### Features
 * Added the retry mechanism with exponential backoff for the alerting module (Google Summer of Code 2025 - @kunalsz)

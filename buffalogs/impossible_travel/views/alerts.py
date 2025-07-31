@@ -8,9 +8,7 @@ from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, User
-from impossible_travel.views.utils import get_config_read_write
-
-read_config, write_config = get_config_read_write("alerting.json")
+from impossible_travel.views.utils import read_config, write_config
 
 
 @require_http_methods(["GET"])
@@ -139,7 +137,7 @@ def serialize_config(config_dict):
 
 @require_http_methods(["GET"])
 def get_alerters(request):
-    config = read_config()
+    config = read_config("alerting.json")
     config.pop("active_alerters")
     alerters = [
         {"alerter": alerter, "fields": [field for field in config[alerter].keys() if field != "options"], "options": list(config[alerter].get("options", []))}
@@ -151,7 +149,7 @@ def get_alerters(request):
 
 @require_http_methods(["GET"])
 def get_active_alerter(request):
-    alert_config = read_config()
+    alert_config = read_config("alerting.json")
     active_alerters = alert_config["active_alerters"]
     alerter_config = [{"alerter": alerter, "fields": alert_config[alerter]} for alerter in active_alerters]
     return JsonResponse(alerter_config, safe=False, json_dumps_params={"default": str})
@@ -159,7 +157,7 @@ def get_active_alerter(request):
 
 def alerter_config(request, alerter):
     try:
-        alerter_config = read_config(key=alerter)
+        alerter_config = read_config("alerting.json", key=alerter)
     except KeyError:
         return JsonResponse({"message": f"Unsupported alerter - {alerter}"}, status=400)
 
@@ -174,5 +172,5 @@ def alerter_config(request, alerter):
             return JsonResponse({"message": f"Unexpected configuration fields - {error_fields}"}, status=400)
         else:
             alerter_config.update(config_update)
-            write_config(alerter, alerter_config)
+            write_config("alerting.json", alerter, alerter_config)
             return JsonResponse({"message": "Update successful"}, status=200)
