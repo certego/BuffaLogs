@@ -3,10 +3,8 @@ from typing import List
 from urllib.parse import urlparse
 
 from django.test import TestCase
-from impossible_travel.ingestion.opensearch_ingestion import \
-    OpensearchIngestion
-from impossible_travel.tests.utils import (load_index_template,
-                                           load_ingestion_config_data)
+from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
+from impossible_travel.tests.utils import load_index_template, load_ingestion_config_data
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import bulk
 
