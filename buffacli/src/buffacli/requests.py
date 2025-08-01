@@ -57,7 +57,6 @@ def get_alerts(
     login_start_time: datetime = None,
     login_end_time: datetime = None,
 ):
-    print(min_risk_score)
     query = dict(
         start_date=start_date,
         end_date=end_date,
