@@ -7,16 +7,19 @@ from impossible_travel.tests.utils import load_ingestion_config_data
 
 
 class SplunkIngestionTestCase(TestCase):
-    def setUp(self):
-        self.patcher = patch("splunklib.client.connect")
-        self.mock_connect = self.patcher.start()
-        self.mock_connect.return_value = MagicMock()
-        self.addCleanup(self.patcher.stop)
+    """
+    Test case for SplunkIngestion class.
 
-        self.ingestion_config = load_ingestion_config_data()
-        self.splunk_config = self.ingestion_config["splunk"]
-        # Setup test data
-        self.user1_test_data = [
+    Uses setUpTestData for improved performance by loading configuration
+    and static test data once per test class instead of once per test method.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.ingestion_config = load_ingestion_config_data()
+        cls.splunk_config = cls.ingestion_config["splunk"]
+
+        cls.user1_test_data = [
             {
                 "user.name": "Stitch",
                 "@timestamp": "2025-02-26T13:40:15.173Z",
@@ -200,7 +203,8 @@ class SplunkIngestionTestCase(TestCase):
                     self.assertIn(key, actual)
                     self.assertEqual(actual[key], expected[key])
 
-    def test_normalize_fields_valid_data(self):
+    @patch("splunklib.client.connect")
+    def test_normalize_fields_valid_data(self, mock_connect):
         mapping = {
             "user.name": "username",
             "@timestamp": "timestamp",
@@ -237,7 +241,8 @@ class SplunkIngestionTestCase(TestCase):
         self.assertEqual(normalized_entry["lon"], 139.6503)
         self.assertEqual(normalized_entry["user_agent"], "Mozilla/5.0")
 
-    def test_normalize_fields_missing_optional(self):
+    @patch("splunklib.client.connect")
+    def test_normalize_fields_missing_optional(self, mock_connect):
         """Test normalization when optional fields are missing"""
         mapping = {
             "user.name": "username",
@@ -268,7 +273,8 @@ class SplunkIngestionTestCase(TestCase):
         self.assertEqual(len(normalized), 1)
         self.assertEqual(normalized[0]["user_agent"], "")
 
-    def test_normalize_fields_missing_required(self):
+    @patch("splunklib.client.connect")
+    def test_normalize_fields_missing_required(self, mock_connect):
         """Test normalization excludes entries with missing required fields"""
         mapping = {
             "user.name": "username",
@@ -296,7 +302,8 @@ class SplunkIngestionTestCase(TestCase):
         normalized = ingestor.normalize_fields([log_entry])
         self.assertEqual(len(normalized), 0)
 
-    def test_normalize_nested_fields(self):
+    @patch("splunklib.client.connect")
+    def test_normalize_nested_fields(self, mock_connect):
         """Test normalization correctly handles nested fields"""
         mapping = {
             "source.geo.location.lat": "lat",
