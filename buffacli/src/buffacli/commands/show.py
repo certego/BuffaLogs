@@ -5,16 +5,7 @@ from buffacli import config, requests
 from buffacli.formatters import FormatOptions
 from buffacli.models import Alerters, AlertType, Ingestion
 
-help_text = (
-    "This command group provides visibility into BuffaLogs'"
-    "available configurations, such as supported alerters,"
-    "ingestors and configuration schema.\n"
-    "Useful for inspecting system capabilities or"
-    "integrating BuffaLogs with external tools."
-)
-
-
-app = typer.Typer(help=help_text)
+app = typer.Typer(help="View buffalogs component configurations")
 
 
 @app.command()
@@ -34,12 +25,10 @@ def ingestion(
     active_ingestion: Annotated[bool, typer.Option("--active", help="Print active ingestion source")] = False,
     source: Annotated[str, typer.Option(help="Supported ingestion source")] = None,
 ):
+    """Display supported ingestion sources."""
     if active_ingestion:
         content = requests.get_active_ingestion_source()
-        format_option.print(
-            content=Ingestion(content),
-            title=f"Active Ingestion Source: {content['source']}",
-        )
+        format_option.print(content=Ingestion(content), title=f"Active Ingestion Source: {content['source']}")
 
     if source:
         ingestion_config = Ingestion(requests.get_ingestion_source(source))
