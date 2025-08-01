@@ -3,8 +3,10 @@ from typing import List
 from urllib.parse import urlparse
 
 from django.test import TestCase
-from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
-from impossible_travel.tests.utils import load_index_template, load_ingestion_config_data
+from impossible_travel.ingestion.opensearch_ingestion import \
+    OpensearchIngestion
+from impossible_travel.tests.utils import (load_index_template,
+                                           load_ingestion_config_data)
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import bulk
 
@@ -22,14 +24,14 @@ def create_opensearch_client(config):
 
 
 class OpensearchIngestionTestCase(TestCase):
-    def setUp(self):
-        # Executes once per test
-        self.ingestion_config = load_ingestion_config_data()
-        self.opensearch_config = self.ingestion_config["opensearch"]
-        self.opensearch_config["url"] = "http://localhost:9200"
+    @classmethod
+    def setUpTestData(cls):
+        cls.ingestion_config = load_ingestion_config_data()
+        cls.opensearch_config = cls.ingestion_config["opensearch"]
+        cls.opensearch_config["url"] = "http://localhost:9200"
 
         # test data for cloud index - users: Stitch, Jessica, bugs-bunny@organization.com
-        self.user1_test_data = [
+        cls.user1_test_data = [
             {
                 "user.name": "Stitch",
                 "@timestamp": "2025-02-26T13:40:15.173Z",
@@ -82,7 +84,7 @@ class OpensearchIngestionTestCase(TestCase):
         ]
 
         # test data for fw-proxy index - users: scooby.doo@gmail.com, Andrew, bugs.bunny
-        self.user2_test_data = [
+        cls.user2_test_data = [
             {
                 "user.name": "scooby.doo@gmail.com",
                 "event.category": "authentication",
@@ -120,38 +122,63 @@ class OpensearchIngestionTestCase(TestCase):
             },
         ]
 
-        self.os = create_opensearch_client(self.opensearch_config)
-        self.template = load_index_template("example_template")
+        cls.os = create_opensearch_client(cls.opensearch_config)
+        cls.template = load_index_template("example_template")
 
-        self._load_example_template_on_opensearch(template_to_be_added=self.template)
+        cls._load_example_template_on_opensearch(template_to_be_added=cls.template)
         # load test data into the 2 indexes: cloud-* and fw-proxy-*
-        self._load_test_data_on_opensearch(data_to_be_added=self.user1_test_data, index="cloud-test_data")
-        self._load_test_data_on_opensearch(data_to_be_added=self.user2_test_data, index="fw-proxy-test_data")
+        cls._load_test_data_on_opensearch(data_to_be_added=cls.user1_test_data, index="cloud-test_data")
+        cls._load_test_data_on_opensearch(data_to_be_added=cls.user2_test_data, index="fw-proxy-test_data")
 
-    def _load_example_template_on_opensearch(self, template_to_be_added):
-        response = self.os.indices.put_index_template(name="example_template", body=template_to_be_added)
-        self.assertTrue(response["acknowledged"])
+    @classmethod
+    def _load_example_template_on_opensearch(cls, template_to_be_added):
+        response = cls.os.indices.put_index_template(name="example_template", body=template_to_be_added)
+        assert response["acknowledged"]
 
-    def _load_test_data_on_opensearch(self, data_to_be_added: List[dict], index: str):
-        bulk(self.os, self._bulk_gendata(index, data_to_be_added), refresh="true")
+    @classmethod
+    def _load_test_data_on_opensearch(cls, data_to_be_added: List[dict], index: str):
+        bulk(cls.os, cls._bulk_gendata(index, data_to_be_added), refresh="true")
         # Check that the data has been uploaded correctly
-        count = self.os.count(index=index)["count"]
-        self.assertTrue(count > 0)
+        count = cls.os.count(index=index)["count"]
+        assert count > 0
 
-    def tearDown(self) -> None:
-        # executed once per test (at the end)
-        self.os.indices.delete(index="cloud-test_data", ignore=[404])
-        self.os.indices.delete(index="fw-proxy-test_data", ignore=[404])
+    @classmethod
+    def tearDownClass(cls) -> None:
+        # executed once per test class (at the end)
+        cls.os.indices.delete(index="cloud-test_data", ignore=[404])
+        cls.os.indices.delete(index="fw-proxy-test_data", ignore=[404])
 
-    def _bulk_gendata(self, index: str, data_list: list):
+    def setUp(self):
+        """
+        Instance-level setup for test isolation.
+        Creates copies of class-level data for each test to prevent interference.
+        """
+        # Create copies of class-level data to avoid test interference when modifying configs
+        self.opensearch_config = self.__class__.opensearch_config.copy()
+        self.os = self.__class__.os
+
+    def _load_test_data_on_opensearch_instance(self, data_to_be_added: List[dict], index: str):
+        """Instance method wrapper for class method to maintain compatibility with existing tests."""
+        self.__class__._load_test_data_on_opensearch(data_to_be_added, index)
+
+    @classmethod
+    def _bulk_gendata(cls, index: str, data_list: list):
         for single_data in data_list:
-            yield {"_op_type": "index", "_id": f"log_id_{data_list.index(single_data)}", "_index": index, "_source": single_data}
+            yield {
+                "_op_type": "index",
+                "_id": f"log_id_{data_list.index(single_data)}",
+                "_index": index,
+                "_source": single_data,
+            }
 
     def test_process_users_ConnectionError(self):
         self.opensearch_config["url"] = "http://doesntexist-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
         with self.assertLogs(opensearch_ingestor.logger, level="ERROR"):
             opensearch_ingestor.process_users(start_date, end_date)
 
@@ -160,7 +187,10 @@ class OpensearchIngestionTestCase(TestCase):
         self.opensearch_config["indexes"] = "unexisting-index"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
         with self.assertLogs(opensearch_ingestor.logger, level="ERROR"):
             opensearch_ingestor.process_users(start_date, end_date)
 
@@ -168,7 +198,10 @@ class OpensearchIngestionTestCase(TestCase):
         # Test the function process_users with NO DATA in that range time
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
         returned_users = opensearch_ingestor.process_users(start_date, end_date)
         self.assertEqual(0, len(returned_users))
 
@@ -176,18 +209,34 @@ class OpensearchIngestionTestCase(TestCase):
         # Test the function process_users with data in OpenSearch
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 30, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
         # Users returned should be all users from the test data
         returned_users = opensearch_ingestor.process_users(start_date, end_date)
         self.assertEqual(6, len(returned_users))
-        self.assertCountEqual(["Stitch", "Jessica", "bugs-bunny@organization.com", "scooby.doo@gmail.com", "Andrew", "bugs.bunny"], returned_users)
+        self.assertCountEqual(
+            [
+                "Stitch",
+                "Jessica",
+                "bugs-bunny@organization.com",
+                "scooby.doo@gmail.com",
+                "Andrew",
+                "bugs.bunny",
+            ],
+            returned_users,
+        )
 
     def test_process_user_logins_ConnectionError(self):
         # Test the function process_user_logins with the exception ConnectionError
         self.opensearch_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
         with self.assertLogs(opensearch_ingestor.logger, level="ERROR"):
             opensearch_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -196,7 +245,10 @@ class OpensearchIngestionTestCase(TestCase):
         self.opensearch_config["indexes"] = "unexisting-index"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
         with self.assertLogs(opensearch_ingestor.logger, level="ERROR"):
             opensearch_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -204,7 +256,10 @@ class OpensearchIngestionTestCase(TestCase):
         # Test the function process_user_logins with some data on OpenSearch but not in the specific datetime range
         start_date = datetime(2025, 2, 26, 8, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 10, 00, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
         user1_logins = opensearch_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(0, len(user1_logins))
         user2_logins = opensearch_ingestor.process_user_logins(start_date, end_date, username="Jessica")
@@ -220,7 +275,10 @@ class OpensearchIngestionTestCase(TestCase):
         # Test the function process_user_logins with some data on OpenSearch in the specific datetime range
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 30, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
 
         # User1 - jessica (should have 1 login)
         user1_logins = opensearch_ingestor.process_user_logins(start_date, end_date, username="Jessica")
@@ -232,7 +290,10 @@ class OpensearchIngestionTestCase(TestCase):
 
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 30, tzinfo=timezone.utc)
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
 
         user_login = opensearch_ingestor.process_user_logins(start_date, end_date, username="Johnathan Doe")
         self.assertEqual([], user_login)
@@ -254,12 +315,15 @@ class OpensearchIngestionTestCase(TestCase):
         ]
 
         index_name = "cloud-missing-ip-test"
-        self._load_test_data_on_opensearch(data_to_be_added=test_data, index=index_name)
+        self._load_test_data_on_opensearch_instance(data_to_be_added=test_data, index=index_name)
 
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 30, tzinfo=timezone.utc)
 
-        opensearch_ingestor = OpensearchIngestion(ingestion_config=self.opensearch_config, mapping=self.opensearch_config["custom_mapping"])
+        opensearch_ingestor = OpensearchIngestion(
+            ingestion_config=self.opensearch_config,
+            mapping=self.opensearch_config["custom_mapping"],
+        )
         # for this test, I had to create a new username because a basic username like "Stitch" already exists in the test db. In the setup() method the test data is loaded but before it can cleared up again this test runs and that is why a new user is needed.
         user_logins = opensearch_ingestor.process_user_logins(start_date, end_date, username="StitchMissing")
 
@@ -287,7 +351,7 @@ class OpensearchIngestionTestCase(TestCase):
         ]
 
         index_name = "cloud-mapping-test"
-        self._load_test_data_on_opensearch(data_to_be_added=test_data, index=index_name)
+        self._load_test_data_on_opensearch_instance(data_to_be_added=test_data, index=index_name)
 
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 30, tzinfo=timezone.utc)
