@@ -1,0 +1,16 @@
+{% macro title(alert,alerts) -%}
+BuffaLogs - Login Anomaly Alerts : {{ alerts|length }} "{{ alert.name }}" alerts for user {{ alert.user.username }}
+{%- endmacro %}
+
+{% macro description(alert,alerts) -%}
+Dear admin,
+
+{{ alerts|length }} similar "{{ alert.name }}" alerts detected for user {{ alert.user.username }} in the last 5 minutes:
+
+{% for alert in alerts %}
+- {{ alert.login_raw_data.timestamp if alert.login_raw_data.timestamp is defined else alert.created }}: {{ alert.description }}
+{% endfor %}
+
+Stay Safe,  
+BuffaLogs
+{%- endmacro %}

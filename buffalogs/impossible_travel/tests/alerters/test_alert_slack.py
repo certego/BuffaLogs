@@ -1,7 +1,9 @@
+from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
 import requests
 from django.test import TestCase
+from django.utils import timezone
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.slack_alerting import SlackAlerting
 from impossible_travel.models import Alert, Login, User
@@ -74,3 +76,30 @@ class TestSlackAlerting(TestCase):
         # Reload the alert from DB to check its state
         alert = Alert.objects.get(pk=self.alert.pk)
         self.assertFalse(alert.notified_status["slack"])
+
+    @patch("requests.post")
+    def test_clubbed_alerts(self, mock_post):
+        """Test that multiple similar alerts are clubbed into a single notification."""
+        now = timezone.now()
+        alerts = [
+            Alert.objects.create(
+                name="Imp Travel",
+                user=self.user,
+                notified_status={"slack": False},
+                description=f"Imp Travel attempt {i + 1}",
+                login_raw_data={"timestamp": str(now + timedelta(minutes=3 * i))},
+                created=now + timedelta(minutes=3 * i),
+            )
+            for i in range(2)
+        ]
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        self.slack_alerting.notify_alerts()
+
+        self.assertEqual(mock_post.call_count, 1)
+        payload = mock_post.call_args[1]["json"]
+        for i in range(2):
+            self.assertIn(f"Imp Travel attempt {i + 1}", payload["attachments"][0]["text"])
