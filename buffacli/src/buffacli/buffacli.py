@@ -3,11 +3,12 @@ from typing import Annotated
 
 import typer
 from buffacli import config
-from buffacli.commands import show
+from buffacli.commands import query, show
 
 app = typer.Typer()
 
 app.add_typer(show.app, name="show")
+app.add_typer(query.app, name="query")
 
 
 @app.command()
