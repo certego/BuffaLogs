@@ -8,9 +8,7 @@ from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, User
-from impossible_travel.views.utils import get_config_read_write, load_data
-
-read_config, write_config = get_config_read_write("alerting.json")
+from impossible_travel.views.utils import read_config, write_config
 
 
 @require_http_methods(["GET"])
@@ -68,24 +66,48 @@ def alerts_api(request):
     result = []
     start_date = parse_datetime(request.GET.get("start", ""))
     end_date = parse_datetime(request.GET.get("end", ""))
-
-    if is_naive(start_date):
+    if start_date and is_naive(start_date):
         start_date = make_aware(start_date)
-    if is_naive(end_date):
+    if end_date and is_naive(end_date):
         end_date = make_aware(end_date)
-
-    alerts_list = Alert.objects.filter(created__range=(start_date, end_date))
-    for alert in alerts_list:
-        tmp = {"timestamp": alert.login_raw_data["timestamp"], "username": User.objects.get(id=alert.user_id).username, "rule_name": alert.name}
-        result.append(tmp)
-    data = json.dumps(result)
-    return HttpResponse(data, content_type="json")
+    if request.GET.get("notified"):
+        notified = True if request.GET.get("notified").lower() == "true" else False
+    else:
+        notified = None
+    risk_score = request.GET.get("risk_score")
+    min_risk_score = request.GET.get("min_risk_score")
+    max_risk_score = request.GET.get("max_risk_score")
+    if risk_score:
+        risk_score = int(risk_score) if risk_score.isnumeric() else risk_score.title()
+    if min_risk_score:
+        min_risk_score = int(min_risk_score) if min_risk_score.isnumeric() else min_risk_score.title()
+    if max_risk_score:
+        max_risk_score = int(max_risk_score) if max_risk_score.isnumeric() else max_risk_score.title()
+    filters = dict(
+        start_date=start_date,
+        end_date=end_date,
+        notified=notified,
+        name=request.GET.get("name"),
+        username=request.GET.get("user"),
+        is_vip=request.GET.get("is_vip"),
+        country_code=request.GET.get("country_code"),
+        login_start_time=request.GET.get("login_start_date"),
+        login_end_time=request.GET.get("login_end_date"),
+        ip=request.GET.get("ip"),
+        user_agent=request.GET.get("user_agent"),
+        risk_score=risk_score,
+        min_risk_score=min_risk_score,
+        max_risk_score=max_risk_score,
+    )
+    alerts = Alert.apply_filters(**filters)
+    data = [alert.serialize() for alert in alerts]
+    return JsonResponse(data, content_type="json", safe=False, json_dumps_params={"default": str})
 
 
 def get_user_alerts(request):
     """Return all alerts detected for user."""
     context = []
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     alerts_data = Alert.objects.select_related("user").all().order_by("-created")
     for alert in alerts_data:
         country_code = alert.login_raw_data.get("country", "").lower()
@@ -93,7 +115,7 @@ def get_user_alerts(request):
         tmp = {
             "timestamp": alert.login_raw_data.get("timestamp"),
             "created": alert.created,
-            "notified": alert.notified_status,
+            "notified": alert.notified,  # alert.notified_status,
             "triggered_by": alert.user.username,
             "rule_name": alert.name,
             "rule_desc": alert.description,
@@ -127,19 +149,9 @@ def alert_types(request):
     return JsonResponse(alert_types, safe=False, json_dumps_params={"default": str})
 
 
-def serialize_config(config_dict):
-    data = {}
-    for key, value in config_dict.items():
-        if isinstance(value, dict):
-            data.update(value)
-            continue
-        data[key] = value
-    return data
-
-
 @require_http_methods(["GET"])
 def get_alerters(request):
-    config = read_config()
+    config = read_config("alerting.json")
     config.pop("active_alerters")
     alerters = [
         {"alerter": alerter, "fields": [field for field in config[alerter].keys() if field != "options"], "options": list(config[alerter].get("options", []))}
@@ -151,7 +163,7 @@ def get_alerters(request):
 
 @require_http_methods(["GET"])
 def get_active_alerter(request):
-    alert_config = read_config()
+    alert_config = read_config("alerting.json")
     active_alerters = alert_config["active_alerters"]
     alerter_config = [{"alerter": alerter, "fields": alert_config[alerter]} for alerter in active_alerters]
     return JsonResponse(alerter_config, safe=False, json_dumps_params={"default": str})
@@ -159,7 +171,7 @@ def get_active_alerter(request):
 
 def alerter_config(request, alerter):
     try:
-        alerter_config = read_config(key=alerter)
+        alerter_config = read_config("alerting.json", key=alerter)
     except KeyError:
         return JsonResponse({"message": f"Unsupported alerter - {alerter}"}, status=400)
 
@@ -174,5 +186,5 @@ def alerter_config(request, alerter):
             return JsonResponse({"message": f"Unexpected configuration fields - {error_fields}"}, status=400)
         else:
             alerter_config.update(config_update)
-            write_config(alerter, alerter_config)
+            write_config("alerting.json", alerter, alerter_config)
             return JsonResponse({"message": "Update successful"}, status=200)

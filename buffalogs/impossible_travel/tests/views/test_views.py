@@ -1,7 +1,6 @@
 import json
 from datetime import datetime, timedelta, timezone
 
-from django.test import Client
 from django.urls import reverse
 from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.models import Alert, Login, User
@@ -9,8 +8,9 @@ from rest_framework.test import APITestCase
 
 
 class TestViews(APITestCase):
-    def setUp(self):
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        """Set up data for the whole TestCase - runs once per test class."""
         User.objects.bulk_create(
             [
                 User(username="Lorena Goldoni", risk_score=UserRiskScoreType.NO_RISK),
@@ -20,11 +20,12 @@ class TestViews(APITestCase):
                 User(username="Loryg", risk_score=UserRiskScoreType.MEDIUM),
             ]
         )
-        db_user = User.objects.get(username="Lorena Goldoni")
+        cls.db_user = User.objects.get(username="Lorena Goldoni")
+
         Login.objects.bulk_create(
             [
                 Login(
-                    user=db_user,
+                    user=cls.db_user,
                     event_id="vfraw14gw",
                     index="cloud",
                     ip="1.2.3.4",
@@ -35,7 +36,7 @@ class TestViews(APITestCase):
                     user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",  # pylint: disable=line-too-long
                 ),
                 Login(
-                    user=db_user,
+                    user=cls.db_user,
                     event_id="ht9DEIgBnkLiMp6r-SG-",
                     index="weblog",
                     ip="203.0.113.24",
@@ -46,7 +47,7 @@ class TestViews(APITestCase):
                     user_agent="Mozilla/5.0 (X11; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0",
                 ),
                 Login(
-                    user=db_user,
+                    user=cls.db_user,
                     event_id="vfraw14gw",
                     index="cloud",
                     ip="1.2.3.4",
@@ -57,7 +58,7 @@ class TestViews(APITestCase):
                     user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",  # pylint: disable=line-too-long
                 ),
                 Login(
-                    user=db_user,
+                    user=cls.db_user,
                     event_id="ht9DEIgBnkLiMp6r-SG-",
                     index="weblog",
                     ip="203.0.113.24",
@@ -69,10 +70,11 @@ class TestViews(APITestCase):
                 ),
             ]
         )
+
         Alert.objects.bulk_create(
             [
                 Alert(
-                    user=db_user,
+                    user=cls.db_user,
                     name=AlertDetectionType.NEW_DEVICE,
                     login_raw_data={
                         "id": "ht9DEIgBnkLiMp6r-SG-",
@@ -87,7 +89,7 @@ class TestViews(APITestCase):
                     description="Test_Description0",
                 ),
                 Alert(
-                    user=db_user,
+                    user=cls.db_user,
                     name=AlertDetectionType.IMP_TRAVEL,
                     login_raw_data={
                         "id": "vfraw14gw",
@@ -102,7 +104,7 @@ class TestViews(APITestCase):
                     description="Test_Description1",
                 ),
                 Alert(
-                    user=db_user,
+                    user=cls.db_user,
                     name=AlertDetectionType.IMP_TRAVEL,
                     login_raw_data={
                         "id": "vfraw14gw",
@@ -117,7 +119,7 @@ class TestViews(APITestCase):
                     description="Test_Descriptio2",
                 ),
                 Alert(
-                    user=db_user,
+                    user=cls.db_user,
                     name=AlertDetectionType.IMP_TRAVEL,
                     login_raw_data={
                         "id": "vfraw14gw",
@@ -132,7 +134,7 @@ class TestViews(APITestCase):
                     description="Test_Description3",
                 ),
                 Alert(
-                    user=db_user,
+                    user=cls.db_user,
                     name=AlertDetectionType.NEW_DEVICE,
                     login_raw_data={
                         "id": "ht9DEIgBnkLiMp6r-SG-",
@@ -147,7 +149,7 @@ class TestViews(APITestCase):
                     description="Test_Description4",
                 ),
                 Alert(
-                    user=db_user,
+                    user=cls.db_user,
                     name=AlertDetectionType.NEW_DEVICE,
                     login_raw_data={
                         "id": "ht9DEIgBnkLiMp6r-SG-",
@@ -213,15 +215,39 @@ class TestViews(APITestCase):
         alert = Alert.objects.get(login_raw_data__timestamp="2023-05-20T11:45:01.229Z")
         alert.created = creation_mock_time
         alert.save()
+        list_expected_result = [
+            {
+                "timestamp": "2023-05-20T11:45:01.229Z",
+                "triggered_by": "Lorena Goldoni",
+                "rule_name": "New Device",
+                "rule_desc": alert.description,
+                "created": alert.created.strftime("%y-%m-%d %H:%M:%S"),
+                "notified": bool(alert.notified_status),
+                "is_vip": alert.is_vip,
+                "country": alert.login_raw_data["country"].lower(),
+                "severity_type": alert.user.risk_score,
+                "filter_type": alert.filter_type,
+            }
+        ]
         alert = Alert.objects.get(login_raw_data__timestamp="2023-06-20T10:17:33.358Z")
         alert.created = creation_mock_time + timedelta(minutes=5)
         alert.save()
+        list_expected_result.append(
+            {
+                "timestamp": "2023-06-20T10:17:33.358Z",
+                "triggered_by": "Lorena Goldoni",
+                "rule_name": "Imp Travel",
+                "rule_desc": alert.description,
+                "created": alert.created.strftime("%y-%m-%d %H:%M:%S"),
+                "notified": bool(alert.notified_status),
+                "is_vip": alert.is_vip,
+                "country": alert.login_raw_data["country"].lower(),
+                "severity_type": alert.user.risk_score,
+                "filter_type": alert.filter_type,
+            }
+        )
         start = creation_mock_time
         end = creation_mock_time + timedelta(minutes=10)
-        list_expected_result = [
-            {"timestamp": "2023-06-20T10:17:33.358Z", "username": "Lorena Goldoni", "rule_name": "Imp Travel"},
-            {"timestamp": "2023-05-20T11:45:01.229Z", "username": "Lorena Goldoni", "rule_name": "New Device"},
-        ]
         response = self.client.get(f"{reverse('alerts_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(list_expected_result, json.loads(response.content))
@@ -237,7 +263,7 @@ class TestViews(APITestCase):
     def test_user_login_timeline_api(self):
         """Test the user login timeline API endpoint."""
 
-        db_user = User.objects.get(username="Lorena Goldoni")
+        db_user = self.db_user
 
         mock_login_date = datetime(2025, 4, 27, 23, 8, 10, 800340, tzinfo=timezone.utc)
 
@@ -286,7 +312,7 @@ class TestViews(APITestCase):
     def test_user_device_usage_api(self):
         """Test the user device usage API endpoint."""
 
-        db_user = User.objects.get(username="Lorena Goldoni")
+        db_user = self.db_user
 
         devices = {
             "Firefox": 3,
@@ -334,7 +360,7 @@ class TestViews(APITestCase):
     def test_user_login_frequency_api(self):
         """Test the user login frequency API endpoint."""
 
-        db_user = User.objects.get(username="Lorena Goldoni")
+        db_user = self.db_user
 
         base_date = datetime(2023, 6, 19, 10, 0, 0, tzinfo=timezone.utc)
         daily_counts = {
@@ -397,7 +423,7 @@ class TestViews(APITestCase):
 
     def test_user_time_of_day_api(self):
         """Test the user time of day API endpoint."""
-        db_user = User.objects.get(username="Lorena Goldoni")
+        db_user = self.db_user
         base_date = datetime(2023, 6, 19, 0, 0, 0, tzinfo=timezone.utc)  # Monday (weekday 0)
 
         hour_weekday_pattern = {
@@ -453,7 +479,7 @@ class TestViews(APITestCase):
 
     def test_user_geo_distribution_api(self):
         """Test the user geo distribution API endpoint."""
-        db_user = User.objects.get(username="Lorena Goldoni")
+        db_user = self.db_user
 
         countries = {
             "United States": {"code": "us", "lat": 37.7749, "lon": -122.4194, "count": 3},

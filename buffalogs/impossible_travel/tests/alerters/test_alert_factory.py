@@ -10,22 +10,21 @@ from impossible_travel.models import Alert, Login, User
 class TestAlertFactory(TestCase):
     """Test the AlertFactory class."""
 
-    def setUp(self):
-        self.config = {
+    @classmethod
+    def setUpTestData(cls):
+        cls.config = {
             "active_alerters": ["microsoftteams", "telegram"],
             "telegram": {"bot_token": "BOT_TOKEN", "chat_ids": ["CHAT_ID"]},
             "microsoftteams": {"webhook_url": "WEBHOOK_URL"},
             "discord": {"dummy": "dummy"},
         }
 
-        # Create a dummy user
-        self.user = User.objects.create(username="testuser")
-        Login.objects.create(user=self.user, id=self.user.id)
+        cls.user = User.objects.create(username="testuser")
+        Login.objects.create(user=cls.user, id=cls.user.id)
 
-        # Create an alert
-        self.alert = Alert.objects.create(
+        cls.alert = Alert.objects.create(
             name="Imp Travel",
-            user=self.user,
+            user=cls.user,
             notified_status={"telegram": False, "microsoftteams": False, "discord": False},
             description="Impossible travel detected",
             login_raw_data={},

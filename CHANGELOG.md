@@ -1,19 +1,26 @@
+## 2.9.x
+### 2.9.0
+#### Changes
+* Removed deprecated reviewers field from dependabot (doc [here](https://github.blog/changelog/2025-04-29-dependabot-reviewers-configuration-option-being-replaced-by-code-owners/))
+
 ## 2.8.x
+### 2.8.1
+#### Changes
+* Tests refactor - improved Testalerters performance using setUpTestData class method (by community - @drona-gyawali)
+#### Bugfix
+* Fixed alerts view - Added missing filename to `read_config` and `write_config` calls (Google Summer of Code 2025 - @noble47)
 ### 2.8.0
 #### Features
 * Added the retry mechanism with exponential backoff for the alerting module (Google Summer of Code 2025 - @kunalsz)
-* Added the `country_name` validator (by community - @drona-gyawali)
-* Updated the CI linters versions
+* Added the `country_name` validator to allow valid ISO 3166-1 country names and ISO 3166-1 Alpha-2 country codes (by community - @drona-gyawali)
+* Updated the CI linters versions (compatible with requirements-linters.txt versions)
+* Upgraded Django to 5.2
 #### Changes
 * Updated the `setup_config` django mgmt command to customize all the possible fields in the Config model
 * Refactored the utils functions to centralize them
+* Updated the licence classifier because deprecated
 #### Bugfix
 * Fixed the `TypeError: string indices must be integers, not 'str'` in the `ingestion.get_ingestion_sources` view
-
-## 2.7.x
-### 2.7.0
-#### Changes
-* Refactoring to centralized some utilities functions
 
 ## 2.7.x
 ### 2.7.0
@@ -26,6 +33,7 @@
 * Refactored API and views module (Google Summer of Code 2025 - @noble47)
 * Updated `active_alerter` view function to handle multiple active alerters (Google Summer of Code 2025 - @noble47)
 * Refactored test - created validator, detection and task test modules (Google Summer of Code 2025 - @noble47)
+* Refactoring to centralized some utilities functions
 
 ## 2.6.x
 ### 2.6.0

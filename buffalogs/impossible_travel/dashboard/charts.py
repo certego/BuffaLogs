@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Count
 from django.utils import timezone
 from impossible_travel.models import Alert, Login, User
-from impossible_travel.views.utils import load_data
+from impossible_travel.views.utils import read_config
 from pygal_maps_world.maps import World
 
 pie_custom_style = pygal.style.Style(
@@ -137,7 +137,7 @@ def world_map_chart(start, end):
         height=130,
         show_legend=False,
     )
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     tmp = {}
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
@@ -217,7 +217,7 @@ def user_geo_distribution_chart(user, start, end):
     logins = Login.objects.filter(user=user, timestamp__range=(start, end))
     country_data = logins.values("country").annotate(count=Count("id"))
 
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     name_to_code = {v.lower(): k for k, v in countries.items()}
 
     country_dict = {}
