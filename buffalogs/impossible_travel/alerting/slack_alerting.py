@@ -28,10 +28,11 @@ class SlackAlerting(BaseAlerting):
     @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
     def send_message(self, alert):
         alert_title, alert_description = self.alert_message_formatter(alert)
-        user_mention = None
+
         if alert.user.username in list(self.recipient_list_users.keys()):
             user_mention = f"<@{self.recipient_list_users[alert.user.username]}>"
-            alert_title, alert_description = self.alert_message_formatter(alert, template_path="slack/alert_template.jinja", user_mention=user_mention)
+            alert_title, alert_description = self.alert_message_formatter(alert, template_path="alert_template_slack.jinja", user_mention=user_mention)
+
         alert_msg = {
             "attachments": [
                 {

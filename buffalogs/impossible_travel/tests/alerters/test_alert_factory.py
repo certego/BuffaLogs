@@ -1,3 +1,4 @@
+import json
 from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
@@ -11,9 +12,9 @@ class TestAlertFactory(TestCase):
 
     def setUp(self):
         self.config = {
-            "active_alerters": ["slack", "telegram"],
+            "active_alerters": ["microsoftteams", "telegram"],
             "telegram": {"bot_token": "BOT_TOKEN", "chat_ids": ["CHAT_ID"]},
-            "slack": {"webhook_url": "WEBHOOK_URL"},
+            "microsoftteams": {"webhook_url": "WEBHOOK_URL"},
             "discord": {"dummy": "dummy"},
         }
 
@@ -25,7 +26,7 @@ class TestAlertFactory(TestCase):
         self.alert = Alert.objects.create(
             name="Imp Travel",
             user=self.user,
-            notified_status={"telegram": False, "slack": False, "discord": False},
+            notified_status={"telegram": False, "microsoftteams": False, "discord": False},
             description="Impossible travel detected",
             login_raw_data={},
         )
@@ -35,7 +36,7 @@ class TestAlertFactory(TestCase):
             alert_factory = AlertFactory()
             active_alerters = alert_factory.get_alert_classes()
             self.assertEqual(len(active_alerters), 2)
-            self.assertIn("SlackAlerting", str(active_alerters[0]))
+            self.assertIn("MicrosoftTeamsAlerting", str(active_alerters[0]))
             self.assertIn("TelegramAlerting", str(active_alerters[1]))
 
     def test_send_actual_alert(self):
@@ -61,21 +62,19 @@ class TestAlertFactory(TestCase):
                 expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
                 expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
 
-                if alerter.__class__.__name__ == "SlackAlerting":
+                if alerter.__class__.__name__ == "MicrosoftTeamsAlerting":
                     expected_payload = {
-                        "attachments": [
-                            {
-                                "title": expected_alert_title,
-                                "text": expected_alert_description,
-                                "color": "#ff0000",
-                            }
-                        ]
+                        "@type": "MessageCard",
+                        "@context": "http://schema.org/extensions",
+                        "themeColor": "FF0000",
+                        "title": expected_alert_title,
+                        "text": expected_alert_description,
                     }
 
                     mock_post.assert_any_call(
-                        self.config["slack"]["webhook_url"],
+                        self.config["microsoftteams"]["webhook_url"],
                         headers={"Content-Type": "application/json"},
-                        json=expected_payload,
+                        data=json.dumps(expected_payload),
                     )
 
                 elif alerter.__class__.__name__ == "TelegramAlerting":
