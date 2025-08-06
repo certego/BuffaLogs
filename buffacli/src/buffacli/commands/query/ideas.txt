@@ -1,0 +1,6 @@
+# Query Alerts
+- query alerts by alerts fields
+- query alerts by username
+- query alerts by user's risk_score
+- query alerts by IP [UserIP]
+- query alerts by Login Fields: [country, user_agent, `maybe lat and long`]  

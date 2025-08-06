@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Annotated
 
 import typer
-from buffacli.commands.query import alerts, users
+from buffacli.commands.query import alerts, logins
 from buffacli.formatters import FormatOptions
 from buffacli.render import make_renderable
 
@@ -26,6 +26,7 @@ class DisplayMode(str, Enum):
 app = typer.Typer(help="Query users and alerts record")
 
 app.add_typer(alerts.app, name="")
+app.add_typer(logins.app, name="")
 
 
 @app.callback()

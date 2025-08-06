@@ -68,8 +68,6 @@ class AlertQuery(Query):
         "created",
         "updated",
         "is_vip",
-        # "notified",
-        # "filter_type",
         "severity_type",
     ]
 
