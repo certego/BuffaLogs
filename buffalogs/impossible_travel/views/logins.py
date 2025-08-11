@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.http import JsonResponse
 from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.models import Login, User
 
@@ -29,3 +30,20 @@ def get_unique_logins(request, pk_user):
         }
         context.append(tmp)
     return JsonResponse(json.dumps(context, default=str), safe=False)
+
+
+@require_http_methods(["GET"])
+def login_api(request):
+    """Filter logins."""
+    result = []
+    filters = dict(
+        username=request.GET.get("user"),
+        country=request.GET.get("country"),
+        login_start_time=request.GET.get("login_start_date"),
+        login_end_time=request.GET.get("login_end_date"),
+        ip=request.GET.get("ip"),
+        user_agent=request.GET.get("user_agent"),
+    )
+    logins = Login.apply_filters(**filters)
+    data = [login.serialize() for login in logins]
+    return JsonResponse(data, content_type="json", safe=False, json_dumps_params={"default": str})

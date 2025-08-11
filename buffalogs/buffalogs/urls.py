@@ -50,4 +50,5 @@ urlpatterns = [
     path("api/alerters/active-alerter/", alerts.get_active_alerter, name="active_alerter_api"),
     path("api/alerters/<str:alerter>/", alerts.alerter_config, name="alerter_config_api"),
     path("api/alerters/", alerts.get_alerters, name="get_alerters"),
+    path("api/logins/", logins.login_api, name="list_logins"),
 ]
