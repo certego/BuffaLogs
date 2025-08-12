@@ -10,6 +10,7 @@ alert_types_api = root_url / "api/alert_types"
 ingestion_api = root_url / "api/ingestion"
 alerters_api = root_url / "api/alerters"
 alerts_api = root_url / "alerts_api"  # "api/alerts"
+login_api = root_url / "api/logins"
 
 
 @request_exception_handler
@@ -84,3 +85,18 @@ def get_alerts(
     )
 
     return send_request(alerts_api, params=query).json()
+
+
+def get_logins(
+    *,
+    username: str = None,
+    ip: str = None,
+    country: str = None,
+    user_agent: str = None,
+    login_start_time: datetime = None,
+    login_end_time: datetime = None,
+    index: str = None,
+):
+    query = dict(user=username, ip=ip, country=country, user_agent=user_agent, login_start_time=login_start_time, login_end_time=login_end_time, index=index)
+
+    return send_request(login_api, params=query).json()
