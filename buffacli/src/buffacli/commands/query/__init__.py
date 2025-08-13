@@ -32,5 +32,7 @@ def callback(
     output_file: Annotated[Path, typer.Option("-o", "--output", help="Output file for query export")] = None,
     # search: Annotated[str, typer.Option(help="Performs post request search on key for the give value. Input should follow the format kw:value")] = None
 ):
-    exporter = export.get_exporter(output_file)
+    exporter = None
+    if output_file:
+        exporter = export.get_exporter(output_file)
     ctx.obj = QueryOptions(limit=limit, formatter=make_renderable(formatter, mode=mode, page_size=page_size, exporter=exporter))
