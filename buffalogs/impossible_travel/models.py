@@ -294,6 +294,23 @@ class Config(models.Model):
         default=UserRiskScoreType.NO_RISK,
         help_text="Select the risk_score that a user should overcome to send the 'USER_RISK_THRESHOLD' alert",
     )
+    ignored_impossible_travel_countries_couples = models.JSONField(
+        default=list,
+        blank=True,
+        validators=[validate_countries_names],
+        help_text=(
+            "List of country pairs (start_country, last_country) to ignore for impossible_travel alerts. "
+            "Country names must match the names in the countries_list.json config file. "
+            "Example: [['Italy', 'Italy'], ['United States', 'France']]"
+        ),
+    )
+    ignored_impossible_travel_all_same_country = models.BooleanField(
+        default=True,
+        help_text=(
+            "If true, all the impossible travel alerts from and to the same country are ignored. "
+            "If you want to exclude just some countries, use the 'ignored_impossible_travel_countries_couples' Config field instead"
+        ),
+    )
 
     distance_accepted = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED,
