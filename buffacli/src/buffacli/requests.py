@@ -4,6 +4,7 @@ from datetime import datetime
 import requests
 from buffacli.config import get_buffalogs_url
 from buffacli.exception_handlers import request_exception_handler
+from buffacli.globals import vprint
 
 root_url = get_buffalogs_url()
 alert_types_api = root_url / "api/alert_types"
@@ -15,7 +16,11 @@ login_api = root_url / "api/logins"
 
 @request_exception_handler
 def send_request(url, *args, **kwargs):
+    vprint("info", f"Requesting: {url}...")
     req = requests.get(url, *args, **kwargs)
+    vprint("debug", f"Request Headers: {req.request.headers}")
+    vprint("info", f"Response Status Code: {req.status_code}")
+    vprint("debug", f"Response Headers: {req.headers}")
     req.raise_for_status()
     return req
 

@@ -2,7 +2,7 @@ from enum import Enum
 
 from buffacli.export import BaseExporter
 from buffacli.formatters import FormatOptions
-from rich.console import Console
+from buffacli.globals import console, vprint
 
 
 class RenderOptions(str, Enum):
@@ -39,7 +39,6 @@ class Render:
         pass
 
     def __call__(self, content, mode: str = "", **formatter_kwargs):
-        console = Console()
         if not console.is_terminal:
             print(content.raw)
             return
@@ -53,6 +52,7 @@ class Render:
         formatted_content = self.formatter(content, **formatter_kwargs)
         match mode.lower():
             case "less":
+                vprint("debug", "Displaying output with less pager")
                 self.less(formatted_content)
             # case "shell":
             #    self.shell(formatted_content)

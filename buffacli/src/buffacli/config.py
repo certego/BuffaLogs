@@ -30,7 +30,6 @@ def write_to_config(key, value):
     with open(config_path, "r") as config_file:
         config = json.load(config_file)
     if key not in config:
-        print(key)
         return
     config[key] = value
     with open(config_path, "w") as config_file:
