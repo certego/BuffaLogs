@@ -91,6 +91,25 @@ def process_logs(start_date=None, end_date=None):
 
 @shared_task(name="NotifyAlertsTask")
 def notify_alerts():
+    """Notify alerts via active alerters and track execution in TaskSettings"""
+    now = timezone.now()
+    task_settings, _ = TaskSettings.objects.get_or_create(
+        task_name="NotifyAlertsTask",
+        defaults={
+            "start_date": now - timedelta(minutes=30),
+            "end_date": now,
+        },
+    )
+
+    # Process alerts within the defined time range(30 mins)
+    start_date = task_settings.start_date
+    end_date = task_settings.end_date
+
     active_alerters = AlertFactory().get_alert_classes()
     for alerter in active_alerters:
-        alerter.notify_alerts()
+        alerter.notify_alerts(start_date=start_date, end_date=end_date)
+
+    # Update task_settings for next execution
+    task_settings.start_date = task_settings.end_date
+    task_settings.end_date = timezone.now()
+    task_settings.save()
