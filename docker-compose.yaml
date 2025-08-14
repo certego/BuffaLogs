@@ -32,6 +32,7 @@ services:
             - buffalogs_nginx_logs:/var/log/nginx:rw
         ports:
             - "80:80"
+            - "8000:80"
            # - "443:443"
 
     buffalogs:

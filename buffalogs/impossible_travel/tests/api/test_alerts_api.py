@@ -1,7 +1,6 @@
 import json
 from unittest import mock
 
-from django.test import Client
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
@@ -30,9 +29,7 @@ def mock_read_config(filename: str, key: str | None = None):
         },
         "discord": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"},
     }
-    if key:
-        return config[key]
-    return config
+    return config[key] if key else config
 
 
 def mock_write_config(filename: str, key: str, updates: dict[str, str]):
@@ -40,9 +37,6 @@ def mock_write_config(filename: str, key: str, updates: dict[str, str]):
 
 
 class TestAlertAPI(APITestCase):
-    def setUp(self):
-        self.client = Client()
-
     def test_get_alert_types(self):
         expected = [
             {"alert_type": "New Device", "description": "Login from new device"},
@@ -52,11 +46,9 @@ class TestAlertAPI(APITestCase):
             {"alert_type": "Anonymous IP Login", "description": "Login from an anonymous IP"},
             {"alert_type": "Atypical Country", "description": "Login from an atypical country"},
         ]
-
         response = self.client.get(reverse("alert_types"))
         self.assertEqual(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEqual(content, expected)
+        self.assertEqual(json.loads(response.content), expected)
 
     @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
     def test_get_alerters(self, mock_reader):
@@ -87,32 +79,29 @@ class TestAlertAPI(APITestCase):
         ]
         response = self.client.get(reverse("get_alerters"))
         self.assertEqual(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEqual(content, expected)
+        self.assertEqual(json.loads(response.content), expected)
 
     @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
     def test_get_active_alerter(self, mock_writer):
         expected = [{"alerter": "discord", "fields": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"}}]
         response = self.client.get(reverse("active_alerter_api"))
         self.assertEqual(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEqual(content, expected)
+        self.assertEqual(json.loads(response.content), expected)
 
     @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
     def test_get_alerter_config(self, mock_writer):
         expected = {"alerter": "discord", "fields": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"}}
         response = self.client.get(reverse("alerter_config_api", kwargs={"alerter": "discord"}))
         self.assertEqual(response.status_code, 200)
-        content = json.loads(response.content)
-        self.assertEqual(content, expected)
+        self.assertEqual(json.loads(response.content), expected)
 
     @mock.patch("impossible_travel.views.alerts.write_config", side_effect=mock_write_config)
     def test_update_alerter_config(self, mock_writer):
         response = self.client.post(
-            f"{reverse('alerter_config_api', kwargs={'alerter' : 'discord'})}",
-            json={"webhook_url": "https://my_web_hook_alerter.com"},
-            content_type="application/json",
+            reverse("alerter_config_api", kwargs={"alerter": "discord"}),
+            {"webhook_url": "https://my_web_hook_alerter.com"},
+            format="json",
         )
         expected = {"message": "Update successful"}
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(expected, json.loads(response.content))
+        self.assertEqual(json.loads(response.content), expected)
