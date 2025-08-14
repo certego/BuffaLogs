@@ -49,12 +49,13 @@ class SlackAlerting(BaseAlerting):
 
         return resp
 
-    def notify_alerts(self):
+    def notify_alerts(self, start_date=None, end_date=None):
         """
         Execute the alerter operation.
         """
-        time_threshold = timezone.now() - timedelta(minutes=5)
-        alerts = Alert.objects.filter((Q(notified_status__slack=False) | ~Q(notified_status__has_key="slack")) & Q(created__gte=time_threshold))
+        alerts = Alert.objects.filter((Q(notified_status__slack=False) | ~Q(notified_status__has_key="slack")))
+        if start_date is not None and end_date is not None:
+            alerts = Alert.objects.filter((Q(notified_status__slack=False) | ~Q(notified_status__has_key="slack")) & Q(created__range=(start_date, end_date)))
 
         grouped = defaultdict(list)
         for alert in alerts:

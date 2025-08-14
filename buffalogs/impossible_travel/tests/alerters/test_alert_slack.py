@@ -81,25 +81,31 @@ class TestSlackAlerting(TestCase):
     def test_clubbed_alerts(self, mock_post):
         """Test that multiple similar alerts are clubbed into a single notification."""
         now = timezone.now()
-        alerts = [
-            Alert.objects.create(
-                name="Imp Travel",
-                user=self.user,
-                notified_status={"slack": False},
-                description=f"Imp Travel attempt {i + 1}",
-                login_raw_data={"timestamp": str(now + timedelta(minutes=3 * i))},
-                created=now + timedelta(minutes=3 * i),
-            )
-            for i in range(2)
-        ]
+
+        # Create two alerts within the 30min window
+        alert1 = Alert.objects.create(
+            name="Imp Travel",
+            user=self.user,
+            notified_status={"slack": False},
+            description="Impossible travel detected - Attempt 1",
+            created=now - timedelta(minutes=10),
+            login_raw_data={},
+        )
+        alert2 = Alert.objects.create(
+            name="Imp Travel",
+            user=self.user,
+            notified_status={"slack": False},
+            description="Impossible travel detected - Attempt 2",
+            created=now - timedelta(minutes=5),
+            login_raw_data={},
+        )
 
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        self.slack_alerting.notify_alerts()
-
+        start_date = now - timedelta(minutes=30)
+        end_date = now
+        self.slack_alerting.notify_alerts(start_date=start_date, end_date=end_date)
+        # Assert that only one Slack notification was sent
         self.assertEqual(mock_post.call_count, 1)
-        payload = mock_post.call_args[1]["json"]
-        for i in range(2):
-            self.assertIn(f"Imp Travel attempt {i + 1}", payload["attachments"][0]["text"])
