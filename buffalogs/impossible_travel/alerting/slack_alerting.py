@@ -49,6 +49,28 @@ class SlackAlerting(BaseAlerting):
 
         return resp
 
+    def send_scheduled_summary(self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown):
+        summary_title, summary_description = self.alert_message_formatter(
+            alert=None,
+            template_path="alert_template_summary.jinja",
+            start_date=start_date,
+            end_date=end_date,
+            total_alerts=total_alerts,
+            user_breakdown=user_breakdown,
+            alert_breakdown=alert_breakdown,
+        )
+        summary_msg = {
+            "attachments": [
+                {
+                    "title": summary_title,
+                    "text": summary_description,
+                    "color": "#ff0000",
+                }
+            ]
+        }
+        resp = requests.post(self.webhook_url, json=summary_msg, headers={"Content-Type": "application/json"})
+        resp.raise_for_status()
+
     def notify_alerts(self, start_date=None, end_date=None):
         """
         Execute the alerter operation.

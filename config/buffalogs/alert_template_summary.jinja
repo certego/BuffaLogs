@@ -1,0 +1,31 @@
+{% macro title(alert,start_date,end_date,total_alerts,alert_breakdown,user_breakdown) -%}
+BuffaLogs - Scheduled Alert Summary
+
+Time Range:  
+    From: {{ start_date.strftime('%d-%m-%Y %H:%M:%S') }}  
+    To: {{ end_date.strftime('%d-%m-%Y %H:%M:%S') }}
+{%- endmacro %}
+
+{% macro description(alert,start_date,end_date,total_alerts,alert_breakdown,user_breakdown) -%}
+*Summary*:
+    Total Alerts: {{ total_alerts }}
+
+{% if alert_breakdown %}
+    Breakdown by Alert Type:
+{% for alert_type, count in alert_breakdown.items() %}
+        - {{ alert_type }}: {{ count }} alerts
+{% endfor %}
+{% else %}
+        No alerts were generated during this period.
+{% endif %}
+
+{% if user_breakdown %}
+    Breakdown by User:
+{% for user, user_alerts in user_breakdown.items() %}
+        - {{ user }}: {{ user_alerts }}
+{% endfor %}
+{% endif %}
+
+Stay Safe,
+Buffalogs
+{%- endmacro %}

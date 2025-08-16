@@ -113,3 +113,55 @@ def notify_alerts():
     task_settings.start_date = task_settings.end_date
     task_settings.end_date = timezone.now()
     task_settings.save()
+
+
+@shared_task(name="ScheduledAlertSummaryTask")
+def scheduled_alert_summary(frequency="daily"):
+    """
+    Generate and send scheduled alert summaries (daily or weekly).
+    """
+    now = timezone.now()
+    if frequency == "daily":
+        start_date_setting = now - timedelta(days=1)
+    elif frequency == "weekly":
+        start_date_setting = now - timedelta(weeks=1)
+    else:
+        raise ValueError("Invalid frequency. Use 'daily' or 'weekly'")
+
+    task_settings, _ = TaskSettings.objects.get_or_create(
+        task_name="ScheduledAlertSummaryTask",
+        defaults={
+            "start_date": start_date_setting,
+            "end_date": now,
+        },
+    )
+
+    # Get alerts within the defined time range
+    start_date = task_settings.start_date
+    end_date = task_settings.end_date
+    alerts = Alert.objects.filter(created__range=(start_date, end_date))
+
+    total_alerts = alerts.count()
+
+    # Group alerts by user {user: {alert:count}}
+    user_breakdown = {}
+    for alert in alerts:
+        if alert.user.username not in user_breakdown:
+            user_breakdown[alert.user.username] = []
+        user_breakdown[alert.user.username][alert.name] += 1
+
+    # Group alerts by type {alert_type: count}
+    alert_breakdown = {}
+    for alert in alerts:
+        if alert.name not in alert_breakdown:
+            alert_breakdown[alert.name] = 0
+        alert_breakdown[alert.name] += 1
+
+    active_alerters = AlertFactory().get_alert_classes()
+    for alerter in active_alerters:
+        alerter.send_scheduled_summary(start_date, end_date, total_alerts, user_breakdown, alert_breakdown)
+
+    # Update task_settings for next execution
+    task_settings.start_date = task_settings.end_date
+    task_settings.end_date = timezone.now()
+    task_settings.save()
