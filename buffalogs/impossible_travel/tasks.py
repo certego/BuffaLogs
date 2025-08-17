@@ -21,11 +21,23 @@ def delete_old_data(model, days):
 @shared_task(name="BuffalogsCleanModelsPeriodicallyTask")
 def clean_models_periodically():
     """Delete old data in the models"""
+    now = timezone.now()
+    task_settings, _ = TaskSettings.objects.get_or_create(
+        task_name="BuffalogsCleanModelsPeriodicallyTask",
+        defaults={
+            "start_date": now - timedelta(days=1),
+            "end_date": now,
+        },
+    )
     app_config, _ = Config.objects.get_or_create(id=1)
 
     delete_old_data(User, app_config.user_max_days)
     delete_old_data(Login, app_config.login_max_days)
     delete_old_data(Alert, app_config.alert_max_days)
+
+    task_settings.start_date = task_settings.end_date
+    task_settings.end_date = timezone.now()
+    task_settings.save()
 
 
 @shared_task(name="BuffalogsProcessLogsTask")
