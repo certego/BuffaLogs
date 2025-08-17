@@ -1,0 +1,18 @@
+{% macro title(alert,user_mention) -%}
+BuffaLogs - Login Anomaly Alert: {{ alert.name }} for user {{ user_mention }}
+{%- endmacro %}
+
+{% macro description(alert,user_mention) -%}
+Dear admin,
+An unusual login activity has been detected:
+
+User: {{ user_mention }}
+Alert type: {{ alert.name }}
+Alert description: {{ alert.description }}
+
+The raw data relating to the login that triggered the alert is:
+{{ alert.login_raw_data }}
+
+Stay Safe,
+Buffalogs
+{%- endmacro %}
