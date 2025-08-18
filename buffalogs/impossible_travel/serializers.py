@@ -1,6 +1,7 @@
-from collections.abc import Iterable
+import json
 
 from django.db import models
+from django.db.models import Max
 from impossible_travel.models import Alert, Login, User, UsersIP
 
 
@@ -15,26 +16,30 @@ class Serializer:
     @property
     def data(self):
         data = self.instance.all() if isinstance(self.instance, models.manager.BaseManager) else self.instance
-        if isinstance(data, Iterable):
+        if isinstance(data, (list, tuple, models.QuerySet)):
             return [self.to_representation(item) for item in data]
         return self.to_representation(data)
+
+    def json(self):
+        data = self.data
+        return json.dumps(data, default=str)
 
 
 class LoginSerializer(Serializer):
 
     def to_representation(self, item):
         return {
-            "timestamp": self.item.timestamp,
-            "created": self.item.created,
-            "updated": self.item.updated,
-            "latitude": self.item.latitude,
-            "logitude": self.item.longitude,
-            "event_id": self.item.event_id,
-            "country": self.item.country,
-            "device": self.item.user_agent,
-            "index": self.item.index,
-            "user": self.item.user.username,
-            "ip": self.item.ip,
+            "timestamp": item.timestamp,
+            "created": item.created.strftime("%y-%m-%d %H:%M:%S"),
+            "updated": item.updated.strftime("%y-%m-%d %H:%M:%S"),
+            "latitude": item.latitude,
+            "longitude": item.longitude,
+            "event_id": item.event_id,
+            "country": item.login_raw_data.get("country", "").lower(),
+            "device": item.user_agent,
+            "index": item.index,
+            "user": item.user.username,
+            "ip": item.ip,
         }
 
 
@@ -45,9 +50,9 @@ class UserSerializer(Serializer):
             "id": item.id,
             "username": item.username,
             "risk_score": item.risk_score,
-            "login_count": Login.objects.filter(user=item).count(distinct=True),
-            "alert_count": Alert.objects.filter(user=item).count(distinct=True),
-            "last_login": Login.objects.filter(user=item).order_by("timestamp").max(),
+            "login_count": Login.objects.filter(user=item).distinct().count(),
+            "alert_count": Alert.objects.filter(user=item).distinct().count(),
+            "last_login": Login.objects.filter(user=item).aggregate(Max("timestamp"))["timestamp__max"],
         }
 
 
