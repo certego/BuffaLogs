@@ -3,7 +3,7 @@ import json
 
 from dateutil.parser import isoparse
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
@@ -13,9 +13,10 @@ from impossible_travel.serializers import AlertSerializer
 from impossible_travel.views.utils import read_config, write_config
 
 
-def alert_template_view(request):
-    # user = get_object_or_404(User, pk=user_id)
-    # return render(request, "impossible_travel/alerts.html", {"user" : user})
+def alert_template_view(request, user_id=None):
+    if user_id:
+        user = get_object_or_404(User, pk=user_id)
+        return render(request, "impossible_travel/alerts.html", {"user": user})
     return render(request, "impossible_travel/alerts.html")
 
 
@@ -109,7 +110,7 @@ def list_alerts(request):
     )
     alerts = Alert.apply_filters(**filters).order_by("-created")
     serialized_alerts = AlertSerializer(alerts)
-    return JsonResponse(serialized_alerts.data, content_type="json", safe=False, json_dumps_params={"default": str})
+    return JsonResponse(serialized_alerts.data, safe=False, json_dumps_params={"default": str})
 
 
 def get_user_alerts(request):
@@ -136,18 +137,18 @@ def get_user_alerts(request):
     return JsonResponse(context, safe=False, json_dumps_params={"default": str})
 
 
-def get_last_alerts(request):
+def recent_alerts(request):
     """Return the last 25 alerts detected."""
-    context = []
     alerts_list = Alert.objects.all()[:25]
-    for alert in alerts_list:
-        tmp = {
-            "user": alert.user.username,
-            "timestamp": alert.login_raw_data["timestamp"],
-            "name": alert.name,
-        }
-        context.append(tmp)
-    return JsonResponse(json.dumps(context, default=str), safe=False)
+    serialized_alerts = AlertSerializer(alerts_list)
+    # for alert in alerts_list:
+    #    tmp = {
+    #        "user": alert.user.username,
+    #        "timestamp": alert.login_raw_data["timestamp"],
+    #        "name": alert.name,
+    #    }
+    #    context.append(tmp)
+    return JsonResponse(serialized_alerts.json(), safe=False)
 
 
 @require_http_methods(["GET"])

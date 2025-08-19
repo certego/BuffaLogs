@@ -47,21 +47,6 @@ class Login(models.Model):
     event_id = models.TextField()
     ip = models.TextField()
 
-    def serialize(self):
-        return {
-            "user": self.user.username,
-            "created": self.created,
-            "updated": self.updated,
-            "timestamp": self.timestamp,
-            "latitude": self.latitude,
-            "longitude": self.longitude,
-            "country": self.country,
-            "user_agent": self.user_agent,
-            "ip": self.ip,
-            "index": self.index,
-            "event_id": self.event_id,
-        }
-
     @classmethod
     def apply_filters(
         cls,

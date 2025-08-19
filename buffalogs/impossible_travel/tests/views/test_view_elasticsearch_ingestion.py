@@ -36,7 +36,7 @@ class TestViewsElasticIngestion(TestCase):
     def test_get_all_logins(self, mock_now, mock_get_ingestion_class):
         mock_now.return_value = datetime(1970, 1, 1, 0, 0) + timedelta(days=10)
         mock_get_ingestion_class.return_value = ElasticsearchIngestion(ingestion_config=self.config, mapping=self.config["custom_mapping"])
-        url = reverse("get_all_logins", kwargs={"pk_user": self.user.id})
+        url = reverse("user_logins", kwargs={"user_id": self.user.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.json())

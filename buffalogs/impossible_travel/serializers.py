@@ -35,7 +35,7 @@ class LoginSerializer(Serializer):
             "latitude": item.latitude,
             "longitude": item.longitude,
             "event_id": item.event_id,
-            "country": item.login_raw_data.get("country", "").lower(),
+            "country": item.country.lower(),
             "device": item.user_agent,
             "index": item.index,
             "user": item.user.username,
