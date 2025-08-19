@@ -23,6 +23,7 @@ class SlackAlerting(BaseAlerting):
         """
         super().__init__()
         self.webhook_url = alert_config.get("webhook_url")
+        self.recipient_list_users = alert_config.get("recipient_list_users")
 
         if not self.webhook_url:
             self.logger.error("Slack Alerter configuration is missing required fields.")
@@ -32,6 +33,11 @@ class SlackAlerting(BaseAlerting):
     def send_message(self, alert, alert_title=None, alert_description=None):
         if alert_title is None and alert_description is None and alert:
             alert_title, alert_description = self.alert_message_formatter(alert)
+
+            if alert.user.username in list(self.recipient_list_users.keys()):
+                user_mention = f"<@{self.recipient_list_users[alert.user.username]}>"
+                alert_title, alert_description = self.alert_message_formatter(alert, template_path="alert_template_slack.jinja", user_mention=user_mention)
+
         alert_msg = {
             "attachments": [
                 {

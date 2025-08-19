@@ -1,7 +1,8 @@
 {
     "active_alerters": ["slack"],
     "slack": {
-        "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+        "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+        "recipient_list_users": {"testuser": "slack_id"}
     },
     "telegram":{
         "bot_token":"BOT_TOKEN",
