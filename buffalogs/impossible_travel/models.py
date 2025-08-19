@@ -47,21 +47,6 @@ class Login(models.Model):
     event_id = models.TextField()
     ip = models.TextField()
 
-    def serialize(self):
-        return {
-            "user": self.user.username,
-            "created": self.created,
-            "updated": self.updated,
-            "timestamp": self.timestamp,
-            "latitude": self.latitude,
-            "longitude": self.longitude,
-            "country": self.country,
-            "user_agent": self.user_agent,
-            "ip": self.ip,
-            "index": self.index,
-            "event_id": self.event_id,
-        }
-
     @classmethod
     def apply_filters(
         cls,
@@ -120,20 +105,6 @@ class Alert(models.Model):
     @admin.display(description="is_filtered", boolean=True)
     def is_filtered_field_display(self):
         return self.is_filtered
-
-    def serialize(self):
-        return {
-            "timestamp": self.login_raw_data.get("timestamp"),
-            "created": self.created.strftime("%y-%m-%d %H:%M:%S"),
-            "notified": bool(self.notified_status),
-            "triggered_by": self.user.username,
-            "rule_name": self.name,
-            "rule_desc": self.description,
-            "is_vip": self.is_vip,
-            "country": self.login_raw_data["country"].lower(),
-            "severity_type": self.user.risk_score,
-            "filter_type": self.filter_type,
-        }
 
     @classmethod
     def apply_filters(
