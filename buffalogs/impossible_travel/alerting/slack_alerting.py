@@ -29,8 +29,9 @@ class SlackAlerting(BaseAlerting):
             raise ValueError("Slack Alerter configuration is missing required fields.")
 
     @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
-    def send_message(self, alert):
-        alert_title, alert_description = self.alert_message_formatter(alert)
+    def send_message(self, alert, alert_title=None, alert_description=None):
+        if alert_title is None and alert_description is None and alert:
+            alert_title, alert_description = self.alert_message_formatter(alert)
         alert_msg = {
             "attachments": [
                 {
@@ -43,10 +44,6 @@ class SlackAlerting(BaseAlerting):
 
         resp = requests.post(self.webhook_url, json=alert_msg, headers={"Content-Type": "application/json"})
         resp.raise_for_status()
-        self.logger.info(f"Slack alert sent: {alert.name}")
-        alert.notified_status["slack"] = True
-        alert.save()
-
         return resp
 
     def send_scheduled_summary(self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown):
@@ -59,17 +56,12 @@ class SlackAlerting(BaseAlerting):
             user_breakdown=user_breakdown,
             alert_breakdown=alert_breakdown,
         )
-        summary_msg = {
-            "attachments": [
-                {
-                    "title": summary_title,
-                    "text": summary_description,
-                    "color": "#ff0000",
-                }
-            ]
-        }
-        resp = requests.post(self.webhook_url, json=summary_msg, headers={"Content-Type": "application/json"})
-        resp.raise_for_status()
+
+        try:
+            self.send_message(alert=None, alert_title=summary_title, alert_description=summary_description)
+            self.logger.info(f"Slack Summary Sent From: {start_date} To: {end_date}")
+        except requests.RequestException as e:
+            self.logger.exception(f"Slack Summary Notification Failed: {str(e)}")
 
     def notify_alerts(self, start_date=None, end_date=None):
         """
@@ -85,29 +77,25 @@ class SlackAlerting(BaseAlerting):
             grouped[key].append(alert)
 
         for (username, alert_name), group_alerts in grouped.items():
-            try:
-                if len(group_alerts) == 1:
-                    self.send_message(group_alerts[0])
-                else:
+            if len(group_alerts) == 1:
+                try:
                     alert = group_alerts[0]
-                    alert_title, alert_description = self.alert_message_formatter(
-                        alert=alert, template_path="alert_template_clubbed.jinja", alerts=group_alerts
-                    )
-                    alert_msg = {
-                        "attachments": [
-                            {
-                                "title": alert_title,
-                                "text": alert_description,
-                                "color": "#ff0000",
-                            }
-                        ]
-                    }
-                    resp = requests.post(self.webhook_url, json=alert_msg, headers={"Content-Type": "application/json"})
-                    resp.raise_for_status()
-                    self.logger.info(f"Clubbed Slack alert sent: {alert_title}")
+                    self.send_message(alert=alert)
+                    self.logger.info(f"Slack alert sent: {alert.name}")
+                    alert.notified_status["slack"] = True
+                    alert.save()
+                except requests.RequestException as e:
+                    self.logger.exception(f"Slack Notification Failed for {alert}: {str(e)}")
+
+            else:
+                alert = group_alerts[0]
+                alert_title, alert_description = self.alert_message_formatter(alert=alert, template_path="alert_template_clubbed.jinja", alerts=group_alerts)
+                try:
+                    self.send_message(alert=None, alert_title=alert_title, alert_description=alert_description)
+                    self.logger.info(f"Clubbed Slack Alert Sent: {alert_title}")
 
                     for a in group_alerts:
                         a.notified_status["slack"] = True
                         a.save()
-            except requests.RequestException as e:
-                self.logger.exception(f"Slack alert failed for {alert.name}: {str(e)}")
+                except requests.RequestException as e:
+                    self.logger.exception(f"Clubbed Slack Alert Failed for {group_alerts}: {str(e)}")

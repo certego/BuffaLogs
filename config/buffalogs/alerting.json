@@ -1,5 +1,5 @@
 {
-    "active_alerters": ["discord"],
+    "active_alerters": ["slack"],
     "slack": {
         "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
     },

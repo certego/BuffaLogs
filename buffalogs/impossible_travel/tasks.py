@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import timedelta
 
 from celery import shared_task
@@ -144,17 +145,13 @@ def scheduled_alert_summary(frequency="daily"):
     total_alerts = alerts.count()
 
     # Group alerts by user {user: {alert:count}}
-    user_breakdown = {}
+    user_breakdown = defaultdict(lambda: defaultdict(int))
     for alert in alerts:
-        if alert.user.username not in user_breakdown:
-            user_breakdown[alert.user.username] = []
         user_breakdown[alert.user.username][alert.name] += 1
 
     # Group alerts by type {alert_type: count}
-    alert_breakdown = {}
+    alert_breakdown = defaultdict(int)
     for alert in alerts:
-        if alert.name not in alert_breakdown:
-            alert_breakdown[alert.name] = 0
         alert_breakdown[alert.name] += 1
 
     active_alerters = AlertFactory().get_alert_classes()

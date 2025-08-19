@@ -22,7 +22,7 @@ Time Range:
 {% if user_breakdown %}
     Breakdown by User:
 {% for user, user_alerts in user_breakdown.items() %}
-        - {{ user }}: {{ user_alerts }}
+        - {{ user }}: {{ dict(user_alerts) }}
 {% endfor %}
 {% endif %}
 
