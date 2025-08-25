@@ -15,6 +15,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from celery.schedules import crontab
+from django.conf import settings
 
 from .certego import *
 
@@ -24,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 
 SECRET_KEY = CERTEGO_BUFFALOGS_SECRET_KEY
-DEBUG = CERTEGO_DEBUG
+DEBUG = settings.CERTEGO_DEBUG
 
 
 # Application definition

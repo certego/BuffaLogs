@@ -49,19 +49,21 @@ def get_valid_country_names():
 
 def validate_countries_names(value):
     """
-    Validator for the allowed_countries field.
-    Ensures each entry is a valid ISO 3166-1 country name only.
+    Validator for country-related fields.
+    Example Config.allowed_countries list: ['Italy', 'Romania']
+    Example Config.ignored_impossible_travel_countries_couples list of lists: [['Italy', 'Italy'], ['Italy', 'Spain']]
+    Supports both flat lists and lists of pairs (for specific config fields).
+    Ensures all entries are valid ISO 3166-1 country names.
     """
     VALID_COUNTRY_NAMES = get_valid_country_names()
 
     if not isinstance(value, list):
-        raise ValidationError(_("allowed_countries must be a list."))
+        raise ValidationError(_("Value must be a list."))
 
-    invalid_entries = []
-    for country in value:
-        if country not in VALID_COUNTRY_NAMES:
-            invalid_entries.append(country)
+    # Flatten the input if it's a list of lists (example: [['Italy', 'France']])
+    flattened = [country for pair in value for country in pair] if all(isinstance(item, list) for item in value) else value
+
+    invalid_entries = [country for country in flattened if country not in VALID_COUNTRY_NAMES]
 
     if invalid_entries:
-        readable_invalids = ", ".join(invalid_entries)
-        raise ValidationError(_(f"The following entries are not valid country names: {readable_invalids}"))
+        raise ValidationError(_(f"The following country names are invalid: {', '.join(invalid_entries)}"))
