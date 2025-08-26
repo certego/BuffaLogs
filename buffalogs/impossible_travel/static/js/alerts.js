@@ -100,7 +100,7 @@ document.addEventListener( "DOMContentLoaded", function () {
   };
 
   function fetchAlerts() {
-    fetch(window.location.href + "/get_alerts", {
+    fetch(window.location.origin + "/api/alerts", {
       method: 'GET',
       headers: {
         "Accept": "application/json",
