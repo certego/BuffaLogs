@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
-from impossible_travel.validators import validate_countries_names, validate_ips_or_network, validate_string_or_regex
+from impossible_travel.validators import validate_countries_names, validate_country_couples_list, validate_ips_or_network, validate_string_or_regex
 
 
 class User(models.Model):
@@ -314,7 +314,7 @@ class Config(models.Model):
     ignored_impossible_travel_countries_couples = models.JSONField(
         default=list,
         blank=True,
-        validators=[validate_countries_names],
+        validators=[validate_country_couples_list],
         help_text=(
             "List of country pairs (start_country, last_country) to ignore for impossible_travel alerts. "
             "Country names must match the names in the countries_list.json config file. "
