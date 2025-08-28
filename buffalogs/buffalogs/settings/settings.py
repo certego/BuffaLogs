@@ -230,4 +230,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "clean_models_periodically": {"task": "BuffalogsCleanModelsPeriodicallyTask", "schedule": crontab(hour=23, minute=59)},
     "notify_alerts": {"task": "NotifyAlertsTask", "schedule": crontab(minute=5)},
+    "daily_alert_summary": {"task": "ScheduledAlertSummaryTask", "schedule": crontab(hour=0, minute=0), "args": ["daily"]},
+    "weekly_alert_summary": {
+        "task": "ScheduledAlertSummaryTask",
+        "schedule": crontab(hour=0, minute=0, day_of_week="monday"),
+        "args": ["weekly"],
+    },
 }

@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import MagicMock, patch
 
 from django.db import connection
 from django.test import TestCase
@@ -64,3 +65,105 @@ class TestTasks(TestCase):
             Alert.objects.get(user__username="Lorena")
         with self.assertRaises(UsersIP.DoesNotExist):
             UsersIP.objects.get(user__username="Lorena")
+
+    def _scheduled_alert_summary_setup(self):
+        """Setup for ScheduledAlertSummaryTask tests"""
+        now = timezone.now()
+        start_date = now - timedelta(days=1)
+        start_week = now - timedelta(weeks=1)
+
+        self.user1 = User.objects.create(username="User1")
+        self.user2 = User.objects.create(username="User2")
+        self.user3 = User.objects.create(username="User3")
+
+        alert1 = Alert.objects.create(
+            user=self.user1,
+            name="Imp Travel",
+            login_raw_data={},
+        )
+        alert2 = Alert.objects.create(
+            user=self.user1,
+            name="New Country",
+            login_raw_data={},
+        )
+        alert3 = Alert.objects.create(
+            user=self.user2,
+            name="Imp Travel",
+            login_raw_data={},
+        )
+        alert4 = Alert.objects.create(
+            user=self.user3,
+            name="New Country",
+            login_raw_data={},
+        )
+
+        # Configure the creation dates
+        Alert.objects.filter(id=alert1.id).update(created=start_date + timedelta(hours=1))
+        Alert.objects.filter(id=alert2.id).update(created=start_date + timedelta(hours=2))
+        Alert.objects.filter(id=alert3.id).update(created=start_week + timedelta(days=2))
+        Alert.objects.filter(id=alert4.id).update(created=start_week + timedelta(days=5))
+        alert1.refresh_from_db()
+        alert2.refresh_from_db()
+        alert3.refresh_from_db()
+        alert4.refresh_from_db()
+
+    @patch("requests.post")
+    def test_scheduled_alert_summary_daily(self, mock_post):
+        """Test ScheduledAlertSummaryTask for 'daily'"""
+        self._scheduled_alert_summary_setup()
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        # Returns 2 alerts
+        tasks.scheduled_alert_summary("daily")
+
+        args, kwargs = mock_post.call_args
+        payload = kwargs.get("json", {})
+        attachment = payload["attachments"][0]
+
+        self.assertIn("BuffaLogs - Scheduled Alert Summary", attachment["title"])
+        self.assertIn("Total Alerts: 2", attachment["text"])
+
+    @patch("requests.post")
+    def test_scheduled_alert_summary_weekly(self, mock_post):
+        """Test ScheduledAlertSummaryTask for 'weekly'"""
+        self._scheduled_alert_summary_setup()
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        # Returns 4 alerts
+        tasks.scheduled_alert_summary("weekly")
+
+        args, kwargs = mock_post.call_args
+        payload = kwargs.get("json", {})
+        attachment = payload["attachments"][0]
+
+        self.assertIn("BuffaLogs - Scheduled Alert Summary", attachment["title"])
+        self.assertIn("Total Alerts: 4", attachment["text"])
+
+    @patch("requests.post")
+    def test_scheduled_alert_summary_no_alert(self, mock_post):
+        """Test ScheduledAlertSummaryTask when no alerts are there"""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_post.return_value = mock_response
+
+        tasks.scheduled_alert_summary()
+
+        args, kwargs = mock_post.call_args
+        payload = kwargs.get("json", {})
+        attachment = payload["attachments"][0]
+
+        self.assertIn("BuffaLogs - Scheduled Alert Summary", attachment["title"])
+        self.assertIn("No alerts were generated during this period", attachment["text"])
+
+    def test_scheduled_alert_summary_invalid_frequency(self):
+        """Test ScheduledAlertSummaryTask for an invalid frequency"""
+        with self.assertRaises(ValueError) as context:
+            tasks.scheduled_alert_summary("monthly")
+
+        self.assertEqual(str(context.exception), "Invalid frequency. Use 'daily' or 'weekly'")

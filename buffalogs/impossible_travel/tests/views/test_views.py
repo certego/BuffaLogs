@@ -248,9 +248,9 @@ class TestViews(APITestCase):
         )
         start = creation_mock_time
         end = creation_mock_time + timedelta(minutes=10)
-        response = self.client.get(f"{reverse('alerts_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+        response = self.client.get(f"{reverse('list_alerts')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
-        self.assertCountEqual(list_expected_result, json.loads(response.content))
+        self.assertCountEqual(list_expected_result, response.json())
 
     def test_risk_score_api(self):
         end = datetime.now() + timedelta(seconds=1)
@@ -400,7 +400,6 @@ class TestViews(APITestCase):
         self.assertIn("daily_logins", data)
 
         login_counts = {datetime.fromisoformat(entry["date"]).date(): entry["count"] for entry in data["daily_logins"]}
-        print(login_counts)
         base_date.date()
         next_day_key = (base_date + timedelta(days=1)).date()
         expected_counts = {
