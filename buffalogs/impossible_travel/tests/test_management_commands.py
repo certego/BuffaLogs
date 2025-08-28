@@ -33,7 +33,7 @@ class ManagementCommandsTestCase(TestCase):
         # Testing the option --set-default-values
         # Check that if new fields in the Config model have been added, they should be integrated into this test
         config_editable_fields = [f.name for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created]
-        self.assertEqual(19, len(config_editable_fields))
+        self.assertEqual(21, len(config_editable_fields))
         # Put random values into fields
         self.config.ignored_users = ["blabla", "user2"]
         self.config.alert_is_vip_only = True
@@ -75,6 +75,8 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(self.config.login_max_days, settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS)
         self.assertEqual(self.config.alert_max_days, settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS)
         self.assertEqual(self.config.ip_max_days, settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS)
+        self.assertTrue(self.config.ignored_impossible_travel_all_same_country)
+        self.assertEqual(self.config.ignored_impossible_travel_countries_couples, [])
 
     # === Tests for setup_config.py mgmt command - parse_field_value function ===
 

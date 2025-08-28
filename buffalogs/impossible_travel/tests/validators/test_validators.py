@@ -92,7 +92,7 @@ class ValidatorsTest(TestCase):
         with self.assertRaises(ValidationError) as context:
             # string instead of list
             validate_countries_names("Italy")
-        self.assertIn("allowed_countries must be a list", str(context.exception))
+        self.assertIn("Value must be a list", str(context.exception))
 
     def test_validate_countries_names_default_value(self):
         """Test that the default allowed countries pass validation"""
