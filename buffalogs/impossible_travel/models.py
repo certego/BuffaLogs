@@ -47,6 +47,37 @@ class Login(models.Model):
     event_id = models.TextField()
     ip = models.TextField()
 
+    @classmethod
+    def apply_filters(
+        cls,
+        *,
+        username: str = None,
+        country: str = None,
+        login_start_time: datetime = None,
+        login_end_time: datetime = None,
+        ip: str = None,
+        user_agent: str = None,
+        index: str = None,
+    ):
+        "Filters Login objects."
+
+        query = cls.objects
+        if username:
+            query = query.filter(user__username__icontains=username)
+        if ip:
+            query = query.filter(ip=ip)
+        if user_agent:
+            query = query.filter(user_agent=user_agent)
+        if login_start_time:
+            query = query.filter(timestamp__gte=login_start_time)
+        if login_end_time:
+            query = query.filter(timestamp__lte=login_end_time)
+        if country:
+            query = query.filter(country__iexact=country)
+        if index:
+            query = query.filter(index__iexact=index)
+        return query.all()
+
 
 class Alert(models.Model):
     name = models.CharField(choices=AlertDetectionType.choices, max_length=30, null=False, blank=False)
@@ -74,20 +105,6 @@ class Alert(models.Model):
     @admin.display(description="is_filtered", boolean=True)
     def is_filtered_field_display(self):
         return self.is_filtered
-
-    def serialize(self):
-        return {
-            "timestamp": self.login_raw_data.get("timestamp"),
-            "created": self.created.strftime("%y-%m-%d %H:%M:%S"),
-            "notified": bool(self.notified_status),
-            "triggered_by": self.user.username,
-            "rule_name": self.name,
-            "rule_desc": self.description,
-            "is_vip": self.is_vip,
-            "country": self.login_raw_data["country"].lower(),
-            "severity_type": self.user.risk_score,
-            "filter_type": self.filter_type,
-        }
 
     @classmethod
     def apply_filters(

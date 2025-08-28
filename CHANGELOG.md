@@ -1,7 +1,25 @@
 ## 2.9.x
 ### 2.9.0
+#### Features
+* Enabled query by multiple keys via the `alert_api` endpoint (Google Summer of Code 2025 - @noble47)
+* Added serialize method to Alert object for uniform dictionary representation of alerts (Google Summer of Code 2025 - @noble47)
+* Added login query API (Google Summer of Code 2025 - @noble47)
+* Added configurable threasholds and aggregation options for alerters (Google Summer of Code 2025 - @kunalsz)
 #### Changes
 * Removed deprecated reviewers field from dependabot (doc [here](https://github.blog/changelog/2025-04-29-dependabot-reviewers-configuration-option-being-replaced-by-code-owners/))
+* Moved alert query logic to  Alert model (Google Summer of Code 2025 - @noble47)
+* Refactored filtering logic for risk_score to filter by both string (high, low and medium) and integers (1-8) (Google Summer of Code 2025 - @noble47)
+* Zipped the alerts.json file fixture (Google Summer of Code 2025 - @noble47)
+* Aligned test_views expected json response to Alerts serialized value (Google Summer of Code 2025 - @noble47)
+* Refactored Views tests setup to use setUpTestData for improved efficiency and consistency (by community - @Itz-Agasta)
+* Refactor OpensearchIngestionTestCase to use class-level setup (by community - @Itz-Agasta)
+* Refactored OpensearchIngestionTestCase to use mock (by community - @Itz-Agasta)
+* Refactored Views tests setup to use setUpTestData for improved efficiency and consistency (by community - @drona-gyawali)
+* Tracked `NotifyAlertsTask` within the `TaskSettings` model (Google Summer of Code 2025 - @kunalsz)
+#### Bugxfix
+* Fixed bug in charts.py (Google Summer of Code 2025 - @noble47)
+* Fixed frontend login ERR_CONNECTION_REFUSED by exposing port 8000 on nginx (by community - @Itz-Agasta)
+* Added uWSGI application server requirement to requirements.txt (by community - @Itz-Agasta)
 
 ## 2.8.x
 ### 2.8.1
