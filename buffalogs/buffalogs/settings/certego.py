@@ -4,7 +4,6 @@ from pathlib import Path
 ENVIRONMENT_DOCKER = "docker"
 ENVIRONMENT_DEBUG = "debug"
 
-CERTEGO_REPO_DIR = Path(__file__).resolve().parent.parent.parent.parent
 CERTEGO_DJANGO_PROJ_BASE_DIR = Path(__file__).resolve().parent.parent.parent
 CERTEGO_DJANGO_IMPOSSIBLE_TRAVEL_APP_DIR = os.path.join(CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel")
 
@@ -45,12 +44,13 @@ if CERTEGO_BUFFALOGS_ENVIRONMENT == ENVIRONMENT_DOCKER:
     CERTEGO_BUFFALOGS_RABBITMQ_URI = f"amqp://guest:guest@{CERTEGO_BUFFALOGS_RABBITMQ_HOST}/"  # noqa: E231
 
 elif CERTEGO_BUFFALOGS_ENVIRONMENT == ENVIRONMENT_DEBUG:
+    CERTEGO_REPO_DIR = Path(__file__).resolve().parent.parent.parent.parent
+    CERTEGO_DEBUG = True
     CERTEGO_BUFFALOGS_ELASTICSEARCH_HOST = "http://localhost:9200"
     CERTEGO_BUFFALOGS_DB_HOSTNAME = "localhost"
-    CERTEGO_BUFFALOGS_CONFIG_PATH = "../config/"
-    CERTEGO_DEBUG = True
+    CERTEGO_BUFFALOGS_CONFIG_PATH = CERTEGO_REPO_DIR / "config"
     CERTEGO_BUFFALOGS_STATIC_ROOT = "impossible_travel/static/"
-    CERTEGO_BUFFALOGS_LOG_PATH = "../logs"
+    CERTEGO_BUFFALOGS_LOG_PATH = CERTEGO_REPO_DIR / "logs"
     CERTEGO_BUFFALOGS_RABBITMQ_HOST = "localhost"
     CERTEGO_BUFFALOGS_RABBITMQ_URI = f"amqp://guest:guest@{CERTEGO_BUFFALOGS_RABBITMQ_HOST}/"  # noqa: E231
 

@@ -381,6 +381,8 @@ class DetectionTestCase(TestCase):
         db_login = Login.objects.get(user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5")
         timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         login_data = {"timestamp": timestamp, "latitude": "45.4758", "longitude": "9.2275", "country": db_login.country, "agent": db_login.user_agent}
+        imp_travel_enrichment = {"start_country": "Poland", "avg_speed": 1000, "start_lat": 51.55, "start_lon": 19.08}
+        login_data["buffalogs"] = imp_travel_enrichment
         name = AlertDetectionType.IMP_TRAVEL
         desc = f"{name} for User: {db_user.username}, \
                     at: {timestamp}, from: ({db_login.latitude}, {db_login.longitude})"
