@@ -101,8 +101,8 @@ class AlertFilterType(models.TextChoices):
     * FILTERED_ALERTS: Alert filtered because this detection type is excluded - the Alert.name detection type is in the Config.filtered_alerts_types list
     * IS_MOBILE_FILTER: Alert filtered because the login is from a mobile device - Config.ignore_mobile_logins is True
     * IGNORED_ISP_FILTER: Alert filtered because the ISP is whitelisted - The ISP is in the Config.ignored_ISPs list
-    * IGNORED_IMP_TRAVEL_ALL_SAME_COUNTRY:
-    * IGNORED_IMP_TRAVEL_COUNTRIES_COUPLE:
+    * IGNORED_IMP_TRAVEL_ALL_SAME_COUNTRY: Alert (imp_travel) filtered because the start_country and the last country are the same - Config.ignored_impossible_travel_all_same_country = True
+    * IGNORED_IMP_TRAVEL_COUNTRIES_COUPLE: Alert (imp_travel) filtered because the couple (start_country, country) is present in the Config.ignored_impossible_travel_countries_couples field
     """
 
     IGNORED_USER_FILTER = "ignored_users filter", _(
