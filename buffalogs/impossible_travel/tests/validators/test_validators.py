@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from impossible_travel.models import get_default_allowed_countries
-from impossible_travel.validators import validate_countries_names, validate_ips_or_network, validate_string_or_regex
+from impossible_travel.validators import validate_countries_names, validate_country_couples_list, validate_ips_or_network, validate_string_or_regex
 
 
 class ValidatorsTest(TestCase):
@@ -92,7 +92,7 @@ class ValidatorsTest(TestCase):
         with self.assertRaises(ValidationError) as context:
             # string instead of list
             validate_countries_names("Italy")
-        self.assertIn("allowed_countries must be a list", str(context.exception))
+        self.assertIn("Value must be a list", str(context.exception))
 
     def test_validate_countries_names_default_value(self):
         """Test that the default allowed countries pass validation"""
@@ -101,3 +101,36 @@ class ValidatorsTest(TestCase):
             validate_countries_names(default_countries)
         except ValidationError:
             self.fail("validate_countries_names raised ValidationError unexpectedly for default allowed countries!")
+
+    def test_validate_country_couples_list_single_elem(self):
+        """Test that a single string (not a list of lists) raises an exception"""
+        with self.assertRaises(ValidationError) as context:
+            validate_country_couples_list("Italy")
+        self.assertIn("Value must be a list.", str(context.exception))
+
+    def test_validate_country_couples_list_single_list(self):
+        """Test that a single list (not a list of lists) raises an exception"""
+        with self.assertRaises(ValidationError) as context:
+            validate_country_couples_list(["Italy", "Germany"])
+        self.assertIn("Each single value must be a list of 2 elements (list of lists).", str(context.exception))
+
+    def test_validate_country_couples_list_too_elements(self):
+        """Test that a list of more than 2 elements raises an exception"""
+        with self.assertRaises(ValidationError) as context:
+            validate_country_couples_list([["Italy", "Germany", "France"]])
+        self.assertIn("Each single value must be a list of 2 elements (list of lists).", str(context.exception))
+
+    def test_validate_country_couples_list_wrong_country_name(self):
+        """Test that a list containing a wrong country name raises an exception"""
+        with self.assertRaises(ValidationError) as context:
+            validate_country_couples_list([["Italy", "wrong_name"]])
+        self.assertIn("The following country names are invalid", str(context.exception))
+
+    def test_validate_country_couples_list_correct(self):
+        """Test that a correct list of lists of countries is validated correctly"""
+        # no exception
+        valid_values = [["Italy", "France"], ["Italy", "Italy"], ["Germany", "France"]]
+        try:
+            validate_country_couples_list(valid_values)
+        except ValidationError:
+            self.fail("The test with correct list values shouldn't fail")

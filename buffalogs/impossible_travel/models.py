@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
-from impossible_travel.validators import validate_countries_names, validate_ips_or_network, validate_string_or_regex
+from impossible_travel.validators import validate_countries_names, validate_country_couples_list, validate_ips_or_network, validate_string_or_regex
 
 
 class User(models.Model):
@@ -46,21 +46,6 @@ class Login(models.Model):
     index = models.TextField()
     event_id = models.TextField()
     ip = models.TextField()
-
-    def serialize(self):
-        return {
-            "user": self.user.username,
-            "created": self.created,
-            "updated": self.updated,
-            "timestamp": self.timestamp,
-            "latitude": self.latitude,
-            "longitude": self.longitude,
-            "country": self.country,
-            "user_agent": self.user_agent,
-            "ip": self.ip,
-            "index": self.index,
-            "event_id": self.event_id,
-        }
 
     @classmethod
     def apply_filters(
@@ -120,20 +105,6 @@ class Alert(models.Model):
     @admin.display(description="is_filtered", boolean=True)
     def is_filtered_field_display(self):
         return self.is_filtered
-
-    def serialize(self):
-        return {
-            "timestamp": self.login_raw_data.get("timestamp"),
-            "created": self.created.strftime("%y-%m-%d %H:%M:%S"),
-            "notified": bool(self.notified_status),
-            "triggered_by": self.user.username,
-            "rule_name": self.name,
-            "rule_desc": self.description,
-            "is_vip": self.is_vip,
-            "country": self.login_raw_data["country"].lower(),
-            "severity_type": self.user.risk_score,
-            "filter_type": self.filter_type,
-        }
 
     @classmethod
     def apply_filters(
@@ -339,6 +310,23 @@ class Config(models.Model):
         blank=False,
         default=UserRiskScoreType.NO_RISK,
         help_text="Select the risk_score that a user should overcome to send the 'USER_RISK_THRESHOLD' alert",
+    )
+    ignored_impossible_travel_countries_couples = models.JSONField(
+        default=list,
+        blank=True,
+        validators=[validate_country_couples_list],
+        help_text=(
+            "List of country pairs (start_country, last_country) to ignore for impossible_travel alerts. "
+            "Country names must match the names in the countries_list.json config file. "
+            "Example: [['Italy', 'Italy'], ['United States', 'France']]"
+        ),
+    )
+    ignored_impossible_travel_all_same_country = models.BooleanField(
+        default=True,
+        help_text=(
+            "If true, all the impossible travel alerts from and to the same country are ignored. "
+            "If you want to exclude just some countries, use the 'ignored_impossible_travel_countries_couples' Config field instead"
+        ),
     )
 
     distance_accepted = models.PositiveIntegerField(

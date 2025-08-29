@@ -1,8 +1,9 @@
 import logging
 import re
+from collections import Counter
 
 from django.conf import settings
-from impossible_travel.constants import AlertFilterType, ComparisonType, UserRiskScoreType
+from impossible_travel.constants import AlertDetectionType, AlertFilterType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, User
 from ua_parser import parse
 
@@ -44,6 +45,16 @@ def match_filters(alert: Alert, app_config: Config) -> Alert:
     # Detection filters - alerts
     if alert.name in app_config.filtered_alerts_types:
         alert.filter_type.append(AlertFilterType.FILTERED_ALERTS)
+
+    if alert.name == AlertDetectionType.IMP_TRAVEL:
+        # check ignored_impossible_travel_countries_couples and ignored_impossible_travel_all_same_country config filters
+        if app_config.ignored_impossible_travel_all_same_country and alert.login_raw_data["country"] == alert.login_raw_data["buffalogs"]["start_country"]:
+            alert.filter_type.append(AlertFilterType.IGNORED_IMP_TRAVEL_ALL_SAME_COUNTRY)
+        couple_country = [alert.login_raw_data["country"], alert.login_raw_data["buffalogs"]["start_country"]]
+        # using Counter to ignore the order: ["Italy", "Germany"] == ["Germany", "Italy"] and check only if the coutry couple is present in the ignored couples
+        for ignored_country_couple in app_config.ignored_impossible_travel_countries_couples:
+            if Counter(ignored_country_couple) == Counter(couple_country):
+                alert.filter_type.append(AlertFilterType.IGNORED_IMP_TRAVEL_COUNTRIES_COUPLE)
 
     alert.save()
 

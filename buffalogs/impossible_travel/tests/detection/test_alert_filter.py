@@ -72,6 +72,8 @@ class TestAlertFilter(TestCase):
         self.assertEqual(db_config.alert_minimum_risk_score, "No risk")
         self.assertListEqual(db_config.filtered_alerts_types, [])
         self.assertFalse(db_config.ignore_mobile_logins)
+        self.assertTrue(db_config.ignored_impossible_travel_all_same_country)
+        self.assertListEqual(db_config.ignored_impossible_travel_countries_couples, [])
         self.assertEqual(db_config.distance_accepted, 100)
         self.assertEqual(db_config.distance_accepted, settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED)
         self.assertEqual(db_config.vel_accepted, 300)
@@ -369,3 +371,104 @@ class TestAlertFilter(TestCase):
         db_alert = Alert.objects.get(user__username="Lorena Goldoni")
         db_alert.login_raw_data["agent"] = none_agent
         alert_filter.match_filters(alert=db_alert, app_config=db_config)
+
+    def test_match_filters_ignored_impossible_travel_all_same_country(self):
+        # test with ignored_impossible_travel_all_same_country = True
+        db_config = Config.objects.create(ignored_impossible_travel_all_same_country=True)
+        db_user = User.objects.get(username="Lorena Goldoni")
+        db_alert = Alert.objects.create(
+            id=6,
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            description="test",
+            login_raw_data={
+                "id": "test-1",
+                "index": "cloud",
+                "ip": "9.10.11.12",
+                "lat": 43.3178,
+                "lon": -5.4125,
+                "country": "Italy",
+                "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246",
+                "buffalogs": {"avg_speed": 810, "start_lat": 41.3178, "start_lon": -7.4125, "start_country": "Italy"},
+                "timestamp": "2025-008-28T09:06:11.000Z",
+                "organization": "ISP3",
+            },
+        )
+        self.assertFalse(db_alert.is_filtered)
+        self.assertListEqual([], db_alert.filter_type)
+        alert_filter.match_filters(alert=db_alert, app_config=db_config)
+        self.assertTrue(db_alert.is_filtered)
+        self.assertListEqual(["ignored_all_same_country"], db_alert.filter_type)
+
+    def test_match_filters_ignored_country_couple(self):
+        # test with ignored_country_couple = [["Germany", "Italy"], ["Romania", "Romania"]]
+        db_config = Config.objects.create(
+            ignored_impossible_travel_all_same_country=False, ignored_impossible_travel_countries_couples=[["Germany", "Italy"], ["Romania", "Romania"]]
+        )
+        db_user = User.objects.get(username="Lorena Goldoni")
+        # create alert imp_travel Italy-Italy -> it should be not filtered
+        db_alert1 = Alert.objects.create(
+            id=7,
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            description="test",
+            login_raw_data={
+                "id": "test-1",
+                "country": "Italy",
+                "buffalogs": {"start_country": "Italy"},
+                "timestamp": "2025-008-28T09:06:11.000Z",
+            },
+        )
+        self.assertFalse(db_alert1.is_filtered)
+        self.assertListEqual([], db_alert1.filter_type)
+        alert_filter.match_filters(alert=db_alert1, app_config=db_config)
+        self.assertFalse(db_alert1.is_filtered)
+        self.assertListEqual([], db_alert1.filter_type)
+        # create alert imp_travel Germany-Italy -> it should be filtered
+        db_alert2 = Alert.objects.create(
+            id=8,
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            description="test",
+            login_raw_data={
+                "id": "test-2",
+                "country": "Italy",
+                "buffalogs": {"start_country": "Germany"},
+                "timestamp": "2025-008-28T09:06:11.000Z",
+            },
+        )
+        alert_filter.match_filters(alert=db_alert2, app_config=db_config)
+        self.assertTrue(db_alert2.is_filtered)
+        self.assertListEqual(["ignored_country_couple"], db_alert2.filter_type)
+        # create alert imp_travel Romania-Italy -> it should not be filtered
+        db_alert3 = Alert.objects.create(
+            id=9,
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            description="test",
+            login_raw_data={
+                "id": "test-3",
+                "country": "Italy",
+                "buffalogs": {"start_country": "Romania"},
+                "timestamp": "2025-008-28T09:06:11.000Z",
+            },
+        )
+        alert_filter.match_filters(alert=db_alert3, app_config=db_config)
+        self.assertFalse(db_alert3.is_filtered)
+        self.assertListEqual([], db_alert3.filter_type)
+        # create alert imp_travel Romania-Romania -> it should be filtered
+        db_alert4 = Alert.objects.create(
+            id=10,
+            user=db_user,
+            name=AlertDetectionType.IMP_TRAVEL,
+            description="test",
+            login_raw_data={
+                "id": "test-3",
+                "country": "Romania",
+                "buffalogs": {"start_country": "Romania"},
+                "timestamp": "2025-008-28T09:06:11.000Z",
+            },
+        )
+        alert_filter.match_filters(alert=db_alert4, app_config=db_config)
+        self.assertTrue(db_alert4.is_filtered)
+        self.assertListEqual(["ignored_country_couple"], db_alert4.filter_type)

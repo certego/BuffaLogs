@@ -1,3 +1,17 @@
+## 2.10.x
+### 2.10.0
+#### Features
+* Added Slack integration enhancements (Google Summer of Code 2025 - @kunalsz)
+* Added model serializer module for consistent representation of model instance (Google Summer of Code 2025 - @noble47)
+* Added ScheduledAlertSummaryTask (daily and weekly crontab) (Google Summer of Code 2025 - @kunalsz)
+* Added filters for impossible travel alerts: Config.ignored_impossible_travel_countries_couples and Config.ignored_impossible_travel_all_same_country
+#### Changes
+* Updated DateContextProvider to set initial date range based on current date (by community - @Itz-Agasta)
+* Refactored RESTful APIs (Google Summer of Code 2025 - @noble47)
+#### Bugxfix
+* Added requests library for HTTP operations (needed by the alerting module) operations in requirements (by community - @Itz-Agasta)
+* Prevented Worldmap crash on empty data and ensure map renders (by community - @Itz-Agasta)
+
 ## 2.9.x
 ### 2.9.0
 #### Features

@@ -34,7 +34,9 @@ class TestSlackAlerting(TestCase):
 
         self.slack_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(
+            self.alert, template_path="alert_template_slack.jinja", user_mention="<@slack_id>"
+        )
         expected_payload = {
             "attachments": [
                 {
@@ -81,31 +83,54 @@ class TestSlackAlerting(TestCase):
     def test_clubbed_alerts(self, mock_post):
         """Test that multiple similar alerts are clubbed into a single notification."""
         now = timezone.now()
+        start_date = now - timedelta(minutes=30)
+        end_date = now
 
         # Create two alerts within the 30min window
         alert1 = Alert.objects.create(
             name="Imp Travel",
             user=self.user,
             notified_status={"slack": False},
-            description="Impossible travel detected - Attempt 1",
-            created=now - timedelta(minutes=10),
             login_raw_data={},
         )
         alert2 = Alert.objects.create(
             name="Imp Travel",
             user=self.user,
             notified_status={"slack": False},
-            description="Impossible travel detected - Attempt 2",
-            created=now - timedelta(minutes=5),
             login_raw_data={},
         )
+        alert3 = Alert.objects.create(
+            name="New Country",
+            user=self.user,
+            notified_status={"slack": False},
+            login_raw_data={},
+        )
+
+        Alert.objects.filter(id=alert1.id).update(created=start_date + timedelta(minutes=10))
+        Alert.objects.filter(id=alert2.id).update(created=start_date + timedelta(minutes=20))
+        # This alert won't be notified as it's outside of the set range
+        Alert.objects.filter(id=alert3.id).update(created=start_date - timedelta(hours=2))
+        alert1.refresh_from_db()
+        alert2.refresh_from_db()
+        alert3.refresh_from_db()
 
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        start_date = now - timedelta(minutes=30)
-        end_date = now
         self.slack_alerting.notify_alerts(start_date=start_date, end_date=end_date)
-        # Assert that only one Slack notification was sent
-        self.assertEqual(mock_post.call_count, 1)
+
+        args, kwargs = mock_post.call_args
+        payload = kwargs.get("json", {})
+        attachment = payload["attachments"][0]
+
+        # 3 Imp Travel Alerts will be clubbed
+        self.assertIn('BuffaLogs - Login Anomaly Alerts : 3 "Imp Travel" alerts for user testuser', attachment["title"])
+        # Reload the alerts from the db
+        alert1 = Alert.objects.get(pk=alert1.pk)
+        alert2 = Alert.objects.get(pk=alert2.pk)
+        alert2 = Alert.objects.get(pk=alert3.pk)
+
+        self.assertTrue(alert1.notified_status["slack"])
+        self.assertFalse(alert2.notified_status["slack"])
+        self.assertFalse(alert3.notified_status["slack"])
