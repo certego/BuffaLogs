@@ -2,6 +2,7 @@ from functools import wraps
 from typing import Callable, Type
 
 import typer
+from buffacli.globals import vprint
 from requests import exceptions
 from rich.console import Console
 from rich.panel import Panel
@@ -34,9 +35,9 @@ class ExceptionHandler:
         return wrapper
 
 
-def request_generic_handler(exc: exceptions.Timeout):
-    console = Console()
-    console.print(Panel(str(exc), title="[bold red]Request Error[/bold red]", style="bold"))
+def request_generic_handler(exc: exceptions.RequestException):
+    vprint("debug", Panel(str(exc), title="[bold red]Request Error[/bold red]", style="bold"))
+    vprint("error", "Error: Request Failed")
     return 1
 
 

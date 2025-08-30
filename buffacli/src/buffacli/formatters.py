@@ -5,6 +5,7 @@ import re
 from enum import Enum
 from typing import Any
 
+from buffacli.globals import vprint
 from buffacli.models import DataModel
 from rich.console import Console
 from rich.markdown import Markdown
@@ -44,6 +45,7 @@ def as_table(content: DataModel, title: str):
             'header_2' : [row_1, row_2, row_3]
         }
     """
+    vprint("debug", "Formating as table...")
     headers = content.table.keys()
     columns = [Column(header, justify="left") for header in headers]
     table = Table(*columns, show_header=True, header_style="bold cyan", title=title)
@@ -63,6 +65,7 @@ def as_json(content: DataModel, title: str):
 
     Expected Format (of `.json` return value) : Any valid dictionary object
     """
+    vprint("debug", "Formating as JSON...")
     json_format = json.dumps(content.json, indent=2)
     json_format = json_format[1:-1]
     json_output = re.sub(r'(".*?":)', r"[bold cyan]\1[/bold cyan]", json_format)
