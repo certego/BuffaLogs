@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.12-slim-trixie
 
 ENV INSTALL_PATH /opt/certego
 RUN mkdir -p $INSTALL_PATH
