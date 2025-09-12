@@ -80,6 +80,7 @@ class TestViewsElasticIngestion(TestCase):
             "timestamp": "1970-01-01T00:00:00Z",
             "id": _id,
             "index": "cloud" if index.startswith("cloud") else "fw-proxy",
+            "intelligence_category": "Test Category",
             "username": self.user.username,
             "ip": "192.168.1.1",
             "agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0",
