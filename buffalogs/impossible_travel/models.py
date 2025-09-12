@@ -222,6 +222,10 @@ def get_default_risk_score_increment_alerts():
     return list(settings.CERTEGO_BUFFALOGS_RISK_SCORE_INCREMENT_ALERTS)
 
 
+def get_default_filtered_alerts_types():
+    return list(settings.CERTEGO_BUFFALOGS_FILTERED_ALERTS_TYPES)
+
+
 class Config(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -257,7 +261,7 @@ class Config(models.Model):
         choices=UserRiskScoreType.choices,
         max_length=30,
         blank=False,
-        default=UserRiskScoreType.NO_RISK,
+        default=UserRiskScoreType.MEDIUM,
         help_text="Select the risk_score that users should have at least to send the alerts",
     )
     risk_score_increment_alerts = ArrayField(
@@ -294,12 +298,12 @@ class Config(models.Model):
         default=get_default_ignored_ISPs,
         help_text="List of ISPs names to remove from the detection",
     )
-    ignore_mobile_logins = models.BooleanField(default=False, help_text="Flag to ignore mobile devices from the detection")
+    ignore_mobile_logins = models.BooleanField(default=True, help_text="Flag to ignore mobile devices from the detection")
 
     # Detection filters - alerts
     filtered_alerts_types = ArrayField(
         models.CharField(max_length=50, choices=AlertDetectionType.choices, blank=True),
-        default=list,
+        default=get_default_filtered_alerts_types,
         blank=True,
         null=True,
         help_text="List of alerts' types to exclude from the alerting",
@@ -308,7 +312,7 @@ class Config(models.Model):
         choices=UserRiskScoreType.choices,
         max_length=30,
         blank=False,
-        default=UserRiskScoreType.NO_RISK,
+        default=UserRiskScoreType.MEDIUM,
         help_text="Select the risk_score that a user should overcome to send the 'USER_RISK_THRESHOLD' alert",
     )
     ignored_impossible_travel_countries_couples = models.JSONField(
