@@ -1,7 +1,5 @@
 # OPTIONAL libraries (used in the tests or from the Ingestion and Alerting module
-# === Alerting (Optional - enable depending on your Alerter class) ===
-requests>=2.32.3               # Required if your alerting module uses HTTP requests (e.g., webhook, Slack)
 
 # === Ingestion Sources (Optional because it's used Elasticsearch as default - enable depending on source type) ===
-splunk-sdk>=2.1.0              # For fetching logs from Splunk (used if Splunk ingestion is configured)
-opensearch-py>=2.8.0           # For ingesting data from OpenSearch (alternative to Elasticsearch)
+splunk-sdk>=2.1.1              # For fetching logs from Splunk (used if Splunk ingestion is configured)
+opensearch-py>=3.0.0           # For ingesting data from OpenSearch (alternative to Elasticsearch)
