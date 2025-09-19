@@ -1,3 +1,26 @@
+## 2.11.x
+### 2.11.0
+#### Features
+* Added development docs on how to setup alerters (Google Summer of Code 2025 - @kunalsz)
+* Updated Elasticsearch and Kibana images from `9.0.3` to `9.1.2`
+* Updated Dockerfile starting image of Python from `python:3.10-slim-bullseye` to `python:3.12-slim-trixie`
+* Updated Dockerfile starting image of Node from `node:18-alpine` to `node:lts-slim`
+* Added `BuffalogsCleanModelsPeriodicallyTask` in TaskSettings model to track task execution (by community - @drona-gyawali)
+* Updated CI dependencies
+* Updated Python dependencies
+* Added some tests for `setup_config` mgmt command
+#### Changes
+* Standardized and improved ocumentation of the alerting module (Google Summer of Code 2025 - @kunalsz)
+* Removed variable definitions duplication about ingestion in settings
+* Changed some Config filter default values:
+    - `ignore_mobile_logins=True`
+    - `filtered_alerts_types=["User Risk Threshold", "New Device"]`
+    - `alert_minimum_risk_score=Medium`
+    - `threshold_user_risk_alert=Medium`
+#### Bugfix
+* Added `intelligence_category` field mapping in the ingestion config file
+* Fixed argument parsing in `setup_config` management command by replacing `nargs="+"` with `action="append"`, ensuring options (--override, --remove, --append) are correctly collected and ordered
+
 ## 2.10.x
 ### 2.10.0
 #### Features
