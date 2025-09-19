@@ -47,7 +47,7 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(config.threshold_user_risk_alert, UserRiskScoreType.NO_RISK)
         # simulate mgmt command parsing
         args = [
-            "-a",
+            "-o",
             "ignore_mobile_logins=True",
             "-o",
             "filtered_alerts_types=[New Device, User Risk Threshold]",
@@ -58,15 +58,15 @@ class ManagementCommandsTestCase(TestCase):
         ]
         parser = Command().create_parser("manage.py", "setup_config")
         options = parser.parse_args(args)
-        # check that parser collected all appends/overrides
-        self.assertEqual(options.append, ["ignore_mobile_logins=True"])
+        # check that parser collected all overrides
         self.assertEqual(
             options.override,
-            (
+            [
+                "ignore_mobile_logins=True",
                 "filtered_alerts_types=[New Device, User Risk Threshold]",
                 "alert_minimum_risk_score=Medium",
                 "threshold_user_risk_alert=Medium",
-            ),
+            ],
         )
         # execute command
         call_command("setup_config", *args)

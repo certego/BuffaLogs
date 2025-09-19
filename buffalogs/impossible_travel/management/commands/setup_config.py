@@ -76,9 +76,9 @@ class Command(BaseCommand):
         return parser
 
     def add_arguments(self, parser):
-        parser.add_argument("-o", "--override", nargs="+", metavar="FIELD=[VALUES]", help="Override field values")
-        parser.add_argument("-r", "--remove", nargs="+", metavar="FIELD=[VALUES]", help="Remove values from list fields")
-        parser.add_argument("-a", "--append", nargs="+", metavar="FIELD=[VALUES]", help="Append values to list fields or override non-list")
+        parser.add_argument("-o", "--override", action="append", metavar="FIELD=[VALUES]", help="Override field values")
+        parser.add_argument("-r", "--remove", action="append", metavar="FIELD=[VALUES]", help="Remove values from list fields")
+        parser.add_argument("-a", "--append", action="append", metavar="FIELD=[VALUES]", help="Append values to list fields or override non-list")
         parser.add_argument("--set-default-values", action="store_true", help="Reset all Config fields to their defaults")
 
     def handle(self, *args, **options):
