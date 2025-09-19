@@ -6,7 +6,7 @@ WORKDIR $INSTALL_PATH
 COPY buffalogs/requirements.txt requirements.txt
 
 
-RUN sed -i 's/main/main non-free/g' /etc/apt/sources.list \
+RUN sed -i 's/main/main non-free/g' /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
     && apt-get -y install \
         gcc
