@@ -30,6 +30,53 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(options.remove, ["ignored_users=[admin]"])
         self.assertEqual(options.append, ["alert_is_vip_only=True"])
 
+    def test_options_values_passed_2(self):
+        # reset config
+        Config.objects.all().delete()
+        config = Config.objects.create(
+            id=1,
+            ignore_mobile_logins=False,
+            filtered_alerts_types=[],
+            alert_minimum_risk_score=UserRiskScoreType.NO_RISK,
+            threshold_user_risk_alert=UserRiskScoreType.NO_RISK,
+        )
+        # check initial state
+        self.assertFalse(config.ignore_mobile_logins)
+        self.assertListEqual(config.filtered_alerts_types, [])
+        self.assertEqual(config.alert_minimum_risk_score, UserRiskScoreType.NO_RISK)
+        self.assertEqual(config.threshold_user_risk_alert, UserRiskScoreType.NO_RISK)
+        # simulate mgmt command parsing
+        args = [
+            "-o",
+            "ignore_mobile_logins=True",
+            "-o",
+            "filtered_alerts_types=[New Device, User Risk Threshold]",
+            "-o",
+            "alert_minimum_risk_score=Medium",
+            "-o",
+            "threshold_user_risk_alert=Medium",
+        ]
+        parser = Command().create_parser("manage.py", "setup_config")
+        options = parser.parse_args(args)
+        # check that parser collected all overrides
+        self.assertEqual(
+            options.override,
+            [
+                "ignore_mobile_logins=True",
+                "filtered_alerts_types=[New Device, User Risk Threshold]",
+                "alert_minimum_risk_score=Medium",
+                "threshold_user_risk_alert=Medium",
+            ],
+        )
+        # execute command
+        call_command("setup_config", *args)
+        config.refresh_from_db()
+        # check updated config values
+        self.assertTrue(config.ignore_mobile_logins)
+        self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold"])
+        self.assertEqual(config.alert_minimum_risk_score, UserRiskScoreType.MEDIUM)
+        self.assertEqual(config.threshold_user_risk_alert, UserRiskScoreType.MEDIUM)
+
     def test_handle_set_default_values(self):
         # Testing the option --set-default-values
         # Check that if new fields in the Config model have been added, they should be integrated into this test
