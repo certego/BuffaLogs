@@ -87,7 +87,10 @@ class ConfigsAdmin(admin.ModelAdmin):
             "Detection filters - users",
             {"fields": ("ignored_users", "enabled_users", "vip_users", "alert_is_vip_only", "alert_minimum_risk_score", "risk_score_increment_alerts")},
         ),
-        ("Detection filters - location", {"fields": ("ignored_ips", "allowed_countries")}),
+        (
+            "Detection filters - location",
+            {"fields": ("ignored_ips", "allowed_countries", "ignored_impossible_travel_all_same_country", "ignored_impossible_travel_countries_couples")},
+        ),
         ("Detection filters - devices", {"fields": ("ignored_ISPs", "ignore_mobile_logins")}),
         ("Detection filters - alerts", {"fields": ("filtered_alerts_types",)}),
         ("Detection setup - Alerts", {"fields": ("distance_accepted", "vel_accepted", "atypical_country_days", "threshold_user_risk_alert")}),
