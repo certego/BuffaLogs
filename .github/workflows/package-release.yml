@@ -1,0 +1,26 @@
+name: "Package Release"
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  prod-release:
+    name: "Release in prod"
+    if: github.event.release.target_commitish == 'prod'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build Python package
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools
+          cd django-buffalogs
+          python setup.py sdist
+
+      - name: Release and upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: django-buffalogs/dist/buffalogs*
