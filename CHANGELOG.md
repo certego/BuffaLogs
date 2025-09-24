@@ -9,6 +9,7 @@
 * Updated CI dependencies
 * Updated Python dependencies
 * Added some tests for `setup_config` mgmt command
+* Added Package release CI workflow for Django App pakcage creation after a new release
 #### Changes
 * Standardized and improved ocumentation of the alerting module (Google Summer of Code 2025 - @kunalsz)
 * Removed variable definitions duplication about ingestion in settings
