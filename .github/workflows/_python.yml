@@ -257,10 +257,10 @@ jobs:
         language: ['python']
     env: ${{ fromJson(inputs.env) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python_version }}
 

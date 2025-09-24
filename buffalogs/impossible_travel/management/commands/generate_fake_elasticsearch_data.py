@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import BulkIndexError, bulk
+from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 
 NUM_LOGS = 2000
 
@@ -21,9 +22,12 @@ class Command(BaseCommand):
         Entry point for the management command.
         Initializes Elasticsearch and indexes generated fake logs for predefined indices.
         """
-        es = Elasticsearch([settings.CERTEGO_BUFFALOGS_ELASTICSEARCH_HOST])
+        ingestion_factory = IngestionFactory()
+        ingestion = ingestion_factory.get_ingestion_class()
 
-        indices = [i.strip() for i in settings.CERTEGO_BUFFALOGS_ELASTIC_INDEX.split(",") if i.strip()]
+        es = Elasticsearch([ingestion.ingestion_config["url"]])
+
+        indices = [i.strip() for i in ingestion.ingestion_config["indexes"].split(",") if i.strip()]
 
         for index in indices:
             data = self.generate_common_data()

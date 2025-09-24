@@ -8,6 +8,7 @@ from impossible_travel.models import (
     Config,
     get_default_allowed_countries,
     get_default_enabled_users,
+    get_default_filtered_alerts_types,
     get_default_ignored_ips,
     get_default_ignored_ISPs,
     get_default_ignored_users,
@@ -28,6 +29,53 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(options.override, ["allowed_countries=[IT,RO]"])
         self.assertEqual(options.remove, ["ignored_users=[admin]"])
         self.assertEqual(options.append, ["alert_is_vip_only=True"])
+
+    def test_options_values_passed_2(self):
+        # reset config
+        Config.objects.all().delete()
+        config = Config.objects.create(
+            id=1,
+            ignore_mobile_logins=False,
+            filtered_alerts_types=[],
+            alert_minimum_risk_score=UserRiskScoreType.NO_RISK,
+            threshold_user_risk_alert=UserRiskScoreType.NO_RISK,
+        )
+        # check initial state
+        self.assertFalse(config.ignore_mobile_logins)
+        self.assertListEqual(config.filtered_alerts_types, [])
+        self.assertEqual(config.alert_minimum_risk_score, UserRiskScoreType.NO_RISK)
+        self.assertEqual(config.threshold_user_risk_alert, UserRiskScoreType.NO_RISK)
+        # simulate mgmt command parsing
+        args = [
+            "-o",
+            "ignore_mobile_logins=True",
+            "-o",
+            "filtered_alerts_types=[New Device, User Risk Threshold]",
+            "-o",
+            "alert_minimum_risk_score=Medium",
+            "-o",
+            "threshold_user_risk_alert=Medium",
+        ]
+        parser = Command().create_parser("manage.py", "setup_config")
+        options = parser.parse_args(args)
+        # check that parser collected all overrides
+        self.assertEqual(
+            options.override,
+            [
+                "ignore_mobile_logins=True",
+                "filtered_alerts_types=[New Device, User Risk Threshold]",
+                "alert_minimum_risk_score=Medium",
+                "threshold_user_risk_alert=Medium",
+            ],
+        )
+        # execute command
+        call_command("setup_config", *args)
+        config.refresh_from_db()
+        # check updated config values
+        self.assertTrue(config.ignore_mobile_logins)
+        self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold"])
+        self.assertEqual(config.alert_minimum_risk_score, UserRiskScoreType.MEDIUM)
+        self.assertEqual(config.threshold_user_risk_alert, UserRiskScoreType.MEDIUM)
 
     def test_handle_set_default_values(self):
         # Testing the option --set-default-values
@@ -60,14 +108,14 @@ class ManagementCommandsTestCase(TestCase):
         self.assertListEqual(self.config.enabled_users, get_default_enabled_users())
         self.assertListEqual(self.config.vip_users, get_default_vip_users())
         self.assertFalse(self.config.alert_is_vip_only)
-        self.assertEqual(self.config.alert_minimum_risk_score, "No risk")
+        self.assertEqual(self.config.alert_minimum_risk_score, "Medium")
         self.assertListEqual(self.config.risk_score_increment_alerts, get_default_risk_score_increment_alerts())
         self.assertListEqual(self.config.ignored_ips, get_default_ignored_ips())
         self.assertListEqual(self.config.allowed_countries, get_default_allowed_countries())
         self.assertListEqual(self.config.ignored_ISPs, get_default_ignored_ISPs())
-        self.assertFalse(self.config.ignore_mobile_logins)
-        self.assertListEqual(self.config.filtered_alerts_types, [])
-        self.assertEqual(self.config.threshold_user_risk_alert, "No risk")
+        self.assertTrue(self.config.ignore_mobile_logins)
+        self.assertListEqual(self.config.filtered_alerts_types, get_default_filtered_alerts_types())
+        self.assertEqual(self.config.threshold_user_risk_alert, "Medium")
         self.assertEqual(self.config.distance_accepted, settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED)
         self.assertEqual(self.config.vel_accepted, settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED)
         self.assertEqual(self.config.atypical_country_days, settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS)
