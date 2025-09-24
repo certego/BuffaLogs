@@ -6,8 +6,8 @@ on:
 
 jobs:
   prod-release:
-    name: "Release in prod"
-    if: github.event.release.target_commitish == 'prod'
+    name: "Release in prod (main branch)"
+    if: github.event.release.target_commitish == 'main'
     runs-on: ubuntu-latest
 
     steps:
