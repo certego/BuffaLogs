@@ -9,14 +9,7 @@ from django.urls import reverse
 from elasticsearch import Elasticsearch
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
 from impossible_travel.models import User
-
-
-def read_config():
-    with open(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"), mode="r", encoding="utf-8") as f:
-        config = json.load(f)
-        config = config["elasticsearch"]
-        config["url"] = "http://localhost:9200/"
-    return config
+from impossible_travel.tests.utils import load_ingestion_config_data
 
 
 class TestViewsElasticIngestion(TestCase):
@@ -28,7 +21,7 @@ class TestViewsElasticIngestion(TestCase):
     def setUp(self):
         self.maxDiff = None
         self.client = Client()
-        self.config = read_config()
+        self.config = load_ingestion_config_data(section="elasticsearch")
         self.create_test_data()
 
     @patch("impossible_travel.ingestion.ingestion_factory.IngestionFactory.get_ingestion_class")

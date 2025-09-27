@@ -12,14 +12,25 @@ def load_test_data(name: str) -> dict[str, Any]:
     return data
 
 
-def load_ingestion_config_data():
-    """Utility to load the ingestion config file"""
+def load_ingestion_config_data(section: str | None = None) -> dict[str, Any]:
+    """
+    Utility to load the ingestion config file.
+    If `section` is provided, returns that subsection of the config.
+    Example: section="elasticsearch" will return config["elasticsearch"]
+    """
     with open(
         file=os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
         mode="r",
         encoding="utf-8",
     ) as f:
         config_ingestion = json.load(f)
+
+    if section:
+        config_ingestion = config_ingestion[section]
+
+        if section == "elasticsearch":
+            config_ingestion["url"] = "http://localhost:9200/"
+
     return config_ingestion
 
 
