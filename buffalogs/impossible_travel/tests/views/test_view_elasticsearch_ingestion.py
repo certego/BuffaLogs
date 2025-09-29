@@ -90,6 +90,3 @@ class TestViewsElasticIngestion(TestCase):
             index = f"{index}-test_data-1970-01-01"
             _id = f"test_id_{i + 1}"
             es.delete(index=index, id=_id)
-
-
-a
