@@ -22,6 +22,7 @@ class TestViewsElasticIngestion(TestCase):
         self.maxDiff = None
         self.client = Client()
         self.config = load_ingestion_config_data(section="elasticsearch")
+        self.config["url"] = "http://localhost:9200/"
         self.create_test_data()
 
     @patch("impossible_travel.ingestion.ingestion_factory.IngestionFactory.get_ingestion_class")
@@ -89,3 +90,6 @@ class TestViewsElasticIngestion(TestCase):
             index = f"{index}-test_data-1970-01-01"
             _id = f"test_id_{i + 1}"
             es.delete(index=index, id=_id)
+
+
+a

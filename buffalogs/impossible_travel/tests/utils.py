@@ -28,9 +28,6 @@ def load_ingestion_config_data(section: str | None = None) -> dict[str, Any]:
     if section:
         config_ingestion = config_ingestion[section]
 
-        if section == "elasticsearch":
-            config_ingestion["url"] = "http://localhost:9200/"
-
     return config_ingestion
 
 
