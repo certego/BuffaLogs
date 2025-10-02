@@ -10,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, User
 from impossible_travel.serializers import AlertSerializer
+from impossible_travel.validators import validate_alert_query
 from impossible_travel.views.utils import read_config, write_config
 
 
@@ -72,44 +73,8 @@ def export_alerts_csv(request):
 @require_http_methods(["GET"])
 def list_alerts(request):
     """Filter alerts by created datetime range."""
-    result = []
-    start_date = parse_datetime(request.GET.get("start", ""))
-    end_date = parse_datetime(request.GET.get("end", ""))
-    if start_date and is_naive(start_date):
-        start_date = make_aware(start_date)
-    if end_date and is_naive(end_date):
-        end_date = make_aware(end_date)
-    if request.GET.get("notified"):
-        notified = True if request.GET.get("notified").lower() == "true" else False
-    else:
-        notified = None
-    risk_score = request.GET.get("risk_score")
-    min_risk_score = request.GET.get("min_risk_score")
-    max_risk_score = request.GET.get("max_risk_score")
-    if risk_score:
-        risk_score = int(risk_score) if risk_score.isnumeric() else risk_score.title()
-    if min_risk_score:
-        min_risk_score = int(min_risk_score) if min_risk_score.isnumeric() else min_risk_score.title()
-    if max_risk_score:
-        max_risk_score = int(max_risk_score) if max_risk_score.isnumeric() else max_risk_score.title()
-    filters = dict(
-        start_date=start_date,
-        end_date=end_date,
-        notified=notified,
-        name=request.GET.get("name"),
-        username=request.GET.get("user"),
-        is_vip=request.GET.get("is_vip"),
-        country_code=request.GET.get("country_code"),
-        login_start_time=request.GET.get("login_start_date"),
-        login_end_time=request.GET.get("login_end_date"),
-        ip=request.GET.get("ip"),
-        user_agent=request.GET.get("user_agent"),
-        risk_score=risk_score,
-        min_risk_score=min_risk_score,
-        max_risk_score=max_risk_score,
-    )
-    alerts = Alert.apply_filters(**filters).order_by("-created")
-    serialized_alerts = AlertSerializer(alerts)
+    query = validate_alert_query(request.GET)
+    serialized_alerts = AlertSerializer(query=query)
     return JsonResponse(serialized_alerts.data, safe=False, json_dumps_params={"default": str})
 
 
@@ -140,14 +105,7 @@ def get_user_alerts(request):
 def recent_alerts(request):
     """Return the last 25 alerts detected."""
     alerts_list = Alert.objects.all()[:25]
-    serialized_alerts = AlertSerializer(alerts_list)
-    # for alert in alerts_list:
-    #    tmp = {
-    #        "user": alert.user.username,
-    #        "timestamp": alert.login_raw_data["timestamp"],
-    #        "name": alert.name,
-    #    }
-    #    context.append(tmp)
+    serialized_alerts = AlertSerializer(instance=alerts_list)
     return JsonResponse(serialized_alerts.json(), safe=False)
 
 

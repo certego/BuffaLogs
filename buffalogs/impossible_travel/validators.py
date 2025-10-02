@@ -1,9 +1,14 @@
 import re
 from ipaddress import AddressValueError, IPv4Address, IPv4Network
+from typing import Any, Dict, Optional, Union
 
 from django.core.exceptions import ValidationError
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import is_naive, make_aware
 from django.utils.translation import gettext_lazy as _
 from impossible_travel.views.utils import read_config
+
+ALLOWED_RISK_STRINGS = ["High", "Medium", "Low", "No Risk"]
 
 
 def validate_string_or_regex(value):
@@ -79,3 +84,88 @@ def validate_country_couples_list(value):
             raise ValidationError(_("Each single value must be a list of 2 elements (list of lists)."))
         # check that each country is a valid country name
         validate_countries_names(country_couple)
+
+
+def validate_risk_score(value: Optional[Union[str, int]] = None):
+    "Validates risk score value."
+    if value is None:
+        return None
+
+    if value.isnumeric():
+        value = int(value)
+        if not (0 <= value <= 7):
+            raise ValidationError("risk score value is out of range. Value must be in the range of 0-7")
+    else:
+        value = value.title()
+        if value not in ALLOWED_RISK_STRINGS:
+            raise ValidationError(f"Risk score must be an integer 0-7 or one of: {', '.join(ALLOWED_RISK_STRINGS)}")
+    return value
+
+
+def validate_datetime_str(value: str):
+    value = parse_datetime(value)
+    if value and is_naive(value):
+        value = make_aware(value)
+    return value
+
+
+def validate_notified_str(value: Optional[str] = None):
+    if value is None:
+        return value
+    if value.lower() == "true":
+        return True
+    else:
+        return False
+
+
+def validate_alert_query(query_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """Validates the query dictionary of a request to Alert API"""
+    limit = int(query_dict.get("limit", 0))
+    offset = int(query_dict.get("offset", 0))
+    start_date = validate_datetime_str(query_dict.get("start", ""))
+    end_date = validate_datetime_str(query_dict.get("end", ""))
+    notified = validate_notified_str(query_dict.get("notified", ""))
+    risk_score = validate_risk_score(query_dict.get("risk_score"))
+    min_risk_score = validate_risk_score(query_dict.get("min_risk_score"))
+    max_risk_score = validate_risk_score(query_dict.get("max_risk_score"))
+
+    return dict(
+        limit=limit,
+        offset=offset,
+        start_date=start_date,
+        end_date=end_date,
+        notified=notified,
+        risk_score=risk_score,
+        min_risk_score=min_risk_score,
+        max_risk_score=max_risk_score,
+        ip=query_dict.get("ip"),
+        name=query_dict.get("name"),
+        username=query_dict.get("user"),
+        is_vip=query_dict.get("is_vip"),
+        country_code=query_dict.get("country_code"),
+        login_start_time=query_dict.get("login_start_date"),
+        login_end_time=query_dict.get("login_end_date"),
+        user_agent=query_dict.get("user_agent"),
+    )
+
+
+def validate_login_query(query_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """Validates the query dictionary of a GET request to Login API"""
+    limit = int(query_dict.get("limit", 0))
+    offset = int(query_dict.get("offset", 0))
+    username = query_dict.get("user")
+    country = query_dict.get("country")
+    login_start_time = query_dict.get("login_start_date")
+    login_end_time = query_dict.get("login_end_date")
+    ip = query_dict.get("ip")
+    user_agent = query_dict.get("user_agent")
+    return {
+        "limit": limit,
+        "offset": offset,
+        "username": username,
+        "country": country,
+        "login_start_time": login_start_time,
+        "login_end_time": login_end_time,
+        "ip": ip,
+        "user_agent": user_agent,
+    }
