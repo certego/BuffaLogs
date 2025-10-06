@@ -79,7 +79,10 @@ class Command(BaseCommand):
         parser.add_argument("-o", "--override", action="append", metavar="FIELD=[VALUES]", help="Override field values")
         parser.add_argument("-r", "--remove", action="append", metavar="FIELD=[VALUES]", help="Remove values from list fields")
         parser.add_argument("-a", "--append", action="append", metavar="FIELD=[VALUES]", help="Append values to list fields or override non-list")
-        parser.add_argument("--set-default-values", action="store_true", help="Reset all Config fields to their defaults")
+        parser.add_argument(
+            "--set-default-values", action="store_true", help="Initialize configuration fields with default values (already populated values are not modified)"
+        )
+        parser.add_argument("--force", action="store_true", help="Force overwrite existing values with defaults (use with caution)")
 
     def handle(self, *args, **options):
         print(options)
@@ -88,18 +91,44 @@ class Command(BaseCommand):
         # get customizable fields in the Config model dinamically
         fields_info = {f.name: f for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created}
 
-        if options["set_default_values"]:
-            # set default values to fields
+        # MODE: --set-default-values
+        if options.get("set_default_values"):
+            force = options.get("force", False)
+            updated_fields = []
+
             for field_name, field_model in list(fields_info.items()):
                 if hasattr(field_model, "default"):
-                    setattr(config, field_name, field_model.default() if callable(field_model.default) else field_model.default)
+                    default_value = field_model.default() if callable(field_model.default) else field_model.default
+                    current_value = getattr(config, field_name)
+
+                    # Safe mode --> update field only if it's empty
+                    if not force:
+                        if current_value in (None, "", [], {}):
+                            setattr(config, field_name, default_value)
+                            updated_fields.append(field_name)
+                    # Force mode → overwrite all fields values
+                    else:
+                        setattr(config, field_name, default_value)
+                        updated_fields.append(field_name)
+
             config.save()
-            self.stdout.write("Config reset to default values.")
+
+            msg = (
+                f"BuffaLogs Config: all {len(updated_fields)} fields reset to defaults (FORCED)."
+                if force
+                else f"BuffaLogs Config: updated {len(updated_fields)} empty fields with defaults."
+            )
+            self.stdout.write(self.style.SUCCESS(msg))
             return
 
+        # MODE: manual updates (--override, --append, --remove)
         updates = []
 
-        for mode, items in [("override", options["override"]), ("remove", options["remove"]), ("append", options["append"])]:
+        for mode, items in [
+            ("override", options["override"]),
+            ("remove", options["remove"]),
+            ("append", options["append"]),
+        ]:
             if items:
                 for item in items:
                     # item is a string "field_name=value" to be parsed
