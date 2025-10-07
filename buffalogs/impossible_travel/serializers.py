@@ -33,11 +33,10 @@ class QSerializer(Serializer):
     Model: models.Model
 
     def __init__(self, instance: Optional[InstanceType] = None, query: Optional[Dict[str, Any]] = None):
-        if not bool(instance) ^ bool(query):
-            if instance:
-                raise ValueError("Either `instance` or `query` parameter must be defined not both!")
-            else:
-                raise ValueError("Both `instance` and `query` parameters cannot be None, define only one!")
+        if instance and query:
+            raise ValueError("Either `instance` or `query` parameter must be defined not both!")
+        if (instance is None) and (query is None):
+            raise ValueError("Both `instance` and `query` parameters cannot be None, define only one!")
         instance = instance or self.Model.apply_filters(**query)
         super().__init__(instance)
 

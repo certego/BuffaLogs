@@ -91,7 +91,7 @@ def validate_risk_score(value: Optional[Union[str, int]] = None):
     if value is None:
         return None
 
-    if value.isnumeric():
+    if isinstance(value, int) or value.isnumeric():
         value = int(value)
         if not (0 <= value <= 7):
             raise ValidationError("risk score value is out of range. Value must be in the range of 0-7")
@@ -102,32 +102,42 @@ def validate_risk_score(value: Optional[Union[str, int]] = None):
     return value
 
 
-def validate_datetime_str(value: str):
-    value = parse_datetime(value)
-    if value and is_naive(value):
-        value = make_aware(value)
-    return value
+def validate_datetime_str(value: Optional[str] = None):
+    if not value:
+        return
+
+    dt_obj = parse_datetime(value)
+    if dt_obj is None:
+        raise ValidationError(f"{value} is not a valid datetime format. Please use ISO 8601 format (e.g., YYYY-MM-DDTHH:MM:SSZ).")
+    if is_naive(dt_obj):
+        dt_obj = make_aware(dt_obj)
+    return dt_obj
 
 
-def validate_notified_str(value: Optional[str] = None):
-    if value is None:
-        return value
+def validate_boolean_str(value: Optional[str] = None):
+    if not value:
+        return
     if value.lower() == "true":
         return True
-    else:
+    if value.lower() == "false":
         return False
+    raise ValidationError(f"Notification status must be true or false, got {value}")
 
 
 def validate_alert_query(query_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Validates the query dictionary of a request to Alert API"""
-    limit = int(query_dict.get("limit", 0))
-    offset = int(query_dict.get("offset", 0))
+    try:
+        limit = int(query_dict.get("limit", 0))
+        offset = int(query_dict.get("offset", 0))
+    except ValueError:
+        raise ValidationError("Limit/Offset must be valid integers or numeric strings")
     start_date = validate_datetime_str(query_dict.get("start", ""))
     end_date = validate_datetime_str(query_dict.get("end", ""))
-    notified = validate_notified_str(query_dict.get("notified", ""))
+    notified = validate_boolean_str(query_dict.get("notified", ""))
     risk_score = validate_risk_score(query_dict.get("risk_score"))
     min_risk_score = validate_risk_score(query_dict.get("min_risk_score"))
     max_risk_score = validate_risk_score(query_dict.get("max_risk_score"))
+    is_vip = validate_boolean_str(query_dict.get("is_vip"))
 
     return dict(
         limit=limit,
@@ -141,7 +151,7 @@ def validate_alert_query(query_dict: Dict[str, Any]) -> Dict[str, Any]:
         ip=query_dict.get("ip"),
         name=query_dict.get("name"),
         username=query_dict.get("user"),
-        is_vip=query_dict.get("is_vip"),
+        is_vip=is_vip,
         country_code=query_dict.get("country_code"),
         login_start_time=query_dict.get("login_start_date"),
         login_end_time=query_dict.get("login_end_date"),
@@ -151,8 +161,11 @@ def validate_alert_query(query_dict: Dict[str, Any]) -> Dict[str, Any]:
 
 def validate_login_query(query_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Validates the query dictionary of a GET request to Login API"""
-    limit = int(query_dict.get("limit", 0))
-    offset = int(query_dict.get("offset", 0))
+    try:
+        limit = int(query_dict.get("limit", 0))
+        offset = int(query_dict.get("offset", 0))
+    except ValueError:
+        raise ValidationError("Limit/Offset must be valid integers or numeric strings")
     username = query_dict.get("user")
     country = query_dict.get("country")
     login_start_time = query_dict.get("login_start_date")

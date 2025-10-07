@@ -73,7 +73,7 @@ class Login(models.Model):
         if ip:
             query = query.filter(ip=ip)
         if user_agent:
-            query = query.filter(user_agent=user_agent)
+            query = query.filter(user_agent__icontains=user_agent)
         if login_start_time:
             query = query.filter(timestamp__gte=login_start_time)
         if login_end_time:
@@ -159,7 +159,7 @@ class Alert(models.Model):
         if ip:
             query = query.filter(login_raw_data__ip=ip)
         if user_agent:
-            query = query.filter(login_raw_data__user_agent=user_agent)
+            query = query.filter(login_raw_data__user_agent__icontains=user_agent)
         if login_start_time:
             query = query.filter(login_raw_data__timestamp__gte=login_start_time)
         if login_end_time:
