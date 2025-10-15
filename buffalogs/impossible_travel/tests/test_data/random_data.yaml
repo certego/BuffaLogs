@@ -215,6 +215,10 @@ ip:
   latitude: 11.0922
   longitude: 77.1025
   organization: Bharti Airtel
+intelligence_category:
+    - anonymizer
+    - benign
+    - suspicious
 user_agent:
     - Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)
     - Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
