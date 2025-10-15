@@ -58,16 +58,22 @@ class Login(models.Model):
         ip: str = None,
         user_agent: str = None,
         index: str = None,
+        limit: int = 0,
+        offset: int = 0,
     ):
-        "Filters Login objects."
+        """
+        Filters Login objects based on various criteria and applies
+        offset/limit pagination.
+        """
 
-        query = cls.objects
+        query = cls.objects.all().order_by("-timestamp")
+
         if username:
             query = query.filter(user__username__icontains=username)
         if ip:
             query = query.filter(ip=ip)
         if user_agent:
-            query = query.filter(user_agent=user_agent)
+            query = query.filter(user_agent__icontains=user_agent)
         if login_start_time:
             query = query.filter(timestamp__gte=login_start_time)
         if login_end_time:
@@ -76,7 +82,13 @@ class Login(models.Model):
             query = query.filter(country__iexact=country)
         if index:
             query = query.filter(index__iexact=index)
-        return query.all()
+
+        if limit:
+            start = offset
+            end = offset + limit
+            query = query[start:end]
+
+        return query
 
 
 class Alert(models.Model):
@@ -124,10 +136,12 @@ class Alert(models.Model):
         min_risk_score: int = None,
         max_risk_score: int = None,
         risk_score: int = None,
+        limit: int = None,
+        offset: int = None,
     ):
         "Filters Alert objects."
 
-        query = cls.objects
+        query = cls.objects.all().order_by("-created")
         if start_date:
             query = query.filter(created__gte=start_date)
         if end_date:
@@ -145,7 +159,7 @@ class Alert(models.Model):
         if ip:
             query = query.filter(login_raw_data__ip=ip)
         if user_agent:
-            query = query.filter(login_raw_data__user_agent=user_agent)
+            query = query.filter(login_raw_data__user_agent__icontains=user_agent)
         if login_start_time:
             query = query.filter(login_raw_data__timestamp__gte=login_start_time)
         if login_end_time:
@@ -162,7 +176,13 @@ class Alert(models.Model):
         elif min_risk_score or max_risk_score:
             risk_range = UserRiskScoreType.get_range(min_value=min_risk_score, max_value=max_risk_score)
             query = query.filter(user__risk_score__in=risk_range)
-        return query.all()
+
+        if limit:
+            start = offset
+            end = offset + limit
+            query = query[start:end]
+
+        return query
 
     class Meta:
         constraints = [
