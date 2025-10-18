@@ -93,6 +93,7 @@ class AlertDetectionType(models.TextChoices):
 class AlertFilterType(models.TextChoices):
     """Types of possible detection filter applied on alerts to be ignored
 
+    * USER_LEARNING_PERIOD: Alert filtered because the user is into the initial learning behavior period (defined by Config.user_learning_period)
     * IGNORED_USER_FILTER: Alert filtered because the user is ignored - the user is in the Config.ignored_users list or Config.enabled_users list is populated
     * IGNORED_IP_FILTER: Alert filtered because the IP is ignored - the ip is in the Config.ignored_ips list
     * ALLOWED_COUNTRY_FILTER: Alert filtered because the country is whitelisted - the country is in the Config.allowed_countries list
@@ -105,6 +106,9 @@ class AlertFilterType(models.TextChoices):
     * IGNORED_IMP_TRAVEL_COUNTRIES_COUPLE: Alert (imp_travel) filtered because the couple (start_country, country) is present in the Config.ignored_impossible_travel_countries_couples field
     """
 
+    USER_LEARNING_PERIOD = "user_learning_period", _(
+        "Alert filtered because the user is into the initial learning behavior period (defined by Config.user_learning_period)"
+    )
     IGNORED_USER_FILTER = "ignored_users filter", _(
         "Alert filtered because the user is ignored - the user is in the Config.ignored_users list or Config.enabled_users list is populated"
     )

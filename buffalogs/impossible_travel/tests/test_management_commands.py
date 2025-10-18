@@ -81,7 +81,7 @@ class ManagementCommandsTestCase(TestCase):
         # Testing the option --set-default-values (force mode)
         # Check that if new fields in the Config model have been added, they should be integrated into this test
         config_editable_fields = [f.name for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created]
-        self.assertEqual(21, len(config_editable_fields))
+        self.assertEqual(22, len(config_editable_fields))
         # Put random values into fields
         self.config.ignored_users = ["blabla", "user2"]
         self.config.alert_is_vip_only = True
@@ -100,6 +100,7 @@ class ManagementCommandsTestCase(TestCase):
         self.assertListEqual(self.config.ignored_ips, ["9.9.9.9", "4.5.4.5"])
         self.assertListEqual(self.config.ignored_ISPs, ["isp1"])
         self.assertEqual(self.config.atypical_country_days, 80)
+        self.assertEqual(self.config.user_learning_period, 14)
         # call the mgmt command with the --set-default-values option
         call_command("setup_config", "--set-default-values", "--force")
         self.config.refresh_from_db()
@@ -125,12 +126,13 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(self.config.ip_max_days, settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS)
         self.assertTrue(self.config.ignored_impossible_travel_all_same_country)
         self.assertEqual(self.config.ignored_impossible_travel_countries_couples, [])
+        self.assertEqual(self.config.user_learning_period, settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD)
 
     def test_handle_set_default_values_safe(self):
         # Testing the option --set-default-values (safe mode)
         # Check that if new fields in the Config model have been added, they should be integrated into this test
         config_editable_fields = [f.name for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created]
-        self.assertEqual(21, len(config_editable_fields))
+        self.assertEqual(22, len(config_editable_fields))
         # Put random values into fields
         self.config.ignored_users = ["blabla", "user2"]
         self.config.alert_is_vip_only = True
@@ -139,6 +141,7 @@ class ManagementCommandsTestCase(TestCase):
         self.config.ignored_ips = ["9.9.9.9", "4.5.4.5"]
         self.config.ignored_ISPs = ["isp1"]
         self.config.atypical_country_days = 80
+        self.config.user_learning_period = 20
         self.config.save()
         self.config.refresh_from_db()
         # check that new random values have been correctly saved
@@ -149,6 +152,7 @@ class ManagementCommandsTestCase(TestCase):
         self.assertListEqual(self.config.ignored_ips, ["9.9.9.9", "4.5.4.5"])
         self.assertListEqual(self.config.ignored_ISPs, ["isp1"])
         self.assertEqual(self.config.atypical_country_days, 80)
+        self.assertEqual(self.config.user_learning_period, 20)
         # call the mgmt command with the --set-default-values option (safe mode)
         call_command("setup_config", "--set-default-values")
         self.config.refresh_from_db()
@@ -174,6 +178,7 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(self.config.ip_max_days, settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS)
         self.assertTrue(self.config.ignored_impossible_travel_all_same_country)
         self.assertEqual(self.config.ignored_impossible_travel_countries_couples, [])
+        self.assertEqual(self.config.user_learning_period, 20)
 
     # === Tests for setup_config.py mgmt command - parse_field_value function ===
 
