@@ -47,18 +47,18 @@ def process_logs(start_date=None, end_date=None):
     ingestion_factory = IngestionFactory()
     ingestion = ingestion_factory.get_ingestion_class()
     date_ranges = []
+    now = timezone.now()
+    process_task, _ = TaskSettings.objects.get_or_create(
+        task_name=process_logs.__name__,
+        defaults={
+            "end_date": now - timedelta(minutes=1),
+            "start_date": now - timedelta(minutes=30),
+        },
+    )
 
     if start_date and end_date:
         date_ranges.append((start_date, end_date))
     else:
-        now = timezone.now()
-        process_task, _ = TaskSettings.objects.get_or_create(
-            task_name=process_logs.__name__,
-            defaults={
-                "end_date": now - timedelta(minutes=1),
-                "start_date": now - timedelta(minutes=30),
-            },
-        )
 
         if (now - process_task.end_date).days < 1:
             # Recovering old data avoiding task time limit
@@ -96,9 +96,8 @@ def process_logs(start_date=None, end_date=None):
                 # if valid logins have been found, add the user into the DB and start the detection
                 if parsed_logins:
                     db_user, created = User.objects.get_or_create(username=username)
-                    if not created:
-                        # Saving user anyway to update updated_at field in order to take track of the recent users seen
-                        db_user.save()
+                    # Saving user anyway to update updated_at field in order to take track of the recent users seen
+                    db_user.save()
                     detection.check_fields(db_user=db_user, fields=parsed_logins)
 
 
