@@ -365,6 +365,9 @@ class Config(models.Model):
         default=settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS,
         help_text="Days after which a login from a country is considered atypical",
     )
+    user_learning_period = models.PositiveIntegerField(
+        default=settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD, help_text="Days considered to learn the user login behaviors - no alerts generation"
+    )
     user_max_days = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS,
         help_text="Days after which the users will be removed from the db",
