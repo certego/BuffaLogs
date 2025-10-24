@@ -11,7 +11,7 @@ dependencies = [
     "typer",
     "requests",
     "rich",
-    "yarl"
+    "yarl",
 ]
 
 [project.scripts]
