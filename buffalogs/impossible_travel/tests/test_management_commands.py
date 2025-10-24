@@ -314,8 +314,9 @@ class ResetUserRiskScoreCommandTests(TestCase):
             self.assertTrue(mock_save.called)
 
     def test_bulk_update_uses_update_not_save(self):
-        with patch("impossible_travel.management.commands.reset_user_risk_score.User.save") as mock_save, \
-            patch("impossible_travel.management.commands.reset_user_risk_score.User.objects.update") as mock_update:
+        with patch("impossible_travel.management.commands.reset_user_risk_score.User.save") as mock_save, patch(
+            "impossible_travel.management.commands.reset_user_risk_score.User.objects.update"
+        ) as mock_update:
             mock_update.return_value = 2
             out = io.StringIO()
             call_command("reset_user_risk_score", risk_score="Low", stdout=out)
