@@ -1,14 +1,22 @@
 import configparser
 import json
 import os
+from importlib.resources import files
 from pathlib import Path
 
 from yarl import URL
 
 project_dir = Path(__file__).parent
-config_path = project_dir / "config.json"
+config_path: Path = files("buffacli") / "config.json"
 
 DEFAULT_BUFFALOGS_URL = "http://127.0.0.1:8000"
+
+
+def load_default_config() -> dict:
+    config_path: Path = files("buffacli") / "config.json"
+    with open(config_path, "r") as f:
+        config_data = json.load(f)
+    return config_data
 
 
 def read_from_config(key):

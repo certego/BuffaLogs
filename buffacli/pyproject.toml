@@ -11,7 +11,7 @@ dependencies = [
     "typer",
     "requests",
     "rich",
-    "yarl"
+    "yarl",
 ]
 
 [project.scripts]
@@ -24,3 +24,7 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 exclude = ["tests*"]
+
+
+[tool.setuptools.package-data]
+"buffacli" = ["config.json"]
