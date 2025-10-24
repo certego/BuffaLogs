@@ -32,7 +32,7 @@ BuffaCLI is a command-line interface (CLI) tool that provides administrators wit
 ## 📦 Installation
 
 ```bash
-pip install buffacli
+pip install git+https://github.com/certego/BuffaLogs.git@buffacli#subdirectory=buffacli
 ```
 
 > Ensure Python 3.12 or above is installed on your system.
