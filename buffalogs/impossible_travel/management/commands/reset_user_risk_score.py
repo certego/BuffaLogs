@@ -1,15 +1,9 @@
 from django.core.management.base import BaseCommand, CommandError
-from django.contrib.auth import get_user_model
 from impossible_travel.constants import UserRiskScoreType
+from impossible_travel.models import User
 
-User = get_user_model()
 
-VALID_RISK_SCORES = [
-    UserRiskScoreType.NO_RISK,
-    UserRiskScoreType.LOW,
-    UserRiskScoreType.MEDIUM,
-    UserRiskScoreType.HIGH,
-]
+VALID_RISK_SCORES = list(UserRiskScoreType.values)
 
 
 class Command(BaseCommand):
@@ -24,8 +18,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--risk_score",
             type=str,
-            default=UserRiskScoreType.NO_RISK,
-            help=f"Specify risk score to set (default: '{UserRiskScoreType.NO_RISK}')",
+            default=UserRiskScoreType.NO_RISK.value,
+            help=f"Specify risk score to set (default: '{UserRiskScoreType.NO_RISK.value}')",
         )
 
     def handle(self, *args, **options):
