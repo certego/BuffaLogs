@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand, CommandError
 from impossible_travel.constants import UserRiskScoreType
 from impossible_travel.models import User
 
-
 VALID_RISK_SCORES = list(UserRiskScoreType.values)
 
 

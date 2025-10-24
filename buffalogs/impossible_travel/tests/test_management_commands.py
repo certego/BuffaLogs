@@ -1,12 +1,12 @@
+import io
+from unittest.mock import patch
+
 from django.conf import settings
 from django.core.management import CommandError, call_command
 from django.db.models.fields import Field
 from django.test import TestCase
 from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.management.commands.setup_config import Command, parse_field_value
-import io
-from unittest.mock import patch
-
 from impossible_travel.models import (
     Config,
     User,
