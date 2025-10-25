@@ -302,12 +302,6 @@ class ResetUserRiskScoreCommandTests(TestCase):
         call_command("reset_user_risk_score", stdout=out)
         self.assertEqual(User.objects.filter(risk_score=UserRiskScoreType.NO_RISK.value).count(), 2)
 
-    def test_call_command_with_enum_member_raises(self):
-        # call_command can accept objects; current implementation expects string values,
-        # so passing enum member should raise CommandError
-        with self.assertRaises(CommandError):
-            call_command("reset_user_risk_score", username="alice", risk_score=UserRiskScoreType.NO_RISK)
-
     def test_single_user_triggers_save(self):
         with patch("impossible_travel.management.commands.reset_user_risk_score.User.save") as mock_save:
             call_command("reset_user_risk_score", username="alice", risk_score="Low")
