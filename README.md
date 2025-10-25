@@ -32,7 +32,7 @@ In detail, it sends several types of alerts:
 
    The idea is to compare the logins provided by the internal authentication service of the company with the logins collected by BuffaLogs and alert in case of significant inconsistencies.
 
-*For further details: [Wiki - About](https://github.com/certego/BuffaLogs/wiki/1.-About)*
+*For further details: [About](docs/guides/development/complete_guide_for_developers.md)*
 
 ## BuffaLogs is participating in FOSDEM 2025 Conference!
 
@@ -79,7 +79,7 @@ After that, there are two ways of running BuffaLogs, depending on your system co
 
 <img src="docs/static/map_buffalogs.png" width=750 height=400 alt="BuffaLogs Map Page"/>
 
-*For further examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/3.-Example)*
+*For further examples: [Example](docs/guides/development/step_by_step_example.md)*
 
 ##  Uninstall
 
