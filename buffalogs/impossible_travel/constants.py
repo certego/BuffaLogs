@@ -2,6 +2,14 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+class AlertTagValues(models.TextChoices):
+    SECURITY_THREAT = "security_threat", "Security Threat"
+    NETWORK_ISSUE = "network_issue", "Network Issue"
+    CONFIGURATION_ERROR = "configuration_error", "Configuration Error"
+    USER_ACTIVITY = "user_activity", "User Activity"
+    SYSTEM_HEALTH = "system_health", "System Health"
+
+
 class UserRiskScoreType(models.TextChoices):
     """Possible types of user risk scores, based on number of alerts that they have triggered
 

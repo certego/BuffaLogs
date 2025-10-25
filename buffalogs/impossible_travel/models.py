@@ -6,7 +6,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
+from impossible_travel.constants import AlertDetectionType, AlertFilterType, AlertTagValues, UserRiskScoreType
 from impossible_travel.validators import validate_countries_names, validate_country_couples_list, validate_ips_or_network, validate_string_or_regex
 
 
@@ -105,6 +105,13 @@ class Alert(models.Model):
         default=list,
         help_text="List of filters that disabled the related alert",
     )
+    tags = ArrayField(
+        models.CharField(max_length=50, choices=AlertTagValues.choices, blank=True),
+        blank=True,
+        default=list,
+        help_text="List of predefined tags assigned to this alert",
+    )
+
     notified_status = models.JSONField(default=dict, blank=True, help_text="Tracks each active_alerter status")
 
     @property
@@ -195,6 +202,11 @@ class Alert(models.Model):
                 # Check that each element in the Alert.filter_type is in the Enum AlertFilterType
                 check=models.Q(filter_type__contained_by=[choice[0] for choice in AlertFilterType.choices]) | models.Q(filter_type=[]),
                 name="valid_alert_filter_type_choices",
+            ),
+            models.CheckConstraint(
+                # Check that each element in the Alert.tags is in the Enum AlertTagValues
+                check=models.Q(tags__contained_by=[choice[0] for choice in AlertTagValues.choices]) | models.Q(tags=[]),
+                name="valid_alert_tags_choices",
             ),
         ]
 
