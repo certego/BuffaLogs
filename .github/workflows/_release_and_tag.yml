@@ -96,7 +96,7 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         if: steps.check-tag.outputs.match == 'true' && inputs.publish_on_npm
         with:
           node-version: 20

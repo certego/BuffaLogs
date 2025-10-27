@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from django.conf import settings
 from django.test import TestCase
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
@@ -10,6 +12,11 @@ class TestAlertFilter(TestCase):
     def setUpTestData(cls):
         db_user1 = User.objects.create(id=1, username="Lorena Goldoni")
         db_user2 = User.objects.create(id=2, username="Lorygold")
+        # force created datetime otherwise the alerts will be filtered by the user_learning_period filter
+        db_user1.created = datetime(2025, 10, 1, 12, 34, 37, tzinfo=timezone.utc)
+        db_user1.save(update_fields=["created"])
+        db_user2.created = datetime(2025, 10, 1, 12, 34, 37, tzinfo=timezone.utc)
+        db_user2.save(update_fields=["created"])
         # create an alert for user "Lorena Goldoni"
         Alert.objects.create(
             id=1,
@@ -134,15 +141,21 @@ class TestAlertFilter(TestCase):
             ignore_mobile_logins=False,
         )
         db_user = User.objects.create(id=3, username="h.hesse@stores.company.com")
+        db_user.created = datetime(2025, 10, 1, 12, 34, 37, tzinfo=timezone.utc)
+        db_user.save(update_fields=["created"])
         db_alert = Alert.objects.create(id=3, user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data={"test": "ok"})
         alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertTrue(db_alert.is_filtered)
         self.assertListEqual(["ignored_users filter"], db_alert.filter_type)
         db_user = User.objects.create(id=4, username="test-user123@stores.company.com")
+        db_user.created = datetime(2025, 10, 1, 12, 34, 37, tzinfo=timezone.utc)
+        db_user.save(update_fields=["created"])
         db_alert = Alert.objects.create(id=4, user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data={"test": "ok"})
         alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertTrue(db_alert.is_filtered)
         db_user = User.objects.create(id=5, username="hermann@company.com")
+        db_user.created = datetime(2025, 10, 1, 12, 34, 37, tzinfo=timezone.utc)
+        db_user.save(update_fields=["created"])
         db_alert = Alert.objects.create(id=5, user=db_user, name=AlertDetectionType.NEW_DEVICE, login_raw_data={"test": "ok"})
         alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertFalse(db_alert.is_filtered)
@@ -591,3 +604,13 @@ class TestAlertFilter(TestCase):
         alert_filter.match_filters(alert=db_alert4, app_config=db_config)
         self.assertTrue(db_alert4.is_filtered)
         self.assertListEqual(["ignored_country_couple"], db_alert4.filter_type)
+
+    def test_match_filters_user_learning_period(self):
+        # test default value (14 days) as user behavior learning period
+        db_config = Config.objects.create()
+        self.assertEqual(14, db_config.user_learning_period)
+        db_user = User.objects.create(id=6, username="l_goldoni", risk_score="High")
+        db_alert = Alert.objects.create(id=8, user=db_user, login_raw_data={"test": 1}, name="New Country", description="test")
+        alert_filter.match_filters(alert=db_alert, app_config=db_config)
+        self.assertTrue(db_alert.is_filtered)
+        self.assertListEqual(["user_learning_period"], db_alert.filter_type)

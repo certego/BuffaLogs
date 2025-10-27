@@ -1,6 +1,7 @@
 import logging
 import re
 from collections import Counter
+from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, ComparisonType, UserRiskScoreType
@@ -60,7 +61,7 @@ def match_filters(alert: Alert, app_config: Config) -> Alert:
 
 
 def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) -> Alert:
-    """Check all the filters relative to users.
+    """Check all the filters relative to users (enabled_users, ignored_users, vip_users).
     Rules of alert filtering, in the check order:
     1. if Config.alert_is_vip_only == True
         a. if user not in [Config.vip_users] --> IS_VIP_FILTER
@@ -69,7 +70,10 @@ def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) ->
         b. if user not in [Config.enabled_users] --> IGNORED_USER_FILTER
       3. else: if user in [Config.ignored_users] --> IGNORED_USER_FILTER
     4. if user.risk_score < Config.alert_minimum_risk_score --> ALERT_MINIMUM_RISK_SCORE_FILTER
+    5. if now-user.created < Config.user_learning_period --> USER_LEARNING_PERIOD
     """
+    now = datetime.now(timezone.utc)
+
     if app_config.alert_is_vip_only:
         # 1. if the flag Config.is_vip_only is True, check only if the user is in the config.vip_users list
         if db_user.username not in app_config.vip_users:
@@ -92,6 +96,10 @@ def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) ->
             f"Alert: {db_alert.id} filtered because user: {db_user.username} has risk_score: {db_user.risk_score}, but Config.alert_minimum_risk_score is set to {app_config.alert_minimum_risk_score}"
         )
         db_alert.filter_type.append(AlertFilterType.ALERT_MINIMUM_RISK_SCORE_FILTER)
+    # 5. check if the User is quite new in the BuffaLogs system, so if the learning period has to be completed yet
+    if (now - db_user.created) < timedelta(days=app_config.user_learning_period):
+        logger.debug(f"Alert: {db_alert.id} filtered because user: {db_user.username} is still into the learning period")
+        db_alert.filter_type.append(AlertFilterType.USER_LEARNING_PERIOD)
     return db_alert
 
 

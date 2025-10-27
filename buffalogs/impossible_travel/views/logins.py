@@ -7,6 +7,7 @@ from django.views.decorators.http import require_http_methods
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.models import Login, User
 from impossible_travel.serializers import LoginSerializer
+from impossible_travel.validators import validate_login_query
 
 
 def get_user_logins(request, user_id):
@@ -21,7 +22,6 @@ def get_user_logins(request, user_id):
 
 
 def get_user_unique_logins(request, user_id):
-    context = []
     logins = Login.objects.filter(user_id=user_id).order_by("-created")
     serialized_logins = LoginSerializer(logins)
     return JsonResponse(serialized_logins.json(), safe=False)
@@ -31,15 +31,11 @@ def get_user_unique_logins(request, user_id):
 def login_api(request):
     """Filter logins."""
     if request.method == "GET":
-        result = []
-        filters = dict(
-            username=request.GET.get("user"),
-            country=request.GET.get("country"),
-            login_start_time=request.GET.get("login_start_date"),
-            login_end_time=request.GET.get("login_end_date"),
-            ip=request.GET.get("ip"),
-            user_agent=request.GET.get("user_agent"),
+        query = validate_login_query(request.GET)
+        serialized_logins = LoginSerializer(query=query)
+        return JsonResponse(
+            serialized_logins.json(),
+            content_type="json",
+            safe=False,
+            json_dumps_params={"default": str},
         )
-        logins = Login.apply_filters(**filters)
-        serialized_logins = LoginSerializer(logins)
-        return JsonResponse(serialized_logins.json(), content_type="json", safe=False, json_dumps_params={"default": str})

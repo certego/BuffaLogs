@@ -74,6 +74,7 @@ class Command(BaseCommand):
                         },
                     },
                     "as": {"organization": {"name": ip["organization"]}},
+                    "intelligence_category": random.choice(read_data_file["intelligence_category"]),
                 },
                 "user_agent": {"original": random.choice(read_data_file["user_agent"])},
             }

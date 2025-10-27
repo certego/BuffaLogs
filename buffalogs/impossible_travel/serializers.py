@@ -1,13 +1,16 @@
 import json
+from typing import Any, Dict, List, Optional, Union
 
 from django.db import models
 from django.db.models import Max
 from impossible_travel.models import Alert, Login, User, UsersIP
 
+InstanceType = Union[models.Model, List[models.Model]]
+
 
 class Serializer:
 
-    def __init__(self, instance: models.Model | list[models.Model]):
+    def __init__(self, instance: InstanceType):
         self.instance = instance
 
     def to_representation(self, item):
@@ -25,7 +28,22 @@ class Serializer:
         return json.dumps(data, default=str)
 
 
-class LoginSerializer(Serializer):
+class QSerializer(Serializer):
+
+    Model: models.Model
+
+    def __init__(self, instance: Optional[InstanceType] = None, query: Optional[Dict[str, Any]] = None):
+        if instance and query:
+            raise ValueError("Either `instance` or `query` parameter must be defined not both!")
+        if (instance is None) and (query is None):
+            raise ValueError("Both `instance` and `query` parameters cannot be None, define only one!")
+        instance = instance or self.Model.apply_filters(**query)
+        super().__init__(instance)
+
+
+class LoginSerializer(QSerializer):
+
+    Model = Login
 
     def to_representation(self, item):
         return {
@@ -56,7 +74,9 @@ class UserSerializer(Serializer):
         }
 
 
-class AlertSerializer(Serializer):
+class AlertSerializer(QSerializer):
+
+    Model = Alert
 
     def to_representation(self, item):
         return {
