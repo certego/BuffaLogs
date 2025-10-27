@@ -1,3 +1,15 @@
+## 2.12.x
+### 2.12.0
+#### Features
+* Added possibility to run `setup_config --set-default-values` mgmt command in safe or force modes
+* Added Pagination to Alerts API using `limit` and `offset` as optional request payload (by community - @noble47)
+* Added `user_learning_period` as configurable field (default: 14 days)
+#### Changes
+* Refactored tests in order to centralize the `load_ingestion_config_data` function in the utils (by community - @drona-gyawali)
+* Added `intelligence_category` field in mgmt command `fake_data_generation`
+#### Bugfix
+* Fixed `UnboundLocalError` for impossible_travel mgmt command  when launched manually
+
 ## 2.11.x
 ### 2.11.0
 #### Features
