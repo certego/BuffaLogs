@@ -1,3 +1,6 @@
+import io
+from unittest.mock import patch
+
 from django.conf import settings
 from django.core.management import CommandError, call_command
 from django.db.models.fields import Field
@@ -6,6 +9,7 @@ from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.management.commands.setup_config import Command, parse_field_value
 from impossible_travel.models import (
     Config,
+    User,
     get_default_allowed_countries,
     get_default_enabled_users,
     get_default_filtered_alerts_types,
@@ -255,3 +259,61 @@ class ManagementCommandsTestCase(TestCase):
         field_float, value_float = parse_field_value("vel_accepted=55.7")
         self.assertEqual(field_float, "vel_accepted")
         self.assertEqual(value_float, 55.7)
+
+
+class ResetUserRiskScoreCommandTests(TestCase):
+    def setUp(self):
+        User.objects.create(username="alice", risk_score="High")
+        User.objects.create(username="bob", risk_score="Low")
+
+    def test_update_single_user_success(self):
+        out = io.StringIO()
+        call_command("reset_user_risk_score", username="alice", risk_score="Medium", stdout=out)
+        alice = User.objects.get(username="alice")
+        bob = User.objects.get(username="bob")
+        self.assertEqual(alice.risk_score, "Medium")
+        # other users unchanged
+        self.assertEqual(bob.risk_score, "Low")
+        self.assertIn("Successfully updated risk_score for user 'alice' to 'Medium'.", out.getvalue())
+
+    def test_bulk_update_success(self):
+        out = io.StringIO()
+        call_command("reset_user_risk_score", risk_score="No risk", stdout=out)
+        self.assertEqual(User.objects.filter(risk_score="No risk").count(), 2)
+        self.assertIn("Successfully updated risk_score for 2 users to 'No risk'.", out.getvalue())
+
+    def test_invalid_risk_score_raises(self):
+        with self.assertRaises(CommandError) as cm:
+            call_command("reset_user_risk_score", risk_score="invalid-value")
+        msg = str(cm.exception)
+        self.assertIn("Invalid risk_score 'invalid-value'", msg)
+        # ensureing valid values are listed in the error message
+        for v in list(UserRiskScoreType.values):
+            self.assertIn(v, msg)
+
+    def test_nonexistent_user_raises(self):
+        with self.assertRaises(CommandError) as cm:
+            call_command("reset_user_risk_score", username="ghost", risk_score="Low")
+        self.assertIn("User 'ghost' does not exist", str(cm.exception))
+
+    def test_default_risk_score_used_for_bulk(self):
+        out = io.StringIO()
+        # default should be 'No risk'
+        call_command("reset_user_risk_score", stdout=out)
+        self.assertEqual(User.objects.filter(risk_score=UserRiskScoreType.NO_RISK.value).count(), 2)
+
+    def test_single_user_triggers_save(self):
+        with patch("impossible_travel.management.commands.reset_user_risk_score.User.save") as mock_save:
+            call_command("reset_user_risk_score", username="alice", risk_score="Low")
+            self.assertTrue(mock_save.called)
+
+    def test_bulk_update_uses_update_not_save(self):
+        with patch("impossible_travel.management.commands.reset_user_risk_score.User.save") as mock_save, patch(
+            "impossible_travel.management.commands.reset_user_risk_score.User.objects.update"
+        ) as mock_update:
+            mock_update.return_value = 2
+            out = io.StringIO()
+            call_command("reset_user_risk_score", risk_score="Low", stdout=out)
+            mock_update.assert_called_once_with(risk_score="Low")
+            self.assertFalse(mock_save.called)
+            self.assertIn("Successfully updated risk_score for 2 users to 'Low'.", out.getvalue())
