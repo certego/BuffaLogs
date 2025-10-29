@@ -6,7 +6,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
+from impossible_travel.constants import AlertDetectionType, AlertFilterType, ExecutionModes, UserRiskScoreType
 from impossible_travel.validators import validate_countries_names, validate_country_couples_list, validate_ips_or_network, validate_string_or_regex
 
 
@@ -212,6 +212,10 @@ class TaskSettings(models.Model):
     updated = models.DateTimeField(auto_now=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+    execution_mode = models.CharField(max_length=20, choices=ExecutionModes.choices, default="automatic")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["task_name", "execution_mode"], name="unique_task_execution")]
 
 
 def get_default_ignored_users():

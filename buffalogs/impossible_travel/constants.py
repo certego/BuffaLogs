@@ -146,3 +146,10 @@ class ComparisonType(models.TextChoices):
     LOWER = "lower", _("The value is lower than the given threshold")
     EQUAL = "equal", _("The value and the given threshold are equal")
     HIGHER = "higher", _("The value is higher than the given threshold")
+
+
+class ExecutionModes(models.TextChoices):
+    """Execution modes for task runs."""
+
+    MANUAL = "manual", _("Manual")
+    AUTOMATIC = "automatic", _("Automatic")
