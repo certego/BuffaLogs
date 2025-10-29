@@ -7,6 +7,7 @@ from geopy.distance import geodesic
 from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, User, UsersIP
 from impossible_travel.modules import alert_filter
+from impossible_travel.utils.utils import build_device_fingerprint
 
 logger = get_task_logger(__name__)
 
@@ -193,10 +194,17 @@ def check_new_device(db_user: User, login_field: dict) -> dict:
     :rtype: dict
     """
     alert_info = {}
-    if db_user.login_set.filter(user_agent=login_field["agent"]).count() == 0:
-        timestamp = login_field["timestamp"]
+    # create device fingerprint: OS-Device-Browser
+    res_fingerprint = build_device_fingerprint(agent=login_field["agent"])
+    logger.info(f"The device fingerprint extracted for the user {db_user.username} for the login at {login_field['timestamp']} is {res_fingerprint}")
+    # check if the device fingerprint already exists for that user
+    if not db_user.devices.filter(fingerprint=res_fingerprint).exists():
         alert_info["alert_name"] = AlertDetectionType.NEW_DEVICE.value
-        alert_info["alert_desc"] = f"{AlertDetectionType.NEW_DEVICE.label} for User: {db_user.username}, at: {timestamp}"
+        alert_info["alert_desc"] = f"{AlertDetectionType.NEW_DEVICE.label} for User: {db_user.username}, at: {login_field['timestamp']}"
+
+        # create new device
+        db_user.devices.create(fingerprint=res_fingerprint, full_user_agent=login_field["agent"])
+
         return alert_info
 
 
