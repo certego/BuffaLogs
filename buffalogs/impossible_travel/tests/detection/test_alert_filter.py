@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 from django.conf import settings
 from django.test import TestCase
@@ -494,7 +495,8 @@ class TestAlertFilter(TestCase):
         db_alert.login_raw_data["agent"] = none_agent
         alert_filter.match_filters(alert=db_alert, app_config=db_config)
 
-    def test_match_filters_ignored_impossible_travel_all_same_country(self):
+    @patch("impossible_travel.modules.detection.update_risk_level")
+    def test_match_filters_ignored_impossible_travel_all_same_country(self, mock_update_risk_level):
         # test with ignored_impossible_travel_all_same_country = True
         db_config = Config.objects.create(
             ignored_impossible_travel_all_same_country=True,
@@ -526,8 +528,10 @@ class TestAlertFilter(TestCase):
         alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertTrue(db_alert.is_filtered)
         self.assertListEqual(["ignored_all_same_country"], db_alert.filter_type)
+        mock_update_risk_level.assert_not_called()
 
-    def test_match_filters_ignored_country_couple(self):
+    @patch("impossible_travel.modules.detection.update_risk_level")
+    def test_match_filters_ignored_country_couple(self, mock_update_risk_level):
         # test with ignored_country_couple = [["Germany", "Italy"], ["Romania", "Romania"]]
         db_config = Config.objects.create(
             ignored_impossible_travel_all_same_country=False,
@@ -604,8 +608,10 @@ class TestAlertFilter(TestCase):
         alert_filter.match_filters(alert=db_alert4, app_config=db_config)
         self.assertTrue(db_alert4.is_filtered)
         self.assertListEqual(["ignored_country_couple"], db_alert4.filter_type)
+        mock_update_risk_level.assert_not_called()
 
-    def test_match_filters_user_learning_period(self):
+    @patch("impossible_travel.modules.detection.update_risk_level")
+    def test_match_filters_user_learning_period(self, mock_update_risk_level):
         # test default value (14 days) as user behavior learning period
         db_config = Config.objects.create()
         self.assertEqual(14, db_config.user_learning_period)
@@ -614,3 +620,5 @@ class TestAlertFilter(TestCase):
         alert_filter.match_filters(alert=db_alert, app_config=db_config)
         self.assertTrue(db_alert.is_filtered)
         self.assertListEqual(["user_learning_period"], db_alert.filter_type)
+        # check that if the alert is filtered, the mock_update_risk_level function is not called
+        mock_update_risk_level.assert_not_called()

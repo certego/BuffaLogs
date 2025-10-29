@@ -75,10 +75,11 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Co
     logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
     alert = Alert.objects.create(user=db_user, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     alert.save()
-    # update user.risk_score if necessary
-    update_risk_level(db_user=alert.user, triggered_alert=alert, app_config=app_config)
     # check filters
     alert_filter.match_filters(alert=alert, app_config=app_config)
+    # update user.risk_score if necessary (not for filtered alerts)
+    if not alert.is_filtered:
+        update_risk_level(db_user=alert.user, triggered_alert=alert, app_config=app_config)
     return alert
 
 
