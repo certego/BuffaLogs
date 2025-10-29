@@ -17,6 +17,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="alert",
             name="notified_status",
-            field=models.JSONField(blank=True, default=dict, help_text="Tracks each active_alerter status"),
+            field=models.JSONField(
+                blank=True, default=dict, help_text="Tracks each active_alerter status"
+            ),
         ),
     ]
