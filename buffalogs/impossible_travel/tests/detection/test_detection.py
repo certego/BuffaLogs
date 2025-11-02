@@ -200,7 +200,7 @@ class DetectionTestCase(TestCase):
         self.assertEqual("Login from an atypical country for User: Lorena Goldoni, at: 2025-02-26T17:10:33.358Z, from: Germany", alert_result["alert_desc"])
 
     def test_check_new_device(self):
-        # Test to check the the NEW_DEVICE alert has not been triggered
+        # Test to check the the NEW_DEVICE alert has not been triggered for the first seen device
         db_user = User.objects.get(username="Lorena Goldoni")
         last_login_user_fields = {
             "timestamp": "2023-03-08T17:10:33.358Z",
