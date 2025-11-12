@@ -2,6 +2,34 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+class AlertTagValues(models.TextChoices):
+    """Type of Possible alert tags in the format (name=value, label).
+
+    * SECURITY_THREAT: Indicates that an initial alert has been reviewed and confirmed as a real security incident.
+    * NETWORK_ISSUE: Indicates an alert related to connectivity problems, high latency, or unusual traffic patterns.
+    * CONFIGURATION_ERROR: Indicates an alert triggered by misconfigurations in system or application settings.
+    * USER_ACTIVITY: Indicates an alert based on unusual or suspicious actions performed by a user or account.
+    * SYSTEM_HEALTH: Indicates an alert about the performance, availability, or general state of the underlying system/infrastructure.
+    * UNDER_INVESTIGATION: Marks an alert that is currently being reviewed and analyzed by an analyst.
+    * TEST_EVENT: Marks an alert that was intentionally triggered during testing, deployment, or validation exercises.
+    """
+
+    SECURITY_THREAT = "security_threat", _("Alert confirmed as real incident")
+    UNDER_INVESTIGATION = "under_investigation", _("Alert to analyze")
+    TEST_EVENT = "test_event", _("Alert triggered during tests")
+    NETWORK_ISSUE = "network_issue", _("Network Connectivity Issue")
+    CONFIGURATION_ERROR = "configuration_error", _("System Configuration Error")
+    USER_ACTIVITY = "user_activity", _("Unusual User Activity")
+    SYSTEM_HEALTH = "system_health", _("System Health/Availability")
+
+    @classmethod
+    def get_label_from_value(cls, value):
+        for item in cls:
+            if item.value == value:
+                return item.name
+        return None
+
+
 class UserRiskScoreType(models.TextChoices):
     """Possible types of user risk scores, based on number of alerts that they have triggered
 
