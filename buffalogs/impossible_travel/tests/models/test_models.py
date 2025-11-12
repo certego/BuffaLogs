@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
-from impossible_travel.models import Alert, AlertDetectionType, AlertFilterType, Config, Login, TaskSettings, User, UsersIP, UserRiskScoreType
+from impossible_travel.models import Alert, AlertDetectionType, AlertFilterType, Config, Login, TaskSettings, User, UserRiskScoreType, UsersIP
 
 
 class UserModelTest(TestCase):
@@ -342,7 +342,7 @@ class TaskSettingsModelTest(TestCase):
 
 class ConfigModelTest(TestCase):
     def setUp(self):
-        Config.objects.all().delete() # Deleted any existing Config object to ensurre singleton behavior
+        Config.objects.all().delete()  # Deleted any existing Config object to ensurre singleton behavior
         self.config = Config.objects.create(
             ignored_users=["admin", "test_user"],
             enabled_users=[],
