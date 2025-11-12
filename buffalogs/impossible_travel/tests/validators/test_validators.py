@@ -14,6 +14,7 @@ from impossible_travel.validators import (
     validate_login_query,
     validate_risk_score,
     validate_string_or_regex,
+    validate_tags,
 )
 
 
@@ -354,3 +355,20 @@ class ValidatorsTest(TestCase):
         query_dict = {"limit": "a lot", "offset": "ten"}
         with self.assertRaises(ValidationError):
             validate_login_query(query_dict)
+
+    def test_validate_tags(self):
+        """Test the validate_tags function for valid, invalid, and duplicate tags."""
+
+        try:
+            validate_tags(["security_threat", "under_investigation"])
+        except ValidationError:
+            self.fail("validate_tags() raised ValidationError unexpectedly for valid tags!")
+
+        with self.assertRaises(ValidationError):
+            validate_tags(["invalid_tag"])
+
+        with self.assertRaises(ValidationError):
+            validate_tags(["security_threat", "security_threat"])  # Duplicates not allowed
+
+        with self.assertRaises(ValidationError):
+            validate_tags("security_threat")  # Tags must be passed as Lists
