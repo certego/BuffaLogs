@@ -1,9 +1,10 @@
 from django.apps import apps
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
+from impossible_travel.management.commands.base_command import TaskLoggingCommand
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User
 
 
-class Command(BaseCommand):
+class Command(TaskLoggingCommand):
     help = "Clear data on the models"
 
     def add_arguments(self, parser: CommandParser) -> None:
