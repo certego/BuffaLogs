@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
-from impossible_travel.models import Alert, AlertDetectionType, AlertFilterType, Config, Login, TaskSettings, User, UserRiskScoreType, UsersIP
+from impossible_travel.models import Alert, AlertDetectionType, AlertFilterType, Config, ExecutionModes, Login, TaskSettings, User, UserRiskScoreType, UsersIP
 
 
 class UserModelTest(TestCase):
@@ -337,7 +337,31 @@ class AlertModelTest(TestCase):
 
 
 class TaskSettingsModelTest(TestCase):
-    pass
+    def setUp(self):
+        self.start_date = timezone.now()
+        self.end_date = timezone.now() + timezone.timedelta(days=1)
+
+    def test_tasksettings_creation(self):
+        """TaskSettings object should be created"""
+        task = TaskSettings.objects.create(
+            task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.AUTOMATIC
+        )
+        self.assertEqual(task.task_name, "clear_models")
+        self.assertEqual(task.execution_mode, ExecutionModes.AUTOMATIC)
+        self.assertTrue(task.created is not None)
+        self.assertTrue(task.updated is not None)
+
+    def test_unique_task_execution_constraint(self):
+        """Duplicate task_name + execution_mode should raises an error"""
+        TaskSettings.objects.create(task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.AUTOMATIC)
+        with self.assertRaises(IntegrityError):
+            TaskSettings.objects.create(task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.AUTOMATIC)
+
+    def test_different_execution_modes_allowed(self):
+        """Same task_name with different execution_mode should be allowed"""
+        TaskSettings.objects.create(task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.AUTOMATIC)
+        task = TaskSettings.objects.create(task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.MANUAL)
+        self.assertEqual(task.execution_mode, ExecutionModes.MANUAL)
 
 
 class ConfigModelTest(TestCase):

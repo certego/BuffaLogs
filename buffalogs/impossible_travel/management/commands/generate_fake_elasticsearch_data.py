@@ -5,16 +5,16 @@ from typing import Any, Dict, Generator, List
 
 import yaml
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from django.utils import timezone
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import BulkIndexError, bulk
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
+from impossible_travel.management.commands.base_command import TaskLoggingCommand
 
 NUM_LOGS = 2000
 
 
-class Command(BaseCommand):
+class Command(TaskLoggingCommand):
     help = "Generate and index fake log data into Elasticsearch for testing purposes."
 
     def handle(self, *args, **options) -> None:
