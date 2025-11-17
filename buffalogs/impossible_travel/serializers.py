@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from django.db import models
 from django.db.models import Max
-from impossible_travel.models import Alert, Login, User, UsersIP
+from impossible_travel.models import Alert, Login, User, UsersIP # type: ignore
 
 InstanceType = Union[models.Model, List[models.Model]]
 
@@ -58,6 +58,10 @@ class LoginSerializer(QSerializer):
             "index": item.index,
             "user": item.user.username,
             "ip": item.ip,
+
+            # 👇👇 NEW FIELDS FOR FAILED/UNKNOWN LOGINS
+            "status": item.status,
+            "failure_reason": item.failure_reason,
         }
 
 
