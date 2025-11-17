@@ -1,5 +1,6 @@
 {
     "active_ingestion": "elasticsearch",
+
     "elasticsearch": {
         "url": "http://elasticsearch:9200/",
         "username": "foobar",
@@ -20,8 +21,9 @@
             "source.geo.location.lon": "lon",
             "source.intelligence_category": "intelligence_category"
         },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+        "__custom_fields__": ["url", "username", "password", "timeout", "indexes"]
     },
+
     "opensearch": {
         "url": "http://opensearch:9200/",
         "username": "foobar",
@@ -42,8 +44,9 @@
             "source.geo.location.lon": "lon",
             "source.intelligence_category": "intelligence_category"
         },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+        "__custom_fields__": ["url", "username", "password", "timeout", "indexes"]
     },
+
     "splunk": {
         "host": "splunk",
         "port": 8089,
@@ -61,11 +64,33 @@
             "source.geo.location.lat": "lat",
             "source.geo.location.lon": "lon",
             "user_agent.original": "agent",
-            "source.as.organization.name": "organization",
             "_id": "id",
             "index": "index",
+            "source.as.organization.name": "organization",
             "source.intelligence_category": "intelligence_category"
         },
-	"__custom_fields__" : ["host","port", "scheme", "username", "password", "timeout", "indexes"]
-      }
+        "__custom_fields__": ["host", "port", "scheme", "username", "password", "timeout", "indexes"]
+    },
+
+    "cloudtrail": {
+        "aws_access_key_id": "",
+        "aws_secret_access_key": "",
+        "region": "",
+        "bucket_name": "",
+        "prefix": "",
+        "custom_mapping": {
+            "eventTime": "timestamp",
+            "sourceIPAddress": "ip",
+            "eventName": "event_name",
+            "userIdentity.userName": "username",
+            "awsRegion": "region"
+        },
+        "__custom_fields__": [
+            "aws_access_key_id",
+            "aws_secret_access_key",
+            "region",
+            "bucket_name",
+            "prefix"
+        ]
+    }
 }
