@@ -4,9 +4,9 @@ from celery.utils.log import get_task_logger
 from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 from geopy.distance import geodesic
-from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
-from impossible_travel.models import Alert, Config, Login, User, UsersIP
-from impossible_travel.modules import alert_filter
+from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType # type: ignore
+from impossible_travel.models import Alert, Config, Login, User, UsersIP # type: ignore
+from impossible_travel.modules import alert_filter # type: ignore
 
 logger = get_task_logger(__name__)
 
@@ -202,24 +202,28 @@ def check_new_device(db_user: User, login_field: dict) -> dict:
 
 
 def add_new_login(db_user: User, new_login_field: dict):
-    """Add new login if there isn't previous login on db relative to that user
+    """
+    Add new login (successful, failed, unknown) for a user.
 
     :param db_user: user from db
     :type db_user: User object
-    :param new_login_field: dictionary with last login info
+    :param new_login_field: dictionary with normalized login info
     :type new_login_field: dict
     """
     Login.objects.create(
         user_id=db_user.id,
         timestamp=new_login_field["timestamp"],
         ip=new_login_field["ip"],
-        latitude=new_login_field["lat"],
-        longitude=new_login_field["lon"],
-        country=new_login_field["country"],
-        user_agent=new_login_field["agent"],
-        index=new_login_field["index"],
-        event_id=new_login_field["id"],
+        latitude=new_login_field.get("lat", ""),
+        longitude=new_login_field.get("lon", ""),
+        country=new_login_field.get("country", ""),
+        user_agent=new_login_field.get("agent", ""),
+        index=new_login_field.get("index", ""),
+        event_id=new_login_field.get("id", ""),
+        status=new_login_field.get("status", "success"),              # NEW
+        failure_reason=new_login_field.get("failure_reason", None),   # NEW
     )
+
 
 
 def update_model(db_user: User, new_login: dict):
