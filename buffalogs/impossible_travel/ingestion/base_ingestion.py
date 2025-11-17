@@ -33,16 +33,18 @@ class BaseIngestion(ABC):
     """
 
     class SupportedIngestionSources(Enum):
-        """Types of possible data ingestion sources
-
+        """
+        Types of possible data ingestion sources:
         * ELASTICSEARCH
         * SPLUNK
         * OPENSEARCH
+        * CLOUDTRAIL  <-- Added this new option
         """
 
         ELASTICSEARCH = "elasticsearch"
         SPLUNK = "splunk"
         OPENSEARCH = "opensearch"
+        CLOUDTRAIL = "cloudtrail"     # <--- NEW ENUM
 
     def __init__(self, ingestion_config, mapping):
         super().__init__()
@@ -91,7 +93,6 @@ class BaseIngestion(ABC):
         normalized_data.update(extended)
 
         # Step 3 — Basic validation
-        # Only timestamp + IP required (allows failed logins without lat/lon)
         if not normalized_data.get("timestamp") or not normalized_data.get("ip"):
             return None
 
