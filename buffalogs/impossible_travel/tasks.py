@@ -87,6 +87,7 @@ def process_logs(start_date=None, end_date=None):
 
             # for each user returned, get the related logins
             for username in usernames_list:
+                username = username.lower()
                 user_logins = ingestion.process_user_logins(start_date, end_date, username)
 
                 parsed_logins = ingestion.normalize_fields(logins=user_logins)
