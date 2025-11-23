@@ -30,6 +30,12 @@ def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
 
 def homepage(request):
     def build_context(start, end):
+        # Ensure timezone-aware datetimes
+        if is_naive(start):
+            start = make_aware(start)
+        if is_naive(end):
+            end = make_aware(end)
+
         return {
             "startdate": start.strftime("%B %-d, %Y"),
             "enddate": end.strftime("%B %-d, %Y"),
@@ -43,15 +49,21 @@ def homepage(request):
     if request.method == "GET":
         now = timezone.now()
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        context = build_context(start, now)
-        return render(request, "impossible_travel/homepage.html", context)
+        return render(request, "impossible_travel/homepage.html", build_context(start, now))
 
-    # POST
-    date_range = json.loads(request.POST["date_range"])
-    start = parse_datetime(date_range[0])
-    end = parse_datetime(date_range[1])
-    context = build_context(start, end)
-    return render(request, "impossible_travel/homepage.html", context)
+    if request.method == "POST":
+        # Validate POST payload
+        try:
+            date_range = json.loads(request.POST["date_range"])
+            start = parse_datetime(date_range[0])
+            end = parse_datetime(date_range[1])
+        except Exception:
+            return HttpResponseBadRequest("Invalid date range")
+
+        return render(request, "impossible_travel/homepage.html", build_context(start, end))
+
+    return HttpResponseBadRequest("Unsupported method")
+
 
 @require_http_methods(["GET"])
 def users_pie_chart_api(request):
