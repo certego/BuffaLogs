@@ -4,8 +4,9 @@ from typing import Any, Tuple
 
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.db.models.fields import Field
+from impossible_travel.management.commands.base_command import TaskLoggingCommand
 from impossible_travel.models import Config
 
 logger = logging.getLogger()
@@ -46,7 +47,7 @@ def parse_field_value(item: str) -> Tuple[str, Any]:
     return field.strip(), parsed
 
 
-class Command(BaseCommand):
+class Command(TaskLoggingCommand):
     def create_parser(self, *args, **kwargs):
         config_fields = [f.name for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created]
 
@@ -76,6 +77,7 @@ class Command(BaseCommand):
         return parser
 
     def add_arguments(self, parser):
+        super().add_arguments(parser)
         parser.add_argument("-o", "--override", action="append", metavar="FIELD=[VALUES]", help="Override field values")
         parser.add_argument("-r", "--remove", action="append", metavar="FIELD=[VALUES]", help="Remove values from list fields")
         parser.add_argument("-a", "--append", action="append", metavar="FIELD=[VALUES]", help="Append values to list fields or override non-list")
@@ -85,7 +87,6 @@ class Command(BaseCommand):
         parser.add_argument("--force", action="store_true", help="Force overwrite existing values with defaults (use with caution)")
 
     def handle(self, *args, **options):
-        print(options)
         config, _ = Config.objects.get_or_create(id=1)
 
         # get customizable fields in the Config model dinamically

@@ -4,9 +4,10 @@ from unittest.mock import MagicMock, patch
 from django.db import connection
 from django.test import TestCase
 from django.utils import timezone
-from impossible_travel import tasks
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, Login, User, UsersIP
+from impossible_travel.tasks import clean_models_periodically, process_logs, scheduled_alert_summary
+from impossible_travel.tests.utils import patched_components
 
 
 class TestTasks(TestCase):
@@ -29,15 +30,15 @@ class TestTasks(TestCase):
         with connection.cursor() as cursor:
             # get the sequence name dinamically
             cursor.execute(f"SELECT pg_get_serial_sequence('{table_name}', 'id'); ")  # noqa: E702
-            sequence_name = cursor.fetchone()[0]  # Estrai il nome della sequenza
+            sequence_name = cursor.fetchone()[0]
 
             if sequence_name:
                 # reset the id sequence starting from 1
                 cursor.execute(f"SELECT setval('{sequence_name}', 1, false); ")  # noqa: E702
 
     def tearDown(self):
-        # delete all alerts after each test, to clean the environment
-        Alert.objects.all().delete()
+        # clean all the DB after each test, to clean the environment
+        User.objects.all().delete()
         self.reset_auto_increment(model=Alert)
 
     def test_clear_models_periodically(self):
@@ -56,7 +57,7 @@ class TestTasks(TestCase):
         Login.objects.filter(user=user_obj).update(updated=old_date)
         Alert.objects.filter(user=user_obj).update(updated=old_date)
         UsersIP.objects.filter(user=user_obj).update(updated=old_date)
-        tasks.clean_models_periodically()
+        clean_models_periodically()
         with self.assertRaises(User.DoesNotExist):
             User.objects.get(username="Lorena")
         with self.assertRaises(Login.DoesNotExist):
@@ -117,7 +118,7 @@ class TestTasks(TestCase):
         mock_post.return_value = mock_response
 
         # Returns 2 alerts
-        tasks.scheduled_alert_summary("daily")
+        scheduled_alert_summary("daily")
 
         args, kwargs = mock_post.call_args
         payload = kwargs.get("json", {})
@@ -136,7 +137,7 @@ class TestTasks(TestCase):
         mock_post.return_value = mock_response
 
         # Returns 4 alerts
-        tasks.scheduled_alert_summary("weekly")
+        scheduled_alert_summary("weekly")
 
         args, kwargs = mock_post.call_args
         payload = kwargs.get("json", {})
@@ -152,7 +153,7 @@ class TestTasks(TestCase):
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        tasks.scheduled_alert_summary()
+        scheduled_alert_summary()
 
         args, kwargs = mock_post.call_args
         payload = kwargs.get("json", {})
@@ -164,6 +165,38 @@ class TestTasks(TestCase):
     def test_scheduled_alert_summary_invalid_frequency(self):
         """Test ScheduledAlertSummaryTask for an invalid frequency"""
         with self.assertRaises(ValueError) as context:
-            tasks.scheduled_alert_summary("monthly")
+            scheduled_alert_summary("monthly")
 
         self.assertEqual(str(context.exception), "Invalid frequency. Use 'daily' or 'weekly'")
+
+    def test_username_saved_in_lowercase(self):
+        # check that the username is saved in lowercase into the DB
+        User.objects.all().delete()
+        end_date = timezone.now()
+        start_date = end_date - timedelta(minutes=30)
+        with patched_components(
+            patch_ingestion=True,
+            patch_detection=True,
+            users_return=["UserNAME"],
+            logins_return=[{}],
+            normalized_return=[{}],
+        ):
+            process_logs(start_date, end_date)
+        self.assertEqual(User.objects.get().username, "username")
+
+    def test_no_duplicate_users(self):
+        # check that no duplication users are saved
+        User.objects.all().delete()
+        end_date = timezone.now()
+        start_date = end_date - timedelta(minutes=30)
+        with patched_components(
+            patch_ingestion=True,
+            patch_detection=True,
+            users_return=["UserA", "usera", "USERA"],
+            logins_return=[{}],
+            normalized_return=[{}],
+        ):
+            process_logs(start_date, end_date)
+
+        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.get().username, "usera")

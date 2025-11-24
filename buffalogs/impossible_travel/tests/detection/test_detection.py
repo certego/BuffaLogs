@@ -1,4 +1,5 @@
 import datetime
+from unittest.mock import patch
 
 from django.core.management import call_command
 from django.db.models import Q
@@ -374,7 +375,8 @@ class DetectionTestCase(TestCase):
         self.assertEqual(AlertDetectionType.IMP_TRAVEL, alerts_user[13].name)
         self.assertEqual("Test_Description10", alerts_user[13].description)
 
-    def test_set_alert(self):
+    @patch("impossible_travel.modules.detection.update_risk_level")
+    def test_set_alert(self, mock_update_risk_level):
         db_config = Config.objects.get(id=1)
         # Add an alert and check if it is correctly inserted in the Alert Model
         db_user = User.objects.get(username="Lorena Goldoni")
@@ -396,8 +398,10 @@ class DetectionTestCase(TestCase):
         self.assertEqual("Imp Travel", db_alert.name)
         self.assertTrue(db_alert.is_filtered)
         self.assertListEqual([AlertFilterType.ALLOWED_COUNTRY_FILTER], db_alert.filter_type)
+        mock_update_risk_level.assert_not_called()
 
-    def test_set_alert_vip_user(self):
+    @patch("impossible_travel.modules.detection.update_risk_level")
+    def test_set_alert_vip_user(self, mock_update_risk_level):
         db_config = Config.objects.get(id=1)
         db_config.alert_is_vip_only = True
         db_config.save()
@@ -417,6 +421,25 @@ class DetectionTestCase(TestCase):
         db_alert = Alert.objects.get(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
         self.assertTrue(db_alert.is_filtered)
         self.assertEqual([AlertFilterType.IS_VIP_FILTER, AlertFilterType.ALLOWED_COUNTRY_FILTER], db_alert.filter_type)
+        mock_update_risk_level.assert_not_called()
+
+    @patch("impossible_travel.modules.detection.update_risk_level")
+    def test_set_alert_not_filtered_alert(self, mock_update_risk_level):
+        # test if the update_risk_level is correctly called for a not filtered alert
+        db_user = User.objects.get(username="Lorena Goldoni")
+        db_config = Config.objects.get(id=1)
+        db_config.allowed_countries = []
+        db_config.save()
+        alert_info = {
+            "alert_name": AlertDetectionType.IMP_TRAVEL,
+            "alert_desc": "description_fake",
+        }
+        login_data = self.raw_data_IMP_TRAVEL
+        detection.set_alert(db_user, login_data, alert_info, db_config)
+        db_alert = Alert.objects.get(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
+        self.assertFalse(db_alert.is_filtered)
+        self.assertEqual([], db_alert.filter_type)
+        mock_update_risk_level.assert_called_once_with(db_user=db_user, triggered_alert=db_alert, app_config=db_config)
 
     def test_check_fields_logins(self):
         fields1 = load_test_data("test_check_fields_part1")
@@ -660,4 +683,4 @@ class DetectionTestCase(TestCase):
         self.assertEqual(1, UsersIP.objects.filter(user=db_user, ip="203.0.113.11").count())
         # Third part: no new alerts because all the ips have already been used
         detection.check_fields(db_user, fields3)
-        self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime.datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())  #
+        self.assertEqual(0, Alert.objects.filter(user=db_user, login_raw_data__timestamp__gt=datetime.datetime(2023, 5, 4, 0, 0, 0).isoformat()).count())
