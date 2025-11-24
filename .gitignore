@@ -8,3 +8,4 @@ dist/
 **/.DS_Store
 *.egg-info/
 /node_modules
+.lh/**
