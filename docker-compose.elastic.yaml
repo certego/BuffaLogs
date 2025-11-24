@@ -22,6 +22,7 @@ services:
             - elasticsearch_data:/usr/share/elasticsearch/data
         networks:
             - elk
+            - buffalogs_network 
         healthcheck:
             test: curl -XGET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'
 
@@ -34,6 +35,7 @@ services:
             ELASTICSEARCH_HOSTS: http://elasticsearch:9200
         networks:
             - elk
+            - buffalogs_network
         depends_on:
             - buffalogs_elasticsearch
         ports:
@@ -48,3 +50,5 @@ volumes:
 networks:
     elk:
         driver: bridge
+    buffalogs_network:
+        external: true
