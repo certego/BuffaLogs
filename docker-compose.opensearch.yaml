@@ -24,6 +24,7 @@ services:
             - opensearch_data:/usr/share/opensearch/data
         networks:
             - opensearch-net
+            - buffalogs_network
 
     opensearch-dashboards:
         container_name: buffalogs_opensearch-dashboards
@@ -36,6 +37,7 @@ services:
             - "127.0.0.1:5601:5601"
         networks:
             - opensearch-net
+            - buffalogs_network
 
 volumes:
     opensearch_data:
@@ -44,3 +46,5 @@ volumes:
 networks:
     opensearch-net:
         driver: bridge
+    buffalogs_network:
+        external: true
