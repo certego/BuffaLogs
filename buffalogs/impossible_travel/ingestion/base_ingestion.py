@@ -6,109 +6,103 @@ from enum import Enum
 
 class BaseIngestion(ABC):
     """
-    Abstract class for ingestion operations
+    Abstract class for ingestion operations.
     """
 
     class SupportedIngestionSources(Enum):
-        """Types of possible data ingestion sources
+        """
+        Types of possible data ingestion sources.
 
-        * ELASTICSEARCH: The login data is extracted from Elasticsearch
-        * SPLUNK: The login data is extracted from Splunk
-        * OPENSEARCH: The login data is extracted from Opensearch
+        * ELASTICSEARCH
+        * SPLUNK
+        * OPENSEARCH
+        * CLOUDTRAIL
         """
 
         ELASTICSEARCH = "elasticsearch"
         SPLUNK = "splunk"
         OPENSEARCH = "opensearch"
+        CLOUDTRAIL = "cloudtrail"
 
     def __init__(self, ingestion_config, mapping):
         super().__init__()
         self.ingestion_config = ingestion_config
         self.mapping = mapping
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}"
+        )
 
     @abstractmethod
-    def process_users(self, start_date: datetime, end_date: datetime) -> list:
-        """Abstract method that implement the extraction of the users logged in between the time range considered defined by (start_date, end_date).
-        This method will be different implemented based on the ingestion source used.
+    def process_users(self, start_date: datetime, end_date: datetime):
+        """
+        Extract users logged in between the provided time range.
 
-        :param start_date: the initial datetime from which the users are considered
-        :type start_date: datetime (with tzinfo=datetime.timezone.utc)
-        :param end_date: the final datetime within which the users are considered
-        :type end_date: datetime (with tzinfo=datetime.timezone.utc)
-
-        :return: list of users strings that logged in the system
-        :rtype: list
+        :param start_date: start datetime (tzinfo must be UTC)
+        :param end_date: end datetime (tzinfo must be UTC)
         """
         raise NotImplementedError
 
     @abstractmethod
-    def process_user_logins(self, start_date: datetime, end_date: datetime, username: str) -> list:
-        """Abstract method that implement the extraction of the logins of the given user in the time range defined by (start_date, end_date)
-        This method will be different implemented based on the ingestion source used.
+    def process_user_logins(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        username: str,
+    ):
+        """
+        Extract logins of a given user between the provided time range.
 
-        :param username: username of the user that logged in
-        :type username: str
-        :param start_date: the initial datetime from which the logins of the user are considered
-        :type start_date: datetime (with tzinfo=datetime.timezone.utc)
-        :param end_date: the final datetime within which the logins of the user are considered
-        :type end_date: datetime (with tzinfo=datetime.timezone.utc)
-
-        :return: list of logins of a user
-        :rtype: list
+        :param username: the username to filter on
+        :param start_date: start datetime (UTC)
+        :param end_date: end datetime (UTC)
         """
         raise NotImplementedError
 
     def normalize_fields(self, logins: list) -> list:
-        """Concrete method that manage the mapping into the required BuffaLogs mapping.
-        The mapping used is defined into the ingestion.json file "custom_mapping" if defined, otherwise it is used the default one
-
-        :param logins: the logins to be normalized into the mapping fields
-        :type logins: list
-
-        :return: the final normalized list of normalized logins
-        :rtype: list
         """
-        normalized_logins = []
-        for login in logins:
-            normalized_login = self._normalize_fields(data=login)
-            if normalized_login:
-                normalized_logins.append(normalized_login)
+        Normalize logs using the mapping in ingestion.json.
 
-        return normalized_logins
+        :param logins: list of raw login events
+        :return: list of normalized events
+        """
+        normalized = []
+        for login in logins:
+            entry = self._normalize_fields(data=login)
+            if entry:
+                normalized.append(entry)
+        return normalized
 
     def _normalize_fields(self, data: dict) -> dict:
-        """Normalize each login based on the mapping
-
-        :param data: the logins to be normalized into the mapping fields
-        :type data: dict
-
-        :return: the final normalized login dict
-        :rtype: dict
         """
-        normalized_data = {}
-        #
-        for ingestion_key, buffalogs_key in self.mapping.items():
-            # Split the key in case it's nested (ex. 'source.geo.location.lat')
-            keys = ingestion_key.split(".")
+        Normalize a single login event using mapping rules.
+
+        :param data: raw login event
+        :return: normalized data or None
+        """
+        normalized = {}
+
+        for source_key, target_key in self.mapping.items():
+            keys = source_key.split(".")
             value = data
 
-            # Traverse the nested keys to extract the correct value
             for k in keys:
                 if isinstance(value, dict) and k in value:
                     value = value[k]
                 else:
-                    value = ""  # Return empty string if the path doesn't exist
+                    value = ""
+                    break
 
-            # Add the value to the normalized data
-            normalized_data[buffalogs_key] = value
+            normalized[target_key] = value
 
-        # Skip logins without timestamp, ip, country, latitude or longitude
-        if (
-            normalized_data.get("timestamp")
-            and normalized_data.get("ip")
-            and normalized_data.get("country")
-            and normalized_data.get("lat")
-            and normalized_data.get("lon")
-        ):
-            return normalized_data
+        required = [
+            "timestamp",
+            "ip",
+            "country",
+            "lat",
+            "lon",
+        ]
+
+        if all(normalized.get(field) for field in required):
+            return normalized
+
+        return None

@@ -1,5 +1,6 @@
 {
     "active_ingestion": "elasticsearch",
+
     "elasticsearch": {
         "url": "http://elasticsearch:9200/",
         "username": "foobar",
@@ -20,8 +21,15 @@
             "source.geo.location.lon": "lon",
             "source.intelligence_category": "intelligence_category"
         },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+        "__custom_fields__": [
+            "url",
+            "username",
+            "password",
+            "timeout",
+            "indexes"
+        ]
     },
+
     "opensearch": {
         "url": "http://opensearch:9200/",
         "username": "foobar",
@@ -42,8 +50,15 @@
             "source.geo.location.lon": "lon",
             "source.intelligence_category": "intelligence_category"
         },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+        "__custom_fields__": [
+            "url",
+            "username",
+            "password",
+            "timeout",
+            "indexes"
+        ]
     },
+
     "splunk": {
         "host": "splunk",
         "port": 8089,
@@ -66,6 +81,25 @@
             "index": "index",
             "source.intelligence_category": "intelligence_category"
         },
-	"__custom_fields__" : ["host","port", "scheme", "username", "password", "timeout", "indexes"]
-      }
+        "__custom_fields__": [
+            "host",
+            "port",
+            "scheme",
+            "username",
+            "password",
+            "timeout",
+            "indexes"
+        ]
+    },
+
+    "cloudtrail": {
+        "bucket_name": "my-bucket",
+        "prefix": "AWSLogs/",
+        "region": "us-east-1",
+        "__custom_fields__": [
+            "bucket_name",
+            "prefix",
+            "region"
+        ]
+    }
 }
