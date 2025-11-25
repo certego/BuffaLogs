@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true && ( github.base_ref == 'master' || github.base_ref == 'main' )
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # otherwise, you do not retrieve the tags
 
@@ -62,7 +62,7 @@ jobs:
           append_body: true
 
       - name: Checkout created tag
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         if: steps.check-tag.outputs.match == 'true' && ( inputs.publish_on_test_pypi || inputs.publish_on_pypi)
         with:
           fetch-depth: 0 # otherwise, you do not retrieve the tags
