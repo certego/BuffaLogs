@@ -14,10 +14,10 @@ jobs:
     outputs:
       python_code: ${{steps.diff_check.outputs.python_code}}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.base_ref }}
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           clean: false
       - name: Generate diffs
@@ -33,7 +33,7 @@ jobs:
     if: ${{ needs.detect-changes.outputs.python_code > 0 }}
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
