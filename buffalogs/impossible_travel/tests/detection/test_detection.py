@@ -201,8 +201,10 @@ class DetectionTestCase(TestCase):
         self.assertEqual("Login from an atypical country for User: Lorena Goldoni, at: 2025-02-26T17:10:33.358Z, from: Germany", alert_result["alert_desc"])
 
     def test_check_new_device(self):
-        # Test to check the the NEW_DEVICE alert has not been triggered for the first seen device
+        # Test to check that the NEW_DEVICE alert has not been triggered for the first seen device
         db_user = User.objects.get(username="Lorena Goldoni")
+        Login.objects.filter(user=db_user).delete()
+        self.assertEqual(0, len(db_user.devices.all()))
         last_login_user_fields = {
             "timestamp": "2023-03-08T17:10:33.358Z",
             "lat": "14.9876",
@@ -210,11 +212,23 @@ class DetectionTestCase(TestCase):
             "country": "Sudan",
             "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
         }
-        self.assertIsNone(detection.check_new_device(db_user, last_login_user_fields))
+        self.assertDictEqual({}, detection.check_new_device(db_user, last_login_user_fields))
 
     def test_check_new_device_alert(self):
         # Test to check the triggering of the NEW_DEVICE alert
         db_user = User.objects.get(username="Lorena Goldoni")
+        # create a device for the user
+        Login.objects.create(
+            user=db_user,
+            event_id="event_1",
+            index="cloud",
+            ip="1.2.3.4",
+            timestamp=datetime.datetime(2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc),
+            latitude=40.364,
+            longitude=-79.8605,
+            country="United States",
+            user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+        )
         last_login_user_fields = {
             "timestamp": "2023-03-08T17:10:33.358Z",
             "lat": "14.9876",

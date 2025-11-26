@@ -194,19 +194,26 @@ def check_new_device(db_user: User, login_field: dict) -> dict:
     :return: dictionary with alert info
     :rtype: dict
     """
-    alert_info = {}
-    # create device fingerprint: OS-Device-Browser
-    res_fingerprint = build_device_fingerprint(agent=login_field["agent"])
-    logger.info(f"The device fingerprint extracted for the user {db_user.username} for the login at {login_field['timestamp']} is {res_fingerprint}")
-    # check if the device fingerprint already exists for that user
-    if not db_user.devices.filter(fingerprint=res_fingerprint).exists():
-        alert_info["alert_name"] = AlertDetectionType.NEW_DEVICE.value
-        alert_info["alert_desc"] = f"{AlertDetectionType.NEW_DEVICE.label} for User: {db_user.username}, at: {login_field['timestamp']}"
+    # if the user has not devices registred yet -> no alerts
+    if not db_user.devices.exists():
+        logger.info(f"User {db_user.username} has no registered devices yet. " f"Skipping NEW_DEVICE alert for login at {login_field['timestamp']}.")
+        return {}
 
-        # create new device
-        db_user.devices.create(fingerprint=res_fingerprint, full_user_agent=login_field["agent"])
+    # Create device fingerprint for the current user-agent
+    fingerprint = build_device_fingerprint(agent=login_field["agent"])
+    logger.info(f"Device fingerprint for user {db_user.username} at login {login_field['timestamp']}: {fingerprint}")
 
-        return alert_info
+    # If the device fingerprint is new -> alert
+    if not db_user.devices.filter(fingerprint=fingerprint).exists():
+        db_user.devices.create(fingerprint=fingerprint, full_user_agent=login_field["agent"])
+
+        return {
+            "alert_name": AlertDetectionType.NEW_DEVICE.value,
+            "alert_desc": (f"{AlertDetectionType.NEW_DEVICE.label} for User: " f"{db_user.username}, at: {login_field['timestamp']}"),
+        }
+
+    # No alert
+    return {}
 
 
 def add_new_login(db_user: User, new_login_field: dict):
