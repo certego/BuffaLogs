@@ -28,9 +28,7 @@ class BaseIngestion(ABC):
         super().__init__()
         self.ingestion_config = ingestion_config
         self.mapping = mapping
-        self.logger = logging.getLogger(
-            f"{__name__}.{self.__class__.__name__}"
-        )
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     @abstractmethod
     def process_users(self, start_date: datetime, end_date: datetime):

@@ -20,11 +20,7 @@ class IngestionFactory:
     def __init__(self):
         config = self._read_config()
 
-        self.active_ingestion = (
-            BaseIngestion.SupportedIngestionSources(
-                config["active_ingestion"]
-            )
-        )
+        self.active_ingestion = BaseIngestion.SupportedIngestionSources(config["active_ingestion"])
 
         self.ingestion_config = config[config["active_ingestion"]]
 
@@ -48,22 +44,13 @@ class IngestionFactory:
         with open(path, "r", encoding="utf-8") as f:
             config = json.load(f)
 
-        valid_sources = [
-            source.value
-            for source in BaseIngestion.SupportedIngestionSources
-        ]
+        valid_sources = [source.value for source in BaseIngestion.SupportedIngestionSources]
 
         if config["active_ingestion"] not in valid_sources:
-            raise ValueError(
-                f"Ingestion source '{config['active_ingestion']}' "
-                f"is not supported."
-            )
+            raise ValueError(f"Ingestion source '{config['active_ingestion']}' " f"is not supported.")
 
         if not config.get(config["active_ingestion"]):
-            raise ValueError(
-                f"Configuration missing for "
-                f"'{config['active_ingestion']}'."
-            )
+            raise ValueError(f"Configuration missing for " f"'{config['active_ingestion']}'.")
 
         return config
 
@@ -91,6 +78,4 @@ class IngestionFactory:
                 self.mapping,
             )
 
-        raise ValueError(
-            f"Unsupported ingestion source: {self.active_ingestion}"
-        )
+        raise ValueError(f"Unsupported ingestion source: {self.active_ingestion}")
