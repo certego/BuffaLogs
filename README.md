@@ -71,11 +71,22 @@ Or download the application directly from the [Docker Hub](https://hub.docker.co
 
 After that, there are two ways of running BuffaLogs, depending on your system configurations:
 * if you already have an elastic cluster:
-    *  set the address of the host into the `CERTEGO_ELASTICSEARCH` variable in the `buffalogs.env` file
+    *  Configure the connection in `config/buffalogs/ingestion.json` (see [Elasticsearch Configuration Guide](docs/ingestion/elasticsearch.md) for detailed instructions)
+    *  Set the Elasticsearch URL, credentials, and index patterns
     *  launch ` docker compose up -d` to run the containers
 * if you have no hosts with Elasticsearch installed on it, you can run it directly with Buffalogs:
     * run `docker compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
     * Now elasticsearch and kibana are running on the same host with Buffalogs.
+
+### Configuring Elasticsearch Connection
+
+For detailed instructions on connecting BuffaLogs to an existing Elasticsearch cluster, including:
+- Credentials configuration (username/password)
+- TLS/SSL verification settings
+- Index/data stream configuration
+- Custom field mapping
+
+See the [Elasticsearch Ingestion Guide](docs/ingestion/elasticsearch.md).
 
 <img src="docs/static/map_buffalogs.png" width=750 height=400 alt="BuffaLogs Map Page"/>
 
