@@ -15,7 +15,7 @@ export const loginUser = async (email: String, password: String) => {
       error: "Invalid Credentials!"
     };
   }
-  const data = res.json();
+  const data = await res.json();
   return data;
 };
 
