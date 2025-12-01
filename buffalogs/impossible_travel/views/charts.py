@@ -29,67 +29,40 @@ def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
 
 
 def homepage(request):
-    end_str = timezone.now()
-    start_str = end_str - timedelta(days=1)
-    users_pie_context = None
-    world_map_context = None
-    alerts_line_context = None
+    def build_context(start, end):
+        # Ensure timezone-aware datetimes
+        if is_naive(start):
+            start = make_aware(start)
+        if is_naive(end):
+            end = make_aware(end)
+
+        return {
+            "startdate": start.strftime("%B %-d, %Y"),
+            "enddate": end.strftime("%B %-d, %Y"),
+            "iso_start": start.isoformat(),
+            "iso_end": end.isoformat(),
+            "users_pie_context": users_pie_chart(start, end),
+            "world_map_context": world_map_chart(start, end),
+            "alerts_line_context": alerts_line_chart(start, end),
+        }
+
     if request.method == "GET":
         now = timezone.now()
-        # human-readable strings for display
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        start_str = start.strftime("%B %-d, %Y")
-        end_str = now.strftime("%B %-d, %Y")
+        return render(request, "impossible_travel/homepage.html", build_context(start, now))
 
-        # ISO strings for machine use (CSV export)
-        iso_start = start.isoformat()
-        iso_end = now.isoformat()
+    if request.method == "POST":
+        # Validate POST payload
+        try:
+            date_range = json.loads(request.POST["date_range"])
+            start = parse_datetime(date_range[0])
+            end = parse_datetime(date_range[1])
+        except Exception:
+            return HttpResponseBadRequest("Invalid date range")
 
-        users_pie_context = users_pie_chart(start, now)
-        alerts_line_context = alerts_line_chart(start, now)
-        world_map_context = world_map_chart(start, now)
+        return render(request, "impossible_travel/homepage.html", build_context(start, end))
 
-        return render(
-            request,
-            "impossible_travel/homepage.html",
-            {
-                "startdate": start_str,
-                "enddate": end_str,
-                "iso_start": iso_start,
-                "iso_end": iso_end,
-                "users_pie_context": users_pie_context,
-                "world_map_context": world_map_context,
-                "alerts_line_context": alerts_line_context,
-            },
-        )
-
-    elif request.method == "POST":
-        date_range = json.loads(request.POST["date_range"])
-        start = parse_datetime(date_range[0])
-        start_str = start.strftime("%B %-d, %Y")
-        end = parse_datetime(date_range[1])
-        end_str = end.strftime("%B %-d, %Y")
-        iso_start = start.isoformat()
-        iso_end = end.isoformat()
-        users_pie_context = users_pie_chart(start, end)
-        alerts_line_context = alerts_line_chart(start, end)
-        world_map_context = world_map_chart(start, end)
-
-        return render(
-            request,
-            "impossible_travel/homepage.html",
-            {
-                # human-readable
-                "startdate": start_str,
-                "enddate": end_str,
-                # ISO (for the CSV-export hidden inputs)
-                "iso_start": iso_start,
-                "iso_end": iso_end,
-                "users_pie_context": users_pie_context,
-                "world_map_context": world_map_context,
-                "alerts_line_context": alerts_line_context,
-            },
-        )
+    return HttpResponseBadRequest("Unsupported method")
 
 
 @require_http_methods(["GET"])

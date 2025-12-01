@@ -6,7 +6,7 @@ Steps workflow for Developers:
 
 1. All the developers have to set the enrivornment correctly &rarr; Follow [the System Configuration guide](#system-configuration)
 
-   1a. Then, if you'd like to make front-end changes, so you need only to query the APIs &rarr; Upload [the fixture data](#fixture) and read the [API's section](https://github.com/certego/BuffaLogs/wiki/5.-REST-APIs) for more details about them
+   1a. Then, if you'd like to make front-end changes, so you need only to query the APIs &rarr; Upload [the fixture data](#fixture) and read the [API's section](docs/rest-apis.md) for more details about them
 
    1b. Otherwise, if you want to analyze the back-end development generating new data, please check [the BuffaLogs detection](#run-buffalogs-detection)
 

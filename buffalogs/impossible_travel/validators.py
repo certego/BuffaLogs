@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.utils.translation import gettext_lazy as _
+from impossible_travel.constants import AlertTagValues
 from impossible_travel.views.utils import read_config
 
 ALLOWED_RISK_STRINGS = ["High", "Medium", "Low", "No Risk"]
@@ -182,3 +183,15 @@ def validate_login_query(query_dict: Dict[str, Any]) -> Dict[str, Any]:
         "ip": ip,
         "user_agent": user_agent,
     }
+
+
+def validate_tags(value):
+    """Ensure all tags are valid and unique."""
+    if not isinstance(value, list):
+        raise ValidationError(_("Tags must be provided as a list."))
+    valid_tags = [choice[0] for choice in AlertTagValues.choices]
+    invalid = [t for t in value if t not in valid_tags]
+    if invalid:
+        raise ValidationError(_(f"Invalid tags: {', '.join(invalid)}. Must be one of: {', '.join(valid_tags)}."))
+    if len(value) != len(set(value)):
+        raise ValidationError(_("Duplicate tags are not allowed."))

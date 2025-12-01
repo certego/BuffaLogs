@@ -20,6 +20,7 @@ services:
             - splunk_etc:/opt/splunk/etc
         networks:
             - splunk-net
+            - buffalogs_network
         restart: unless-stopped
 
 volumes:
@@ -31,3 +32,5 @@ volumes:
 networks:
     splunk-net:
         driver: bridge
+    buffalogs_network:
+        external: true
