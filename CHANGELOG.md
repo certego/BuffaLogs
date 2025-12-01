@@ -1,3 +1,22 @@
+## 2.13.x
+### 2.13.0
+#### Features
+* Created `reset_user_risk_score` management Django command to reset user `risk_score` values (by community - @saurabh007007)
+* Added `tags` field in the `Alert` model (by community - @prafullpandey614)
+* Added tasks executions logging in the `TaskSettings` model (by community - @drona-gyawali)
+* Added test cases for Login, Config and UserIP models (by community - @prafullpandey614)
+#### Changes
+* docs: replace wiki links with docs/ equivalents (by community - @NobleCoder69)
+* Added tests for models
+* Updated `actions/checkout@v5` to `actions/checkout@v6`
+#### Bugfix
+* Fixed the docker file for the frontend: `node` container from the `lts-slim` version to the `lts-apline` one (by community - @saurabh007007)
+* Fixed the user `risk_score` behavior so as not to be updated if the alert is filtered
+* Fixed lowercase usernames
+* Fixed `unboundlocalerror` at frontend homepage (by community - @varu63)
+* Fixed connect networks using `buffalogs-network` (by community - @mrtaz77)
+* Fixed Elasticsearch template endpoint to use index template (by community - @mrtaz77)
+
 ## 2.12.x
 ### 2.12.0
 #### Features
