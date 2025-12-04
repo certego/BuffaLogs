@@ -18,7 +18,7 @@ interface Country {
 }
 
 const geoUrl =
-  "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson";
+  "https://raw.githubusercontent.com/deldersveld/topojson/master/world-continents.json";
 
 const MapChart = () => {
   const [data, setData] = useState<Country[]>([]);
@@ -28,49 +28,30 @@ const MapChart = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const result: Country[] = await getWorldMapChart(date);
-        setData(result);
-        
-        if (result.length > 0) {
-          const maxAlerts = Math.max(...result.map(country => country.alerts));
-          setMaxValue(maxAlerts);
-        } else {
-          setMaxValue(0);
+      const data: Country[] = await getWorldMapChart(date);
+      setData(data);
+      let maxAlerts = data[0].alerts;
+      for (const country of data) {
+        if (country.alerts > maxAlerts) {
+          maxAlerts = country.alerts;
         }
-      } catch (err) {
-        setData([]);
-        setMaxValue(0);
       }
+      setMaxValue(maxAlerts);
     };
-    
-    if (date) {
-      fetchData();
-    } else {
-      setData([]);
-      setMaxValue(0);
-    }
+    fetchData();
   }, [date]);
 
   const popScale = useMemo(
-    () => scaleLinear().domain([0, maxValue]).range([0, 12]),
+    () => scaleLinear().domain([0, maxValue]).range([0, 18]),
     [maxValue]
   );
 
   return (
-    <div className="w-full h-96">
-      <ComposableMap
-        projectionConfig={{
-          rotate: [-10, 0, 0],
-          scale: 147
-        }}
-        width={800}
-        height={384}
-        style={{ width: "100%", height: "100%" }}
-      >
+    <div className="">
+      <ComposableMap projectionConfig={{ rotate: [-10, 0, 0] }}>
         <ZoomableGroup
           center={[0, 0]}
-          zoom={zoom}
+          zoom={1}
           maxZoom={6}
           onMoveEnd={({ coordinates, zoom }) => {
             setZoom(zoom);
@@ -79,26 +60,21 @@ const MapChart = () => {
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map((geo) => (
-                <Geography 
-                  key={geo.rsmKey} 
-                  geography={geo} 
-                  fill="#5B5C60" 
-                  stroke="#FFFFFF"
-                  strokeWidth={0.5}
-                />
+                <Geography key={geo.rsmKey} geography={geo} fill="#5B5C60" />
               ))
             }
           </Geographies>
-          {data.map(({ country, lat, lon, alerts }) => (
-            <Marker key={country} coordinates={[lon, lat]}>
-              <circle
-                fill="#F53"
-                stroke="#FFF"
-                strokeWidth={2}
-                r={Math.max(2, popScale(alerts) / zoom)}
-              />
-            </Marker>
-          ))}
+          {data.map(({ country, lat, lon, alerts }) => {
+            return (
+              <Marker key={country} coordinates={[lon, lat]}>
+                <circle
+                  fill="#F53"
+                  stroke="#FFF"
+                  r={popScale(alerts)/zoom}
+                />
+              </Marker>
+            );
+          })}
         </ZoomableGroup>
       </ComposableMap>
     </div>

@@ -17,8 +17,8 @@
 		<b> User: {{ user.username }} </b>
 		<i class="fa fa-info-circle" aria-hidden="true"></i>
 		<div>
-        		<a href="{% url 'alerts' user_id=user.id %}" class="text-info text-decoration-none">Alerts</a>
-	 		<a href="{% url 'all_logins' user_id=user.id %}" class="text-info mr-3 text-decoration-none">All Logins</a>
+        		<a href="{% url 'alerts' pk_user=pk_user %}" class="text-info text-decoration-none">Alerts</a>
+	 		<a href="{% url 'all_logins' pk_user=pk_user %}" class="text-info mr-3 text-decoration-none">All Logins</a>
     		</div>
 
 	</div>

@@ -1,4 +1,4 @@
-include LICENSE.txt
+include LICENSE
 include README.rst
 recursive-include docs/static *
 recursive-include impossible_travel/management *

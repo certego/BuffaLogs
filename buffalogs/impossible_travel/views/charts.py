@@ -10,59 +10,69 @@ from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
 from impossible_travel.models import Alert, Login, User
-from impossible_travel.views.utils import read_config
-
-
-def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
-    """
-    Helper function to aggregate alerts over an interval
-    """
-    current_date = start_date
-    aggregated_data = {}
-
-    while current_date < end_date:
-        next_date = current_date + interval
-        count = Alert.objects.filter(login_raw_data__timestamp__range=(current_date.isoformat(), next_date.isoformat())).count()
-        aggregated_data[current_date.strftime(date_fmt)] = count
-        current_date = next_date
-    return aggregated_data
+from impossible_travel.views.utils import aggregate_alerts_interval, load_data
 
 
 def homepage(request):
-    def build_context(start, end):
-        # Ensure timezone-aware datetimes
-        if is_naive(start):
-            start = make_aware(start)
-        if is_naive(end):
-            end = make_aware(end)
-
-        return {
-            "startdate": start.strftime("%B %-d, %Y"),
-            "enddate": end.strftime("%B %-d, %Y"),
-            "iso_start": start.isoformat(),
-            "iso_end": end.isoformat(),
-            "users_pie_context": users_pie_chart(start, end),
-            "world_map_context": world_map_chart(start, end),
-            "alerts_line_context": alerts_line_chart(start, end),
-        }
-
+    end_str = timezone.now()
+    start_str = end_str - timedelta(days=1)
+    users_pie_context = None
+    world_map_context = None
+    alerts_line_context = None
     if request.method == "GET":
         now = timezone.now()
+        # human-readable strings for display
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        return render(request, "impossible_travel/homepage.html", build_context(start, now))
+        start_str = start.strftime("%B %-d, %Y")
+        end_str = now.strftime("%B %-d, %Y")
 
-    if request.method == "POST":
-        # Validate POST payload
-        try:
-            date_range = json.loads(request.POST["date_range"])
-            start = parse_datetime(date_range[0])
-            end = parse_datetime(date_range[1])
-        except Exception:
-            return HttpResponseBadRequest("Invalid date range")
+        # ISO strings for machine use (CSV export)
+        iso_start = start.isoformat()
+        iso_end = now.isoformat()
 
-        return render(request, "impossible_travel/homepage.html", build_context(start, end))
+        users_pie_context = users_pie_chart(start, now)
+        alerts_line_context = alerts_line_chart(start, now)
+        world_map_context = world_map_chart(start, now)
 
-    return HttpResponseBadRequest("Unsupported method")
+        return render(
+            request,
+            "impossible_travel/homepage.html",
+            {
+                "startdate": start_str,
+                "enddate": end_str,
+                "iso_start": iso_start,
+                "iso_end": iso_end,
+                "users_pie_context": users_pie_context,
+                "world_map_context": world_map_context,
+                "alerts_line_context": alerts_line_context,
+            },
+        )
+
+    elif request.method == "POST":
+        date_range = json.loads(request.POST["date_range"])
+        start = parse_datetime(date_range[0])
+        start_str = start.strftime("%B %-d, %Y")
+        end = parse_datetime(date_range[1])
+        end_str = end.strftime("%B %-d, %Y")
+        users_pie_context = users_pie_chart(start, end)
+        alerts_line_context = alerts_line_chart(start, end)
+        world_map_context = world_map_chart(start, end)
+
+        return render(
+            request,
+            "impossible_travel/homepage.html",
+            {
+                # human-readable
+                "startdate": start_str,
+                "enddate": end_str,
+                # ISO (for the CSV-export hidden inputs)
+                "iso_start": iso_start,
+                "iso_end": iso_end,
+                "users_pie_context": users_pie_context,
+                "world_map_context": world_map_context,
+                "alerts_line_context": alerts_line_context,
+            },
+        )
 
 
 @require_http_methods(["GET"])
@@ -95,13 +105,13 @@ def world_map_chart_api(request):
     if is_naive(end_date):
         end_date = make_aware(end_date)
 
-    countries = read_config("countries_list.json")
+    countries = load_data("countries")
     result = []
     tmp = []
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
             login_raw_data__timestamp__range=(start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")),
-            login_raw_data__country__iexact=key,
+            login_raw_data__country=value,
         )
         if country_alerts:
             for alert in country_alerts:
@@ -109,17 +119,16 @@ def world_map_chart_api(request):
                     tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
                     result.append(
                         {
-                            "country": value.lower(),
+                            "country": key,
                             "lat": alert.login_raw_data["lat"],
                             "lon": alert.login_raw_data["lon"],
                             "alerts": Alert.objects.filter(
-                                login_raw_data__country__iexact=key,
-                                login_raw_data__lat=alert.login_raw_data["lat"],
-                                login_raw_data__lon=alert.login_raw_data["lon"],
+                                login_raw_data__country=value, login_raw_data__lat=alert.login_raw_data["lat"], login_raw_data__lon=alert.login_raw_data["lon"]
                             ).count(),
                         }
                     )
-    return HttpResponse(json.dumps(result), content_type="application/json")
+    data = json.dumps(result)
+    return HttpResponse(data, content_type="json")
 
 
 @require_http_methods(["GET"])

@@ -1,0 +1,10 @@
+
+services:
+  buffacli:
+    container_name: buffacli
+    build:
+      context: .
+      dockerfile: build/Dockerfile.cli
+    entrypoint: ["buffa"]
+    stdin_open: true
+    tty: true

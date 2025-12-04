@@ -3,7 +3,6 @@ import { DateContextProvider } from "@/contexts/DateContext";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import SessionTimeout from "@/components/SessionTimeout";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -16,7 +15,6 @@ export default function App({ Component, pageProps }: AppProps) {
         detect login anomalies
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <SessionTimeout />
       <Component {...pageProps} />
       <Toaster />
       </DateContextProvider>

@@ -7,6 +7,8 @@ updates:
       interval: "weekly"
       day: "tuesday"
     target-branch: "develop"
+    reviewers:
+      - x
 
   - package-ecosystem: "npm"
     directory: "/test/node_test"
@@ -14,6 +16,8 @@ updates:
       interval: "weekly"
       day: "tuesday"
     target-branch: "develop"
+    reviewers:
+      - x
 
 
   - package-ecosystem: "docker"
@@ -22,6 +26,8 @@ updates:
       interval: "weekly"
       day: "tuesday"
     target-branch: "develop"
+    reviewers:
+      - x
 
 
   - package-ecosystem: "github-actions"
@@ -30,4 +36,5 @@ updates:
       interval: "weekly"
       day: "tuesday"
     target-branch: "develop"
-
+    reviewers:
+      - x

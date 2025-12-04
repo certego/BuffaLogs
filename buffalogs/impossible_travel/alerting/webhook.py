@@ -1,12 +1,10 @@
 import os
 import time
+from functools import partial
 
 import jwt
+import requests
 
-try:
-    import requests
-except ImportError:
-    pass
 from .http_request import HTTPRequestAlerting
 
 WEBHOOKS_ALGORITHM_LIST = jwt.algorithms.get_default_algorithms()

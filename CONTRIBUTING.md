@@ -42,38 +42,29 @@ How to create and submit a PR:
     pip install pre-commit
     ```
     If you didn't install pre-commit, it is necessary to run linters manually:
-    Installing them:
-    ```bash
-        pip install ../.github/configurations/python_linters/requirements-linters.txt
-    ```
-    Running them (**flake8, black and isort are mandatory** because used also in the CI)
-    *   Autoflake - tool to remove unused imports and unused variables
+    *   Autoflake
     ```bash
         autoflake -r -cd . --remove-all-unused-imports --remove-unused-variables --ignore-init-module-imports --ignore-pass-statements
     ```
-    *   Flake8 - linter for code syntax and cleaning
+    *   Flake8
     ```bash
         flake8 . --show-source --config ../.github/configurations/python_linters/.flake8
     ```
-    *   Black - an uncompromising Python code formatter
+    *   Black
     ```bash
     black --config .github/configurations/python_linters/.black .
     ```
-    *   Isort - utility to sort imports alphabetically, and automatically separated into sections and by type
+    *   Isort
     ```bash
-    isort --sp ../.github/configurations/python_linters/.isort.cfg --profile black .
+    isort --sp .github/configurations/python_linters/.isort.cfg --profile black .
     ```
-    *   Pylint - a static code analyser for Python
+    *   Pylint
     ```bash
     pylint --load-plugins=pylint_django --django-settings-module=buffalogs.settings --recursive=y --rcfile=.github/configurations/python_linters/.pylintrc .
     ```
-    *   Bandit - a tool designed to find common security issues in Python code
+    *   Bandit
     ```bash
     bandit -c .github/configurations/python_linters/.bandit.yaml .
-    ```
-    *   FawltyDeps - dependency checker for Python that finds undeclared and/or unused 3rd-party dependencies
-    ```bash
-    fawltydeps --detailed
     ```
 
 3.  **IF** your changes include differences in the template view, **include sceenshots of the before and after**.

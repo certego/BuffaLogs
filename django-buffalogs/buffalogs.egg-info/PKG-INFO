@@ -1,0 +1,86 @@
+Metadata-Version: 2.1
+Name: buffalogs
+Version: 2.4.0
+Summary: A Django app to detect anomaly logins.
+Author: Lorena Goldoni
+License: Apache-2.0
+Classifier: Framework :: Django
+Classifier: License :: OSI Approved :: Apache-2.0 Licence
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development
+Requires-Python: >=3.8
+License-File: LICENSE.txt
+Requires-Dist: celery>=5.4.0
+Requires-Dist: certifi>=2022.9.24
+Requires-Dist: cfgv>=3.3.1
+Requires-Dist: distlib>=0.3.6
+Requires-Dist: Django>=4.2.16
+Requires-Dist: djangorestframework>=3.15.2
+Requires-Dist: djangorestframework-simplejwt>=5.3.0
+Requires-Dist: django-cors-headers>=4.3.0
+Requires-Dist: django-environ>=0.9.0
+Requires-Dist: elasticsearch>=7.17.12
+Requires-Dist: elasticsearch-dsl>=7.4.1
+Requires-Dist: filelock>=3.9.0
+Requires-Dist: geographiclib>=2.0
+Requires-Dist: geopy>=2.4.1
+Requires-Dist: kombu>=5.2.4
+Requires-Dist: nodeenv>=1.7.0
+Requires-Dist: pathspec>=0.10.3
+Requires-Dist: prompt-toolkit>=3.0.33
+Requires-Dist: psycopg>=3.2.3
+Requires-Dist: psycopg-binary>=3.1.12
+Requires-Dist: pygal>=3.0.0
+Requires-Dist: pygal-maps-world>=1.0.2
+Requires-Dist: python-dateutil>=2.8.2
+Requires-Dist: python-dotenv>=0.21.0
+Requires-Dist: PyYAML>=6.0
+Requires-Dist: ua-parser>=1.0.0
+Requires-Dist: urllib3>=1.26.12
+Requires-Dist: uWSGI>=2.0.28
+Requires-Dist: virtualenv>=20.17.1
+Requires-Dist: wcwidth>=0.2.5
+
+=========
+BuffaLogs
+=========
+
+.. image:: docs/static/cover_buffalogs.png
+
+BuffaLogs is a Django app whose main purpose is to detect anomaly logins.
+
+Detaild documentation is in the ``docs/`` directory.
+
+Quick start
+-----------
+
+Only the backend features have been updated to be a Django Reusable App. The BuffaLogs interface is available only in the original Django Project cloning it in local.
+
+1. Add "impossible_travel" to your INSTALLED_APPS setting like this::
+
+    INSTALLED_APPS = [
+        ...,
+        "impossible_travel",
+    ]
+
+2. Run ``python manage.py migrate`` to create the BuffaLogs models.
+
+3. Start the Django server with ``python manage.py runserver`` and visit http://127.0.0.1:8000/admin/
+   to analyze the BuffaLogs detections in the Django models.
+
+
+For Developers
+--------------
+
+After each change to the source code, please remember to:
+* update the CHANGELOG.md 
+* update the version in the ``setup.cfg`` file
+
+Now, it's possible to recreate the package with `python3 setup.py sdist` command.
+
+After that, the new package contained in the `django-buffalogs/dist` folder can be imported in other projects. 
+
+In the other projects, install the app with ``python -m pip install buffalogs-<version>.tar.gz`` command.
+
+If you want to uninstall the application, run ``python -m pip uninstall buffalogs``.

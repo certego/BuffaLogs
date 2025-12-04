@@ -75,11 +75,10 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Co
     logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
     alert = Alert.objects.create(user=db_user, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
     alert.save()
+    # update user.risk_score if necessary
+    update_risk_level(db_user=alert.user, triggered_alert=alert, app_config=app_config)
     # check filters
     alert_filter.match_filters(alert=alert, app_config=app_config)
-    # update user.risk_score if necessary (not for filtered alerts)
-    if not alert.is_filtered:
-        update_risk_level(db_user=alert.user, triggered_alert=alert, app_config=app_config)
     return alert
 
 
@@ -123,14 +122,13 @@ def check_fields(db_user: User, fields: list):
                     logger.info(f"Calculating impossible travel: {login['id']}")
                     travel_alert, travel_vel = calc_distance_impossible_travel(db_user, prev_login=last_user_login, last_login_user_fields=login)
                     if travel_alert:
-                        # enrich imp_travel alert with related fields
-                        login["buffalogs"] = {
-                            "start_country": last_user_login.country,
-                            "avg_speed": travel_vel,
-                            "start_lat": last_user_login.latitude,
-                            "start_lon": last_user_login.longitude,
-                        }
-                        set_alert(db_user, login_alert=login, alert_info=travel_alert, app_config=db_config)
+                        new_alert = set_alert(db_user, login_alert=login, alert_info=travel_alert, app_config=db_config)
+                        new_alert.login_raw_data["buffalogs"] = {}
+                        new_alert.login_raw_data["buffalogs"]["start_country"] = last_user_login.country
+                        new_alert.login_raw_data["buffalogs"]["avg_speed"] = travel_vel
+                        new_alert.login_raw_data["buffalogs"]["start_lat"] = last_user_login.latitude
+                        new_alert.login_raw_data["buffalogs"]["start_lon"] = last_user_login.longitude
+                        new_alert.save()
                     #   Add the new ip address from which the login comes to the db
                     UsersIP.objects.create(user=db_user, ip=login["ip"])
 

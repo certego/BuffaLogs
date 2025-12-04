@@ -46,9 +46,7 @@ document.addEventListener( "DOMContentLoaded", function () {
     ]
 
     function fetch_request() {
-	const dataContainer = document.getElementById("userID");
-	const userID = dataContainer.dataset.value;
-        fetch(window.origin +"/api/users/" + userID + "/logins", {method: 'GET', headers: {"Accept":"application/json", 
+        fetch(window.location.href+"/get_all_logins", {method: 'GET', headers: {"Accept":"application/json", 
             "X-Requested-With":"XMLHttpRequest"}})
         // gestisci il successo
         .then(response => response.json())  // converti a json

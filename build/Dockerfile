@@ -1,4 +1,4 @@
-FROM python:3.12-slim-trixie
+FROM python:3.10-slim-bullseye
 
 ENV INSTALL_PATH /opt/certego
 RUN mkdir -p $INSTALL_PATH
@@ -6,7 +6,7 @@ WORKDIR $INSTALL_PATH
 COPY buffalogs/requirements.txt requirements.txt
 
 
-RUN sed -i 's/main/main non-free/g' /etc/apt/sources.list.d/debian.sources \
+RUN sed -i 's/main/main non-free/g' /etc/apt/sources.list \
     && apt-get update \
     && apt-get -y install \
         gcc

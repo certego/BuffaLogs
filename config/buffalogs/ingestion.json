@@ -17,10 +17,8 @@
             "source.as.organization.name": "organization",
             "source.geo.country_name": "country",
             "source.geo.location.lat": "lat",
-            "source.geo.location.lon": "lon",
-            "source.intelligence_category": "intelligence_category"
-        },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+            "source.geo.location.lon": "lon"
+        }
     },
     "opensearch": {
         "url": "http://opensearch:9200/",
@@ -39,10 +37,8 @@
             "source.as.organization.name": "organization",
             "source.geo.country_name": "country",
             "source.geo.location.lat": "lat",
-            "source.geo.location.lon": "lon",
-            "source.intelligence_category": "intelligence_category"
-        },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+            "source.geo.location.lon": "lon"
+        }
     },
     "splunk": {
         "host": "splunk",
@@ -63,9 +59,7 @@
             "user_agent.original": "agent",
             "source.as.organization.name": "organization",
             "_id": "id",
-            "index": "index",
-            "source.intelligence_category": "intelligence_category"
-        },
-	"__custom_fields__" : ["host","port", "scheme", "username", "password", "timeout", "indexes"]
+            "index": "index"
+        }
       }
 }

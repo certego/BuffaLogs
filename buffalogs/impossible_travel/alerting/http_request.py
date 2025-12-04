@@ -1,10 +1,7 @@
 import os
 from functools import partial
 
-try:
-    import requests
-except ImportError:
-    pass
+import requests
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert
@@ -74,9 +71,9 @@ def get_alerts(names: list = [], get_all: bool = False):
         alerts  : list of Alert objects
     """
     if names:
-        alerts = Alert.objects.filter(notified_status__http_request=False, name__in=names)
+        alerts = Alert.objects.filter(notified=False, name__in=names)
     elif get_all:
-        alerts = Alert.objects.filter(notified_status__http_request=False)
+        alerts = Alert.objects.filter(notified=False)
     else:
         alerts = []
     return alerts
@@ -290,7 +287,7 @@ class HTTPRequestAlerting(BaseAlerting):
                     self.logger.error(f"Alerting Failed: {alert.name} to: {recipient_name} endpoint: {endpoint} error: {error_msg}")
                 elif resp.ok:
                     # Mark alerts as notified
-                    alert.notified_status["http_request"] = True
+                    alert.notified = True
                     alert.save()
                     self.logger.info(f"Notification sent: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status_code}")
                 else:

@@ -1,177 +1,45 @@
 import logging
-from argparse import RawTextHelpFormatter
-from typing import Any, Tuple
 
-from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
-from django.core.management.base import CommandError
-from django.db.models.fields import Field
-from impossible_travel.management.commands.base_command import TaskLoggingCommand
+from django.core.management.base import BaseCommand
 from impossible_travel.models import Config
 
 logger = logging.getLogger()
+IGNORED_USERS = ["N/A", "Not Available"]
+IGNORED_IPS = ["127.0.0.1"]
 
 
-def _cast_value(val: str) -> Any:
-    val = val.strip().strip('"').strip("'")
-    # Try to cast to int
-    if val.isdigit():
-        return int(val)
-    # Try to cast to float
-    try:
-        return float(val)
-    except ValueError:
-        pass
-    # Try to cast to boolean
-    if val.lower() == "true":
-        return True
-    elif val.lower() == "false":
-        return False
-    return val
-
-
-def parse_field_value(item: str) -> Tuple[str, Any]:
-    """Parse a string of the form FIELD=VALUE or FIELD=[val1,val2]"""
-    if "=" not in item:
-        raise CommandError(f"Invalid syntax '{item}': must be FIELD=VALUE")
-
-    field, value = item.split("=", 1)
-    value = value.strip()
-
-    if value.startswith("[") and value.endswith("]"):
-        inner = value[1:-1].strip()
-        parsed = [_cast_value(v) for v in inner.split(",") if v.strip()]
-    else:
-        parsed = _cast_value(value)
-
-    return field.strip(), parsed
-
-
-class Command(TaskLoggingCommand):
-    def create_parser(self, *args, **kwargs):
-        config_fields = [f.name for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created]
-
-        help_text = f"""
-        Update values in the Config model.
-
-        Available fields:
-        {', '.join(config_fields)}
-
-        Usage:
-        -a FIELD=VALUE    Append VALUE to list field (only for list fields)
-        -o FIELD=VALUE    Override value (always for non-list fields)
-        -r FIELD=VALUE    Remove the specified VALUE from list values
-
-        Examples:
-        ./manage.py setup_config -o allowed_countries=["Italy","Romania"]
-        ./manage.py setup_config -r ignored_users=[admin]
-        ./manage.py setup_config -a alert_is_vip_only=True
-        ./manage.py setup_config -o allowed_countries=["Italy"] -r ignored_users="bot" -r ignored_users=["audit"] -a filtered_alerts_types=["New Device"]
-
-        Additional options:
-        --set-default-values   Reset all fields in Config to their default values
-        """
-        parser = super().create_parser(*args, **kwargs)
-        parser.formatter_class = RawTextHelpFormatter
-        parser.description = help_text.strip()
-        return parser
+class Command(BaseCommand):
+    help = "Setup the Configs overwriting them"
 
     def add_arguments(self, parser):
-        super().add_arguments(parser)
-        parser.add_argument("-o", "--override", action="append", metavar="FIELD=[VALUES]", help="Override field values")
-        parser.add_argument("-r", "--remove", action="append", metavar="FIELD=[VALUES]", help="Remove values from list fields")
-        parser.add_argument("-a", "--append", action="append", metavar="FIELD=[VALUES]", help="Append values to list fields or override non-list")
-        parser.add_argument(
-            "--set-default-values", action="store_true", help="Initialize configuration fields with default values (already populated values are not modified)"
-        )
-        parser.add_argument("--force", action="store_true", help="Force overwrite existing values with defaults (use with caution)")
+        # Optional arguments
+        parser.add_argument("--ignored_users", nargs="?", default=[], help="List of users to filter and to not consider in the detection")
+        parser.add_argument("--ignored_ips", nargs="?", default=[], help="List of ips or subnets to not consider in the detection")
+        parser.add_argument("--allowed_countries", nargs="?", default=[], help="List of countries from which the logins are always allowed")
+        parser.add_argument("--vip_users", nargs="?", default=[], help="List of users to which pay particular attention")
 
     def handle(self, *args, **options):
-        config, _ = Config.objects.get_or_create(id=1)
+        """Setup the configurations into the Config model"""
+        logger = logging.getLogger()
 
-        # get customizable fields in the Config model dinamically
-        fields_info = {f.name: f for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created}
-
-        # MODE: --set-default-values
-        if options.get("set_default_values"):
-            force = options.get("force", False)
-            updated_fields = []
-
-            for field_name, field_model in list(fields_info.items()):
-                if hasattr(field_model, "default"):
-                    default_value = field_model.default() if callable(field_model.default) else field_model.default
-                    current_value = getattr(config, field_name)
-
-                    # Safe mode --> update field only if it's empty
-                    if not force:
-                        if current_value in (None, "", [], {}):
-                            setattr(config, field_name, default_value)
-                            updated_fields.append(field_name)
-                    # Force mode → overwrite all fields values
+        if Config.objects.all().exists():
+            config_obj = Config.objects.all()[0]
+        else:
+            config_obj = Config.objects.create()
+        if not options["ignored_users"] and not options["ignored_ips"] and not options["allowed_countries"] and not options["vip_users"]:
+            # Set default values
+            config_obj.ignored_users = IGNORED_USERS
+            config_obj.ignored_ips = IGNORED_IPS
+        else:
+            for opt in options:
+                if opt in ["ignored_users", "ignored_ips", "allowed_countries", "vip_users"]:
+                    if not options[opt]:
+                        setattr(config_obj, opt, [])
                     else:
-                        setattr(config, field_name, default_value)
-                        updated_fields.append(field_name)
+                        setattr(config_obj, opt, options[opt].split(","))
 
-            config.save()
+        config_obj.save()
 
-            msg = (
-                f"BuffaLogs Config: all {len(updated_fields)} fields reset to defaults (FORCED)."
-                if force
-                else f"BuffaLogs Config: updated {len(updated_fields)} empty fields with defaults."
-            )
-            self.stdout.write(self.style.SUCCESS(msg))
-            return
-
-        # MODE: manual updates (--override, --append, --remove)
-        updates = []
-
-        for mode, items in [
-            ("override", options["override"]),
-            ("remove", options["remove"]),
-            ("append", options["append"]),
-        ]:
-            if items:
-                for item in items:
-                    # item is a string "field_name=value" to be parsed
-                    field, value = parse_field_value(item)
-                    updates.append((field, mode, value))
-
-        for field, mode, value in updates:
-            if field not in fields_info:
-                raise CommandError(f"Field '{field}' does not exist in Config model.")
-
-            field_obj = fields_info[field]
-            is_list = isinstance(field_obj, ArrayField)
-            current = getattr(config, field)
-
-            # Normalize value for ArrayFields
-            if is_list and not isinstance(value, list):
-                value = [value]
-
-            # Validate values
-            values_to_validate = value if is_list else [value]
-            for val in values_to_validate:
-                for validator in getattr(field_obj, "validators", []):
-                    try:
-                        validator(val)
-                    except ValidationError as e:
-                        raise CommandError(f"Validation error on field '{field}' with value '{val}': {e}")
-
-            # Apply changes
-            if is_list:
-                current = current or []
-                if mode == "append":
-                    current += value
-                elif mode == "override":
-                    current = value
-                elif mode == "remove":
-                    current = [item for item in current if item not in value]
-            else:
-                if mode != "override":
-                    raise CommandError(f"Field '{field}' is not a list. Use --override to set its value.")
-                current = value
-
-            setattr(config, field, current)
-
-        config.save()
-        self.stdout.write(self.style.SUCCESS("Config updated successfully."))
+        logger.info(
+            f"Updated Config values - Ignored users: {config_obj.ignored_users}, Ignored IPs: {config_obj.ignored_ips}, Allowed countries: {config_obj.allowed_countries}, Vip users: {config_obj.vip_users}"
+        )

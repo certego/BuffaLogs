@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 from django.conf import settings
-from jinja2 import Environment, FileSystemLoader
 
 
 class BaseAlerting(ABC):
@@ -48,14 +47,3 @@ class BaseAlerting(ABC):
         with open(config_path, mode="r", encoding="utf-8") as f:
             config = json.load(f)
         return config.get(alerter_key, {})
-
-    @staticmethod
-    def alert_message_formatter(alert, template_path="alert_template.jinja", *args, **kwargs):
-        """
-        Format the alert message for notification.
-        """
-        env = Environment(loader=FileSystemLoader(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/")))
-        template = env.get_template(template_path)
-        alert_title = template.module.title(alert, **kwargs)
-        alert_description = template.module.description(alert, **kwargs)
-        return alert_title, alert_description

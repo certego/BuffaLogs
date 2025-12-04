@@ -1,127 +1,7 @@
-## 2.13.x
-### 2.13.0
-#### Features
-* Created `reset_user_risk_score` management Django command to reset user `risk_score` values (by community - @saurabh007007)
-* Added `tags` field in the `Alert` model (by community - @prafullpandey614)
-* Added tasks executions logging in the `TaskSettings` model (by community - @drona-gyawali)
-* Added test cases for Login, Config and UserIP models (by community - @prafullpandey614)
-#### Changes
-* docs: replace wiki links with docs/ equivalents (by community - @NobleCoder69)
-* Added tests for models
-* Updated `actions/checkout@v5` to `actions/checkout@v6`
-#### Bugfix
-* Fixed the docker file for the frontend: `node` container from the `lts-slim` version to the `lts-apline` one (by community - @saurabh007007)
-* Fixed the user `risk_score` behavior so as not to be updated if the alert is filtered
-* Fixed lowercase usernames
-* Fixed `unboundlocalerror` at frontend homepage (by community - @varu63)
-* Fixed connect networks using `buffalogs-network` (by community - @mrtaz77)
-* Fixed Elasticsearch template endpoint to use index template (by community - @mrtaz77)
-
-## 2.12.x
-### 2.12.0
-#### Features
-* Added possibility to run `setup_config --set-default-values` mgmt command in safe or force modes
-* Added Pagination to Alerts API using `limit` and `offset` as optional request payload (by community - @noble47)
-* Added `user_learning_period` as configurable field (default: 14 days)
-* Updated `actions/setup-node` from 5 to 6 (dependabot)
-#### Changes
-* Refactored tests in order to centralize the `load_ingestion_config_data` function in the utils (by community - @drona-gyawali)
-* Added `intelligence_category` field in mgmt command `fake_data_generation`
-#### Bugfix
-* Fixed `UnboundLocalError` for impossible_travel mgmt command  when launched manually
-
-## 2.11.x
-### 2.11.0
-#### Features
-* Added development docs on how to setup alerters (Google Summer of Code 2025 - @kunalsz)
-* Updated Elasticsearch and Kibana images from `9.0.3` to `9.1.2`
-* Updated Dockerfile starting image of Python from `python:3.10-slim-bullseye` to `python:3.12-slim-trixie`
-* Updated Dockerfile starting image of Node from `node:18-alpine` to `node:lts-slim`
-* Added `BuffalogsCleanModelsPeriodicallyTask` in TaskSettings model to track task execution (by community - @drona-gyawali)
-* Updated CI dependencies
-* Updated Python dependencies
-* Added some tests for `setup_config` mgmt command
-* Added Package release CI workflow for Django App pakcage creation after a new release
-#### Changes
-* Standardized and improved ocumentation of the alerting module (Google Summer of Code 2025 - @kunalsz)
-* Removed variable definitions duplication about ingestion in settings
-* Changed some Config filter default values:
-    - `ignore_mobile_logins=True`
-    - `filtered_alerts_types=["User Risk Threshold", "New Device"]`
-    - `alert_minimum_risk_score=Medium`
-    - `threshold_user_risk_alert=Medium`
-#### Bugfix
-* Added `intelligence_category` field mapping in the ingestion config file
-* Fixed argument parsing in `setup_config` management command by replacing `nargs="+"` with `action="append"`, ensuring options (--override, --remove, --append) are correctly collected and ordered
-
-## 2.10.x
-### 2.10.0
-#### Features
-* Added Slack integration enhancements (Google Summer of Code 2025 - @kunalsz)
-* Added model serializer module for consistent representation of model instance (Google Summer of Code 2025 - @noble47)
-* Added ScheduledAlertSummaryTask (daily and weekly crontab) (Google Summer of Code 2025 - @kunalsz)
-* Added filters for impossible travel alerts: Config.ignored_impossible_travel_countries_couples and Config.ignored_impossible_travel_all_same_country
-#### Changes
-* Updated DateContextProvider to set initial date range based on current date (by community - @Itz-Agasta)
-* Refactored RESTful APIs (Google Summer of Code 2025 - @noble47)
-#### Bugxfix
-* Added requests library for HTTP operations (needed by the alerting module) operations in requirements (by community - @Itz-Agasta)
-* Prevented Worldmap crash on empty data and ensure map renders (by community - @Itz-Agasta)
-
-## 2.9.x
-### 2.9.0
-#### Features
-* Enabled query by multiple keys via the `alert_api` endpoint (Google Summer of Code 2025 - @noble47)
-* Added serialize method to Alert object for uniform dictionary representation of alerts (Google Summer of Code 2025 - @noble47)
-* Added login query API (Google Summer of Code 2025 - @noble47)
-* Added configurable threasholds and aggregation options for alerters (Google Summer of Code 2025 - @kunalsz)
-#### Changes
-* Removed deprecated reviewers field from dependabot (doc [here](https://github.blog/changelog/2025-04-29-dependabot-reviewers-configuration-option-being-replaced-by-code-owners/))
-* Moved alert query logic to  Alert model (Google Summer of Code 2025 - @noble47)
-* Refactored filtering logic for risk_score to filter by both string (high, low and medium) and integers (1-8) (Google Summer of Code 2025 - @noble47)
-* Zipped the alerts.json file fixture (Google Summer of Code 2025 - @noble47)
-* Aligned test_views expected json response to Alerts serialized value (Google Summer of Code 2025 - @noble47)
-* Refactored Views tests setup to use setUpTestData for improved efficiency and consistency (by community - @Itz-Agasta)
-* Refactor OpensearchIngestionTestCase to use class-level setup (by community - @Itz-Agasta)
-* Refactored OpensearchIngestionTestCase to use mock (by community - @Itz-Agasta)
-* Refactored Views tests setup to use setUpTestData for improved efficiency and consistency (by community - @drona-gyawali)
-* Tracked `NotifyAlertsTask` within the `TaskSettings` model (Google Summer of Code 2025 - @kunalsz)
-#### Bugxfix
-* Fixed bug in charts.py (Google Summer of Code 2025 - @noble47)
-* Fixed frontend login ERR_CONNECTION_REFUSED by exposing port 8000 on nginx (by community - @Itz-Agasta)
-* Added uWSGI application server requirement to requirements.txt (by community - @Itz-Agasta)
-
-## 2.8.x
-### 2.8.1
-#### Changes
-* Tests refactor - improved Testalerters performance using setUpTestData class method (by community - @drona-gyawali)
-#### Bugfix
-* Fixed alerts view - Added missing filename to `read_config` and `write_config` calls (Google Summer of Code 2025 - @noble47)
-### 2.8.0
-#### Features
-* Added the retry mechanism with exponential backoff for the alerting module (Google Summer of Code 2025 - @kunalsz)
-* Added the `country_name` validator to allow valid ISO 3166-1 country names and ISO 3166-1 Alpha-2 country codes (by community - @drona-gyawali)
-* Updated the CI linters versions (compatible with requirements-linters.txt versions)
-* Upgraded Django to 5.2
-#### Changes
-* Updated the `setup_config` django mgmt command to customize all the possible fields in the Config model
-* Refactored the utils functions to centralize them
-* Updated the licence classifier because deprecated
-#### Bugfix
-* Fixed the `TypeError: string indices must be integers, not 'str'` in the `ingestion.get_ingestion_sources` view
-
 ## 2.7.x
 ### 2.7.0
-#### Features
-* Migrated from Elasticsearch client 7.x to 9.0.3 (also in the CI)
-* Implement an `alert_preferences` config, where users can choose which types of alerts they want to receive/prioritize (Google Summer of Code 2025 - @kunalsz)
-* Added customizable templates for alerting - Users will be able to define the format of alert messages with the help of placeholders (Google Summer of Code 2025 - @kunalsz)
-#### Changes
-* Removed elasticsearch_dsl from requirements
-* Refactored API and views module (Google Summer of Code 2025 - @noble47)
-* Updated `active_alerter` view function to handle multiple active alerters (Google Summer of Code 2025 - @noble47)
-* Refactored test - created validator, detection and task test modules (Google Summer of Code 2025 - @noble47)
-* Refactoring to centralized some utilities functions
+#### Bugfix
+* Fixed BuffaCLI CI workflow for tests with pytest
 
 ## 2.6.x
 ### 2.6.0
@@ -141,7 +21,6 @@
 ## 2.5.x
 ### 2.5.0
 #### Features
-* Added some tests to the alerters (Google Summer of Code 2025 - @kunalsz)
 * Added the `alert_types` API endpoint to list the supported alert types (Google Summer of Code 2025 - @noble47)
 * Added Mattermost as new alerter type (Google Summer of Code 2025 - @kunalsz)
 * Added RocketChat as new alerter type (Google Summer of Code 2025 - @kunalsz)

@@ -1,61 +1,48 @@
-# Configuring Microsoft Teams Alerter for BuffaLogs
+# Microsoft Teams Webhook Configuration Guide 
 
-<p><i>This document outlines the steps to configure <b>Microsoft Teams</b> alerter for BuffaLogs to receive alerts via Microsoft Teams Webhooks.</i><p>
+This guide outlines the steps to configure Microsoft Teams webhooks for receiving security alerts from BuffaLogs. 
 
----
+> **Note**   
+> This feature is **exclusively available for Microsoft Business Accounts**. Ensure you have the necessary permissions before proceeding.
 
-## Prerequisites
-
-Before setting up the Microsoft Teams alerter, ensure the following:
-- You have a Microsoft Business Account.
-- You have admin permissions to configure Teams channels.
-- BuffaLogs is installed and configured on your system.
+## Prerequisites 
+- Microsoft Business Account with **admin rights** to configure Teams channels.
+- Access to the Teams channel where alerts will be sent.
 
 ---
 
-## Steps to Implement
 
-#### 1. Create an Incoming Webhook in Microsoft Teams
-1. Open the Teams channel where alerts should be sent.
-2. Click the **... (More options)** button next to the channel name.
-3. Select **Connectors**.
-4. Search for **Incoming Webhook** and click **Add**.
-5. Configure the webhook by providing a name and optional image.
-6. Click **Create** and copy the generated **Webhook URL** for later use.
+<summary><strong>▶️ Step-by-Step Configuration</strong></summary>
+
+### 1. Create an Incoming Webhook in Microsoft Teams
+
+1. **Navigate to your Teams channel**:
+   - Open the channel where alerts should be sent.
+   - Click the **⋮ (More options)** button next to the channel name.
+   - Select **Connectors** from the dropdown.
 
 
-#### 2. Update Configuration File
-1. Open the BuffaLogs configuration file located at `config/buffalogs/alerting.json`.
-2. Add or update the following JSON configuration with your Microsoft Teams webhook details:
+2. **Add the Incoming Webhook connector**:
+   - Search for **Incoming Webhook** and click **Add**.
+   - Provide a name for the webhook (e.g., `BuffaLogs Alerts`) and upload an optional icon.
+   - Click **Create**.
 
-    ```json
-    {
-        "active_alerters": ["microsoft_teams"],
-        "microsoft_teams": {
-            "webhook_url": "your-webhook-url"
-        }
-    }
-    ```
-
-3. Replace `"your-webhook-url"` with the webhook URL you copied earlier.
-4. Save the file.
+3. **Copy the Webhook URL**:
+   - A unique URL will be generated. **Copy this URL** immediately—it will not be shown again.
 
 ---
 
-## Testing the Setup
+### 2. Configure `alerting.json`
 
-1. Make sure the Docker containers are up and running.
-2. Trigger the tests using the following command in your terminal:
-    ```bash
-    ./manage.py test impossible_travel.tests.alerters.test_alert_microsoft_teams.TestMicrosoftTeamsAlerting
-    ```
-**Extra Note**
+1. **Paste the Webhook URL**:
+   - Update the `alerting.json` file by adding the webhook URL to the `microsoftTeams` section.
 
-3. To get a real test alert message in your MicrosoftTeams channel, add this code in `buffalogs/impossible_travel/tests/alerters/test_alert_microsoft_teams.py` :
+   ```json
+   {
+     "microsoftteams": {
+       "webhook_url": "https://example.webhook.office.com/webhookb2/.../IncomingWebhook/..."
+     }
+   }
 
-    ```python
-    def test_actual_alert(self):
-        self.teams_alerting.notify_alerts()
-    ```
-
-4. Check the specified MicrosoftTeams channel to verify that the alert message has been received.
+> **Note**  
+> Microsoft Teams may not provide quick notifications on mobile devices. It is recommended to use a desktop system for monitoring critical alerts.

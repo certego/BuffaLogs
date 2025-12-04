@@ -15,7 +15,6 @@ from datetime import timedelta
 from pathlib import Path
 
 from celery.schedules import crontab
-from django.conf import settings
 
 from .certego import *
 
@@ -25,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 
 SECRET_KEY = CERTEGO_BUFFALOGS_SECRET_KEY
-DEBUG = settings.CERTEGO_DEBUG
+DEBUG = CERTEGO_DEBUG
 
 
 # Application definition
@@ -141,6 +140,8 @@ DATABASES = {
         "PORT": CERTEGO_BUFFALOGS_POSTGRES_PORT,
     }
 }
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -228,10 +229,4 @@ CELERY_BEAT_SCHEDULE = {
     },
     "clean_models_periodically": {"task": "BuffalogsCleanModelsPeriodicallyTask", "schedule": crontab(hour=23, minute=59)},
     "notify_alerts": {"task": "NotifyAlertsTask", "schedule": crontab(minute=5)},
-    "daily_alert_summary": {"task": "ScheduledAlertSummaryTask", "schedule": crontab(hour=0, minute=0), "args": ["daily"]},
-    "weekly_alert_summary": {
-        "task": "ScheduledAlertSummaryTask",
-        "schedule": crontab(hour=0, minute=0, day_of_week="monday"),
-        "args": ["weekly"],
-    },
 }

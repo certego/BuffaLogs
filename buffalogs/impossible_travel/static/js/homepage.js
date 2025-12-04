@@ -45,7 +45,7 @@ document.addEventListener( "DOMContentLoaded", function () {
 
     const columns = [
         {
-            field: "triggered_by",
+            field: "user",
             headerName: "Username",
             resizable: true,
             editable: true,
@@ -67,7 +67,7 @@ document.addEventListener( "DOMContentLoaded", function () {
             minWidth: 120
         },
         {
-            field: "rule_name",
+            field: "name",
             headerName: "Alert name",
             resizable: true,
             editable: true,
@@ -80,7 +80,7 @@ document.addEventListener( "DOMContentLoaded", function () {
     ];
 
     function fetch_request() {
-        fetch("/api/alerts/recent", {
+        fetch("/get_last_alerts", {
             method: 'GET',
             headers: {
                 "Accept": "application/json",

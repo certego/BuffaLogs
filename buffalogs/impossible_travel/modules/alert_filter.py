@@ -1,10 +1,8 @@
 import logging
 import re
-from collections import Counter
-from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
-from impossible_travel.constants import AlertDetectionType, AlertFilterType, ComparisonType, UserRiskScoreType
+from impossible_travel.constants import AlertFilterType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, User
 from ua_parser import parse
 
@@ -35,7 +33,7 @@ def match_filters(alert: Alert, app_config: Config) -> Alert:
             f"Alert: {alert.id} filtered for user: {db_user.username} because the login ISP: {alert.login_raw_data['organization']} is in the ignored_ISPs Config list"
         )
         alert.filter_type.append(AlertFilterType.IGNORED_ISP_FILTER)
-    if app_config.ignore_mobile_logins and alert.login_raw_data.get("agent", ""):
+    if app_config.ignore_mobile_logins and alert.login_raw_data["agent"]:
         ua_parsed = parse(alert.login_raw_data["agent"])
         if ua_parsed.os and ua_parsed.os.family in settings.CERTEGO_BUFFALOGS_MOBILE_DEVICES:
             logger.debug(
@@ -47,21 +45,11 @@ def match_filters(alert: Alert, app_config: Config) -> Alert:
     if alert.name in app_config.filtered_alerts_types:
         alert.filter_type.append(AlertFilterType.FILTERED_ALERTS)
 
-    if alert.name == AlertDetectionType.IMP_TRAVEL:
-        # check ignored_impossible_travel_countries_couples and ignored_impossible_travel_all_same_country config filters
-        if app_config.ignored_impossible_travel_all_same_country and alert.login_raw_data["country"] == alert.login_raw_data["buffalogs"]["start_country"]:
-            alert.filter_type.append(AlertFilterType.IGNORED_IMP_TRAVEL_ALL_SAME_COUNTRY)
-        couple_country = [alert.login_raw_data["country"], alert.login_raw_data["buffalogs"]["start_country"]]
-        # using Counter to ignore the order: ["Italy", "Germany"] == ["Germany", "Italy"] and check only if the coutry couple is present in the ignored couples
-        for ignored_country_couple in app_config.ignored_impossible_travel_countries_couples:
-            if Counter(ignored_country_couple) == Counter(couple_country):
-                alert.filter_type.append(AlertFilterType.IGNORED_IMP_TRAVEL_COUNTRIES_COUPLE)
-
     alert.save()
 
 
 def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) -> Alert:
-    """Check all the filters relative to users (enabled_users, ignored_users, vip_users).
+    """Check all the filters relative to users.
     Rules of alert filtering, in the check order:
     1. if Config.alert_is_vip_only == True
         a. if user not in [Config.vip_users] --> IS_VIP_FILTER
@@ -70,10 +58,7 @@ def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) ->
         b. if user not in [Config.enabled_users] --> IGNORED_USER_FILTER
       3. else: if user in [Config.ignored_users] --> IGNORED_USER_FILTER
     4. if user.risk_score < Config.alert_minimum_risk_score --> ALERT_MINIMUM_RISK_SCORE_FILTER
-    5. if now-user.created < Config.user_learning_period --> USER_LEARNING_PERIOD
     """
-    now = datetime.now(timezone.utc)
-
     if app_config.alert_is_vip_only:
         # 1. if the flag Config.is_vip_only is True, check only if the user is in the config.vip_users list
         if db_user.username not in app_config.vip_users:
@@ -96,10 +81,6 @@ def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) ->
             f"Alert: {db_alert.id} filtered because user: {db_user.username} has risk_score: {db_user.risk_score}, but Config.alert_minimum_risk_score is set to {app_config.alert_minimum_risk_score}"
         )
         db_alert.filter_type.append(AlertFilterType.ALERT_MINIMUM_RISK_SCORE_FILTER)
-    # 5. check if the User is quite new in the BuffaLogs system, so if the learning period has to be completed yet
-    if (now - db_user.created) < timedelta(days=app_config.user_learning_period):
-        logger.debug(f"Alert: {db_alert.id} filtered because user: {db_user.username} is still into the learning period")
-        db_alert.filter_type.append(AlertFilterType.USER_LEARNING_PERIOD)
     return db_alert
 
 
