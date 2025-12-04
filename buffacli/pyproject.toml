@@ -13,6 +13,15 @@ dependencies = [
     "rich==14.0.0",
     "yarl==1.20.1",
     "typing-extensions==4.14.0",
+    "black==25.1.0",
+    "build==1.2.2.post1",
+    "flake8==7.1.2",
+    "isort==6.0.1",
+    "setuptools==80.9.0",
+    "pre-commit==4.2.0",
+    "pyproject-hooks==1.2.0",
+    "pytest==8.4.0",
+    "wheel==0.45.1",
 ]
 
 [project.scripts]
