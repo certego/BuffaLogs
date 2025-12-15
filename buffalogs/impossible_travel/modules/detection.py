@@ -194,19 +194,18 @@ def check_new_device(db_user: User, login_field: dict) -> dict:
     :return: dictionary with alert info
     :rtype: dict
     """
-    # if the user has not devices registred yet -> no alerts
-    if not db_user.devices.exists():
+    # if the user has not registred logins yet -> no alerts
+    if not db_user.login_set.all():
         logger.info(f"User {db_user.username} has no registered devices yet. " f"Skipping NEW_DEVICE alert for login at {login_field['timestamp']}.")
         return {}
 
     # Create device fingerprint for the current user-agent
-    fingerprint = build_device_fingerprint(agent=login_field["agent"])
-    logger.info(f"Device fingerprint for user {db_user.username} at login {login_field['timestamp']}: {fingerprint}")
+    current_fingerprint = build_device_fingerprint(agent=login_field["agent"])
+    logger.info(f"Device fingerprint for user {db_user.username} at login {login_field['timestamp']}: {current_fingerprint}")
 
     # If the device fingerprint is new -> alert
-    if not db_user.devices.filter(fingerprint=fingerprint).exists():
-        db_user.devices.create(fingerprint=fingerprint, full_user_agent=login_field["agent"])
-
+    if not db_user.login_set.filter(device_fingeprint=current_fingerprint):
+        db_user.login_set.create(device_fingerprint=current_fingerprint, full_user_agent=login_field["agent"])
         return {
             "alert_name": AlertDetectionType.NEW_DEVICE.value,
             "alert_desc": (f"{AlertDetectionType.NEW_DEVICE.label} for User: " f"{db_user.username}, at: {login_field['timestamp']}"),
@@ -232,6 +231,7 @@ def add_new_login(db_user: User, new_login_field: dict):
         longitude=new_login_field["lon"],
         country=new_login_field["country"],
         user_agent=new_login_field["agent"],
+        device_fingerprint=build_device_fingerprint(agent=new_login_field["agent"]),
         index=new_login_field["index"],
         event_id=new_login_field["id"],
     )

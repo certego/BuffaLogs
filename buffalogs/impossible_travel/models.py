@@ -40,21 +40,6 @@ class User(models.Model):
         ]
 
 
-class UserDevice(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="devices")
-    fingerprint = models.CharField(max_length=255, db_index=True)  # device fingerprint: OS-OSmajordevice_type-broser es. "Windows-11-Desktop-Chrome"
-    full_user_agent = models.CharField(max_length=255, db_index=True)
-    first_seen = models.DateTimeField(auto_now_add=True)
-    last_seen = models.DateTimeField(auto_now=True)
-    times_seen = models.PositiveIntegerField(default=1)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.fingerprint}"
-
-    class Meta:
-        unique_together = ("user", "fingerprint")
-
-
 class Login(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
@@ -64,10 +49,10 @@ class Login(models.Model):
     longitude = models.FloatField(null=True)
     country = models.TextField(blank=True)
     user_agent = models.TextField(blank=True)
+    device_fingerprint = models.TextField(blank=True)
     index = models.TextField()
     event_id = models.TextField()
     ip = models.TextField()
-    device = models.ForeignKey(UserDevice, on_delete=models.SET_NULL, null=True, blank=True)
 
     @classmethod
     def apply_filters(

@@ -88,6 +88,7 @@ class LoginModelTest(TestCase):
             "index",
             "event_id",
             "ip",
+            "device_fingerprint",
         ]
         self.assertCountEqual(model_fields, expected_fields)
 
