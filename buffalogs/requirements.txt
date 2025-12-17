@@ -1,34 +1,45 @@
-celery>=5.4.0   # Task queues framework
-certifi>=2022.9.24
-cfgv>=3.3.1
-distlib>=0.3.6
-Django>=4.2.16  # Django main package
-djangorestframework>=3.15.2 # Django REST Framework main package
-djangorestframework-simplejwt>=5.3.0
-django-cors-headers>=4.3.0
-django-environ>=0.9.0
-elasticsearch>=7.17.12  # Official Python client for Elasticsearch
-elasticsearch-dsl>=7.4.1    # High-level library for Elasticsearch queries
-filelock>=3.9.0
-geographiclib>=2.0
-geopy>=2.4.1    # Client for geocoding web services
-kombu>=5.2.4
-nodeenv>=1.7.0
-pathspec>=0.10.3
-opensearch-py>=2.8.0    # for Opensearch ingestion source (optional)
-prompt-toolkit>=3.0.33
-psycopg[binary]>=3.2.3  # PostgreSQL adapter for Python
-pygal>=3.0.0    # for frontend graphs
-PyJWT>=2.10.1
-pygal_maps_world>=1.0.2 # for frontend map graphs
-python-dateutil>=2.8.2
-python-dotenv>=0.21.0
-pytz>=2024.1
-PyYAML>=6.0
-ua-parser>=1.0.0    # for user-agent parsing
-urllib3>=1.26.12
-uWSGI>=2.0.28
-virtualenv>=20.17.1
-wcwidth>=0.2.5
-requests>=2.32.3    # for Alerting module
-splunk-sdk>=2.1.0   # for Splunk ingestion source (optional)
+# === Core Framework ===
+Django>=5.2.5                         # Main Django framework (web application, ORM, admin, etc.)
+djangorestframework>=3.16             # Django REST Framework for building RESTful APIs
+djangorestframework-simplejwt>=5.5.1  # JWT authentication support for DRF
+django-cors-headers>=4.8.0            # (dev) Enables CORS headers for frontend-backend separation during development
+
+# === Task Queue / Background Jobs ===
+celery>=5.5.3                     # Distributed task queue for asynchronous jobs (e.g., scheduled ingestion)
+
+# === Database ===
+psycopg[binary]>=3.2.9           # PostgreSQL database adapter for Python (binary for better performance)
+
+# === Elasticsearch ===
+elasticsearch>=9.1             # Official low-level Python client for Elasticsearch
+
+# === Geo & Location ===
+geopy>=2.4.1                     # Library for geocoding and distance calculations via various APIs
+
+# === Date / Time Utilities ===
+python-dateutil>=2.9.0           # Enhanced date parsing, time delta calculations, etc.
+
+# === User-Agent Info Parsing ===
+ua-parser>=1.0.1                 # Parses user-agent strings into structured browser/device data
+
+# === Visualization ===
+pygal>=3.0.0                     # SVG graphing library (used for rendering frontend charts)
+pygal_maps_world>=1.0.2         # World map plugin for Pygal (used in geo-visualizations)
+
+# === JWT Utilities ===
+PyJWT>=2.10.1                    # JSON Web Token implementation (may be used directly or via DRF JWT)
+
+# === File handle utilities ===
+PyYAML>=6.0.2                    # To handle yaml files
+
+# === Jinja2 ===
+Jinja2>=3.1.6                   # Templating engine for rendering alert messages
+
+# === Backoff ===
+backoff>=2.2.1                   # Library for retrying operations with exponential backoff
+
+# === HTTP Requests ===
+requests>=2.32.5                 # HTTP library for sending alerts and webhooks
+
+# === Web Server ===
+uwsgi>=2.0.30                   # uWSGI application server for serving Django application

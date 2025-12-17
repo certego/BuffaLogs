@@ -1,0 +1,5 @@
+# OPTIONAL libraries (used in the tests or from the Ingestion and Alerting module
+
+# === Ingestion Sources (Optional because it's used Elasticsearch as default - enable depending on source type) ===
+splunk-sdk>=2.1.1              # For fetching logs from Splunk (used if Splunk ingestion is configured)
+opensearch-py>=3.0.0           # For ingesting data from OpenSearch (alternative to Elasticsearch)

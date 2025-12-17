@@ -1,6 +1,13 @@
 import json
 
-import requests
+try:
+    import requests
+except ImportError:
+    pass
+from collections import defaultdict
+
+import backoff
+from django.db.models import Q
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -22,11 +29,49 @@ class DiscordAlerting(BaseAlerting):
             self.logger.error("Discord Alerter configuration is missing required fields.")
             raise ValueError("Discord Alerter configuration is missing required fields.")
 
-    def notify_alerts(self):
+    @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
+    def send_message(self, alert, alert_title=None, alert_description=None):
+        if alert_title is None and alert_description is None and alert:
+            alert_title, alert_description = self.alert_message_formatter(alert)
+
+        alert_msg = {
+            "username": self.username,
+            "embeds": [{"title": alert_title, "description": alert_description, "color": 16711680}],  # red
+        }
+        headers = {"Content-Type": "application/json"}
+
+        resp = requests.post(self.webhook_url, headers=headers, data=json.dumps(alert_msg))
+        resp.raise_for_status()
+        return resp
+
+    def send_scheduled_summary(self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown):
+        summary_title, summary_description = self.alert_message_formatter(
+            alert=None,
+            template_path="alert_template_summary.jinja",
+            start_date=start_date,
+            end_date=end_date,
+            total_alerts=total_alerts,
+            user_breakdown=user_breakdown,
+            alert_breakdown=alert_breakdown,
+        )
+
+        try:
+            self.send_message(alert=None, alert_title=summary_title, alert_description=summary_description)
+            self.logger.info(f"Discord Summary Sent From: {start_date} To: {end_date}")
+        except requests.RequestException as e:
+            self.logger.exception(f"Discord Summary Notification Failed: {str(e)}")
+
+    def notify_alerts(self, start_date=None, end_date=None):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(notified=False)
+        alerts = Alert.objects.filter((Q(notified_status__discord=False) | ~Q(notified_status__has_key="discord")))
+        if start_date is not None and end_date is not None:
+            alerts = Alert.objects.filter(
+                (Q(notified_status__discord=False) | ~Q(notified_status__has_key="discord")) & Q(created__range=(start_date, end_date))
+            )
+
+        grouped = defaultdict(list)
         for alert in alerts:
             alert_msg = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
             discord_message = {
@@ -41,4 +86,4 @@ class DiscordAlerting(BaseAlerting):
                 alert.notified = True
                 alert.save()
             except requests.RequestException as e:
-                self.logger.exception(f"Discord alert failed for {alert.name}: {str(e)}")
+                self.logger.error(f"Discord alert failed for {alert.name}: {str(e)}")

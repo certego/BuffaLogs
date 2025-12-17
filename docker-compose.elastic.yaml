@@ -1,7 +1,7 @@
 services:
-    elasticsearch:
+    buffalogs_elasticsearch:
         container_name: buffalogs_elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.27
+        image: docker.elastic.co/elasticsearch/elasticsearch:9.1.2
         hostname: elasticsearch
         environment: 
             - node.name=buffalogs_elastic
@@ -11,6 +11,7 @@ services:
             - cluster.routing.allocation.disk.watermark.low=99%
             - cluster.routing.allocation.disk.watermark.high=99%
             - cluster.routing.allocation.disk.watermark.flood_stage=99%
+            - xpack.security.enabled=false
         ulimits:
             memlock: 
                 soft: -1
@@ -21,20 +22,22 @@ services:
             - elasticsearch_data:/usr/share/elasticsearch/data
         networks:
             - elk
+            - buffalogs_network 
         healthcheck:
             test: curl -XGET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'
 
-    kibana:
+    buffalogs_kibana:
         container_name: buffalogs_kibana
-        image: docker.elastic.co/kibana/kibana:7.17.27
+        image: docker.elastic.co/kibana/kibana:9.1.2
         hostname: kibana
         environment:
             ELASTICSEARCH_URL: http://elasticsearch:9200
             ELASTICSEARCH_HOSTS: http://elasticsearch:9200
         networks:
             - elk
+            - buffalogs_network
         depends_on:
-            - elasticsearch
+            - buffalogs_elasticsearch
         ports:
             - "127.0.0.1:5601:5601"
         healthcheck:
@@ -47,3 +50,5 @@ volumes:
 networks:
     elk:
         driver: bridge
+    buffalogs_network:
+        external: true

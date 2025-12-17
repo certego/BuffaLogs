@@ -32,7 +32,7 @@ In detail, it sends several types of alerts:
 
    The idea is to compare the logins provided by the internal authentication service of the company with the logins collected by BuffaLogs and alert in case of significant inconsistencies.
 
-*For further details: [Wiki - About](https://github.com/certego/BuffaLogs/wiki/1.-About)*
+*For further details: [Wiki - About](docs/about.md)*
 
 ## BuffaLogs is participating in FOSDEM 2025 Conference!
 
@@ -79,7 +79,7 @@ After that, there are two ways of running BuffaLogs, depending on your system co
 
 <img src="docs/static/map_buffalogs.png" width=750 height=400 alt="BuffaLogs Map Page"/>
 
-*For further examples: [Wiki - Example](https://github.com/certego/BuffaLogs/wiki/3.-Example)*
+*For further examples: [Wiki - Example](docs/example.md)*
 
 ##  Uninstall
 
@@ -104,10 +104,15 @@ This project is protected by the Apache Licence 2.0.
 BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](CONTRIBUTING.md) before making any changes to the project.
 
 ## Authors and Maintainers
-- [Federico Foschini](https://github.com/ManofWax) – Administrator, Software Architect, and Code Reviewer
-- [Lorena Goldoni](https://github.com/Lorygold) – Lead Author, Principal Maintainer, and Code Reviewer
+- [Federico Foschini](https://github.com/ManofWax) – Administrator, Software Architect and Code Reviewer
+- [Lorena Goldoni](https://github.com/Lorygold) – Lead Author, Principal Maintainer and Code Reviewer
+- [Francesca Priore](https://github.com/FP-CyberLynx/) – Cyber Security Analyst Specialist and Incident Responder
+- [Gabriele Carlucci](https://github.com/gcarlucc) – Cyber Security Analyst and Cyber Security Consultant
+- [Eugenio Severi](https://github.com/eugenioseveri) – DevOps Maintainer and Code Reviewer
+- [Luca Cigarini](https://github.com/lucaCigarini) – Backend Maintainer and Code Reviewer
+
+### Contributors
 - [Abheek Tripathy](https://github.com/abheektripathy) – Google Summer of Code 2024 contributor
 - [Onunwa Goodness](https://github.com/Noble-47) – Google Summer of Code 2025 contributor
 - [Kunal Gurtatta](https://github.com/kunalsz) – Google Summer of Code 2025 contributor
-
-[def]: docs/
+- [Dorna Raj Gyawali](https://github.com/drona-gyawali) - Backend contributor

@@ -64,7 +64,7 @@ jobs:
 
       run_codeql: false
 
-      requirements_path: buffalogs/requirements.txt
+      requirements_path: buffalogs/requirements-ci.txt
       django_settings_module: buffalogs.settings.settings
 
       check_migrations: true
@@ -77,7 +77,7 @@ jobs:
       postgres_version: 15
       use_memcached: false
       use_elastic_search: true
-      elasticsearch_version: 7.17.27
+      elasticsearch_version: 9.1.2
       use_rabbitmq: false
       use_mongo: false
       use_celery: false

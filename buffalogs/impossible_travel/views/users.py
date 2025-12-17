@@ -19,66 +19,22 @@ from impossible_travel.dashboard.charts import (
     user_time_of_day_chart,
 )
 from impossible_travel.models import Login, User
-from impossible_travel.views.utils import load_data
+from impossible_travel.serializers import UserSerializer
+from impossible_travel.views.utils import read_config
 
 
-def get_users(request):
-    context = []
-    users_list = User.objects.all().annotate(
-        login_count=Count("login", distinct=True), alert_count=Count("alert", distinct=True), last_login=Max("login__timestamp")
-    )
-    for user in users_list:
-        tmp = {
-            "id": user.id,
-            "user": user.username,
-            "last_login": user.last_login,
-            "risk_score": user.risk_score,
-        }
-        tmp["logins_num"] = user.login_count
-        tmp["alerts_num"] = user.alert_count
-        context.append(tmp)
-    return JsonResponse(json.dumps(context, default=str), safe=False)
+# Template Views
+def unique_login_template_view(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    return render(request, "impossible_travel/unique_logins.html", {"user": user})
 
 
-def user_view(template_name):
-    def view_decorator(func):
-        @wraps(func)
-        def wrapper(request, pk_user=None):
-            context = {}
-            if pk_user is not None:
-                user = get_object_or_404(User, pk=pk_user)
-                context.update({"pk_user": pk_user, "user": user})
-            # fx can be supported with and without additional args(pk_users)
-            if pk_user is not None:
-                extra_context = func(request, pk_user)
-            else:
-                extra_context = func(request)
-
-            if extra_context:
-                context.update(extra_context)
-            return render(request, template_name, context)
-
-        return wrapper
-
-    return view_decorator
+def all_login_template_view(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    return render(request, "impossible_travel/all_logins.html", {"user": user})
 
 
-@user_view("impossible_travel/unique_logins.html")
-def unique_logins(request, pk_user):
-    return {}
-
-
-@user_view("impossible_travel/all_logins.html")
-def all_logins(request, pk_user):
-    return {}
-
-
-@user_view("impossible_travel/alerts.html")
-def alerts(request):
-    return {}
-
-
-def users(request):
+def users_template_view(request):
     users_list = User.objects.all()
     selected_user = None
 
@@ -116,6 +72,17 @@ def users(request):
         "charts": {k: (v if isinstance(v, str) else v.render(is_unicode=True)) for k, v in charts.items()},
     }
     return render(request, "impossible_travel/users.html", context)
+
+
+def list_users(request):
+    serialized_users = UserSerializer(User.objects)
+    return JsonResponse(serialized_users.data, safe=False)
+
+
+def user_details(request, user_id: int):
+    user = get_object_or_404(User, pk=user_id)
+    serialized_user = UserSerializer(user)
+    return JsonResponse(serialized_user.data, safe=False)
 
 
 @require_http_methods(["GET"])
@@ -285,7 +252,7 @@ def user_geo_distribution_api(request, pk):
     logins = Login.objects.filter(user=user, timestamp__range=(start_date, end_date))
     country_data = logins.values("country").annotate(count=Count("id"))
 
-    countries = load_data("countries")
+    countries = read_config("countries_list.json")
     name_to_code = {v.lower(): k for k, v in countries.items()}
 
     country_counts = {}

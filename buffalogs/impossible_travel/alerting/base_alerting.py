@@ -4,8 +4,6 @@ import os
 from abc import ABC, abstractmethod
 from enum import Enum
 
-from django.conf import settings
-
 
 class BaseAlerting(ABC):
     """
@@ -37,13 +35,3 @@ class BaseAlerting(ABC):
         Must be implemented by concrete classes.
         """
         raise NotImplementedError
-
-    @staticmethod
-    def read_config(alerter_key: str):
-        """
-        Read the configuration for a specific alerter from alerting.json.
-        """
-        config_path = os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json")
-        with open(config_path, mode="r", encoding="utf-8") as f:
-            config = json.load(f)
-        return config.get(alerter_key, {})

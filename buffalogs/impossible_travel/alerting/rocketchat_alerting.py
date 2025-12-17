@@ -1,4 +1,11 @@
-import requests
+try:
+    import requests
+except ImportError:
+    pass
+from collections import defaultdict
+
+import backoff
+from django.db.models import Q
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.models import Alert
 
@@ -21,19 +28,71 @@ class RocketChatAlerting(BaseAlerting):
             self.logger.error("RocketChat Alerter configuration is missing required fields.")
             raise ValueError("RocketChat Alerter configuration is missing required fields.")
 
-    def notify_alerts(self):
+    @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
+    def send_message(self, alert, alert_title=None, alert_description=None):
+        if alert_title is None and alert_description is None and alert:
+            alert_title, alert_description = self.alert_message_formatter(alert)
+
+        alert_msg = alert_title + "\n\n" + alert_description
+
+        rocketchat_message = {"text": alert_msg, "username": self.username, "channel": self.channel}
+
+        resp = requests.post(self.webhook_url, data=rocketchat_message)
+        resp.raise_for_status()
+        return resp
+
+    def send_scheduled_summary(self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown):
+        summary_title, summary_description = self.alert_message_formatter(
+            alert=None,
+            template_path="alert_template_summary.jinja",
+            start_date=start_date,
+            end_date=end_date,
+            total_alerts=total_alerts,
+            user_breakdown=user_breakdown,
+            alert_breakdown=alert_breakdown,
+        )
+
+        try:
+            self.send_message(alert=None, alert_title=summary_title, alert_description=summary_description)
+            self.logger.info(f"RocketChat Summary Sent From: {start_date} To: {end_date}")
+        except requests.RequestException as e:
+            self.logger.exception(f"RocketChat Summary Notification Failed: {str(e)}")
+
+    def notify_alerts(self, start_date=None, end_date=None):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(notified=False)
+        alerts = Alert.objects.filter((Q(notified_status__rocketchat=False) | ~Q(notified_status__has_key="rocketchat")))
+        if start_date is not None and end_date is not None:
+            alerts = Alert.objects.filter(
+                (Q(notified_status__rocketchat=False) | ~Q(notified_status__has_key="rocketchat")) & Q(created__range=(start_date, end_date))
+            )
+
+        grouped = defaultdict(list)
         for alert in alerts:
-            alert_msg = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
-            rocketchat_message = {"text": alert_msg, "username": self.username, "channel": self.channel}
-            try:
-                resp = requests.post(self.webhook_url, data=rocketchat_message)
-                resp.raise_for_status()
-                self.logger.info(f"RocketChat alert sent: {alert.name}")
-                alert.notified = True
-                alert.save()
-            except requests.RequestException as e:
-                self.logger.exception(f"RocketChat alert failed for {alert.name}: {str(e)}")
+            key = (alert.user.username, alert.name)
+            grouped[key].append(alert)
+
+        for (username, alert_name), group_alerts in grouped.items():
+            if len(group_alerts) == 1:
+                try:
+                    alert = group_alerts[0]
+                    self.send_message(alert=alert)
+                    self.logger.info(f"RocketChat alert sent: {alert.name}")
+                    alert.notified_status["rocketchat"] = True
+                    alert.save()
+                except requests.RequestException as e:
+                    self.logger.exception(f"RocketChat Notification Failed for {alert}: {str(e)}")
+
+            else:
+                alert = group_alerts[0]
+                alert_title, alert_description = self.alert_message_formatter(alert=alert, template_path="alert_template_clubbed.jinja", alerts=group_alerts)
+                try:
+                    self.send_message(alert=None, alert_title=alert_title, alert_description=alert_description)
+                    self.logger.info(f"Clubbed RocketChat Alert Sent: {alert_title}")
+
+                    for a in group_alerts:
+                        a.notified_status["rocketchat"] = True
+                        a.save()
+                except requests.RequestException as e:
+                    self.logger.exception(f"Clubbed RocketChat Alert Failed for {group_alerts}: {str(e)}")

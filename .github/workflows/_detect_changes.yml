@@ -37,11 +37,11 @@ jobs:
       backend: ${{steps.diff_check_backend.outputs.backend}}
       frontend: ${{steps.diff_check_frontend.outputs.frontend}}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         ref: ${{ github.base_ref }}
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         clean: false
     - name: Generate summary

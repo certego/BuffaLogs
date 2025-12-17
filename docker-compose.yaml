@@ -4,6 +4,8 @@ services:
         container_name: buffalogs_postgres
         image: postgres:15-alpine
         hostname: postgres
+        networks:
+            - buffalogs_network
         environment:
             POSTGRES_USER: default_user
             POSTGRES_PASSWORD: password
@@ -12,11 +14,18 @@ services:
             - buffalogs_postgres_data:/var/lib/postgresql/data
         ports:
             - "5433:5432"
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "default_user", "-d", "buffalogs"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
     buffalogs_nginx:
         container_name: buffalogs_nginx
         image: nginx:mainline-alpine
         hostname: nginx
+        networks:
+            - buffalogs_network
         depends_on:
             - buffalogs
         volumes:
@@ -27,6 +36,7 @@ services:
             - buffalogs_nginx_logs:/var/log/nginx:rw
         ports:
             - "80:80"
+            - "8000:80"
            # - "443:443"
 
     buffalogs:
@@ -36,6 +46,8 @@ services:
             dockerfile: build/Dockerfile
         image: certego/buffalogs
         hostname: buffalogs
+        networks:
+            - buffalogs_network
         env_file:
             -  config/buffalogs/buffalogs.env
         volumes:
@@ -51,6 +63,8 @@ services:
         container_name: buffalogs_rabbitmq
         image: rabbitmq:3.13-management-alpine
         hostname: rabbitmq
+        networks:
+            - buffalogs_network
         volumes:
             - ./config/rabbitmq:/etc/rabbitmq:ro
             - buffalogs_rabbitmq_data:/var/lib/rabbitmq
@@ -64,6 +78,8 @@ services:
         container_name: buffalogs_celery
         image: buffalogs:latest
         hostname: celery
+        networks:
+            - buffalogs_network
         build:
             context: .
             dockerfile: build/Dockerfile
@@ -84,6 +100,8 @@ services:
             dockerfile: build/Dockerfile
         image: buffalogs:latest
         hostname: celery_beat
+        networks:
+            - buffalogs_network
         env_file:
             - config/buffalogs/buffalogs.env
         command:
@@ -99,6 +117,8 @@ services:
         build:
             context: ./frontend
             dockerfile: Dockerfile
+        networks:
+            - buffalogs_network
         ports:
             - "3000:3000"
         environment:
@@ -125,3 +145,8 @@ volumes:
         driver: local
     buffalogs_rabbitmq_data:
         driver: local
+
+networks:
+    buffalogs_network:
+        driver: bridge
+        name: buffalogs_network

@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from impossible_travel.constants import AlertTagValues
 from impossible_travel.forms import AlertAdminForm, ConfigAdminForm, TaskSettingsAdminForm, UserAdminForm
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 
@@ -45,6 +47,32 @@ class UserAdmin(admin.ModelAdmin):
         return obj.risk_score
 
 
+class TagListFilter(admin.SimpleListFilter):
+    """
+    Custom filter for the 'tags' ArrayField.
+    It is to ensures that the query uses the correct PostgresQL array lookup (__contains).
+    """
+
+    title = _("Alert Tags")
+    parameter_name = "tag_filter"
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of (value,label)
+        for all possible tags from AlertTagValues.
+        """
+        return AlertTagValues.choices
+
+    def queryset(self, request, queryset):
+        """
+        Applies the filter to the queryset using the __contains lookup,
+        which is correct for ArrayField filtering.
+        """
+        if self.value():
+            return queryset.filter(tags__contains=[self.value()])
+        return queryset
+
+
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
     form = AlertAdminForm
@@ -59,9 +87,11 @@ class AlertAdmin(admin.ModelAdmin):
         "is_filtered_field_display",
         "filter_type",
         "is_vip",
+        "tags",
     )
     search_fields = ("id", "user__username", "name")
-    readonly_fields = ("name", "get_username", "login_raw_data", "description", "filter_type", "is_filtered_field_display", "is_vip", "notified")
+    list_filter = ("is_vip", "filter_type", TagListFilter)
+    readonly_fields = ("get_username", "description", "filter_type", "is_filtered_field_display", "is_vip", "notified_status")
 
     @admin.display(description="username")
     def get_username(self, obj):
@@ -87,7 +117,10 @@ class ConfigsAdmin(admin.ModelAdmin):
             "Detection filters - users",
             {"fields": ("ignored_users", "enabled_users", "vip_users", "alert_is_vip_only", "alert_minimum_risk_score", "risk_score_increment_alerts")},
         ),
-        ("Detection filters - location", {"fields": ("ignored_ips", "allowed_countries")}),
+        (
+            "Detection filters - location",
+            {"fields": ("ignored_ips", "allowed_countries", "ignored_impossible_travel_all_same_country", "ignored_impossible_travel_countries_couples")},
+        ),
         ("Detection filters - devices", {"fields": ("ignored_ISPs", "ignore_mobile_logins")}),
         ("Detection filters - alerts", {"fields": ("filtered_alerts_types",)}),
         ("Detection setup - Alerts", {"fields": ("distance_accepted", "vel_accepted", "atypical_country_days", "threshold_user_risk_alert")}),

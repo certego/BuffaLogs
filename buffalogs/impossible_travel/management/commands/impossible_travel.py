@@ -1,18 +1,17 @@
 import logging
 from datetime import datetime
 
-from django.core.management.base import BaseCommand
-from impossible_travel.models import TaskSettings
+from impossible_travel.management.commands.base_command import TaskLoggingCommand
 from impossible_travel.tasks import process_logs
 
 logger = logging.getLogger()
 
 
-class Command(BaseCommand):
+class Command(TaskLoggingCommand):
     help = "Impossible Travel tasks call to run the detection manually"
 
     def add_arguments(self, parser):
-        # Optional arguments
+        super().add_arguments(parser)
         parser.add_argument("start_date", nargs="?", type=str, help="Start datetime from which begin the detection")
         parser.add_argument("end_date", nargs="?", type=str, help="End datetime for the detection")
 
