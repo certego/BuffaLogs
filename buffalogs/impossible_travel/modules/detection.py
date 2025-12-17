@@ -204,8 +204,8 @@ def check_new_device(db_user: User, login_field: dict) -> dict:
     logger.info(f"Device fingerprint for user {db_user.username} at login {login_field['timestamp']}: {current_fingerprint}")
 
     # If the device fingerprint is new -> alert
-    if not db_user.login_set.filter(device_fingeprint=current_fingerprint):
-        db_user.login_set.create(device_fingerprint=current_fingerprint, full_user_agent=login_field["agent"])
+    if not db_user.login_set.filter(device_fingerprint=current_fingerprint):
+        db_user.login_set.create(device_fingerprint=current_fingerprint)
         return {
             "alert_name": AlertDetectionType.NEW_DEVICE.value,
             "alert_desc": (f"{AlertDetectionType.NEW_DEVICE.label} for User: " f"{db_user.username}, at: {login_field['timestamp']}"),

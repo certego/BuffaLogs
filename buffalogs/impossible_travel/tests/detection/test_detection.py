@@ -2,7 +2,7 @@ import datetime
 from unittest.mock import patch
 
 from django.core.management import call_command
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType
@@ -204,7 +204,14 @@ class DetectionTestCase(TestCase):
         # Test to check that the NEW_DEVICE alert has not been triggered for the first seen device
         db_user = User.objects.get(username="Lorena Goldoni")
         Login.objects.filter(user=db_user).delete()
-        self.assertEqual(0, len(db_user.devices.all()))
+        devices = (
+            Login.objects.filter(
+                user=db_user,
+            )
+            .values("user_agent")
+            .annotate(count=Count("id"))
+        )
+        self.assertEqual(0, len(devices))
         last_login_user_fields = {
             "timestamp": "2023-03-08T17:10:33.358Z",
             "lat": "14.9876",
