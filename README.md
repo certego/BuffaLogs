@@ -104,10 +104,15 @@ This project is protected by the Apache Licence 2.0.
 BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](CONTRIBUTING.md) before making any changes to the project.
 
 ## Authors and Maintainers
-- [Federico Foschini](https://github.com/ManofWax) – Administrator, Software Architect, and Code Reviewer
-- [Lorena Goldoni](https://github.com/Lorygold) – Lead Author, Principal Maintainer, and Code Reviewer
+- [Federico Foschini](https://github.com/ManofWax) – Administrator, Software Architect and Code Reviewer
+- [Lorena Goldoni](https://github.com/Lorygold) – Lead Author, Principal Maintainer and Code Reviewer
+- [Francesca Priore](https://github.com/FP-CyberLynx/) – Cyber Security Analyst Specialist and Incident Responder
+- [Gabriele Carlucci](https://github.com/gcarlucc) – Cyber Security Analyst and Cyber Security Consultant
+- [Eugenio Severi](https://github.com/eugenioseveri) – DevOps Maintainer and Code Reviewer
+- [Luca Cigarini](https://github.com/lucaCigarini) – Backend Maintainer and Code Reviewer
+
+### Contributors
 - [Abheek Tripathy](https://github.com/abheektripathy) – Google Summer of Code 2024 contributor
 - [Onunwa Goodness](https://github.com/Noble-47) – Google Summer of Code 2025 contributor
 - [Kunal Gurtatta](https://github.com/kunalsz) – Google Summer of Code 2025 contributor
-
-[def]: docs/
+- [Dorna Raj Gyawali](https://github.com/drona-gyawali) - Backend contributor
