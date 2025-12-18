@@ -1,6 +1,7 @@
 import logging
+import re
 from argparse import RawTextHelpFormatter
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
@@ -30,8 +31,49 @@ def _cast_value(val: str) -> Any:
     return val
 
 
+def _parse_list_values(inner: str) -> List[Any]:
+    """Parse comma-separated values, respecting quoted strings.
+
+    Handles values like:
+    - 'New Device', 'User Risk Threshold', 'Anonymous IP Login'
+    - "New Device", "User Risk Threshold"
+    - New Device, User Risk
+    - Mixed: 'New Device', "User Risk", Plain Value
+    """
+    if not inner.strip():
+        return []
+
+    # Pattern to match quoted strings (single or double) or unquoted values
+    # This regex matches:
+    # - Single-quoted strings: 'value with spaces'
+    # - Double-quoted strings: "value with spaces"
+    # - Unquoted values: value_without_spaces (until comma or end)
+    pattern = r"""
+        '([^']*)'        |  # Single-quoted string (group 1)
+        "([^"]*)"        |  # Double-quoted string (group 2)
+        ([^,\[\]'"]+)       # Unquoted value (group 3)
+    """
+
+    values = []
+    for match in re.finditer(pattern, inner, re.VERBOSE):
+        # Get the matched group (whichever one matched)
+        value = match.group(1) or match.group(2) or match.group(3)
+        if value is not None:
+            value = value.strip()
+            if value:  # Skip empty values
+                values.append(_cast_value(value))
+
+    return values
+
+
 def parse_field_value(item: str) -> Tuple[str, Any]:
-    """Parse a string of the form FIELD=VALUE or FIELD=[val1,val2]"""
+    """Parse a string of the form FIELD=VALUE or FIELD=[val1,val2]
+
+    Supports multiple values for list fields:
+    - FIELD=['Value 1', 'Value 2', 'Value 3']
+    - FIELD=["Value 1", "Value 2"]
+    - FIELD=[Value1, Value2]
+    """
     if "=" not in item:
         raise CommandError(f"Invalid syntax '{item}': must be FIELD=VALUE")
 
@@ -40,7 +82,7 @@ def parse_field_value(item: str) -> Tuple[str, Any]:
 
     if value.startswith("[") and value.endswith("]"):
         inner = value[1:-1].strip()
-        parsed = [_cast_value(v) for v in inner.split(",") if v.strip()]
+        parsed = _parse_list_values(inner)
     else:
         parsed = _cast_value(value)
 
@@ -63,10 +105,22 @@ class Command(TaskLoggingCommand):
         -r FIELD=VALUE    Remove the specified VALUE from list values
 
         Examples:
-        ./manage.py setup_config -o allowed_countries=["Italy","Romania"]
-        ./manage.py setup_config -r ignored_users=[admin]
+        # Override with multiple values (use quotes around the entire argument)
+        ./manage.py setup_config -o "allowed_countries=['Italy', 'Romania', 'Germany']"
+
+        # Append multiple values to a list field
+        ./manage.py setup_config -a "filtered_alerts_types=['New Device', 'User Risk Threshold', 'Anonymous IP Login']"
+
+        # Remove multiple values from a list field
+        ./manage.py setup_config -r "ignored_users=['admin', 'bot', 'audit']"
+
+        # Mixed operations
+        ./manage.py setup_config -o "allowed_countries=['Italy']" -r "ignored_users=['bot']" -a "filtered_alerts_types=['New Device', 'Impossible Travel']"
+
+        # Non-list field override
         ./manage.py setup_config -a alert_is_vip_only=True
-        ./manage.py setup_config -o allowed_countries=["Italy"] -r ignored_users="bot" -r ignored_users=["audit"] -a filtered_alerts_types=["New Device"]
+
+        Note: When passing values with spaces, wrap the entire argument in quotes.
 
         Additional options:
         --set-default-values   Reset all fields in Config to their default values
