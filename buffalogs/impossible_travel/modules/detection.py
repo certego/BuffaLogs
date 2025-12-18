@@ -7,6 +7,7 @@ from geopy.distance import geodesic
 from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, Login, User, UsersIP
 from impossible_travel.modules import alert_filter
+from impossible_travel.utils.utils import build_device_fingerprint
 
 logger = get_task_logger(__name__)
 
@@ -193,12 +194,24 @@ def check_new_device(db_user: User, login_field: dict) -> dict:
     :return: dictionary with alert info
     :rtype: dict
     """
-    alert_info = {}
-    if db_user.login_set.filter(user_agent=login_field["agent"]).count() == 0:
-        timestamp = login_field["timestamp"]
-        alert_info["alert_name"] = AlertDetectionType.NEW_DEVICE.value
-        alert_info["alert_desc"] = f"{AlertDetectionType.NEW_DEVICE.label} for User: {db_user.username}, at: {timestamp}"
-        return alert_info
+    # if the user has not registred logins yet -> no alerts
+    if not db_user.login_set.all():
+        logger.info(f"User {db_user.username} has no registered devices yet. " f"Skipping NEW_DEVICE alert for login at {login_field['timestamp']}.")
+        return {}
+
+    # Create device fingerprint for the current user-agent
+    current_fingerprint = build_device_fingerprint(agent=login_field["agent"])
+    logger.info(f"Device fingerprint for user {db_user.username} at login {login_field['timestamp']}: {current_fingerprint}")
+
+    # If the device fingerprint is new -> alert
+    if not db_user.login_set.filter(device_fingerprint=current_fingerprint):
+        return {
+            "alert_name": AlertDetectionType.NEW_DEVICE.value,
+            "alert_desc": (f"{AlertDetectionType.NEW_DEVICE.label} for User: " f"{db_user.username}, at: {login_field['timestamp']}"),
+        }
+
+    # No alert
+    return {}
 
 
 def add_new_login(db_user: User, new_login_field: dict):
@@ -217,6 +230,7 @@ def add_new_login(db_user: User, new_login_field: dict):
         longitude=new_login_field["lon"],
         country=new_login_field["country"],
         user_agent=new_login_field["agent"],
+        device_fingerprint=build_device_fingerprint(agent=new_login_field["agent"]),
         index=new_login_field["index"],
         event_id=new_login_field["id"],
     )
