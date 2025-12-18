@@ -202,30 +202,29 @@ class Command(TaskLoggingCommand):
             if is_list and not isinstance(value, list):
                 value = [value]
 
-            # Validate values
-            values_to_validate = value if is_list else [value]
-            for val in values_to_validate:
-                for validator in getattr(field_obj, "validators", []):
-                    try:
-                        validator(val)
-                    except ValidationError as e:
-                        raise CommandError(f"Validation error on field '{field}' with value '{val}': {e}")
-
-            # Apply changes
+            # Apply changes first (before validation)
             if is_list:
                 current = current or []
                 if mode == "append":
-                    current += value
+                    new_value = current + value
                 elif mode == "override":
-                    current = value
+                    new_value = value
                 elif mode == "remove":
-                    current = [item for item in current if item not in value]
+                    new_value = [item for item in current if item not in value]
             else:
                 if mode != "override":
                     raise CommandError(f"Field '{field}' is not a list. Use --override to set its value.")
-                current = value
+                new_value = value
 
-            setattr(config, field, current)
+            # Validate the final computed value
+            # For ArrayFields, validators expect the complete list (not individual items)
+            for validator in getattr(field_obj, "validators", []):
+                try:
+                    validator(new_value)
+                except ValidationError as e:
+                    raise CommandError(f"Validation error on field '{field}' with value '{new_value}': {e}")
+
+            setattr(config, field, new_value)
 
         config.save()
         self.stdout.write(self.style.SUCCESS("Config updated successfully."))
