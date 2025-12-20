@@ -19,8 +19,9 @@ class TestDeviceFingerprintMigration(TransactionTestCase):
 
         ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.0.0"
         test_user = User.objects.create(
-            username="@drona",
-        
+            username="drona_1",
+        )
+
         Login.objects.create(user_id=test_user.id, user_agent=ua)
 
         new_state = self.migrator.apply_tested_migration(("impossible_travel", "0022_remove_tasksettings_unique_task_execution_mode_and_more"))
@@ -60,7 +61,7 @@ class TestDeviceFingerprintMigration(TransactionTestCase):
         User = old_state.apps.get_model("impossible_travel", "User")
         Login = old_state.apps.get_model("impossible_travel", "Login")
 
-        user = User.objects.create(username="@drona")
+        user = User.objects.create(username="drona_2")
 
         Login.objects.create(user_id=user.id, user_agent="")
 
