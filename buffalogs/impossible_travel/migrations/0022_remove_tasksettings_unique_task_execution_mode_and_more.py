@@ -17,8 +17,9 @@ def populate_device_fingerprint(apps, schema_editor):
 
     for login_db in Login.objects.all():
         if not login_db.user_agent:
-            return UNKNOWN_FINGERPRINT
-
+            login_db.device_fingerprint = UNKNOWN_FINGERPRINT
+            login_db.save()
+            continue
         try:
             parsed = user_agent_parser.Parse(login_db.user_agent)
         except Exception:
