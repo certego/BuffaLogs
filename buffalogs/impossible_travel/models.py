@@ -1,13 +1,18 @@
-from datetime import datetime
-
+from datetime import datetime 
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
 from impossible_travel.validators import validate_countries_names, validate_country_couples_list, validate_ips_or_network, validate_string_or_regex
+from django.contrib.postgres.fields import ArrayField  # add this import
+
+class AlertTagType(models.TextChoices):
+    SUSPICIOUS_IP = "suspicious_ip", "Suspicious IP"
+    TOR_EXIT_NODE = "tor_exit_node", "TOR Exit Node"
+    IMPOSSIBLE_TRAVEL = "impossible_travel", "Impossible Travel"
+    VPN = "vpn", "VPN"
 
 
 class User(models.Model):
@@ -99,12 +104,23 @@ class Alert(models.Model):
     updated = models.DateTimeField(auto_now=True)
     description = models.TextField()
     is_vip = models.BooleanField(default=False)
-    filter_type = ArrayField(
-        models.CharField(max_length=50, choices=AlertFilterType.choices, blank=True),
-        blank=True,
+
+    tags = ArrayField(
+        models.CharField(
+            max_length=50,
+            choices=AlertTagType.choices,
+        ),
         default=list,
-        help_text="List of filters that disabled the related alert",
+        blank=True,
+        help_text="Select one or more tags",
     )
+
+    filter_type = models.JSONField(
+    default=list,
+    blank=True,
+    help_text="List of filters that disabled the related alert",
+ )
+
     notified_status = models.JSONField(default=dict, blank=True, help_text="Tracks each active_alerter status")
 
     @property
@@ -185,18 +201,12 @@ class Alert(models.Model):
         return query
 
     class Meta:
-        constraints = [
-            models.CheckConstraint(
-                # Check that the Alert.name is one of the value in the Enum AlertDetectionType
-                check=models.Q(name__in=[choice[0] for choice in AlertDetectionType.choices]),
-                name="valid_alert_name_choice",
-            ),
-            models.CheckConstraint(
-                # Check that each element in the Alert.filter_type is in the Enum AlertFilterType
-                check=models.Q(filter_type__contained_by=[choice[0] for choice in AlertFilterType.choices]) | models.Q(filter_type=[]),
-                name="valid_alert_filter_type_choices",
-            ),
-        ]
+     constraints=[
+    models.CheckConstraint(
+        check=models.Q(name__in=[choice[0] for choice in AlertDetectionType.choices]),
+        name="valid_alert_name_choice",
+    ),
+ ]
 
 
 class UsersIP(models.Model):
@@ -212,200 +222,67 @@ class TaskSettings(models.Model):
     updated = models.DateTimeField(auto_now=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-
+from django.db import models
+from django.conf import settings
+from django.core.exceptions import ValidationError
 
 def get_default_ignored_users():
-    return list(settings.CERTEGO_BUFFALOGS_IGNORED_USERS)
-
+    return getattr(settings, "CERTEGO_BUFFALOGS_IGNORED_USERS", [])
 
 def get_default_enabled_users():
-    return list(settings.CERTEGO_BUFFALOGS_ENABLED_USERS)
-
-
-def get_default_ignored_ips():
-    return list(settings.CERTEGO_BUFFALOGS_IGNORED_IPS)
-
-
-def get_default_ignored_ISPs():  # pylint: disable=invalid-name
-    return list(settings.CERTEGO_BUFFALOGS_IGNORED_ISPS)
-
-
-def get_default_allowed_countries():
-    return list(settings.CERTEGO_BUFFALOGS_ALLOWED_COUNTRIES)
-
+    return getattr(settings, "CERTEGO_BUFFALOGS_ENABLED_USERS", [])
 
 def get_default_vip_users():
-    return list(settings.CERTEGO_BUFFALOGS_VIP_USERS)
+    return getattr(settings, "CERTEGO_BUFFALOGS_VIP_USERS", [])
 
+def get_default_ignored_ips():
+    return getattr(settings, "CERTEGO_BUFFALOGS_IGNORED_IPS", [])
+
+def get_default_ignored_ISPs():
+    return getattr(settings, "CERTEGO_BUFFALOGS_IGNORED_ISPS", [])
+
+def get_default_allowed_countries():
+    return getattr(settings, "CERTEGO_BUFFALOGS_ALLOWED_COUNTRIES", [])
 
 def get_default_risk_score_increment_alerts():
-    return list(settings.CERTEGO_BUFFALOGS_RISK_SCORE_INCREMENT_ALERTS)
-
+    return getattr(settings, "CERTEGO_BUFFALOGS_RISK_SCORE_INCREMENT_ALERTS", [])
 
 def get_default_filtered_alerts_types():
-    return list(settings.CERTEGO_BUFFALOGS_FILTERED_ALERTS_TYPES)
+    return getattr(settings, "CERTEGO_BUFFALOGS_FILTERED_ALERTS_TYPES", [])
 
 
 class Config(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    # Detection filters - users
-    ignored_users = ArrayField(
-        models.CharField(max_length=50),
-        blank=True,
-        null=True,
-        default=get_default_ignored_users,
-        validators=[validate_string_or_regex],
-        help_text="List of users (strings or regex patterns) to be ignored from the detection",
-    )
-    enabled_users = ArrayField(
-        models.CharField(max_length=50),
-        blank=True,
-        null=True,
-        default=get_default_enabled_users,
-        validators=[validate_string_or_regex],
-        help_text="List of selected users (strings or regex patterns) on which the detection will perform",
-    )
-    vip_users = ArrayField(
-        models.CharField(max_length=50),
-        blank=True,
-        null=True,
-        default=get_default_vip_users,
-        help_text="List of users considered more sensitive",
-    )
-    alert_is_vip_only = models.BooleanField(
-        default=False,
-        help_text="Flag to send alert only related to the users in the vip_users list",
-    )
-    alert_minimum_risk_score = models.CharField(
-        choices=UserRiskScoreType.choices,
-        max_length=30,
-        blank=False,
-        default=UserRiskScoreType.MEDIUM,
-        help_text="Select the risk_score that users should have at least to send the alerts",
-    )
-    risk_score_increment_alerts = ArrayField(
-        models.CharField(max_length=50, choices=AlertDetectionType.choices, blank=False),
-        default=get_default_risk_score_increment_alerts,
-        blank=False,
-        null=False,
-        help_text="List of alert types to consider to increase the user risk_score",
-    )
 
-    # Detection filters - location
-    ignored_ips = ArrayField(
-        models.CharField(max_length=50),
-        blank=True,
-        null=True,
-        default=get_default_ignored_ips,
-        validators=[validate_ips_or_network],
-        help_text="List of IPs to remove from the detection",
-    )
-    allowed_countries = ArrayField(
-        models.CharField(max_length=20),
-        blank=True,
-        null=True,
-        default=get_default_allowed_countries,
-        validators=[validate_countries_names],
-        help_text="List of countries to exclude from the detection, because 'trusted' for the customer",
-    )
+    ignored_users = models.JSONField(default=get_default_ignored_users, blank=True)
+    enabled_users = models.JSONField(default=get_default_enabled_users, blank=True)
+    vip_users = models.JSONField(default=get_default_vip_users, blank=True)
+    ignored_ips = models.JSONField(default=get_default_ignored_ips, blank=True)
+    ignored_isps = models.JSONField(default=get_default_ignored_ISPs, blank=True)
+    allowed_countries = models.JSONField(default=get_default_allowed_countries, blank=True)
+    risk_score_increment_alerts = models.JSONField(default=get_default_risk_score_increment_alerts, blank=True)
+    filtered_alerts_types = models.JSONField(default=get_default_filtered_alerts_types, blank=True)
 
-    # Detection filters - devices
-    ignored_ISPs = ArrayField(
-        models.CharField(max_length=50),
-        blank=True,
-        null=True,
-        default=get_default_ignored_ISPs,
-        help_text="List of ISPs names to remove from the detection",
-    )
-    ignore_mobile_logins = models.BooleanField(default=True, help_text="Flag to ignore mobile devices from the detection")
+    # Other boolean / char / int fields
+    alert_is_vip_only = models.BooleanField(default=False)
+    ignore_mobile_logins = models.BooleanField(default=True)
 
-    # Detection filters - alerts
-    filtered_alerts_types = ArrayField(
-        models.CharField(max_length=50, choices=AlertDetectionType.choices, blank=True),
-        default=get_default_filtered_alerts_types,
-        blank=True,
-        null=True,
-        help_text="List of alerts' types to exclude from the alerting",
-    )
-    threshold_user_risk_alert = models.CharField(
-        choices=UserRiskScoreType.choices,
-        max_length=30,
-        blank=False,
-        default=UserRiskScoreType.MEDIUM,
-        help_text="Select the risk_score that a user should overcome to send the 'USER_RISK_THRESHOLD' alert",
-    )
-    ignored_impossible_travel_countries_couples = models.JSONField(
-        default=list,
-        blank=True,
-        validators=[validate_country_couples_list],
-        help_text=(
-            "List of country pairs (start_country, last_country) to ignore for impossible_travel alerts. "
-            "Country names must match the names in the countries_list.json config file. "
-            "Example: [['Italy', 'Italy'], ['United States', 'France']]"
-        ),
-    )
-    ignored_impossible_travel_all_same_country = models.BooleanField(
-        default=True,
-        help_text=(
-            "If true, all the impossible travel alerts from and to the same country are ignored. "
-            "If you want to exclude just some countries, use the 'ignored_impossible_travel_countries_couples' Config field instead"
-        ),
-    )
-
-    distance_accepted = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED,
-        help_text="Minimum distance (in Km) between two logins after which the impossible travel detection starts",
-    )
-    vel_accepted = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED,
-        help_text="Minimum velocity (in Km/h) between two logins after which the impossible travel detection starts",
-    )
-    atypical_country_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS,
-        help_text="Days after which a login from a country is considered atypical",
-    )
-    user_learning_period = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD, help_text="Days considered to learn the user login behaviors - no alerts generation"
-    )
-    user_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS,
-        help_text="Days after which the users will be removed from the db",
-    )
-    login_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS,
-        help_text="Days after which the logins will be removed from the db",
-    )
-    alert_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS,
-        help_text="Days after which the alerts will be removed from the db",
-    )
-    ip_max_days = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS,
-        help_text="Days after which the IPs will be removed from the db",
-    )
+    distance_accepted = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED)
+    vel_accepted = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED)
+    atypical_country_days = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS)
+    user_learning_period = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD)
+    user_max_days = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS)
+    login_max_days = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS)
+    alert_max_days = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS)
+    ip_max_days = models.PositiveIntegerField(default=settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS)
 
     def clean(self):
         if not self.pk and Config.objects.exists():
-            raise ValidationError("A Config object already exist - it is possible just to modify it, not to create a new one")
-        # Config.id=1 always
-        self.pk = 1
+            raise ValidationError("A Config object already exists.")
+        self.pk = 1  # Always enforce pk=1
 
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
-
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                # Check that the Config.alert_minimum_risk_score is one of the value in the Enum UserRiskScoreType
-                check=models.Q(alert_minimum_risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
-                name="valid_config_alert_minimum_risk_score_choice",
-            ),
-            models.CheckConstraint(
-                # Check that each element in the Config.filtered_alerts_types is blank or it's in the Enum AlertFilterType
-                check=models.Q(filtered_alerts_types__contained_by=[choice[0] for choice in AlertDetectionType.choices])
-                | models.Q(filtered_alerts_types__isnull=True),
-                name="valid_alert_filters_choices",
-            ),
-        ]
+  
