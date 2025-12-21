@@ -8,7 +8,7 @@ import { getAlerts } from "@/lib/requestdata";
 
 interface RowData {
   timestamp: string;
-  username: string;
+  triggered_by: string;
   rule_name: string;
 }
 
@@ -21,7 +21,7 @@ const TableComponent: React.FC = () => {
   const [data, setData] = useState<RowData[]>([]);
   const columnDefs: ColDef[] = [
     { headerName: "Timestamp", field: "timestamp" },
-    { headerName: "Username", field: "username" },
+    { headerName: "Username", field: "triggered_by" },
     { headerName: "Rule Name", field: "rule_name" },
   ];
 

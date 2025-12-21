@@ -34,7 +34,7 @@ async function fetchData(
 // Each API function now delegates to fetchData
 export async function getUsersPieChart(dateRange?: DateRange): Promise<any> {
     return fetchData(
-        "users_pie_chart_api",
+        "api/analytics/chart/users/pie/",
         "Failed to fetch users pie chart data",
         dateRange
     );
@@ -42,7 +42,7 @@ export async function getUsersPieChart(dateRange?: DateRange): Promise<any> {
 
 export async function getAlertsLineChart(dateRange?: DateRange): Promise<any> {
     return fetchData(
-        "alerts_line_chart_api",
+        "api/analytics/chart/alerts/line/",
         "Failed to fetch users alerts chart data",
         dateRange
     );
@@ -50,7 +50,7 @@ export async function getAlertsLineChart(dateRange?: DateRange): Promise<any> {
 
 export async function getWorldMapChart(dateRange?: DateRange): Promise<any> {
     return fetchData(
-        "world_map_chart_api",
+        "api/analytics/chart/world-map/",
         "Failed to fetch users world chart data",
         dateRange
     );
@@ -58,7 +58,7 @@ export async function getWorldMapChart(dateRange?: DateRange): Promise<any> {
 
 export async function getAlerts(dateRange?: DateRange): Promise<any> {
     return fetchData(
-        "alerts_api",
+        "api/alerts/",
         "Failed to fetch alerts",
         dateRange
     );
