@@ -14,18 +14,33 @@ In the interest of fostering an open and welcoming environment, we pledge to mak
 Please follow the code of conduct in all your interactions with the project.
 
 #  Contribution Process
-## Issues
-You can create an issue choosing the template that suits you and completing the required sections:
 
-![image](https://github.com/user-attachments/assets/82ed3a87-545a-47aa-8bbe-e2196cda739c)
+## Bug fixes
 
-In any case, if you want to work on an existing issue or you have created a new one, before starting to work on it, you need to get the approval of one of the maintainers. 
-If you do not receive the assignment but you still raise a PR for that issue, your PR can be rejected. This is a form of respect for both the maintainers and the other contributors who could have already started to work on the same problem.
+For **bug fixes**, you may open a pull request **directly, without a prior issue**.
+The PR description must clearly include:
+
+* a detailed explanation of the problem
+
+* steps to reproduce the issue
+
+* screenshots or other evidence of the error
+
+* a description of how the issue was fixed
+
+## Issues (for features or refactors)
+
+* Create an issue using the appropriate template and fill in all required sections.
+
+* Before starting any work, the issue must be **reviewed, approved, and assigned** by a maintainer.
+
+* Pull requests opened without a prior assignment may be rejected, to avoid duplicated work and ensure coordination with maintainers and other contributors.
 
 ## Pull Request
-You can submit a PR only for an assigned issue. If you open a PR without prior discussion or approval, it may be directly rejected.
-Once you have started working on an issue and you have some work to share and discuss with us, please raise a draft PR early with incomplete changes. In this way you can continue working on the same and we can track your progress and actively review and help.
-Pull requests are allowed only for the `develop` branch. That code will be pushed to master only on a new release. Before submitting the PR, remember to pull the most recent changes available in the develop branch.
+
+* Pull requests are accepted only for the **develop** branch.
+
+* Add or update documentation under the `docs/` folder if needed
 
 How to create and submit a PR:
 1.  [Fork the repository](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) and clone it locally. Connect your local to the `develop` branch and pull in changes from it so that you stay up to date. 
