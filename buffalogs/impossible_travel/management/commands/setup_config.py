@@ -32,31 +32,18 @@ def _cast_value(val: str) -> Any:
 
 
 def _parse_list_values(inner: str) -> List[Any]:
-    """Parse comma-separated values, respecting quoted strings.
-
-    Handles values like:
-    - 'New Device', 'User Risk Threshold', 'Anonymous IP Login'
-    - "New Device", "User Risk Threshold"
-    - New Device, User Risk
-    - Mixed: 'New Device', "User Risk", Plain Value
-    """
+    """Parse comma-separated values from a list string, handling quoted values with spaces."""
     if not inner.strip():
         return []
 
-    # Pattern to match quoted strings (single or double) or unquoted values
-    # This regex matches:
-    # - Single-quoted strings: 'value with spaces'
-    # - Double-quoted strings: "value with spaces"
-    # - Unquoted values: value_without_spaces (until comma or end)
     pattern = r"""
-        '([^']*)'        |  # Single-quoted string (group 1)
-        "([^"]*)"        |  # Double-quoted string (group 2)
-        ([^,\[\]'"]+)       # Unquoted value (group 3)
+        '([^']*)'        |  # single-quoted
+        "([^"]*)"        |  # double-quoted
+        ([^,\[\]'"]+)       # unquoted
     """
 
     values = []
     for match in re.finditer(pattern, inner, re.VERBOSE):
-        # Get the matched group (whichever one matched)
         value = match.group(1) or match.group(2) or match.group(3)
         if value is not None:
             value = value.strip()
@@ -67,13 +54,7 @@ def _parse_list_values(inner: str) -> List[Any]:
 
 
 def parse_field_value(item: str) -> Tuple[str, Any]:
-    """Parse a string of the form FIELD=VALUE or FIELD=[val1,val2]
-
-    Supports multiple values for list fields:
-    - FIELD=['Value 1', 'Value 2', 'Value 3']
-    - FIELD=["Value 1", "Value 2"]
-    - FIELD=[Value1, Value2]
-    """
+    """Parse a FIELD=VALUE string, supporting list syntax like FIELD=[val1, val2]."""
     if "=" not in item:
         raise CommandError(f"Invalid syntax '{item}': must be FIELD=VALUE")
 
