@@ -73,17 +73,29 @@ class DiscordAlerting(BaseAlerting):
 
         grouped = defaultdict(list)
         for alert in alerts:
-            alert_msg = f"Dear user,\n\nAn unusual login activity has been detected:\n\n{alert.description}\n\nStay Safe,\nBuffalogs"
-            discord_message = {
-                "username": self.username,
-                "embeds": [{"title": f"Login Anomaly Alert: {alert.name}", "description": alert_msg, "color": 16711680}],  # red
-            }
-            headers = {"Content-Type": "application/json"}
-            try:
-                resp = requests.post(self.webhook_url, headers=headers, data=json.dumps(discord_message))
-                resp.raise_for_status()
-                self.logger.info(f"Discord alert sent: {alert.name}")
-                alert.notified = True
-                alert.save()
-            except requests.RequestException as e:
-                self.logger.error(f"Discord alert failed for {alert.name}: {str(e)}")
+            key = (alert.user.username, alert.name)
+            grouped[key].append(alert)
+
+        for (username, alert_name), group_alerts in grouped.items():
+            if len(group_alerts) == 1:
+                try:
+                    alert = group_alerts[0]
+                    self.send_message(alert=alert)
+                    self.logger.info(f"Discord alert sent: {alert.name}")
+                    alert.notified_status["discord"] = True
+                    alert.save()
+                except requests.RequestException as e:
+                    self.logger.exception(f"Discord Notification Failed for {alert}: {str(e)}")
+
+            else:
+                alert = group_alerts[0]
+                alert_title, alert_description = self.alert_message_formatter(alert=alert, template_path="alert_template_clubbed.jinja", alerts=group_alerts)
+                try:
+                    self.send_message(alert=None, alert_title=alert_title, alert_description=alert_description)
+                    self.logger.info(f"Clubbed Discord Alert Sent: {alert_title}")
+
+                    for a in group_alerts:
+                        a.notified_status["discord"] = True
+                        a.save()
+                except requests.RequestException as e:
+                    self.logger.exception(f"Clubbed Discord Alert Failed for {group_alerts}: {str(e)}")
