@@ -2,7 +2,7 @@ import datetime
 from unittest.mock import patch
 
 from django.core.management import call_command
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType
@@ -201,8 +201,17 @@ class DetectionTestCase(TestCase):
         self.assertEqual("Login from an atypical country for User: Lorena Goldoni, at: 2025-02-26T17:10:33.358Z, from: Germany", alert_result["alert_desc"])
 
     def test_check_new_device(self):
-        # Test to check the the NEW_DEVICE alert has not been triggered
+        # Test to check that the NEW_DEVICE alert has not been triggered for the first seen device
         db_user = User.objects.get(username="Lorena Goldoni")
+        Login.objects.filter(user=db_user).delete()
+        devices = (
+            Login.objects.filter(
+                user=db_user,
+            )
+            .values("user_agent")
+            .annotate(count=Count("id"))
+        )
+        self.assertEqual(0, len(devices))
         last_login_user_fields = {
             "timestamp": "2023-03-08T17:10:33.358Z",
             "lat": "14.9876",
@@ -210,11 +219,23 @@ class DetectionTestCase(TestCase):
             "country": "Sudan",
             "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
         }
-        self.assertIsNone(detection.check_new_device(db_user, last_login_user_fields))
+        self.assertDictEqual({}, detection.check_new_device(db_user, last_login_user_fields))
 
     def test_check_new_device_alert(self):
         # Test to check the triggering of the NEW_DEVICE alert
         db_user = User.objects.get(username="Lorena Goldoni")
+        # create a device for the user
+        Login.objects.create(
+            user=db_user,
+            event_id="event_1",
+            index="cloud",
+            ip="1.2.3.4",
+            timestamp=datetime.datetime(2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc),
+            latitude=40.364,
+            longitude=-79.8605,
+            country="United States",
+            user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
+        )
         last_login_user_fields = {
             "timestamp": "2023-03-08T17:10:33.358Z",
             "lat": "14.9876",
@@ -538,22 +559,41 @@ class DetectionTestCase(TestCase):
         fields2 = load_test_data("test_check_fields_part2")
         detection.check_fields(db_user, fields1)
         # First part - Expected alerts in Alert Model:
-        #   1. (2° login - id:2) at 2023-05-03T06:55:31.768Z alert NEW DEVICE
+        #   1. (2° login - id:2) at 2023-05-03T06:55:31.768Z alert NEW DEVICE (device_fingerprint="windows-10-desktop-other")
         #   2. (2° login - id:2) alert User Risk Threshold (from No risk to Low level)
         #   3. (2° login - id:2) at 2023-05-03T06:55:31.768Z alert NEW COUNTRY
         #   4. (2° login - id:2) at 2023-05-03T06:55:31.768Z alert IMP TRAVEL
         # ---
         #   5. (3° login - id: 3) at 2023-05-03T06:57:27.768Z alert ANONYMOUS_IP_LOGIN
         #   6. (3° login - id:3) alert User Risk Threshold (from Low to Medium level)
-        #   7. (3° login - id: 3) at 2023-05-03T06:57:27.768Z alert NEW DEVICE
-        #   8. (3° login - id: 3) at 2023-05-03T06:57:27.768Z alert NEW COUNTRY
-        #   9. (3° login - id: 3) at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
+        #   7. (3° login - id: 3) at 2023-05-03T06:57:27.768Z alert NEW COUNTRY
+        #   8. (3° login - id: 3) at 2023-05-03T06:57:27.768Z alert IMP TRAVEL
 
-        #   10.(3° login - id: 3) alert User Risk Threshold (from Medium to High level)
+        #   9.(3° login - id: 3) alert User Risk Threshold (from Medium to High level)
         # ---
-        #   11. (4° login - id: 4) at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
+        #   10. (4° login - id: 4) at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
         total_alerts = db_user.alert_set.filter().order_by("created")
-        self.assertEqual(11, len(total_alerts))
+        self.assertEqual("2023-05-03T06:55:31.768Z", total_alerts[0].login_raw_data["timestamp"])
+        self.assertEqual("New Device", total_alerts[0].name)
+        self.assertEqual("2023-05-03T06:55:31.768Z", total_alerts[1].login_raw_data["timestamp"])
+        self.assertEqual("User Risk Threshold", total_alerts[1].name)
+        self.assertEqual("2023-05-03T06:55:31.768Z", total_alerts[2].login_raw_data["timestamp"])
+        self.assertEqual("New Country", total_alerts[2].name)
+        self.assertEqual("2023-05-03T06:55:31.768Z", total_alerts[3].login_raw_data["timestamp"])
+        self.assertEqual("Imp Travel", total_alerts[3].name)
+        self.assertEqual("2023-05-03T06:57:27.768Z", total_alerts[4].login_raw_data["timestamp"])
+        self.assertEqual("Anonymous IP Login", total_alerts[4].name)
+        self.assertEqual("2023-05-03T06:57:27.768Z", total_alerts[5].login_raw_data["timestamp"])
+        self.assertEqual("User Risk Threshold", total_alerts[5].name)
+        self.assertEqual("2023-05-03T06:57:27.768Z", total_alerts[6].login_raw_data["timestamp"])
+        self.assertEqual("New Country", total_alerts[6].name)
+        self.assertEqual("2023-05-03T06:57:27.768Z", total_alerts[7].login_raw_data["timestamp"])
+        self.assertEqual("Imp Travel", total_alerts[7].name)
+        self.assertEqual("2023-05-03T07:10:23.154Z", total_alerts[8].login_raw_data["timestamp"])
+        self.assertEqual("Imp Travel", total_alerts[8].name)
+        self.assertEqual("2023-05-03T07:10:23.154Z", total_alerts[9].login_raw_data["timestamp"])
+        self.assertEqual("User Risk Threshold", total_alerts[9].name)
+        self.assertEqual(10, len(total_alerts))
         for alert in total_alerts:
             if alert.is_filtered:
                 count_filtered_alerts += 1
@@ -564,7 +604,7 @@ class DetectionTestCase(TestCase):
 
         # ADD ORDER BY TO ENSURE CONSISTENT ORDERING
         new_device_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).order_by("created")
-        self.assertEqual(2, new_device_alerts_fields1.count())
+        self.assertEqual(1, new_device_alerts_fields1.count())
         new_country_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).order_by("created")
         self.assertEqual(2, new_country_alerts_fields1.count())
         imp_travel_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL).order_by("created")
@@ -577,8 +617,6 @@ class DetectionTestCase(TestCase):
         # check new_device alerts for fields1 logins
         self.assertEqual("New Device", new_device_alerts_fields1[0].name)
         self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T06:55:31.768Z", new_device_alerts_fields1[0].description)
-        self.assertEqual("New Device", new_device_alerts_fields1[1].name)
-        self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T06:57:27.768Z", new_device_alerts_fields1[1].description)
         # check new_country alerts for fields1 logins
         self.assertEqual("New Country", new_country_alerts_fields1[0].name)
         self.assertEqual(
@@ -633,9 +671,9 @@ class DetectionTestCase(TestCase):
         config.save()
 
         # Second part - Expected new alerts in Alert Model:
-        #   12. at 2023-05-03T07:14:22.768Z alert NEW DEVICE
+        #   12. at 2023-05-03T07:14:22.768Z alert NEW DEVICE (device_fingerprint="android-4-mobile-firefoxmobile")
         #   13. at 2023-05-03T07:14:22.768Z alert IMP TRAVEL
-        #   14. at 2023-05-03T07:18:38.768Z alert NEW DEVICE
+        #   14. at 2023-05-03T07:18:38.768Z alert NEW DEVICE (device_fingeprint="linux-unknownosmajor-desktop-other")
         #   15. at 2023-05-03T07:18:38.768Z alert IMP TRAVEL
         #   16. at 2023-05-03T07:20:36.154Z alert IMP TRAVEL
 
@@ -643,12 +681,12 @@ class DetectionTestCase(TestCase):
         new_device_alerts_fields1_ids = list(new_device_alerts_fields1.values_list("id", flat=True))
 
         detection.check_fields(db_user, fields2)
-        self.assertEqual(16, Alert.objects.filter(user=db_user).count())
         # get new_device alerts relating to fields2 making query all_new_device_alerts - new_device_alerts_fields1
         all_new_device_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).order_by("created")
-        self.assertEqual(4, all_new_device_alerts.count())
+        self.assertEqual(3, all_new_device_alerts.count())
         new_device_alerts_fields2 = all_new_device_alerts.exclude(id__in=new_device_alerts_fields1_ids).order_by("created")
         self.assertEqual(2, new_device_alerts_fields2.count())
+        self.assertEqual(15, Alert.objects.filter(user=db_user).count())
         # check new_device alerts for fields2
         self.assertEqual("New Device", new_device_alerts_fields2[0].name)
         self.assertEqual("Login from new device for User: Aisha Delgado, at: 2023-05-03T07:14:22.768Z", new_device_alerts_fields2[0].description)

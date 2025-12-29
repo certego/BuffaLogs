@@ -23,6 +23,8 @@ pie_custom_style = pygal.style.Style(
     value_colors=("#fff"),
     legend_font_size=14,
     tooltip_font_size=14,
+    legend_font_size=14,
+    tooltip_font_size=14,
 )
 line_custom_style = pygal.style.Style(
     background="transparent",
@@ -34,6 +36,8 @@ line_custom_style = pygal.style.Style(
     opacity_hover=".9",
     transition="400ms ease-in",
     colors=("#3174b0", "#408fa8"),
+    tooltip_font_size=14,
+    x_labels_font_size=12,
     tooltip_font_size=14,
     x_labels_font_size=12,
 )
@@ -48,6 +52,11 @@ world_custom_style = pygal.style.Style(
     opacity_hover=".9",
     transition="400ms ease-in",
     colors=("#3174b0", "#00acac", "#408fa8"),
+    value_font_size=10,
+    tooltip_font_size=14,
+    major_label_font_size=10,
+    label_font_size=10,
+    value_label_font_size=12,
     value_font_size=10,
     tooltip_font_size=14,
     major_label_font_size=10,
@@ -183,7 +192,6 @@ def user_device_usage_chart(user, start, end):
 
 
 def user_login_frequency_chart(user, start, end):
-
     total_days = (end - start).days + 1
     days = [start + timedelta(days=i) for i in range(total_days)]
 
@@ -249,8 +257,8 @@ def user_geo_distribution_chart(user, start, end):
 
     country_dict = {}
     for entry in country_data:
-        country_name = entry["country"].lower()
-        code = name_to_code.get(country_name)
+        country_name = entry["country"]
+        code = name_to_code.get(country_name.lower())
         if code:
             login_count = entry["count"]
             alert_count = alert_by_country.get(country_name.lower(), 0)

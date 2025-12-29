@@ -40,3 +40,73 @@
     margin-bottom: 2rem;
     position: relative;
   }
+
+/* ========================================
+   Pygal Chart Tooltip Enhancements
+   ======================================== */
+
+/* Base tooltip styling for all pygal charts */
+.container-graphic .pygal-chart text.tooltip,
+.container-graphic svg text.tooltip {
+  font-size: 14px !important;
+  fill: #ffffff !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Tooltip background rectangle */
+.container-graphic .pygal-chart .tooltip rect,
+.container-graphic svg .tooltip rect {
+  fill: rgba(33, 37, 41, 0.95) !important;
+  rx: 4px;
+  ry: 4px;
+}
+
+/* Legend text styling */
+.container-graphic .pygal-chart text.legend,
+.container-graphic svg text.legend {
+  font-size: 12px !important;
+  fill: #dee2e6 !important;
+}
+
+/* Value labels on charts */
+.container-graphic .pygal-chart text.value,
+.container-graphic svg text.value {
+  font-size: 12px !important;
+  fill: #ffffff !important;
+}
+
+/* X-axis and Y-axis labels */
+.container-graphic .pygal-chart text.label,
+.container-graphic svg text.label {
+  font-size: 11px !important;
+  fill: #aaaaaa !important;
+}
+
+/* Ensure consistent font sizing on hover states */
+.container-graphic .pygal-chart .active text,
+.container-graphic svg .active text {
+  font-size: 14px !important;
+}
+
+/* Device Usage pie chart specific adjustments */
+.col-md-6 .container-graphic .pygal-chart text {
+  font-size: 12px !important;
+}
+
+/* Geographic Distribution map tooltip */
+.col-12 .container-graphic object {
+  overflow: visible;
+}
+
+/* Responsive tooltip sizing */
+@media (max-width: 768px) {
+  .container-graphic .pygal-chart text.tooltip,
+  .container-graphic svg text.tooltip {
+    font-size: 12px !important;
+  }
+  
+  .container-graphic .pygal-chart text.legend,
+  .container-graphic svg text.legend {
+    font-size: 10px !important;
+  }
+}
