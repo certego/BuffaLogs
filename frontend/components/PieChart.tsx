@@ -75,7 +75,7 @@ const Piechart: React.FC = () => {
     fill,
     value,
     payload,
-  }: ActiveShapeProps) => {
+  }: any) => {
     const RADIAN = Math.PI / 180;
 
     const sin = Math.sin(-RADIAN * midAngle);
