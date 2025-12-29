@@ -95,7 +95,10 @@ def alerts_line_chart(start, end):
         for i in range(0, len(date_range) - 2, 2):
             alerts_in_range.append(
                 Alert.objects.filter(
-                    login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+                    login_raw_data__timestamp__range=(
+                        date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                 ).count()
             )
     elif delta_timestamp.days >= 1 and delta_timestamp.days <= 31:
@@ -108,7 +111,10 @@ def alerts_line_chart(start, end):
         for i in range(0, len(date_range) - 2, 2):
             alerts_in_range.append(
                 Alert.objects.filter(
-                    login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+                    login_raw_data__timestamp__range=(
+                        date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                 ).count()
             )
     else:
@@ -122,7 +128,10 @@ def alerts_line_chart(start, end):
         for i in range(0, len(date_range) - 2, 2):
             alerts_in_range.append(
                 Alert.objects.filter(
-                    login_raw_data__timestamp__range=(date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+                    login_raw_data__timestamp__range=(
+                        date_range[i].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        date_range[i + 1].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
                 ).count()
             )
     line_chart.x_labels = map(str, date_str)
@@ -141,7 +150,11 @@ def world_map_chart(start, end):
     tmp = {}
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
-            login_raw_data__timestamp__range=(start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end.strftime("%Y-%m-%dT%H:%M:%S.%fZ")), login_raw_data__country=value
+            login_raw_data__timestamp__range=(
+                start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            ),
+            login_raw_data__country=value,
         ).count()
         if country_alerts == 0:
             tmp[key] = None
@@ -217,7 +230,13 @@ def user_geo_distribution_chart(user, start, end):
     country_data = logins.values("country").annotate(count=Count("id"))
 
     # Get alert counts per country for the user
-    alerts = Alert.objects.filter(user=user, login_raw_data__timestamp__range=(start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end.strftime("%Y-%m-%dT%H:%M:%S.%fZ")))
+    alerts = Alert.objects.filter(
+        user=user,
+        login_raw_data__timestamp__range=(
+            start.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            end.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        ),
+    )
     alert_by_country = {}
     for alert in alerts:
         country = alert.login_raw_data.get("country", "")
@@ -235,7 +254,10 @@ def user_geo_distribution_chart(user, start, end):
             login_count = entry["count"]
             alert_count = alert_by_country.get(country_name.lower(), 0)
             # Create tooltip with country name, logins, and alerts
-            country_dict[code] = {"value": login_count, "label": f"{country_name}: {login_count} logins, {alert_count} alerts"}
+            country_dict[code] = {
+                "value": login_count,
+                "label": f"{country_name}: {login_count} logins, {alert_count} alerts",
+            }
 
     world_chart = World(style=world_custom_style, width=1000, height=650)
     world_chart.title = "Login Locations"

@@ -51,8 +51,9 @@ jobs:
         python3 -m venv venv
         source venv/bin/activate
         pip install --upgrade pip
-        pip install flake8 black isort pytest
+        pip install flake8==7.1.1 black==24.8.0 isort==5.13.2 pytest==8.4.0
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f buffacli/requirements.txt ]; then pip install -r buffacli/requirements.txt; fi
     - name: "Lint with black"
       run: |
         source venv/bin/activate
@@ -68,4 +69,12 @@ jobs:
     - name: Test with pytest
       run: |
         source ./venv/bin/activate
-        pytest test_buffacli.py
+        pytest buffacli/tests
+
+    - name: Test local pip installation
+      run: |
+        echo "Testing local pip installation of BuffaCLI"
+        python -m venv test_local_env
+        source test_local_env/bin/activate
+        pip install --upgrade pip
+        pip install ./buffacli
