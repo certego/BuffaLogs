@@ -1,3 +1,18 @@
+### 3.0.x
+### 3.0.0
+#### Features
+* Implemented `buffacli` - *a command-line interface tool that provides an alternative to the BuffaLogs web dashboard, allowing users to interact with BuffaLogs directly from the terminal* (by @noble47 - for the Google Summer of Code 2025 program)
+* Added `Login.device_fingerprint` field in order to detect `New Device` alerts based on the user-agent fingerprints without many FPs
+* Implemented session timeout with idle detection, warning modal, and auto-logout in the React interface (by community - @srijan2607)
+* Added Elasticsearch cluster configuration guide in the docs (by community - @srijan2607)
+* Bump `actions/cache` from 4 to 5 (by dependabot)
+#### Changes
+* Fixed Django version to `5.2` to avoid CI errors before planning the upgrade to Django `6.0`
+#### Bugfix
+* Fixed chart tooltips for better readability and accessibility in the Django web interface (by community - @srijan2607)
+* Fixes API endpoints and field mapping in the React interface (by community - @srijan2607)
+
+
 ## 2.13.x
 ### 2.13.0
 #### Features
