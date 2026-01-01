@@ -8,3 +8,5 @@ dist/
 **/.DS_Store
 *.egg-info/
 /node_modules
+.python-version
+buffalogs/buffalogs/settings/test.py
