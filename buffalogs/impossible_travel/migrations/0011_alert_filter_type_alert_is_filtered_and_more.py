@@ -257,7 +257,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="alert",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     (
                         "name__in",
                         [
@@ -276,7 +276,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="alert",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     (
                         "filter_type__contained_by",
                         [
@@ -321,7 +321,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="config",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     (
                         "alert_minimum_risk_score__in",
                         ["No risk", "Low", "Medium", "High"],
@@ -333,7 +333,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="config",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     (
                         "filtered_alerts_types__contained_by",
                         [
@@ -378,7 +378,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="user",
             constraint=models.CheckConstraint(
-                check=models.Q(("risk_score__in", ["No risk", "Low", "Medium", "High"])),
+                condition=models.Q(("risk_score__in", ["No risk", "Low", "Medium", "High"])),
                 name="valid_user_risk_score_choice",
             ),
         ),

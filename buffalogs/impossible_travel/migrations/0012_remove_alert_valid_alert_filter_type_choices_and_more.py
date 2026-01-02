@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="alert",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     (
                         "filter_type__contained_by",
                         [
@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="config",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     (
                         "filtered_alerts_types__contained_by",
                         [
