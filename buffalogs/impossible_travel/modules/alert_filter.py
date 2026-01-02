@@ -103,15 +103,92 @@ def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) ->
     return db_alert
 
 
+# Security constants for ReDoS protection
+MAX_REGEX_LENGTH = 100
+MAX_REGEX_COMPLEXITY = 50  # Maximum number of special regex characters
+
+
+def _is_safe_regex(pattern: str) -> bool:
+    """
+    Validates that a regex pattern is safe to compile and execute.
+    Protects against Regular Expression Denial of Service (ReDoS) attacks.
+
+    Args:
+        pattern: Regular expression pattern string
+
+    Returns:
+        True if pattern is safe, False otherwise
+    """
+    # Check pattern length
+    if len(pattern) > MAX_REGEX_LENGTH:
+        logger.warning(f"Regex pattern exceeds maximum length ({MAX_REGEX_LENGTH}): {len(pattern)}")
+        return False
+
+    # Count special regex characters that can cause complexity
+    dangerous_chars = ["*", "+", "{", "(", "|", "["]
+    complexity = sum(pattern.count(char) for char in dangerous_chars)
+
+    if complexity > MAX_REGEX_COMPLEXITY:
+        logger.warning(f"Regex pattern too complex ({complexity} special chars, max {MAX_REGEX_COMPLEXITY})")
+        return False
+
+    # Check for known dangerous patterns that can cause catastrophic backtracking
+    # These patterns check for nested quantifiers which are the primary cause of ReDoS
+    dangerous_patterns = [
+        r"\(.+[*+]\)[*+]",      # Direct nested quantifiers like (a+)+ or (a*)*
+        r"\(.+[*+]\).?[*+]",    # Nested quantifiers with optional char like (a+)+b
+        r"\(.+\|.+\)[*+]",      # Alternation with quantifier like (a|ab)*
+    ]
+
+    for dangerous in dangerous_patterns:
+        try:
+            if re.search(dangerous, pattern):
+                logger.warning(f"Regex pattern contains dangerous construct: {pattern}")
+                return False
+        except re.error:
+            pass
+
+    # Try to compile to catch syntax errors
+    try:
+        re.compile(pattern)
+        return True
+    except re.error as e:
+        logger.error(f"Invalid regex syntax: {pattern}, error: {e}")
+        return False
+
+
 def _check_username_list_regex(word: str, values_list: list) -> bool:
-    """Function to check if a string value is inside a list of string or match a regex in the list"""
+    """
+    Function to check if a string value is inside a list of strings or matches a regex in the list.
+    Includes ReDoS protection through pattern validation.
+
+    Args:
+        word: String to check
+        values_list: List of strings or regex patterns
+
+    Returns:
+        True if word matches any item in the list, False otherwise
+    """
     for item in values_list:
+        # First, try exact match (fast path)
         if word == item:
-            # check if the word is exacly a value in the list
             return True
-        else:
-            # else, check if the item in the list is a regex that matches the word
+
+        # Validate regex pattern before compilation
+        if not _is_safe_regex(item):
+            logger.warning(f"Skipping unsafe or invalid regex pattern: {item[:50]}...")
+            continue
+
+        try:
+            # Compile and search with validated pattern
             regexp = re.compile(item)
             if regexp.search(word):
                 return True
+        except re.error as e:
+            logger.error(f"Invalid regex pattern '{item}': {e}")
+            continue
+        except Exception as e:
+            logger.error(f"Unexpected error processing regex '{item}': {e}")
+            continue
+
     return False
