@@ -4,7 +4,12 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
-from impossible_travel.constants import AlertDetectionType, AlertFilterType, ComparisonType, UserRiskScoreType
+from impossible_travel.constants import (
+    AlertDetectionType,
+    AlertFilterType,
+    ComparisonType,
+    UserRiskScoreType,
+)
 from impossible_travel.models import Alert, Config, User
 from ua_parser import parse
 
@@ -51,7 +56,10 @@ def match_filters(alert: Alert, app_config: Config) -> Alert:
         # check ignored_impossible_travel_countries_couples and ignored_impossible_travel_all_same_country config filters
         if app_config.ignored_impossible_travel_all_same_country and alert.login_raw_data["country"] == alert.login_raw_data["buffalogs"]["start_country"]:
             alert.filter_type.append(AlertFilterType.IGNORED_IMP_TRAVEL_ALL_SAME_COUNTRY)
-        couple_country = [alert.login_raw_data["country"], alert.login_raw_data["buffalogs"]["start_country"]]
+        couple_country = [
+            alert.login_raw_data["country"],
+            alert.login_raw_data["buffalogs"]["start_country"],
+        ]
         # using Counter to ignore the order: ["Italy", "Germany"] == ["Germany", "Italy"] and check only if the coutry couple is present in the ignored couples
         for ignored_country_couple in app_config.ignored_impossible_travel_countries_couples:
             if Counter(ignored_country_couple) == Counter(couple_country):
@@ -135,9 +143,9 @@ def _is_safe_regex(pattern: str) -> bool:
     # Check for known dangerous patterns that can cause catastrophic backtracking
     # These patterns check for nested quantifiers which are the primary cause of ReDoS
     dangerous_patterns = [
-        r"\(.+[*+]\)[*+]",      # Direct nested quantifiers like (a+)+ or (a*)*
-        r"\(.+[*+]\).?[*+]",    # Nested quantifiers with optional char like (a+)+b
-        r"\(.+\|.+\)[*+]",      # Alternation with quantifier like (a|ab)*
+        r"\(.+[*+]\)[*+]",  # Direct nested quantifiers like (a+)+ or (a*)*
+        r"\(.+[*+]\).?[*+]",  # Nested quantifiers with optional char like (a+)+b
+        r"\(.+\|.+\)[*+]",  # Alternation with quantifier like (a|ab)*
     ]
 
     for dangerous in dangerous_patterns:
