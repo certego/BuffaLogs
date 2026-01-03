@@ -2,14 +2,13 @@ import cookie from "cookie";
 import { getToken, removeToken } from "./token";
 import { LOGIN_URL, LOGOUT_URL, ME_URL } from "./constants";
 
-export const loginUser = async (email: String, password: String) => {
+export const loginUser = async (email: string, password: string): Promise<any> => {
   const res = await fetch(LOGIN_URL, {
     body: JSON.stringify({ email, password }),
     method: "POST",
     headers: { "Content-type": "application/json;charset=UTF-8" },
   });
-  const { status } = res;
-  if (status !== 200) {
+  if (!res.ok) {
     console.log("Error While Authenticating");
     return {
       error: "Invalid Credentials!"
@@ -19,7 +18,7 @@ export const loginUser = async (email: String, password: String) => {
   return data;
 };
 
-export const logoutUser = async () => {
+export const logoutUser = async (): Promise<any> => {
   const res = await fetch(LOGOUT_URL, {
     method: "POST",
     headers: {
@@ -32,7 +31,7 @@ export const logoutUser = async () => {
   return data;
 };
 
-export const whoAmI = async () => {
+export const whoAmI = async (): Promise<any> => {
   const res = await fetch(ME_URL, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
