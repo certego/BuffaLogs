@@ -4,12 +4,7 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
-from impossible_travel.constants import (
-    AlertDetectionType,
-    AlertFilterType,
-    ComparisonType,
-    UserRiskScoreType,
-)
+from impossible_travel.constants import AlertDetectionType, AlertFilterType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, User
 from ua_parser import parse
 

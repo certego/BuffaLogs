@@ -1,20 +1,13 @@
+import time
 from datetime import datetime, timezone
 from unittest.mock import patch
-import time
 
 from django.conf import settings
 from django.test import TestCase
-from impossible_travel.constants import (
-    AlertDetectionType,
-    AlertFilterType,
-    UserRiskScoreType,
-)
+from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, User
 from impossible_travel.modules import alert_filter
-from impossible_travel.modules.alert_filter import (
-    _is_safe_regex,
-    _check_username_list_regex,
-)
+from impossible_travel.modules.alert_filter import _check_username_list_regex, _is_safe_regex
 
 
 class TestAlertFilter(TestCase):
