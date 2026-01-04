@@ -7,9 +7,11 @@ COPY buffalogs/requirements.txt requirements.txt
 
 
 RUN sed -i 's/main/main non-free/g' /etc/apt/sources.list.d/debian.sources \
-    && apt-get update \
-    && apt-get -y install \
-        gcc
+ && apt-get update \
+ && apt-get -y install \
+    gcc \
+    postgresql-client
+
 
 RUN pip install --no-cache-dir -r requirements.txt \
     && rm -f requirements.txt && apt-get -y purge gcc && apt-get -y autoremove && apt-get -y clean
