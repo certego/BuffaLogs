@@ -96,6 +96,15 @@ class Login(models.Model):
             query = query[start:end]
 
         return query
+    class Meta:
+        indexes = [
+            models.Index(fields=["timestamp"]),
+            models.Index(fields=["ip"]),
+            models.Index(fields=["country"]),
+            models.Index(fields=["index"]),
+            models.Index(fields=["event_id"]),
+        ]
+
 
 
 class Alert(models.Model):
