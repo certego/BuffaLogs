@@ -1,0 +1,68 @@
+services:
+  # Development override - extends original docker-compose.yaml
+    buffalogs_postgres:
+        extends:
+            file: ../docker-compose.yaml
+            service: buffalogs_postgres
+        volumes:
+            - buffalogs_postgres_data:/var/lib/postgresql/data
+        ports:
+            - "5433:5432"
+
+    buffalogs_rabbitmq:
+        extends:
+            file: ../docker-compose.yaml
+            service: buffalogs_rabbitmq
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+
+    
+
+    # Override buffalogs service for development
+    buffalogs:
+        extends:
+            file: ../docker-compose.yaml
+            service: buffalogs
+        build:
+            context: ..
+            dockerfile: .devcontainer/Dockerfile.dev
+        volumes:
+            - ../buffalogs:/opt/certego/buffalogs
+            - ../config:/opt/certego/config:ro
+            - ../.vscode:/opt/certego/buffalogs/.vscode
+            - buffalogs_django_static:/var/www
+            - buffalogs_nginx_sockets:/var/run/nginx-sockets
+        # For development, we need to expose port 8000 for Django runserver and 5678 for debugpy
+        ports:
+            - "8000:8000"
+            - "5678:5678"
+        environment:
+            - DEBUG=1
+            - CERTEGO_BUFFALOGS_DEBUG=True
+            - USE_DEBUGPY=1
+        command: python -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000
+        depends_on:
+            buffalogs_postgres:
+                condition: service_healthy
+            buffalogs_rabbitmq:
+                condition: service_healthy
+
+    
+
+
+
+volumes:
+    buffalogs_postgres_data:
+        driver: local
+    buffalogs_nginx_sockets:
+        driver: local
+    buffalogs_django_static:
+        driver: local
+    buffalogs_rabbitmq_data:
+        driver: local
+
+networks:
+    buffalogs_network:
+        driver: bridge
+        name: buffalogs_network
