@@ -22,7 +22,7 @@ services:
             - elasticsearch_data:/usr/share/elasticsearch/data
         networks:
             - elk
-            - buffalogs_network 
+            - buffalogs_network
         healthcheck:
             test: curl -XGET 'localhost:9200/_cluster/health?wait_for_status=yellow&timeout=180s&pretty'
 
@@ -43,8 +43,61 @@ services:
         healthcheck:
             test: curl -fs http://localhost:5601/
 
+    buffalogs_elasticsearch_secure:
+        profiles: ["secure"]
+        container_name: buffalogs_elasticsearch_secure
+        image: docker.elastic.co/elasticsearch/elasticsearch:9.1.2
+        hostname: elasticsearch
+        environment:
+            - cluster.routing.allocation.disk.watermark.low=99%
+            - cluster.routing.allocation.disk.watermark.high=99%
+            - cluster.routing.allocation.disk.watermark.flood_stage=99%
+            - node.name=buffalogs_elastic_secure
+            - bootstrap.memory_lock=true
+            - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+            - discovery.type=single-node
+            - xpack.security.enabled=true
+            - xpack.security.http.ssl.enabled=true
+            - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/es.key
+            - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/es.crt
+            - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca.crt
+            - ELASTIC_PASSWORD=${ELASTIC_PASSWORD?Set ELASTIC_PASSWORD}
+        ulimits:
+            memlock: 
+                soft: -1
+                hard: -1
+        ports:
+            - "9200:9200"
+        volumes:
+            - elasticsearch_secure_data:/usr/share/elasticsearch/data
+            - ./certs:/usr/share/elasticsearch/config/certs:ro
+        networks:
+            - elk
+            - buffalogs_network
+
+    buffalogs_kibana_secure:
+        profiles: ["secure"]
+        container_name: buffalogs_kibana_secure
+        image: docker.elastic.co/kibana/kibana:9.1.2
+        hostname: kibana
+        environment:
+            ELASTICSEARCH_HOSTS: https://elasticsearch:9200
+            ELASTICSEARCH_SERVICEACCOUNTTOKEN: ${KIBANA_SERVICE_TOKEN?Set KIBANA_SERVICE_TOKEN}
+            ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: /usr/share/kibana/config/certs/ca.crt
+        volumes:
+            - ./certs:/usr/share/kibana/config/certs:ro
+        depends_on:
+            - buffalogs_elasticsearch_secure
+        ports:
+            - "127.0.0.1:5601:5601"
+        networks:
+            - elk
+            - buffalogs_network
+
 volumes:
     elasticsearch_data:
+        driver: local
+    elasticsearch_secure_data:
         driver: local
 
 networks:

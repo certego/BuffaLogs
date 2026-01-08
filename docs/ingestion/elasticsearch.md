@@ -1,3 +1,4 @@
+```markdown
 # Connecting BuffaLogs to an Existing Elasticsearch Cluster
 
 This guide explains how to configure BuffaLogs to work with an existing Elasticsearch cluster, including authentication, TLS/SSL settings, and index configuration.
@@ -5,6 +6,8 @@ This guide explains how to configure BuffaLogs to work with an existing Elastics
 ## Table of Contents
 
 - [Overview](#overview)
+- [Bundled Elasticsearch Setup (Local Development)](#bundled-elasticsearch-setup-local-development)
+- [Secure Mode for Bundled Elasticsearch (Opt-in)](#secure-mode-for-bundled-elasticsearch-opt-in)
 - [Configuration File](#configuration-file)
 - [Connection Settings](#connection-settings)
 - [Authentication](#authentication)
@@ -17,6 +20,102 @@ This guide explains how to configure BuffaLogs to work with an existing Elastics
 ## Overview
 
 BuffaLogs uses Elasticsearch as one of its supported ingestion sources for analyzing authentication logs. If you already have an Elasticsearch cluster running, you can configure BuffaLogs to connect to it instead of deploying a new instance.
+
+## Bundled Elasticsearch Setup (Local Development)
+
+The project includes a ready-to-use Elasticsearch + Kibana stack in `docker-compose.elastic.yaml`.
+
+### Default (Unsecured) Mode – Recommended for Quick Development
+
+This is the original, unsecured setup — no authentication or TLS.
+
+```bash
+# Start core app + bundled unsecured Elasticsearch
+docker compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d
+```
+
+- Elasticsearch: `http://localhost:9200` (no auth required)
+- Kibana: `http://localhost:5601`
+- Connection in `ingestion.json` (default):
+  ```json
+  {
+    "active_ingestion": "elasticsearch",
+    "elasticsearch": {
+      "url": "http://elasticsearch:9200/",
+      "timeout": 90,
+      "indexes": "logs-*"
+    }
+  }
+  ```
+
+## Secure Mode for Bundled Elasticsearch (Opt-in – Authentication + HTTPS)
+
+For a production-like setup with basic authentication and TLS/SSL (self-signed certificates), use the `secure` profile.
+
+### Prerequisites
+
+1. **Generate self-signed certificates** (do this once in the project root):
+
+   ```bash
+   # Generate CA
+   docker run --rm -v "$(pwd)/certs":/certs docker.elastic.co/elasticsearch/elasticsearch:9.1.2 \
+     bin/elasticsearch-certutil ca --pem --silent --out /certs/ca.zip
+   unzip certs/ca.zip -d certs/
+
+   # Generate HTTP node cert (PEM)
+   echo "instances:\n  - name: elasticsearch\n    dns:\n      - elasticsearch\n    ip:\n      - 127.0.0.1" > instances.yml
+   docker run --rm -v "$(pwd)/certs":/certs -v "$(pwd)/instances.yml":/instances.yml \
+     docker.elastic.co/elasticsearch/elasticsearch:9.1.2 \
+     bin/elasticsearch-certutil cert --pem --silent --out /certs/certs.zip \
+     --ca-cert /certs/ca/ca.crt --ca-key /certs/ca/ca.key --in /instances.yml
+   unzip certs/certs.zip -d certs/
+   ```
+
+   → This creates files like `ca/ca.crt`, `elasticsearch/es.crt`, `elasticsearch/es.key`. Rename/move them to `./certs/es.crt`, `./certs/es.key`, `./certs/ca.crt` (or adjust paths in compose).
+
+2. **Set a strong password**:
+   ```bash
+   export ELASTIC_PASSWORD=your_very_strong_password_here
+   ```
+
+### Start Secure Mode
+
+```bash
+docker compose -f docker-compose.elastic.yaml --profile secure up buffalogs_elasticsearch_secure buffalogs_kibana_secure -d
+```
+
+### One-Time: Create Kibana Service Account Token
+
+After the secure Elasticsearch is healthy, create a token for Kibana:
+
+```bash
+curl -X POST "https://localhost:9200/_security/service/elastic/kibana/credential/token/kibana-token" \
+  -u elastic:${ELASTIC_PASSWORD} \
+  --cacert ./certs/ca/ca.crt
+```
+
+Copy the `token.value` from the output, then set it:
+
+```bash
+export KIBANA_SERVICE_TOKEN=AAEAAWVsYXN0aWMva2liYW5hL2tpYmFuYS10b2tlbjp...
+```
+
+Restart Kibana if needed:
+
+```bash
+docker compose restart buffalogs_kibana_secure
+```
+
+### Access in Secure Mode
+
+- Elasticsearch: `https://localhost:9200`  
+  (use `-u elastic:${ELASTIC_PASSWORD} --cacert ./certs/ca/ca.crt` with curl)
+- Kibana: `http://localhost:5601`
+
+**Important Warnings**:
+- Self-signed certificates will cause browser/curl warnings → use `--cacert` or import the CA.
+- This is for development/testing only. For production use proper certificates and a managed cluster.
+- See: https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup.html
 
 ## Configuration File
 
@@ -359,3 +458,4 @@ docker compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d
 - [Elasticsearch Security Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/secure-cluster.html)
 - [Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/current/index.html)
 - [BuffaLogs Troubleshooting Guide](../troubleshooting.md)
+```

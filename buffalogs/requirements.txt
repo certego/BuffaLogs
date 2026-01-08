@@ -43,3 +43,8 @@ requests>=2.32.5                 # HTTP library for sending alerts and webhooks
 
 # === Web Server ===
 uwsgi>=2.0.30                   # uWSGI application server for serving Django application
+
+# === Testing & Optional Ingestion Dependencies ===
+django-test-migrations>=1.4.0  # For migration tests (test_migrations.py)
+opensearch-py>=2.7.0          # For OpenSearch ingestion support and tests
+splunk-sdk>=2.0.0             # For Splunk ingestion support and tests
