@@ -1,0 +1,30 @@
+{
+    "name": "BuffaLogs Development",
+    "dockerComposeFile": "docker-compose.yaml",
+    "service": "buffalogs",
+    "workspaceFolder": "/opt/certego/buffalogs",
+    // Stop all running containers on close
+    "shutdownAction": "stopCompose",
+    "remoteUser": "root",
+    "postCreateCommand": "pip install --no-cache-dir django-debug-toolbar && python manage.py migrate",
+    "forwardPorts": [8000, 5433, 5672, 15672],
+    "portsAttributes": {
+        "8000": {
+            "label": "Django Dev Server",
+            "onAutoForward": "notify"
+        },
+        "5433": {
+            "label": "PostgreSQL",
+            "onAutoForward": "notify"
+        },
+        "5672": {
+            "label": "RabbitMQ",
+            "onAutoForward": "silent"
+        },
+        "15672": {
+            "label": "RabbitMQ Management",
+            "onAutoForward": "notify"
+        }
+        
+    }
+}
