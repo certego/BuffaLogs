@@ -458,4 +458,3 @@ docker compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d
 - [Elasticsearch Security Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/secure-cluster.html)
 - [Elastic Common Schema (ECS)](https://www.elastic.co/guide/en/ecs/current/index.html)
 - [BuffaLogs Troubleshooting Guide](../troubleshooting.md)
-```

@@ -44,7 +44,8 @@ services:
             test: curl -fs http://localhost:5601/
 
     buffalogs_elasticsearch_secure:
-        profiles: ["secure"]
+        profiles:
+            - secure
         container_name: buffalogs_elasticsearch_secure
         image: docker.elastic.co/elasticsearch/elasticsearch:9.1.2
         hostname: elasticsearch
@@ -67,7 +68,7 @@ services:
                 soft: -1
                 hard: -1
         ports:
-            - "9200:9200"
+            - "9201:9200"
         volumes:
             - elasticsearch_secure_data:/usr/share/elasticsearch/data
             - ./certs:/usr/share/elasticsearch/config/certs:ro
@@ -76,7 +77,8 @@ services:
             - buffalogs_network
 
     buffalogs_kibana_secure:
-        profiles: ["secure"]
+        profiles:
+            - secure
         container_name: buffalogs_kibana_secure
         image: docker.elastic.co/kibana/kibana:9.1.2
         hostname: kibana
@@ -89,7 +91,7 @@ services:
         depends_on:
             - buffalogs_elasticsearch_secure
         ports:
-            - "127.0.0.1:5601:5601"
+            - "127.0.0.1:5602:5601"
         networks:
             - elk
             - buffalogs_network
