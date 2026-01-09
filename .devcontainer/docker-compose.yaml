@@ -48,7 +48,34 @@ services:
             buffalogs_rabbitmq:
                 condition: service_healthy
 
-    
+    # Development Celery worker
+    buffalogs_celery:
+        extends:
+            file: ../docker-compose.yaml
+            service: buffalogs_celery
+        build:
+            context: ..
+            dockerfile: .devcontainer/Dockerfile.dev
+        volumes:
+            - ../buffalogs:/opt/certego/buffalogs
+            - ../config:/opt/certego/config:ro
+        command: celery -A buffalogs worker -c 1 --loglevel=info
+        environment:
+            - DEBUG=1
+
+    # Development Celery beat
+    buffalogs_celery_beat:
+        extends:
+            file: ../docker-compose.yaml
+            service: buffalogs_celery_beat
+        build:
+            context: ..
+            dockerfile: .devcontainer/Dockerfile.dev
+        volumes:
+            - ../buffalogs:/opt/certego/buffalogs
+            - ../config:/opt/certego/config:ro
+        environment:
+            - DEBUG=1
 
 
 
