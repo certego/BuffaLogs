@@ -59,7 +59,9 @@ services:
         volumes:
             - ../buffalogs:/opt/certego/buffalogs
             - ../config:/opt/certego/config:ro
-        command: celery -A buffalogs worker -c 1 --loglevel=info
+        ports:
+            - "5679:5679"
+        command: python -m debugpy --listen 0.0.0.0:5679 --wait-for-client -m celery -A buffalogs worker -c 1 --loglevel=info
         environment:
             - DEBUG=1
 
