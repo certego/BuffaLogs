@@ -7,7 +7,13 @@
     "shutdownAction": "stopCompose",
     "remoteUser": "root",
     "postCreateCommand": "pip install --no-cache-dir django-debug-toolbar && python manage.py migrate",
-    "forwardPorts": [8000, 5433, 5672, 15672],
+    "forwardPorts": [
+        8000,
+        5433,
+        5672,
+        15672,
+        5679
+    ],
     "portsAttributes": {
         "8000": {
             "label": "Django Dev Server",
@@ -25,7 +31,6 @@
             "label": "RabbitMQ Management",
             "onAutoForward": "notify"
         }
-        
     },
     "customizations": {
         "vscode": {
