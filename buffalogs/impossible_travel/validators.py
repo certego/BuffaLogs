@@ -29,21 +29,21 @@ def validate_string_or_regex(value):
 
 def validate_regex_patterns(patterns_list):
     """Validator for regex patterns - rejects unsafe patterns that could cause ReDoS attacks.
-    
+
     Args:
         patterns_list: List of regex pattern strings
-        
+
     Raises:
         ValidationError: If any pattern is unsafe
     """
     if not patterns_list:
         return
-    
+
     if not isinstance(patterns_list, list):
         raise ValidationError("Must be a list of patterns")
-    
+
     from impossible_travel.modules.alert_filter import _is_safe_regex
-    
+
     unsafe = [p for p in patterns_list if not _is_safe_regex(p)]
     if unsafe:
         raise ValidationError(
