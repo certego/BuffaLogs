@@ -27,6 +27,32 @@ def validate_string_or_regex(value):
             raise ValidationError(f"The single element '{item}' in the '{value}' list field is not a valid regex pattern")
 
 
+def validate_regex_patterns(patterns_list):
+    """Validator for regex patterns - rejects unsafe patterns that could cause ReDoS attacks.
+    
+    Args:
+        patterns_list: List of regex pattern strings
+        
+    Raises:
+        ValidationError: If any pattern is unsafe
+    """
+    if not patterns_list:
+        return
+    
+    if not isinstance(patterns_list, list):
+        raise ValidationError("Must be a list of patterns")
+    
+    from impossible_travel.modules.alert_filter import _is_safe_regex
+    
+    unsafe = [p for p in patterns_list if not _is_safe_regex(p)]
+    if unsafe:
+        raise ValidationError(
+            f"The following regex patterns are unsafe and have been rejected: {unsafe}. "
+            "Patterns must not exceed 100 characters, contain more than 50 special characters, "
+            "or contain nested quantifiers like (a+)+, (a*)*, or (a|ab)*."
+        )
+
+
 def validate_ips_or_network(value):
     """Validator for models' fields list that must have IPs or networks"""
     for item in value:
