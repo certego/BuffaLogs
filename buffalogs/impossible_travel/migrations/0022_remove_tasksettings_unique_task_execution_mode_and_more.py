@@ -87,20 +87,20 @@ def populate_device_fingerprint(apps, schema_editor):
 
 def check_regex_patterns(apps, schema_editor):
     """Check existing Config entries for unsafe regex patterns and log warnings.
-    
+
     This is a non-blocking check that identifies existing dangerous patterns
     in ignored_users, enabled_users, and vip_users fields. Admins should
     review and update these patterns in the Django admin panel.
     """
     Config = apps.get_model('impossible_travel', 'Config')
     from impossible_travel.modules.alert_filter import _is_safe_regex
-    
+
     for config in Config.objects.all():
         for field_name in ['ignored_users', 'enabled_users', 'vip_users']:
             patterns = getattr(config, field_name, []) or []
             if not patterns:
                 continue
-            
+
             unsafe = [p for p in patterns if not _is_safe_regex(p)]
             if unsafe:
                 logger.warning(
