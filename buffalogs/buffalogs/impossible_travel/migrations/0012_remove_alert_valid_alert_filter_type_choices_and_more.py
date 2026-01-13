@@ -2,8 +2,8 @@
 
 import django.contrib.postgres.fields
 from django.db import migrations, models
-import impossible_travel.models
-import impossible_travel.validators
+import buffalogs.impossible_travel.models
+import buffalogs.impossible_travel.validators
 
 
 class Migration(migrations.Migration):

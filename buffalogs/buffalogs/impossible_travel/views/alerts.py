@@ -8,10 +8,10 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
 from impossible_travel.constants import AlertDetectionType
-from impossible_travel.models import Alert, User
-from impossible_travel.serializers import AlertSerializer
+from buffalogs.impossible_travel.models import Alert, User
+from buffalogs.impossible_travel.serializers import AlertSerializer
 from impossible_travel.validators import validate_alert_query
-from impossible_travel.views.utils import read_config, write_config
+from buffalogs.impossible_travel.views.utils import read_config, write_config
 
 
 def alert_template_view(request, user_id=None):

@@ -2,7 +2,7 @@
 
 import django.contrib.postgres.fields
 from django.db import migrations, models
-import impossible_travel.models
+import buffalogs.impossible_travel.models
 
 
 class Migration(migrations.Migration):

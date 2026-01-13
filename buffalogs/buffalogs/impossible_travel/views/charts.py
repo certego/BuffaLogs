@@ -8,9 +8,9 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
-from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
-from impossible_travel.models import Alert, Login, User
-from impossible_travel.views.utils import read_config
+from buffalogs.impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
+from buffalogs.impossible_travel.models import Alert, Login, User
+from buffalogs.impossible_travel.views.utils import read_config
 
 
 def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):

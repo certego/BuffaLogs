@@ -11,16 +11,16 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
-from impossible_travel.dashboard.charts import (
+from buffalogs.impossible_travel.dashboard.charts import (
     user_device_usage_chart,
     user_geo_distribution_chart,
     user_login_frequency_chart,
     user_login_timeline_chart,
     user_time_of_day_chart,
 )
-from impossible_travel.models import Login, User
-from impossible_travel.serializers import UserSerializer
-from impossible_travel.views.utils import read_config
+from buffalogs.impossible_travel.models import Login, User
+from buffalogs.impossible_travel.serializers import UserSerializer
+from buffalogs.impossible_travel.views.utils import read_config
 
 
 # Template Views

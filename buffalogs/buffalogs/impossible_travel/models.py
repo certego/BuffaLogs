@@ -6,14 +6,14 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from impossible_travel.constants import (
+from buffalogs.impossible_travel.constants import (
     AlertDetectionType,
     AlertFilterType,
     AlertTagValues,
     ExecutionModes,
     UserRiskScoreType,
 )
-from impossible_travel.validators import (
+from buffalogs.impossible_travel.validators import (
     validate_countries_names,
     validate_country_couples_list,
     validate_ips_or_network,

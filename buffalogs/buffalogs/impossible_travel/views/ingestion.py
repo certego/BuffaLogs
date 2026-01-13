@@ -2,7 +2,7 @@ import json
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from impossible_travel.views import utils
+from buffalogs.impossible_travel.views import utils
 
 read_config, write_config = utils.get_config_read_write("ingestion.json")
 

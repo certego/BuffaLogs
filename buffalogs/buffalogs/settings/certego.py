@@ -5,7 +5,10 @@ ENVIRONMENT_DOCKER = "docker"
 ENVIRONMENT_DEBUG = "debug"
 
 CERTEGO_DJANGO_PROJ_BASE_DIR = Path(__file__).resolve().parent.parent.parent
-CERTEGO_DJANGO_IMPOSSIBLE_TRAVEL_APP_DIR = os.path.join(CERTEGO_DJANGO_PROJ_BASE_DIR, "impossible_travel")
+CERTEGO_DJANGO_IMPOSSIBLE_TRAVEL_APP_DIR = os.path.join(
+    CERTEGO_DJANGO_PROJ_BASE_DIR, "buffalogs", "impossible_travel"
+)
+
 
 # If NS_ENV not set, it will be set to debug
 CERTEGO_BUFFALOGS_ENVIRONMENT = os.environ.get("BUFFALOGS_ENV", "debug")
@@ -48,7 +51,7 @@ elif CERTEGO_BUFFALOGS_ENVIRONMENT == ENVIRONMENT_DEBUG:
     CERTEGO_DEBUG = True
     CERTEGO_BUFFALOGS_DB_HOSTNAME = "localhost"
     CERTEGO_BUFFALOGS_CONFIG_PATH = CERTEGO_REPO_DIR / "config"
-    CERTEGO_BUFFALOGS_STATIC_ROOT = "impossible_travel/static/"
+    CERTEGO_BUFFALOGS_STATIC_ROOT = "buffalogs/impossible_travel/static/"
     CERTEGO_BUFFALOGS_LOG_PATH = CERTEGO_REPO_DIR / "logs"
     CERTEGO_BUFFALOGS_RABBITMQ_HOST = "localhost"
     CERTEGO_BUFFALOGS_RABBITMQ_URI = f"amqp://guest:guest@{CERTEGO_BUFFALOGS_RABBITMQ_HOST}/"  # noqa: E231

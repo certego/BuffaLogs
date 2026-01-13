@@ -4,8 +4,8 @@ import json
 import os
 from django.conf import settings
 import django.contrib.postgres.fields
-import impossible_travel.models
-import impossible_travel.validators
+import buffalogs.impossible_travel.models
+import buffalogs.impossible_travel.validators
 from django.db import migrations, models
 
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import include, path
-from impossible_travel.views import alerts, charts, ingestion, logins, users
+from buffalogs.impossible_travel.views import alerts, charts, ingestion, logins, users
 
 urlpatterns = [
     path("admin/", admin.site.urls),

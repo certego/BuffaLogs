@@ -4,10 +4,10 @@ from datetime import timedelta
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from impossible_travel.ingestion.ingestion_factory import IngestionFactory
-from impossible_travel.models import Login, User
-from impossible_travel.serializers import LoginSerializer
-from impossible_travel.validators import validate_login_query
+from buffalogs.impossible_travel.ingestion.ingestion_factory import IngestionFactory
+from buffalogs.impossible_travel.models import Login, User
+from buffalogs.impossible_travel.serializers import LoginSerializer
+from buffalogs.impossible_travel.validators import validate_login_query
 
 
 def get_user_logins(request, user_id):
