@@ -8,6 +8,7 @@
 * Bump `actions/cache` from 4 to 5 (by dependabot)
 * Added `opt-in secure Elasticsearch profile` with TLS and basic auth (by community - @R1sh0bh-1)
 * Added `postgresql-client` to Dockerfile in order to use `dbshell` in the buffalogs container (by community - @nishantxscooby)
+* Updated `next` version
 #### Changes
 * Fixed Django version to `5.2` to avoid CI errors before planning the upgrade to Django `6.0`
 * Replaced deprecated CheckConstraint's `check` with `condition` keyword in models and migrations (by community - @rshaurya)
