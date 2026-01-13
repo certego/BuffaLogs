@@ -101,7 +101,6 @@ class Login(models.Model):
             models.Index(fields=["timestamp"]),
             models.Index(fields=["ip"]),
             models.Index(fields=["country"]),
-            models.Index(fields=["index"]),
             models.Index(fields=["event_id"]),
         ]
 
