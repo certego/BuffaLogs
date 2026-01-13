@@ -69,7 +69,11 @@ git clone git@github.com:certego/BuffaLogs.git
 ```
 Or download the application directly from the [Docker Hub](https://hub.docker.com/r/certego/buffalogs), with the `sudo docker pull certego/buffalogs:<release_tag>`.
 
-After that, there are two ways of running BuffaLogs, depending on your system configurations:
+After that, there are three ways of running BuffaLogs, depending on your system configurations:
+* **DevContainers (Only for backend development)**:
+    * Use [Development with DevContainers](docs/guides/development/development_with_devcontainers.md) for a complete containerized development environment
+    * All dependencies (PostgreSQL, RabbitMQ, Elasticsearch, Kibana) are pre-configured
+    * Includes debugging tools and development utilities
 * if you already have an elastic cluster:
     *  Configure the connection in `config/buffalogs/ingestion.json` (see [Elasticsearch Configuration Guide](docs/ingestion/elasticsearch.md) for detailed instructions)
     *  Set the Elasticsearch URL, credentials, and index patterns
