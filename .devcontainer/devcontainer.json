@@ -30,6 +30,10 @@
         "15672": {
             "label": "RabbitMQ Management",
             "onAutoForward": "notify"
+        },
+        "5679": {
+            "label": "Celery Worker",
+            "onAutoForward": "notify"
         }
     },
     "customizations": {
