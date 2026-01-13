@@ -149,19 +149,26 @@ class Command(TaskLoggingCommand):
                 value = [value]
 
             # Validate values
-            values_to_validate = value if is_list else [value]
-            for val in values_to_validate:
-                for validator in getattr(field_obj, "validators", []):
-                    try:
-                        validator(val)
-                    except ValidationError as e:
-                        raise CommandError(f"Validation error on field '{field}' with value '{val}': {e}")
+            try:
+                if is_list:
+                    for validator in getattr(field_obj, "validators", []):
+                        validator(value)   # ✅ validate ENTIRE list
+                else:
+                    for validator in getattr(field_obj, "validators", []):
+                        validator(value)
+            except ValidationError as e:
+                raise CommandError(
+                    f"Validation error on field '{field}' with value '{value}': {e}"
+                )
 
             # Apply changes
             if is_list:
                 current = current or []
                 if mode == "append":
-                    current += value
+                    # Append values preserving order and avoiding duplicates
+                    for v in value:
+                        if v not in current:
+                            current.append(v)
                 elif mode == "override":
                     current = value
                 elif mode == "remove":

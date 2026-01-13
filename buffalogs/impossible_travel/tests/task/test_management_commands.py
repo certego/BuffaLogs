@@ -260,6 +260,46 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(field_float, "vel_accepted")
         self.assertEqual(value_float, 55.7)
 
+    # === New tests for append behavior on list fields ===
+
+    def test_append_single_value(self):
+        # Start from empty list
+        self.config.ignored_users = []
+        self.config.save()
+        call_command("setup_config", "-a", "ignored_users=bot")
+        self.config.refresh_from_db()
+        self.assertListEqual(self.config.ignored_users, ["bot"])
+
+    def test_append_multiple_values_in_one_call(self):
+        # Append multiple values in a single call using list syntax
+        self.config.ignored_users = []
+        self.config.save()
+        call_command("setup_config", "-a", 'ignored_users=["bot","audit"]')
+        self.config.refresh_from_db()
+        self.assertListEqual(self.config.ignored_users, ["bot", "audit"])
+
+    def test_append_multiple_values_across_flags(self):
+        # Append multiple values across repeated -a flags
+        self.config.ignored_users = []
+        self.config.save()
+        call_command("setup_config", "-a", "ignored_users=bot", "-a", "ignored_users=audit")
+        self.config.refresh_from_db()
+        self.assertListEqual(self.config.ignored_users, ["bot", "audit"])
+
+    def test_append_avoids_duplicates(self):
+        # Appending duplicate values (in one call or across calls) should not create duplicates
+        self.config.ignored_users = ["bot"]
+        self.config.save()
+        # duplicate in same call
+        call_command("setup_config", "-a", 'ignored_users=["bot","bot","audit"]')
+        self.config.refresh_from_db()
+        self.assertListEqual(self.config.ignored_users, ["bot", "audit"])
+        # duplicate across calls
+        call_command("setup_config", "-a", "ignored_users=bot", "-a", "ignored_users=audit")
+        self.config.refresh_from_db()
+        # still only one instance of each
+        self.assertListEqual(self.config.ignored_users, ["bot", "audit"])
+
 
 class ResetUserRiskScoreCommandTests(TestCase):
     def setUp(self):
