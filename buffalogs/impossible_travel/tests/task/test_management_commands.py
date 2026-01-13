@@ -6,7 +6,7 @@ from django.core.management import CommandError, call_command
 from django.db.models.fields import Field
 from django.test import TestCase
 from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
-from impossible_travel.management.commands.setup_config import Command, parse_field_value
+from impossible_travel.management.commands.setup_config import Command, _parse_list_values, parse_field_value
 from impossible_travel.models import (
     Config,
     User,
@@ -259,6 +259,111 @@ class ManagementCommandsTestCase(TestCase):
         field_float, value_float = parse_field_value("vel_accepted=55.7")
         self.assertEqual(field_float, "vel_accepted")
         self.assertEqual(value_float, 55.7)
+
+    # === Tests for _parse_list_values function (multiple values with spaces) ===
+
+    def test_parse_list_values_single_quotes_with_spaces(self):
+        # Testing _parse_list_values with single-quoted values containing spaces
+        result = _parse_list_values("'New Device', 'User Risk Threshold', 'Anonymous IP Login'")
+        self.assertEqual(result, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
+    def test_parse_list_values_double_quotes_with_spaces(self):
+        # Testing _parse_list_values with double-quoted values containing spaces
+        result = _parse_list_values('"New Device", "User Risk Threshold", "Anonymous IP Login"')
+        self.assertEqual(result, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
+    def test_parse_list_values_mixed_quotes(self):
+        # Testing _parse_list_values with mixed single and double quotes
+        result = _parse_list_values("'New Device', \"User Risk Threshold\", 'Impossible Travel'")
+        self.assertEqual(result, ["New Device", "User Risk Threshold", "Impossible Travel"])
+
+    def test_parse_list_values_unquoted_values(self):
+        # Testing _parse_list_values with unquoted values (no spaces)
+        result = _parse_list_values("admin, user1, user2")
+        self.assertEqual(result, ["admin", "user1", "user2"])
+
+    def test_parse_list_values_empty_string(self):
+        # Testing _parse_list_values with empty string
+        result = _parse_list_values("")
+        self.assertEqual(result, [])
+
+    def test_parse_list_values_whitespace_only(self):
+        # Testing _parse_list_values with whitespace only
+        result = _parse_list_values("   ")
+        self.assertEqual(result, [])
+
+    def test_parse_list_values_mixed_quoted_and_unquoted(self):
+        # Testing _parse_list_values with mixed quoted and unquoted values
+        result = _parse_list_values("'New Device', admin, \"Impossible Travel\"")
+        self.assertEqual(result, ["New Device", "admin", "Impossible Travel"])
+
+    # === Tests for parse_field_value with multiple values (Issue #499) ===
+
+    def test_parse_field_value_multiple_values_single_quotes(self):
+        # Testing parse_field_value with multiple single-quoted values containing spaces
+        field, value = parse_field_value("filtered_alerts_types=['New Device', 'User Risk Threshold', 'Anonymous IP Login']")
+        self.assertEqual(field, "filtered_alerts_types")
+        self.assertEqual(value, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
+    def test_parse_field_value_multiple_values_double_quotes(self):
+        # Testing parse_field_value with multiple double-quoted values containing spaces
+        field, value = parse_field_value('filtered_alerts_types=["New Device", "User Risk Threshold", "Anonymous IP Login"]')
+        self.assertEqual(field, "filtered_alerts_types")
+        self.assertEqual(value, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
+    def test_parse_field_value_multiple_countries(self):
+        # Testing parse_field_value with multiple country values
+        field, value = parse_field_value("allowed_countries=['Italy', 'Romania', 'Germany']")
+        self.assertEqual(field, "allowed_countries")
+        self.assertEqual(value, ["Italy", "Romania", "Germany"])
+
+    def test_parse_field_value_multiple_users_with_spaces(self):
+        # Testing parse_field_value with user values that could contain special chars
+        field, value = parse_field_value("ignored_users=['admin', 'bot', 'audit']")
+        self.assertEqual(field, "ignored_users")
+        self.assertEqual(value, ["admin", "bot", "audit"])
+
+    # === Integration tests for setup_config command with multiple values ===
+
+    def test_setup_config_append_multiple_values(self):
+        # Integration test: append multiple values to a list field
+        Config.objects.all().delete()
+        config = Config.objects.create(id=1, filtered_alerts_types=[])
+
+        call_command("setup_config", "-a", "filtered_alerts_types=['New Device', 'User Risk Threshold']")
+        config.refresh_from_db()
+
+        self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold"])
+
+    def test_setup_config_override_multiple_values(self):
+        # Integration test: override with multiple values
+        Config.objects.all().delete()
+        config = Config.objects.create(id=1, allowed_countries=["USA"])
+
+        call_command("setup_config", "-o", "allowed_countries=['Italy', 'Romania', 'Germany']")
+        config.refresh_from_db()
+
+        self.assertListEqual(config.allowed_countries, ["Italy", "Romania", "Germany"])
+
+    def test_setup_config_remove_multiple_values(self):
+        # Integration test: remove multiple values from a list field
+        Config.objects.all().delete()
+        config = Config.objects.create(id=1, ignored_users=["admin", "bot", "audit", "system"])
+
+        call_command("setup_config", "-r", "ignored_users=['admin', 'bot']")
+        config.refresh_from_db()
+
+        self.assertListEqual(config.ignored_users, ["audit", "system"])
+
+    def test_setup_config_append_to_existing_values(self):
+        # Integration test: append multiple values to existing list
+        Config.objects.all().delete()
+        config = Config.objects.create(id=1, filtered_alerts_types=["New Device"])
+
+        call_command("setup_config", "-a", "filtered_alerts_types=['User Risk Threshold', 'Anonymous IP Login']")
+        config.refresh_from_db()
+
+        self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
 
 
 class ResetUserRiskScoreCommandTests(TestCase):

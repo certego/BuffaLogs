@@ -1,6 +1,7 @@
 import logging
+import re
 from argparse import RawTextHelpFormatter
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
@@ -30,8 +31,30 @@ def _cast_value(val: str) -> Any:
     return val
 
 
+def _parse_list_values(inner: str) -> List[Any]:
+    """Parse comma-separated values from a list string, handling quoted values with spaces."""
+    if not inner.strip():
+        return []
+
+    pattern = r"""
+        '([^']*)'        |  # single-quoted
+        "([^"]*)"        |  # double-quoted
+        ([^,\[\]'"]+)       # unquoted
+    """
+
+    values = []
+    for match in re.finditer(pattern, inner, re.VERBOSE):
+        value = match.group(1) or match.group(2) or match.group(3)
+        if value is not None:
+            value = value.strip()
+            if value:  # Skip empty values
+                values.append(_cast_value(value))
+
+    return values
+
+
 def parse_field_value(item: str) -> Tuple[str, Any]:
-    """Parse a string of the form FIELD=VALUE or FIELD=[val1,val2]"""
+    """Parse a FIELD=VALUE string, supporting list syntax like FIELD=[val1, val2]."""
     if "=" not in item:
         raise CommandError(f"Invalid syntax '{item}': must be FIELD=VALUE")
 
@@ -40,7 +63,7 @@ def parse_field_value(item: str) -> Tuple[str, Any]:
 
     if value.startswith("[") and value.endswith("]"):
         inner = value[1:-1].strip()
-        parsed = [_cast_value(v) for v in inner.split(",") if v.strip()]
+        parsed = _parse_list_values(inner)
     else:
         parsed = _cast_value(value)
 
@@ -63,10 +86,22 @@ class Command(TaskLoggingCommand):
         -r FIELD=VALUE    Remove the specified VALUE from list values
 
         Examples:
-        ./manage.py setup_config -o allowed_countries=["Italy","Romania"]
-        ./manage.py setup_config -r ignored_users=[admin]
+        # Override with multiple values (use quotes around the entire argument)
+        ./manage.py setup_config -o "allowed_countries=['Italy', 'Romania', 'Germany']"
+
+        # Append multiple values to a list field
+        ./manage.py setup_config -a "filtered_alerts_types=['New Device', 'User Risk Threshold', 'Anonymous IP Login']"
+
+        # Remove multiple values from a list field
+        ./manage.py setup_config -r "ignored_users=['admin', 'bot', 'audit']"
+
+        # Mixed operations
+        ./manage.py setup_config -o "allowed_countries=['Italy']" -r "ignored_users=['bot']" -a "filtered_alerts_types=['New Device', 'Impossible Travel']"
+
+        # Non-list field override
         ./manage.py setup_config -a alert_is_vip_only=True
-        ./manage.py setup_config -o allowed_countries=["Italy"] -r ignored_users="bot" -r ignored_users=["audit"] -a filtered_alerts_types=["New Device"]
+
+        Note: When passing values with spaces, wrap the entire argument in quotes.
 
         Additional options:
         --set-default-values   Reset all fields in Config to their default values
@@ -148,30 +183,29 @@ class Command(TaskLoggingCommand):
             if is_list and not isinstance(value, list):
                 value = [value]
 
-            # Validate values
-            values_to_validate = value if is_list else [value]
-            for val in values_to_validate:
-                for validator in getattr(field_obj, "validators", []):
-                    try:
-                        validator(val)
-                    except ValidationError as e:
-                        raise CommandError(f"Validation error on field '{field}' with value '{val}': {e}")
-
-            # Apply changes
+            # Apply changes first (before validation)
             if is_list:
                 current = current or []
                 if mode == "append":
-                    current += value
+                    new_value = current + value
                 elif mode == "override":
-                    current = value
+                    new_value = value
                 elif mode == "remove":
-                    current = [item for item in current if item not in value]
+                    new_value = [item for item in current if item not in value]
             else:
                 if mode != "override":
                     raise CommandError(f"Field '{field}' is not a list. Use --override to set its value.")
-                current = value
+                new_value = value
 
-            setattr(config, field, current)
+            # Validate the final computed value
+            # For ArrayFields, validators expect the complete list (not individual items)
+            for validator in getattr(field_obj, "validators", []):
+                try:
+                    validator(new_value)
+                except ValidationError as e:
+                    raise CommandError(f"Validation error on field '{field}' with value '{new_value}': {e}")
+
+            setattr(config, field, new_value)
 
         config.save()
         self.stdout.write(self.style.SUCCESS("Config updated successfully."))
