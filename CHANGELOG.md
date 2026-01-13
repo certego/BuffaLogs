@@ -6,12 +6,16 @@
 * Implemented session timeout with idle detection, warning modal, and auto-logout in the React interface (by community - @srijan2607)
 * Added Elasticsearch cluster configuration guide in the docs (by community - @srijan2607)
 * Bump `actions/cache` from 4 to 5 (by dependabot)
+* Added `opt-in secure Elasticsearch profile` with TLS and basic auth (by community - @R1sh0bh-1)
+* Added `postgresql-client` to Dockerfile in order to use `dbshell` in the buffalogs container (by community - @nishantxscooby)
 #### Changes
 * Fixed Django version to `5.2` to avoid CI errors before planning the upgrade to Django `6.0`
+* Replaced deprecated CheckConstraint's `check` with `condition` keyword in models and migrations (by community - @rshaurya)
+* Frontend improvements: applied TypeScript best practices to `auth.ts`: use primitive types (string) instead of wrapper types (String), Use res.ok instead of status !== 200, Add explicit return types (Promise<any>) (by community - @kami922)
 #### Bugfix
 * Fixed chart tooltips for better readability and accessibility in the Django web interface (by community - @srijan2607)
 * Fixes API endpoints and field mapping in the React interface (by community - @srijan2607)
-
+* Fixed frontend adding the missing `await` keyword in loginUser function (by community - @kami922)
 
 ## 2.13.x
 ### 2.13.0
