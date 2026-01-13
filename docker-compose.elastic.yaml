@@ -62,7 +62,7 @@ services:
             - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/es.key
             - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/es.crt
             - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca.crt
-            - ELASTIC_PASSWORD=${ELASTIC_PASSWORD?Set ELASTIC_PASSWORD}
+            - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
         ulimits:
             memlock: 
                 soft: -1
@@ -84,7 +84,7 @@ services:
         hostname: kibana
         environment:
             ELASTICSEARCH_HOSTS: https://elasticsearch:9200
-            ELASTICSEARCH_SERVICEACCOUNTTOKEN: ${KIBANA_SERVICE_TOKEN?Set KIBANA_SERVICE_TOKEN}
+            ELASTICSEARCH_SERVICEACCOUNTTOKEN: ${KIBANA_SERVICE_TOKEN}
             ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: /usr/share/kibana/config/certs/ca.crt
         volumes:
             - ./certs:/usr/share/kibana/config/certs:ro
