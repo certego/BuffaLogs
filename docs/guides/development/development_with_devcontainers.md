@@ -1,12 +1,11 @@
 # Overview
-DevContainers provide a containerized development environment that eliminates the need for local setup of dependencies, databases, and services which saves space on your machine. This guide will help you set up BuffaLogs backend development using DevContainers.
+DevContainers provide a consistent development environment  with debuggers that eliminates the need for local setup of dependencies, databases, and services. This guide will help you set up BuffaLogs backend development environment using DevContainers.
 
 ## Prerequisites
 Before starting, ensure you have:
-- [Visual Studio Code](https://code.visualstudio.com/) (or any other IDE which support the Dev Containers extension) installed
+- [Visual Studio Code](https://code.visualstudio.com/) (or any other IDE which support the Dev Containers) installed
 - [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed in your IDE
-- Docker and Docker compose plugin installed and running
-- Git installed
+- Docker and Docker compose installed and running
 
 # Quick Start
 1. **Clone the repository**
@@ -17,19 +16,20 @@ Before starting, ensure you have:
 
 2. **Open in DevContainer**
    - Open the project in VS Code
-   - Before starting development with dev containers, ensure that no containers are currently running on your system. This prevents port conflicts and any errors that could interfere with the dev container environment.
+   - Before starting development with dev containers, ensure that no `buffalogs` containers are currently running on your system. This prevents port conflicts and any errors that could interfere with the dev container environment.
    - To see current docker containers running on your system, execute: `docker ps`. There shouldn't be any running containers.
    - Press `Ctrl+Shift+P`
    - Select or type "Dev Containers: Reopen in Container"
-   - Wait for the container to build and start (first time may take 5-7 minutes)
+   - Wait for the container to build and start (first time may take few minutes)
 
 3. **Verify setup**
-   The DevContainer will automatically:
-   - Install all Python dependencies
-   - Set up PostgreSQL database
-   - Setup RabbitMQ message broker
+   The DevContainer will automatically build and run following containers:
+   - PostgreSQL database
+   - RabbitMQ message broker
+   - Celery and Celery beat workers
    - Run Django migrations
-   - Start the development server on port 8000
+   - Runs `debugpy` on port `5678` for debugging
+   - Start the Django development server on port 8000
 
 # Development Environment
 The DevContainer provides the following services:
@@ -57,7 +57,7 @@ The container includes:
 # Working with the DevContainer
 
 ## Django Management Commands
-All Django management commands work as expected:
+All Django management commands work as expected inside the devcontainer terminal:
 
 ```bash
 # Create superuser
@@ -91,6 +91,32 @@ Default credentials:
 The DevContainer is configured for remote debugging:
 
 ## Django Debugging
+
+Configure `launch.json` in VS Code for debugging.
+```
+{
+   "name": "Python: Django Debug Service",
+   "type": "debugpy",
+   "request": "attach",
+   "connect": {
+         "host": "localhost",
+         "port": 5678
+   },
+   "pathMappings": [
+         {
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/opt/certego/buffalogs"
+         }
+   ],
+   "justMyCode": false,
+   "django": true,
+   "presentation": {
+         "hidden": false,
+         "group": "Docker Debug"
+   }
+}
+```
+
 1. Set breakpoints in your code
 2. Go to Run and Debug panel in VS Code
 3. Select "Python: Django" configuration
@@ -103,14 +129,13 @@ The Celery worker is configured for debugging on port 5679:
 3. Go to Run and Debug panel in VS Code
 4. Select "Python: Celery Worker" configuration
 
-Note: For these configurations to appear in the Run and Debug panel in VS Code, you will have to create a `launch.json` file in a `.vscode folder` and manually add these configurations. In case of further assistance, you may reach out to me.
+Note: For these configurations to appear in the Run and Debug panel in VS Code, you will have to create a `launch.json` file in a `.vscode folder` and manually add these configurations. In case of further assistance, you may reach out.
 
 # Development Workflow
 
 ## Making Changes
 1. Edit files in the `buffalogs/` directory
-2. Changes are automatically synced to the container
-3. Django development server auto-reloads on changes
+2. Django development server auto-reloads on changes
 
 ## Environment Variables
 Key environment variables for development:
@@ -118,5 +143,6 @@ Key environment variables for development:
 - `CERTEGO_BUFFALOGS_DEBUG=True` - BuffaLogs-specific debug settings
 - `USE_DEBUGPY=1` - Enables debugpy for remote debugging
 
+For closing the devcontainers, go to the bottom left of your screen (in VS Code) and click on `Reopen folder locally`. This will stop all running buffalogs containers.
 
 This DevContainer setup provides a consistent, reproducible development environment that matches the production infrastructure while offering enhanced debugging and development capabilities.
