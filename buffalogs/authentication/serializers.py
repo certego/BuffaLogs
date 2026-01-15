@@ -10,9 +10,7 @@ from .models import User
 class RegisterSerializer(rfs.ModelSerializer):
     password = rfs.CharField(max_length=68, min_length=6, write_only=True)
 
-    default_error_messages = {
-        "username": "The username should only contain alphanumeric characters"
-    }
+    default_error_messages = {"username": "The username should only contain alphanumeric characters"}
 
     class Meta:
         model = User

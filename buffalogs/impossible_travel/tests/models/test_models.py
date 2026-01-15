@@ -2,18 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
-from impossible_travel.models import (
-    Alert,
-    AlertDetectionType,
-    AlertFilterType,
-    Config,
-    ExecutionModes,
-    Login,
-    TaskSettings,
-    User,
-    UserRiskScoreType,
-    UsersIP,
-)
+from impossible_travel.models import Alert, AlertDetectionType, AlertFilterType, Config, ExecutionModes, Login, TaskSettings, User, UserRiskScoreType, UsersIP
 
 
 class UserModelTest(TestCase):
@@ -235,9 +224,7 @@ class UsersIPModelTest(TestCase):
 
     def test_users_ip_ipv6_address(self):
         """Test UsersIP with valid IPv6 address"""
-        users_ip = UsersIP.objects.create(
-            user=self.user, ip="2001:0db8:85a3:0000:0000:8a2e:0370:7334"
-        )
+        users_ip = UsersIP.objects.create(user=self.user, ip="2001:0db8:85a3:0000:0000:8a2e:0370:7334")
         self.assertEqual(users_ip.ip, "2001:0db8:85a3:0000:0000:8a2e:0370:7334")
 
     def test_users_ip_invalid_ip_raises_error(self):
@@ -494,9 +481,7 @@ class ConfigModelTest(TestCase):
         """Test that array fields store correct values"""
         self.assertIn("admin", self.config.ignored_users)
         self.assertIn("vip_user", self.config.vip_users)
-        self.assertIn(
-            AlertDetectionType.NEW_DEVICE, self.config.risk_score_increment_alerts
-        )
+        self.assertIn(AlertDetectionType.NEW_DEVICE, self.config.risk_score_increment_alerts)
 
     def test_config_positive_integer_fields(self):
         """Test that positive integer fields have correct values"""
@@ -537,12 +522,8 @@ class ConfigModelTest(TestCase):
         ]
         self.config.save()
         self.config.refresh_from_db()
-        self.assertEqual(
-            len(self.config.ignored_impossible_travel_countries_couples), 2
-        )
-        self.assertIn(
-            ["Italy", "Italy"], self.config.ignored_impossible_travel_countries_couples
-        )
+        self.assertEqual(len(self.config.ignored_impossible_travel_countries_couples), 2)
+        self.assertIn(["Italy", "Italy"], self.config.ignored_impossible_travel_countries_couples)
 
     def test_config_boolean_fields(self):
         """Test boolean fields work correctly"""

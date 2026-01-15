@@ -198,15 +198,9 @@ def user_login_timeline_chart(user, start, end):
 
 
 def user_device_usage_chart(user, start, end):
-    devices = (
-        Login.objects.filter(user=user, timestamp__range=(start, end))
-        .values("user_agent")
-        .annotate(count=Count("id"))
-    )
+    devices = Login.objects.filter(user=user, timestamp__range=(start, end)).values("user_agent").annotate(count=Count("id"))
 
-    pie_chart = pygal.Pie(
-        style=pie_custom_style, legend=True, show_labels=False, width=1000, height=650
-    )
+    pie_chart = pygal.Pie(style=pie_custom_style, legend=True, show_labels=False, width=1000, height=650)
     pie_chart.title = "Device Usage"
     for d in devices:
         pie_chart.add(d["user_agent"], d["count"])
@@ -272,9 +266,7 @@ def user_geo_distribution_chart(user, start, end):
     for alert in alerts:
         country = alert.login_raw_data.get("country", "")
         if country:
-            alert_by_country[country.lower()] = (
-                alert_by_country.get(country.lower(), 0) + 1
-            )
+            alert_by_country[country.lower()] = alert_by_country.get(country.lower(), 0) + 1
 
     countries = read_config("countries_list.json")
     name_to_code = {v.lower(): k for k, v in countries.items()}

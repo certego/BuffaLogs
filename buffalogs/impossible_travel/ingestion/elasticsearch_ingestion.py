@@ -55,30 +55,22 @@ class ElasticsearchIngestion(BaseIngestion):
         try:
             response = s.execute()
         except ConnectionError:
-            self.logger.error(
-                f"Failed to establish a connection with host: {connections.get_connection()}"
-            )
+            self.logger.error(f"Failed to establish a connection with host: {connections.get_connection()}")
         except TimeoutError:
-            self.logger.error(
-                f"Timeout reached for the host: {connections.get_connection()}"
-            )
+            self.logger.error(f"Timeout reached for the host: {connections.get_connection()}")
         except Exception as e:
             self.logger.error(f"Exception while quering elasticsearch: {e}")
 
         if response:
             if response.aggregations:
-                self.logger.info(
-                    f"Successfully got {len(response.aggregations.login_user.buckets)} users"
-                )
+                self.logger.info(f"Successfully got {len(response.aggregations.login_user.buckets)} users")
                 for user in response.aggregations.login_user.buckets:
                     if user.key:  # exclude not well-formatted usernames (e.g. "")
                         users_list.append(user.key)
 
         return users_list
 
-    def process_user_logins(
-        self, start_date: datetime, end_date: datetime, username: str
-    ) -> list:
+    def process_user_logins(self, start_date: datetime, end_date: datetime, username: str) -> list:
         """
         Concrete implementation of the BaseIngestion.process_user_logins abstract method
 
@@ -123,30 +115,20 @@ class ElasticsearchIngestion(BaseIngestion):
         try:
             response = s.execute()
         except ConnectionError:
-            self.logger.error(
-                f"Failed to establish a connection with host: {connections.get_connection()}"
-            )
+            self.logger.error(f"Failed to establish a connection with host: {connections.get_connection()}")
         except TimeoutError:
-            self.logger.error(
-                f"Timeout reached for the host: {connections.get_connection()}"
-            )
+            self.logger.error(f"Timeout reached for the host: {connections.get_connection()}")
         except Exception as e:
             self.logger.error(f"Exception while quering elasticsearch: {e}")
 
         # create a single standard dict (with the required fields listed in the ingestion.json config file) for each login
         if response:
-            self.logger.info(
-                f"Got {len(response)} logins for the user {username} to be normalized"
-            )
+            self.logger.info(f"Got {len(response)} logins for the user {username} to be normalized")
 
             for hit in response.hits.hits:
                 hit_dict = hit.to_dict()
                 tmp = {
-                    "_index": (
-                        "fw-proxy"
-                        if hit_dict.get("_index", "").startswith("fw-")
-                        else hit_dict.get("_index", "").split("-")[0]
-                    ),
+                    "_index": ("fw-proxy" if hit_dict.get("_index", "").startswith("fw-") else hit_dict.get("_index", "").split("-")[0]),
                     "_id": hit_dict["_id"],
                 }
                 tmp.update(hit_dict["_source"])

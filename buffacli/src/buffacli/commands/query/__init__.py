@@ -27,13 +27,9 @@ def callback(
     ctx: typer.Context,
     formatter: Annotated[FormatOptions, typer.Option("-f", "--format")] = "table",
     limit: Annotated[int, typer.Option(help="Prints only the first n items")] = None,
-    mode: Annotated[
-        RenderOptions, typer.Option(help="Select how long output are displayed")
-    ] = "",
+    mode: Annotated[RenderOptions, typer.Option(help="Select how long output are displayed")] = "",
     page_size: Annotated[int, typer.Option(help="Number of items in a page")] = None,
-    output_file: Annotated[
-        Path, typer.Option("-o", "--output", help="Output file for query export")
-    ] = None,
+    output_file: Annotated[Path, typer.Option("-o", "--output", help="Output file for query export")] = None,
     # search: Annotated[str, typer.Option(help="Performs post request search on key for the give value. Input should follow the format kw:value")] = None
 ):
     exporter = None
@@ -41,7 +37,5 @@ def callback(
         exporter = export.get_exporter(output_file)
     ctx.obj = QueryOptions(
         limit=limit,
-        formatter=make_renderable(
-            formatter, mode=mode, page_size=page_size, exporter=exporter
-        ),
+        formatter=make_renderable(formatter, mode=mode, page_size=page_size, exporter=exporter),
     )

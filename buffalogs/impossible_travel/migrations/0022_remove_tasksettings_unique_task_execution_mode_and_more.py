@@ -16,9 +16,7 @@ def populate_device_fingerprint(apps, schema_editor):
     UNKNOWN_DEVICE = "unknowndevice"
     UNKNOWN_BROWSER = "unknownbrowser"
 
-    UNKNOWN_FINGERPRINT = (
-        f"{UNKNOWN_OS}-{UNKNOWN_OS_MAJOR}-{UNKNOWN_DEVICE}-{UNKNOWN_BROWSER}"
-    )
+    UNKNOWN_FINGERPRINT = f"{UNKNOWN_OS}-{UNKNOWN_OS_MAJOR}-{UNKNOWN_DEVICE}-{UNKNOWN_BROWSER}"
 
     logins_to_update = []
     batch_size = 500
@@ -54,9 +52,7 @@ def populate_device_fingerprint(apps, schema_editor):
         agent_lower = login_db.user_agent.lower()
 
         # Heuristic for device type
-        if any(
-            x in agent_lower for x in ["x11", "win64", "wow64", "x86_64", "macintosh"]
-        ):
+        if any(x in agent_lower for x in ["x11", "win64", "wow64", "x86_64", "macintosh"]):
             device_family = "desktop"
         elif "tablet" in agent_lower or "ipad" in agent_lower:
             device_family = "tablet"
@@ -131,9 +127,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="tasksettings",
-            constraint=models.UniqueConstraint(
-                fields=("task_name", "execution_mode"), name="unique_task_execution"
-            ),
+            constraint=models.UniqueConstraint(fields=("task_name", "execution_mode"), name="unique_task_execution"),
         ),
         migrations.RunPython(populate_device_fingerprint, migrations.RunPython.noop),
         migrations.RunPython(check_regex_patterns, migrations.RunPython.noop),

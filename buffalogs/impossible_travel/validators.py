@@ -20,16 +20,12 @@ def validate_string_or_regex(value):
 
     for item in value:
         if not isinstance(item, str):
-            raise ValidationError(
-                f"The single element '{item}' in the '{value}' list field must be a string"
-            )
+            raise ValidationError(f"The single element '{item}' in the '{value}' list field must be a string")
 
         try:
             re.compile(item)
         except re.error:
-            raise ValidationError(
-                f"The single element '{item}' in the '{value}' list field is not a valid regex pattern"
-            )
+            raise ValidationError(f"The single element '{item}' in the '{value}' list field is not a valid regex pattern")
 
 
 def validate_regex_patterns(patterns_list):
@@ -97,20 +93,12 @@ def validate_countries_names(value):
         raise ValidationError(_("Value must be a list."))
 
     # Flatten the input if it's a list of lists (example: [['Italy', 'France']])
-    flattened = (
-        [country for pair in value for country in pair]
-        if all(isinstance(item, list) for item in value)
-        else value
-    )
+    flattened = [country for pair in value for country in pair] if all(isinstance(item, list) for item in value) else value
 
-    invalid_entries = [
-        country for country in flattened if country not in VALID_COUNTRY_NAMES
-    ]
+    invalid_entries = [country for country in flattened if country not in VALID_COUNTRY_NAMES]
 
     if invalid_entries:
-        raise ValidationError(
-            _(f"The following country names are invalid: {', '.join(invalid_entries)}")
-        )
+        raise ValidationError(_(f"The following country names are invalid: {', '.join(invalid_entries)}"))
 
 
 def validate_country_couples_list(value):
@@ -123,9 +111,7 @@ def validate_country_couples_list(value):
 
     for country_couple in value:
         if not isinstance(country_couple, list) or len(country_couple) != 2:
-            raise ValidationError(
-                _("Each single value must be a list of 2 elements (list of lists).")
-            )
+            raise ValidationError(_("Each single value must be a list of 2 elements (list of lists)."))
         # check that each country is a valid country name
         validate_countries_names(country_couple)
 
@@ -138,15 +124,11 @@ def validate_risk_score(value: Optional[Union[str, int]] = None):
     if isinstance(value, int) or value.isnumeric():
         value = int(value)
         if not (0 <= value <= 7):
-            raise ValidationError(
-                "risk score value is out of range. Value must be in the range of 0-7"
-            )
+            raise ValidationError("risk score value is out of range. Value must be in the range of 0-7")
     else:
         value = value.title()
         if value not in ALLOWED_RISK_STRINGS:
-            raise ValidationError(
-                f"Risk score must be an integer 0-7 or one of: {', '.join(ALLOWED_RISK_STRINGS)}"
-            )
+            raise ValidationError(f"Risk score must be an integer 0-7 or one of: {', '.join(ALLOWED_RISK_STRINGS)}")
     return value
 
 
@@ -156,9 +138,7 @@ def validate_datetime_str(value: Optional[str] = None):
 
     dt_obj = parse_datetime(value)
     if dt_obj is None:
-        raise ValidationError(
-            f"{value} is not a valid datetime format. Please use ISO 8601 format (e.g., YYYY-MM-DDTHH:MM:SSZ)."
-        )
+        raise ValidationError(f"{value} is not a valid datetime format. Please use ISO 8601 format (e.g., YYYY-MM-DDTHH:MM:SSZ).")
     if is_naive(dt_obj):
         dt_obj = make_aware(dt_obj)
     return dt_obj
@@ -241,10 +221,6 @@ def validate_tags(value):
     valid_tags = [choice[0] for choice in AlertTagValues.choices]
     invalid = [t for t in value if t not in valid_tags]
     if invalid:
-        raise ValidationError(
-            _(
-                f"Invalid tags: {', '.join(invalid)}. Must be one of: {', '.join(valid_tags)}."
-            )
-        )
+        raise ValidationError(_(f"Invalid tags: {', '.join(invalid)}. Must be one of: {', '.join(valid_tags)}."))
     if len(value) != len(set(value)):
         raise ValidationError(_("Duplicate tags are not allowed."))

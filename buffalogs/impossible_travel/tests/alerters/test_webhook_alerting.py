@@ -5,11 +5,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import jwt
 from django.test import TestCase
-from impossible_travel.alerting.webhook import (
-    WEBHOOKS_DEFAULT_ALGORITHM,
-    WEBHOOKS_DEFAULT_ISSUER_ID,
-    WebHookAlerting,
-)
+from impossible_travel.alerting.webhook import WEBHOOKS_DEFAULT_ALGORITHM, WEBHOOKS_DEFAULT_ISSUER_ID, WebHookAlerting
 from impossible_travel.models import Alert, User
 
 AUDIENCE = "test_service"
@@ -81,9 +77,7 @@ class TestHTTPRequestAlerting(TestCase):
     def setUpClass(cls):
         cls.test_server = get_test_server()
         if cls.test_server:
-            cls.server_thread = threading.Thread(
-                target=run_test_server, args=(cls.test_server,), daemon=True
-            )
+            cls.server_thread = threading.Thread(target=run_test_server, args=(cls.test_server,), daemon=True)
             cls.server_thread.start()
         super().setUpClass()
 
@@ -108,9 +102,7 @@ class TestHTTPRequestAlerting(TestCase):
         alerter = WebHookAlerting(self.config)
         self.assertEqual(alerter.alert_config["name"], AUDIENCE)
         self.assertEqual(alerter.alert_config["endpoint"], "http://127.0.0.1:8000")
-        self.assertEqual(
-            alerter.alert_config["secret_key_variable_name"], "TEST_SECRET_KEY"
-        )
+        self.assertEqual(alerter.alert_config["secret_key_variable_name"], "TEST_SECRET_KEY")
         self.assertIn("fields", alerter.alert_config)
         self.assertIn("login_data", alerter.alert_config)
         self.assertIn("algorithm", alerter.alert_config)

@@ -25,9 +25,7 @@ class Migration(migrations.Migration):
                 max_length=20,
             ),
         ),
-        migrations.RunPython(
-            set_default_execution_mode, reverse_code=migrations.RunPython.noop
-        ),
+        migrations.RunPython(set_default_execution_mode, reverse_code=migrations.RunPython.noop),
         migrations.AddConstraint(
             model_name="tasksettings",
             constraint=models.UniqueConstraint(

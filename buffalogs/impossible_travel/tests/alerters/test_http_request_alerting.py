@@ -4,11 +4,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest import mock
 
 from django.test import TestCase
-from impossible_travel.alerting.http_request import (
-    PERMITTED_LOGIN_FIELD_LIST,
-    HTTPRequestAlerting,
-    generate_batch,
-)
+from impossible_travel.alerting.http_request import PERMITTED_LOGIN_FIELD_LIST, HTTPRequestAlerting, generate_batch
 from impossible_travel.models import Alert, User
 
 
@@ -82,9 +78,7 @@ class TestHTTPRequestAlerting(TestCase):
     def setUpClass(cls):
         cls.test_server = get_test_server()
         if cls.test_server:
-            cls.server_thread = threading.Thread(
-                target=run_test_server, args=(cls.test_server,), daemon=True
-            )
+            cls.server_thread = threading.Thread(target=run_test_server, args=(cls.test_server,), daemon=True)
             cls.server_thread.start()
         super().setUpClass()
 
@@ -190,9 +184,7 @@ class TestHTTPRequestAlerting(TestCase):
         ]
 
         self.assertTrue(len(expected_output) == len(serialized))
-        self.assertTrue(
-            all(expected == data for data, expected in zip(serialized, expected_output))
-        )
+        self.assertTrue(all(expected == data for data, expected in zip(serialized, expected_output)))
 
     @mock.patch("requests.post", side_effect=mocked_requests_post_success)
     def test_alert_marked_as_notified(self, mock_request):
@@ -297,11 +289,7 @@ class TestHTTPRequestAlerting(TestCase):
 
         received_data = self.test_server.received_data
         self.assertTrue(len(expected_data) == len(received_data))
-        self.assertTrue(
-            all(
-                expected == data for data, expected in zip(received_data, expected_data)
-            )
-        )
+        self.assertTrue(all(expected == data for data, expected in zip(received_data, expected_data)))
 
         alert1 = Alert.objects.get(pk=alert1)
         alert2 = Alert.objects.get(pk=alert2)

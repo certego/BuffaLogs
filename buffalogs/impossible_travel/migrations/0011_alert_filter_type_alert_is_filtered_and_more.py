@@ -20,9 +20,7 @@ def update_alert_name(apps, schema_editor):
         elif alert.name == "Login from new device":
             alert.name = AlertDetectionType.NEW_DEVICE
         else:
-            logger.error(
-                f"Impossible to update the alert.name of the alert with id {alert.id}"
-            )
+            logger.error(f"Impossible to update the alert.name of the alert with id {alert.id}")
         alert.save()
 
 
@@ -380,9 +378,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="user",
             constraint=models.CheckConstraint(
-                condition=models.Q(
-                    ("risk_score__in", ["No risk", "Low", "Medium", "High"])
-                ),
+                condition=models.Q(("risk_score__in", ["No risk", "Low", "Medium", "High"])),
                 name="valid_user_risk_score_choice",
             ),
         ),

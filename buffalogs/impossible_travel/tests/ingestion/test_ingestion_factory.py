@@ -15,9 +15,7 @@ class IngestionFactoryTestCase(TestCase):
         self.assertIsNotNone(factory.active_ingestion.value)
         self.assertIsNot({}, factory.ingestion_config)
         self.assertIsInstance(factory.ingestion_config, dict)
-        self.assertEqual(
-            self.ingestion_config["active_ingestion"], factory.active_ingestion.value
-        )
+        self.assertEqual(self.ingestion_config["active_ingestion"], factory.active_ingestion.value)
         self.assertDictEqual(
             self.ingestion_config[factory.active_ingestion.value]["custom_mapping"],
             factory.mapping,
