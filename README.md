@@ -71,11 +71,25 @@ Or download the application directly from the [Docker Hub](https://hub.docker.co
 
 After that, there are two ways of running BuffaLogs, depending on your system configurations:
 * if you already have an elastic cluster:
-    *  set the address of the host into the `CERTEGO_ELASTICSEARCH` variable in the `buffalogs.env` file
+    *  Configure the connection in `config/buffalogs/ingestion.json` (see [Elasticsearch Configuration Guide](docs/ingestion/elasticsearch.md) for detailed instructions)
+    *  Set the Elasticsearch URL, credentials, and index patterns
     *  launch ` docker compose up -d` to run the containers
 * if you have no hosts with Elasticsearch installed on it, you can run it directly with Buffalogs:
     * run `docker compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
     * Now elasticsearch and kibana are running on the same host with Buffalogs.
+
+### Secure Bundled Elasticsearch (Opt-In)
+By default, the bundled Elasticsearch is unsecured for easy development. To enable basic authentication and TLS/SSL opt-in, use the `secure` profile. For instructions on generating certificates, setting passwords/tokens, and starting secure mode, see [docs/ingestion/elasticsearch.md](docs/ingestion/elasticsearch.md).
+
+### Configuring Elasticsearch Connection
+
+For detailed instructions on connecting BuffaLogs to an existing Elasticsearch cluster, including:
+- Credentials configuration (username/password)
+- TLS/SSL verification settings
+- Index/data stream configuration
+- Custom field mapping
+
+See the [Elasticsearch Ingestion Guide](docs/ingestion/elasticsearch.md).
 
 <img src="docs/static/map_buffalogs.png" width=750 height=400 alt="BuffaLogs Map Page"/>
 
@@ -104,10 +118,15 @@ This project is protected by the Apache Licence 2.0.
 BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](CONTRIBUTING.md) before making any changes to the project.
 
 ## Authors and Maintainers
-- [Federico Foschini](https://github.com/ManofWax) – Administrator, Software Architect, and Code Reviewer
-- [Lorena Goldoni](https://github.com/Lorygold) – Lead Author, Principal Maintainer, and Code Reviewer
+- [Federico Foschini](https://github.com/ManofWax) – Administrator, Software Architect and Code Reviewer
+- [Lorena Goldoni](https://github.com/Lorygold) – Lead Author, Principal Maintainer and Code Reviewer
+- [Francesca Priore](https://github.com/FP-CyberLynx/) – Cyber Security Analyst Specialist and Incident Responder
+- [Gabriele Carlucci](https://github.com/gcarlucc) – Cyber Security Analyst and Cyber Security Consultant
+- [Eugenio Severi](https://github.com/eugenioseveri) – DevOps Maintainer and Code Reviewer
+- [Luca Cigarini](https://github.com/lucaCigarini) – Backend Maintainer and Code Reviewer
+
+### Contributors
 - [Abheek Tripathy](https://github.com/abheektripathy) – Google Summer of Code 2024 contributor
 - [Onunwa Goodness](https://github.com/Noble-47) – Google Summer of Code 2025 contributor
 - [Kunal Gurtatta](https://github.com/kunalsz) – Google Summer of Code 2025 contributor
-
-[def]: docs/
+- [Dorna Raj Gyawali](https://github.com/drona-gyawali) - Backend contributor

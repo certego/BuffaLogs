@@ -1,0 +1,23 @@
+FROM python:3.12-slim
+
+
+# Prevent Python from writing .pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY buffacli/pyproject.toml buffacli/requirements.txt ./
+COPY buffacli/src/ ./src/
+COPY buffacli/README.md ./
+
+# Install build dependencies and the CLI tool
+RUN pip install --upgrade pip build \
+    && pip install .
+
+# Set entrypoint for CLI use
+ENTRYPOINT ["buffacli"]

@@ -1,0 +1,40 @@
+[project]
+name = "buffacli"
+version = "0.0.1"
+description = "A CLI tool for interacting with BuffaLogs"
+authors = [
+    { name = "Your Name", email = "you@example.com" }
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "typer==0.16.0",
+    "requests==2.32.3",
+    "rich==14.0.0",
+    "yarl==1.20.1",
+    "typing-extensions==4.14.0",
+    "black==25.1.0",
+    "build==1.2.2.post1",
+    "flake8==7.1.2",
+    "isort==6.0.1",
+    "setuptools==80.9.0",
+    "pre-commit==4.2.0",
+    "pyproject-hooks==1.2.0",
+    "pytest==8.4.0",
+    "wheel==0.45.1",
+]
+
+[project.scripts]
+buffacli = "buffacli.buffacli:app"  # Exposes `buffacli` command via Typer
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests*"]
+
+
+[tool.setuptools.package-data]
+"buffacli" = ["config.json"]
