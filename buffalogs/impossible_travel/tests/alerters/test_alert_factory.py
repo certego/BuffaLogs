@@ -25,7 +25,11 @@ class TestAlertFactory(TestCase):
         cls.alert = Alert.objects.create(
             name="Imp Travel",
             user=cls.user,
-            notified_status={"telegram": False, "microsoftteams": False, "discord": False},
+            notified_status={
+                "telegram": False,
+                "microsoftteams": False,
+                "discord": False,
+            },
             description="Impossible travel detected",
             login_raw_data={},
         )

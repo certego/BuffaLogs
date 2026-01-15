@@ -55,7 +55,14 @@ class OpensearchIngestion(BaseIngestion):
                 }
             },
             # making change to already committed code on the basis that the dynamic templates stores all strings as keywords so having user.name.keyword will cause program to fail
-            "aggs": {"login_user": {"terms": {"field": "user.name", "size": self.ingestion_config["bucket_size"]}}},
+            "aggs": {
+                "login_user": {
+                    "terms": {
+                        "field": "user.name",
+                        "size": self.ingestion_config["bucket_size"],
+                    }
+                }
+            },
         }
         try:
             response = self.client.search(index=self.ingestion_config["indexes"], body=query)
@@ -127,7 +134,7 @@ class OpensearchIngestion(BaseIngestion):
 
             for hit in response["hits"]["hits"]:
                 tmp = {
-                    "_index": "fw-proxy" if hit.get("_index", "").startswith("fw-") else hit.get("_index", "").split("-")[0],
+                    "_index": ("fw-proxy" if hit.get("_index", "").startswith("fw-") else hit.get("_index", "").split("-")[0]),
                     "_id": hit["_id"],
                 }
                 # Add source data to the tmp dict

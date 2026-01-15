@@ -22,7 +22,10 @@ def get_ingestion_sources(request):
 def get_active_ingestion_source(request):
     config = read_config()
     source = config["active_ingestion"]
-    context = {"source": source, "fields": dict((field, config[source][field]) for field in config[source]["__custom_fields__"])}
+    context = {
+        "source": source,
+        "fields": dict((field, config[source][field]) for field in config[source]["__custom_fields__"]),
+    }
     return JsonResponse(context, json_dumps_params={"default": str})
 
 
@@ -33,14 +36,20 @@ def ingestion_source_config(request, source):
         return JsonResponse({"message": f"Unsupported ingestion source - {source}"}, status=400)
 
     if request.method == "GET":
-        context = {"source": source, "fields": dict((field, ingestion_config[field]) for field in ingestion_config["__custom_fields__"])}
+        context = {
+            "source": source,
+            "fields": dict((field, ingestion_config[field]) for field in ingestion_config["__custom_fields__"]),
+        }
         return JsonResponse(context, json_dumps_params={"default": str})
 
     if request.method == "POST":
         config_update = json.loads(request.body.decode("utf-8"))
         error_fields = [field for field in config_update.keys() if field not in ingestion_config["__custom_fields__"]]
         if any(error_fields):
-            return JsonResponse({"message": f"Unexpected configuration fields - {error_fields}"}, status=400)
+            return JsonResponse(
+                {"message": f"Unexpected configuration fields - {error_fields}"},
+                status=400,
+            )
         ingestion_config.update(config_update)
         write_config(source, ingestion_config)
         return JsonResponse({"message": "Update successful"}, status=200)

@@ -43,13 +43,20 @@ class TestViewsElasticIngestion(TestCase):
             "@timestamp": "1970-01-01T00:00:00Z",
             "user": {"name": "test_user"},
             "source": {
-                "geo": {"country_name": "Test Country", "location": {"lat": 12.34, "lon": 56.78}},
+                "geo": {
+                    "country_name": "Test Country",
+                    "location": {"lat": 12.34, "lon": 56.78},
+                },
                 "as": {"organization": {"name": "Test ISP"}},
                 "ip": "192.168.1.1",
                 "intelligence_category": "Test Category",
             },
             "user_agent": {"original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"},
-            "event": {"type": "start", "category": "authentication", "outcome": "success"},
+            "event": {
+                "type": "start",
+                "category": "authentication",
+                "outcome": "success",
+            },
         }
 
         indicies = ["cloud", "fw-proxy"]

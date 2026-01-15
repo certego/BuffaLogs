@@ -25,7 +25,10 @@ class JSONExporter(BaseExporter):
         vprint("info", "Exporting  data to {self.filename}...", end="")
         with open(self.filename, "w") as f:
             json.dump(json_content, f, indent=4)
-        vprint("debug", f"Row Count: {1 if isinstance(json_content, dict) else len(json_content)}")
+        vprint(
+            "debug",
+            f"Row Count: {1 if isinstance(json_content, dict) else len(json_content)}",
+        )
 
 
 class CSVExporter(BaseExporter):

@@ -8,7 +8,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("impossible_travel", "0019_remove_alert_valid_alert_filter_type_choices_and_more"),
+        (
+            "impossible_travel",
+            "0019_remove_alert_valid_alert_filter_type_choices_and_more",
+        ),
     ]
 
     operations = [

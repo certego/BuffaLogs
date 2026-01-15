@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, ComparisonType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, User
+from impossible_travel.validators import _is_safe_regex
 from ua_parser import parse
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,10 @@ def match_filters(alert: Alert, app_config: Config) -> Alert:
         # check ignored_impossible_travel_countries_couples and ignored_impossible_travel_all_same_country config filters
         if app_config.ignored_impossible_travel_all_same_country and alert.login_raw_data["country"] == alert.login_raw_data["buffalogs"]["start_country"]:
             alert.filter_type.append(AlertFilterType.IGNORED_IMP_TRAVEL_ALL_SAME_COUNTRY)
-        couple_country = [alert.login_raw_data["country"], alert.login_raw_data["buffalogs"]["start_country"]]
+        couple_country = [
+            alert.login_raw_data["country"],
+            alert.login_raw_data["buffalogs"]["start_country"],
+        ]
         # using Counter to ignore the order: ["Italy", "Germany"] == ["Germany", "Italy"] and check only if the coutry couple is present in the ignored couples
         for ignored_country_couple in app_config.ignored_impossible_travel_countries_couples:
             if Counter(ignored_country_couple) == Counter(couple_country):
@@ -104,14 +108,37 @@ def _update_users_filters(db_alert: Alert, app_config: Config, db_user: User) ->
 
 
 def _check_username_list_regex(word: str, values_list: list) -> bool:
-    """Function to check if a string value is inside a list of string or match a regex in the list"""
+    """
+    Function to check if a string value is inside a list of strings or matches a regex in the list.
+    Includes ReDoS protection through pattern validation.
+
+    Args:
+        word: String to check
+        values_list: List of strings or regex patterns
+
+    Returns:
+        True if word matches any item in the list, False otherwise
+    """
     for item in values_list:
+        # First, try exact match (fast path)
         if word == item:
-            # check if the word is exacly a value in the list
             return True
-        else:
-            # else, check if the item in the list is a regex that matches the word
+
+        # Validate regex pattern before compilation
+        if not _is_safe_regex(item):
+            logger.warning(f"Skipping unsafe or invalid regex pattern: {item[:50]}...")
+            continue
+
+        try:
+            # Compile and search with validated pattern
             regexp = re.compile(item)
             if regexp.search(word):
                 return True
+        except re.error as e:
+            logger.error(f"Invalid regex pattern '{item}': {e}")
+            continue
+        except Exception as e:
+            logger.error(f"Unexpected error processing regex '{item}': {e}")
+            continue
+
     return False

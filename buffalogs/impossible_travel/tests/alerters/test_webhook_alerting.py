@@ -28,7 +28,12 @@ class WebhookRequestHandler(BaseHTTPRequestHandler):
         token = auth_header.split(" ")[1]  # Extract JWT token
 
         try:
-            decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[WEBHOOKS_DEFAULT_ALGORITHM], audience=AUDIENCE)
+            decoded_token = jwt.decode(
+                token,
+                SECRET_KEY,
+                algorithms=[WEBHOOKS_DEFAULT_ALGORITHM],
+                audience=AUDIENCE,
+            )
             self.server.decoded_token = decoded_token
         except jwt.ExpiredSignatureError:
             self.send_response(401)
@@ -118,11 +123,19 @@ class TestHTTPRequestAlerting(TestCase):
         if self.test_server is None:
             self.skipTest("Failed to create test server")
         alert1 = Alert.objects.create(
-            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified_status={"webhook": False}
+            name="New Device",
+            user=self.user,
+            login_raw_data={"lat": 40.7128, "lon": -74.0060},
+            description="test alert",
+            notified_status={"webhook": False},
         ).pk
 
         alert2 = Alert.objects.create(
-            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified_status={"webhook": False}
+            name="Imp Travel",
+            user=self.user,
+            login_raw_data={"lat": 51.5074, "lon": -0.1278},
+            description="test alert",
+            notified_status={"webhook": False},
         ).pk
         alerter = WebHookAlerting(self.config)
         alerter.notify_alerts()

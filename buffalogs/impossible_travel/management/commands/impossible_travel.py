@@ -12,7 +12,12 @@ class Command(TaskLoggingCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument("start_date", nargs="?", type=str, help="Start datetime from which begin the detection")
+        parser.add_argument(
+            "start_date",
+            nargs="?",
+            type=str,
+            help="Start datetime from which begin the detection",
+        )
         parser.add_argument("end_date", nargs="?", type=str, help="End datetime for the detection")
 
     def handle(self, *args, **options):

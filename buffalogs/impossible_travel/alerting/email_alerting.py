@@ -50,7 +50,12 @@ class EmailAlerting(BaseAlerting):
         if alert_title is None and alert_description is None and alert:
             alert_title, alert_description = self.alert_message_formatter(alert)
 
-        res = send_mail(alert_title, alert_description, self.email_config.get("DEFAULT_FROM_EMAIL"), recipient_list)
+        res = send_mail(
+            alert_title,
+            alert_description,
+            self.email_config.get("DEFAULT_FROM_EMAIL"),
+            recipient_list,
+        )
         if res == 0:
             raise Exception(f"Email alert failed to send to {recipient_list}")
         return res
@@ -67,7 +72,12 @@ class EmailAlerting(BaseAlerting):
         )
 
         try:
-            self.send_message(alert=None, recipient_list=self.recipient_list_admins, alert_title=summary_title, alert_description=summary_description)
+            self.send_message(
+                alert=None,
+                recipient_list=self.recipient_list_admins,
+                alert_title=summary_title,
+                alert_description=summary_description,
+            )
             self.logger.info(f"Email Summary Sent From: {start_date} To: {end_date}")
         except Exception as e:
             self.logger.exception(f"Email Summary Notification Failed: {str(e)}")
@@ -114,11 +124,18 @@ class EmailAlerting(BaseAlerting):
 
             else:
                 alert = group_alerts[0]
-                alert_title, alert_description = self.alert_message_formatter(alert=alert, template_path="alert_template_clubbed.jinja", alerts=group_alerts)
+                alert_title, alert_description = self.alert_message_formatter(
+                    alert=alert,
+                    template_path="alert_template_clubbed.jinja",
+                    alerts=group_alerts,
+                )
 
                 try:
                     self.send_message(
-                        alert=None, recipient_list=self.recipient_list_admins, alert_title=alert_title, alert_description=alert_description
+                        alert=None,
+                        recipient_list=self.recipient_list_admins,
+                        alert_title=alert_title,
+                        alert_description=alert_description,
                     )  # 1 if sent,0 if not
                     self.logger.info(f"Clubbed Email alert Sent: {alert_title} to {self.recipient_list_admins}")
                     for a in group_alerts:

@@ -13,7 +13,10 @@ CERTEGO_BUFFALOGS_POSTGRES_DB = os.environ.get("BUFFALOGS_POSTGRES_DB", "buffalo
 CERTEGO_BUFFALOGS_POSTGRES_USER = os.environ.get("BUFFALOGS_POSTGRES_USER", "default_user")
 CERTEGO_BUFFALOGS_POSTGRES_PASSWORD = os.environ.get("BUFFALOGS_POSTGRES_PASSWORD", "password")
 CERTEGO_BUFFALOGS_POSTGRES_PORT = os.environ.get("BUFFALOGS_POSTGRES_PORT", "5432")
-CERTEGO_BUFFALOGS_SECRET_KEY = os.environ.get("BUFFALOGS_SECRET_KEY", "django-insecure-am9z-fi-x*aqxlb-@abkhb@pu!0da%0a77h%-8d(dwzrrktwhu")
+CERTEGO_BUFFALOGS_SECRET_KEY = os.environ.get(
+    "BUFFALOGS_SECRET_KEY",
+    "django-insecure-am9z-fi-x*aqxlb-@abkhb@pu!0da%0a77h%-8d(dwzrrktwhu",
+)
 
 # For alert_filter.py in Config model
 CERTEGO_BUFFALOGS_IGNORED_USERS = ["Not Available", "N/A"]
@@ -22,7 +25,12 @@ CERTEGO_BUFFALOGS_ALLOWED_COUNTRIES = []
 CERTEGO_BUFFALOGS_IGNORED_IPS = ["127.0.0.1"]
 CERTEGO_BUFFALOGS_IGNORED_ISPS = []
 CERTEGO_BUFFALOGS_VIP_USERS = []
-CERTEGO_BUFFALOGS_RISK_SCORE_INCREMENT_ALERTS = ["New Country", "Anonymous IP Login", "Atypical Country", "Imp Travel"]
+CERTEGO_BUFFALOGS_RISK_SCORE_INCREMENT_ALERTS = [
+    "New Country",
+    "Anonymous IP Login",
+    "Atypical Country",
+    "Imp Travel",
+]
 CERTEGO_BUFFALOGS_FILTERED_ALERTS_TYPES = ["User Risk Threshold", "New Device"]
 CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED = 100
 CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED = 300

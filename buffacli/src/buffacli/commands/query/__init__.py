@@ -35,4 +35,7 @@ def callback(
     exporter = None
     if output_file:
         exporter = export.get_exporter(output_file)
-    ctx.obj = QueryOptions(limit=limit, formatter=make_renderable(formatter, mode=mode, page_size=page_size, exporter=exporter))
+    ctx.obj = QueryOptions(
+        limit=limit,
+        formatter=make_renderable(formatter, mode=mode, page_size=page_size, exporter=exporter),
+    )

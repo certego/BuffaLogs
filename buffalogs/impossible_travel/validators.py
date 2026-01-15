@@ -1,3 +1,4 @@
+import logging
 import re
 from ipaddress import AddressValueError, IPv4Address, IPv4Network
 from typing import Any, Dict, Optional, Union
@@ -10,6 +11,60 @@ from impossible_travel.constants import AlertTagValues
 from impossible_travel.views.utils import read_config
 
 ALLOWED_RISK_STRINGS = ["High", "Medium", "Low", "No Risk"]
+logger = logging.getLogger(__name__)
+
+# Security constants for ReDoS protection
+MAX_REGEX_LENGTH = 100
+MAX_REGEX_COMPLEXITY = 50  # Maximum number of special regex characters
+
+
+def _is_safe_regex(pattern: str) -> bool:
+    """
+    Validates that a regex pattern is safe to compile and execute.
+    Protects against Regular Expression Denial of Service (ReDoS) attacks.
+
+    Args:
+        pattern: Regular expression pattern string
+
+    Returns:
+        True if pattern is safe, False otherwise
+    """
+    # Check pattern length
+    if len(pattern) > MAX_REGEX_LENGTH:
+        logger.warning(f"Regex pattern exceeds maximum length ({MAX_REGEX_LENGTH}): {len(pattern)}")
+        return False
+
+    # Count special regex characters that can cause complexity
+    dangerous_chars = ["*", "+", "{", "(", "|", "["]
+    complexity = sum(pattern.count(char) for char in dangerous_chars)
+
+    if complexity > MAX_REGEX_COMPLEXITY:
+        logger.warning(f"Regex pattern too complex ({complexity} special chars, max {MAX_REGEX_COMPLEXITY})")
+        return False
+
+    # Check for known dangerous patterns that can cause catastrophic backtracking
+    # These patterns check for nested quantifiers which are the primary cause of ReDoS
+    dangerous_patterns = [
+        r"\(.+[*+]\)[*+]",  # Direct nested quantifiers like (a+)+ or (a*)*
+        r"\(.+[*+]\).?[*+]",  # Nested quantifiers with optional char like (a+)+b
+        r"\(.+\|.+\)[*+]",  # Alternation with quantifier like (a|ab)*
+    ]
+
+    for dangerous in dangerous_patterns:
+        try:
+            if re.search(dangerous, pattern):
+                logger.warning(f"Regex pattern contains dangerous construct: {pattern}")
+                return False
+        except re.error:
+            pass
+
+    # Try to compile to catch syntax errors
+    try:
+        re.compile(pattern)
+        return True
+    except re.error as e:
+        logger.error(f"Invalid regex syntax: {pattern}, error: {e}")
+        return False
 
 
 def validate_string_or_regex(value):
@@ -25,6 +80,34 @@ def validate_string_or_regex(value):
             re.compile(item)
         except re.error:
             raise ValidationError(f"The single element '{item}' in the '{value}' list field is not a valid regex pattern")
+
+
+def validate_regex_patterns(patterns_list):
+    """Validator for regex patterns - rejects unsafe patterns that could cause ReDoS attacks.
+
+    Args:
+        patterns_list: List of regex pattern strings
+
+    Raises:
+        ValidationError: If any pattern is unsafe
+    """
+    if not patterns_list:
+        return
+
+    if not isinstance(patterns_list, list):
+        raise ValidationError("Must be a list of patterns")
+
+    unsafe = set()
+    for p in patterns_list:
+        if p and not _is_safe_regex(p):
+            unsafe.add(p)
+
+    if unsafe:
+        raise ValidationError(
+            f"The following regex patterns are unsafe and have been rejected: {list(unsafe)}. "
+            "Patterns must not exceed 100 characters, contain more than 50 special characters, "
+            "or contain nested quantifiers like (a+)+, (a*)*, or (a|ab)*."
+        )
 
 
 def validate_ips_or_network(value):

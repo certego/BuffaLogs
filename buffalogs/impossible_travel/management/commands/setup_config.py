@@ -78,13 +78,37 @@ class Command(TaskLoggingCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument("-o", "--override", action="append", metavar="FIELD=[VALUES]", help="Override field values")
-        parser.add_argument("-r", "--remove", action="append", metavar="FIELD=[VALUES]", help="Remove values from list fields")
-        parser.add_argument("-a", "--append", action="append", metavar="FIELD=[VALUES]", help="Append values to list fields or override non-list")
         parser.add_argument(
-            "--set-default-values", action="store_true", help="Initialize configuration fields with default values (already populated values are not modified)"
+            "-o",
+            "--override",
+            action="append",
+            metavar="FIELD=[VALUES]",
+            help="Override field values",
         )
-        parser.add_argument("--force", action="store_true", help="Force overwrite existing values with defaults (use with caution)")
+        parser.add_argument(
+            "-r",
+            "--remove",
+            action="append",
+            metavar="FIELD=[VALUES]",
+            help="Remove values from list fields",
+        )
+        parser.add_argument(
+            "-a",
+            "--append",
+            action="append",
+            metavar="FIELD=[VALUES]",
+            help="Append values to list fields or override non-list",
+        )
+        parser.add_argument(
+            "--set-default-values",
+            action="store_true",
+            help="Initialize configuration fields with default values (already populated values are not modified)",
+        )
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Force overwrite existing values with defaults (use with caution)",
+        )
 
     def handle(self, *args, **options):
         config, _ = Config.objects.get_or_create(id=1)

@@ -95,7 +95,14 @@ class OpensearchIngestionTestCase(TestCase):
         self.assertEqual(len(result), 6)
         self.assertCountEqual(
             result,
-            ["Stitch", "Jessica", "bugs-bunny@organization.com", "scooby.doo@gmail.com", "Andrew", "bugs.bunny"],
+            [
+                "Stitch",
+                "Jessica",
+                "bugs-bunny@organization.com",
+                "scooby.doo@gmail.com",
+                "Andrew",
+                "bugs.bunny",
+            ],
         )
         mock_client.search.assert_called_once()
 

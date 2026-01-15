@@ -5,7 +5,13 @@ class Query(DataModel):
 
     custom_mappings = {}
 
-    def __init__(self, content: dict | list[dict], omit: list = None, mappings: dict[str, str] = None, fields: str = None):
+    def __init__(
+        self,
+        content: dict | list[dict],
+        omit: list = None,
+        mappings: dict[str, str] = None,
+        fields: str = None,
+    ):
         if not (isinstance(content, list) or isinstance(content, dict)):
             raise TypeError(f"{self.__class__.__name__} got content of type {type(content)}. Expected list or dict object")
         self.content = content

@@ -9,12 +9,25 @@ from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert
 
-PERMITTED_ALERT_FIELD_LIST = ["name", "user", "created", "description", "is_vip", "is_filtered", "filter_type"]
+PERMITTED_ALERT_FIELD_LIST = [
+    "name",
+    "user",
+    "created",
+    "description",
+    "is_vip",
+    "is_filtered",
+    "filter_type",
+]
 PERMITTED_LOGIN_FIELD_LIST = ["index", "lat", "lon", "country", "timestamp"]
 ALERT_TYPE_LIST = [item.value for item in AlertDetectionType]
 
 
-def parse_fields_value(field_value: str | list, field_name: str, supported_values: list, default: list | None = None):
+def parse_fields_value(
+    field_value: str | list,
+    field_name: str,
+    supported_values: list,
+    default: list | None = None,
+):
     """
     Parse and validate a field value against a list of supported values.
 
@@ -42,7 +55,10 @@ def parse_fields_value(field_value: str | list, field_name: str, supported_value
             return None, supported_values
         if field_value.lower() == "_empty_":
             return None, []
-        return f"Unsupported value: {field_value} for {field_name}, using defaults", default
+        return (
+            f"Unsupported value: {field_value} for {field_name}, using defaults",
+            default,
+        )
     invalid_values = []
     msg = None
     # using copy to allow modification
@@ -95,7 +111,10 @@ def check_variable_exists(variable_name: str, default: str = ""):
     elif variable_name not in os.environ:
         return None, os.environ[variable_name]
     else:
-        return "Variable name {variable_name} is not set as Environment variable", default
+        return (
+            "Variable name {variable_name} is not set as Environment variable",
+            default,
+        )
 
 
 def generate_batch(items: list, batch_size: int):
@@ -135,11 +154,22 @@ class HTTPRequestAlerting(BaseAlerting):
         "batch_size": -1,
     }
     option_parsers = {
-        "alert_types": partial(parse_fields_value, field_name="alert_types", supported_values=ALERT_TYPE_LIST),
-        "fields": partial(
-            parse_fields_value, field_name="fields", supported_values=PERMITTED_ALERT_FIELD_LIST, default=["name", "user", "description", "created"]
+        "alert_types": partial(
+            parse_fields_value,
+            field_name="alert_types",
+            supported_values=ALERT_TYPE_LIST,
         ),
-        "login_data": partial(parse_fields_value, field_name="login_data", supported_values=PERMITTED_LOGIN_FIELD_LIST),
+        "fields": partial(
+            parse_fields_value,
+            field_name="fields",
+            supported_values=PERMITTED_ALERT_FIELD_LIST,
+            default=["name", "user", "description", "created"],
+        ),
+        "login_data": partial(
+            parse_fields_value,
+            field_name="login_data",
+            supported_values=PERMITTED_LOGIN_FIELD_LIST,
+        ),
     }
 
     def __init__(self, alert_config: dict):

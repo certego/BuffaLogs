@@ -36,7 +36,11 @@ class SlackAlerting(BaseAlerting):
 
             if alert.user.username in list(self.recipient_list_users.keys()):
                 user_mention = f"<@{self.recipient_list_users[alert.user.username]}>"
-                alert_title, alert_description = self.alert_message_formatter(alert, template_path="alert_template_slack.jinja", user_mention=user_mention)
+                alert_title, alert_description = self.alert_message_formatter(
+                    alert,
+                    template_path="alert_template_slack.jinja",
+                    user_mention=user_mention,
+                )
 
         alert_msg = {
             "attachments": [
@@ -48,7 +52,11 @@ class SlackAlerting(BaseAlerting):
             ]
         }
 
-        resp = requests.post(self.webhook_url, json=alert_msg, headers={"Content-Type": "application/json"})
+        resp = requests.post(
+            self.webhook_url,
+            json=alert_msg,
+            headers={"Content-Type": "application/json"},
+        )
         resp.raise_for_status()
         return resp
 
@@ -64,7 +72,11 @@ class SlackAlerting(BaseAlerting):
         )
 
         try:
-            self.send_message(alert=None, alert_title=summary_title, alert_description=summary_description)
+            self.send_message(
+                alert=None,
+                alert_title=summary_title,
+                alert_description=summary_description,
+            )
             self.logger.info(f"Slack Summary Sent From: {start_date} To: {end_date}")
         except requests.RequestException as e:
             self.logger.exception(f"Slack Summary Notification Failed: {str(e)}")
@@ -95,9 +107,17 @@ class SlackAlerting(BaseAlerting):
 
             else:
                 alert = group_alerts[0]
-                alert_title, alert_description = self.alert_message_formatter(alert=alert, template_path="alert_template_clubbed.jinja", alerts=group_alerts)
+                alert_title, alert_description = self.alert_message_formatter(
+                    alert=alert,
+                    template_path="alert_template_clubbed.jinja",
+                    alerts=group_alerts,
+                )
                 try:
-                    self.send_message(alert=None, alert_title=alert_title, alert_description=alert_description)
+                    self.send_message(
+                        alert=None,
+                        alert_title=alert_title,
+                        alert_description=alert_description,
+                    )
                     self.logger.info(f"Clubbed Slack Alert Sent: {alert_title}")
 
                     for a in group_alerts:

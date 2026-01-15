@@ -16,7 +16,10 @@ class IngestionFactoryTestCase(TestCase):
         self.assertIsNot({}, factory.ingestion_config)
         self.assertIsInstance(factory.ingestion_config, dict)
         self.assertEqual(self.ingestion_config["active_ingestion"], factory.active_ingestion.value)
-        self.assertDictEqual(self.ingestion_config[factory.active_ingestion.value]["custom_mapping"], factory.mapping)
+        self.assertDictEqual(
+            self.ingestion_config[factory.active_ingestion.value]["custom_mapping"],
+            factory.mapping,
+        )
 
     def test_read_config_valid(self):
         # test correct config loading

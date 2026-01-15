@@ -119,7 +119,13 @@ class TestHTTPRequestAlerting(TestCase):
         Test that unsupported or not permitted values for alert_types, fields and login_data are dropped.
         """
         config = self.config.copy()
-        config["options"]["fields"] = ["user", "description", "not_permitted_value", "created", "unsupported_value"]
+        config["options"]["fields"] = [
+            "user",
+            "description",
+            "not_permitted_value",
+            "created",
+            "unsupported_value",
+        ]
         config["options"]["login_data"] = "unknown_string_option"
         config["options"]["alert_types"] = "_all_"
         alerter = HTTPRequestAlerting(config)

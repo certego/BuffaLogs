@@ -53,7 +53,11 @@ class MattermostAlerting(BaseAlerting):
         )
 
         try:
-            self.send_message(alert=None, alert_title=summary_title, alert_description=summary_description)
+            self.send_message(
+                alert=None,
+                alert_title=summary_title,
+                alert_description=summary_description,
+            )
             self.logger.info(f"GoogleChat Summary Sent From: {start_date} To: {end_date}")
         except requests.RequestException as e:
             self.logger.exception(f"GoogleChat Summary Notification Failed: {str(e)}")
@@ -86,9 +90,17 @@ class MattermostAlerting(BaseAlerting):
 
             else:
                 alert = group_alerts[0]
-                alert_title, alert_description = self.alert_message_formatter(alert=alert, template_path="alert_template_clubbed.jinja", alerts=group_alerts)
+                alert_title, alert_description = self.alert_message_formatter(
+                    alert=alert,
+                    template_path="alert_template_clubbed.jinja",
+                    alerts=group_alerts,
+                )
                 try:
-                    self.send_message(alert=None, alert_title=alert_title, alert_description=alert_description)
+                    self.send_message(
+                        alert=None,
+                        alert_title=alert_title,
+                        alert_description=alert_description,
+                    )
                     self.logger.info(f"Clubbed Mattermost Alert Sent: {alert_title}")
 
                     for a in group_alerts:

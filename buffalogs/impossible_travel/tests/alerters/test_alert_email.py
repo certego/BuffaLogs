@@ -111,7 +111,10 @@ class TestEmailAlerting(TestCase):
 
         # Verify email content
         emailToAdmin = mail.outbox[0]
-        self.assertIn('BuffaLogs - Login Anomaly Alerts : 3 "Imp Travel" alerts for user testuser', emailToAdmin.subject)
+        self.assertIn(
+            'BuffaLogs - Login Anomaly Alerts : 3 "Imp Travel" alerts for user testuser',
+            emailToAdmin.subject,
+        )
 
         # Reload the alerts from the db
         alert1 = Alert.objects.get(pk=alert1.pk)

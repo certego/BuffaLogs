@@ -22,7 +22,12 @@ def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
 
     while current_date < end_date:
         next_date = current_date + interval
-        count = Alert.objects.filter(login_raw_data__timestamp__range=(current_date.isoformat(), next_date.isoformat())).count()
+        count = Alert.objects.filter(
+            login_raw_data__timestamp__range=(
+                current_date.isoformat(),
+                next_date.isoformat(),
+            )
+        ).count()
         aggregated_data[current_date.strftime(date_fmt)] = count
         current_date = next_date
     return aggregated_data
@@ -100,13 +105,26 @@ def world_map_chart_api(request):
     tmp = []
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
-            login_raw_data__timestamp__range=(start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")),
+            login_raw_data__timestamp__range=(
+                start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            ),
             login_raw_data__country__iexact=key,
         )
         if country_alerts:
             for alert in country_alerts:
-                if [alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]] not in tmp:
-                    tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
+                if [
+                    alert.login_raw_data["country"],
+                    alert.login_raw_data["lat"],
+                    alert.login_raw_data["lon"],
+                ] not in tmp:
+                    tmp.append(
+                        [
+                            alert.login_raw_data["country"],
+                            alert.login_raw_data["lat"],
+                            alert.login_raw_data["lon"],
+                        ]
+                    )
                     result.append(
                         {
                             "country": value.lower(),

@@ -19,15 +19,27 @@ def mock_read_config(filename: str, key: str | None = None):
             "email_host_user": "SENDER_EMAIL",
             "email_host_password": "SENDER_APP_PASSWORD",
             "default_from_email": "BuffaLogs Alerts SENDER_EMAIL",
-            "recipient_list_admins": ["RECEIVER_EMAIL_ADDRESS", "RECEIVER_EMAIL_ADDRESS_2"],
+            "recipient_list_admins": [
+                "RECEIVER_EMAIL_ADDRESS",
+                "RECEIVER_EMAIL_ADDRESS_2",
+            ],
             "recipient_list_users": {"testuser": "testuser@test.com"},
         },
         "http_request": {
             "name": "",
             "endpoint": "",
-            "options": {"token_variable_name": "", "alert_types": [], "fields": [], "login_data": [], "batch_size": -1},
+            "options": {
+                "token_variable_name": "",
+                "alert_types": [],
+                "fields": [],
+                "login_data": [],
+                "batch_size": -1,
+            },
         },
-        "discord": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"},
+        "discord": {
+            "webhook_url": "https://discord.com/api/webhooks/WEBHOOK",
+            "username": "BuffaLogs_Alert",
+        },
     }
     return config[key] if key else config
 
@@ -42,9 +54,18 @@ class TestAlertAPI(APITestCase):
             {"alert_type": "New Device", "description": "Login from new device"},
             {"alert_type": "Imp Travel", "description": "Impossible Travel detected"},
             {"alert_type": "New Country", "description": "Login from new country"},
-            {"alert_type": "User Risk Threshold", "description": "User risk_score increased"},
-            {"alert_type": "Anonymous IP Login", "description": "Login from an anonymous IP"},
-            {"alert_type": "Atypical Country", "description": "Login from an atypical country"},
+            {
+                "alert_type": "User Risk Threshold",
+                "description": "User risk_score increased",
+            },
+            {
+                "alert_type": "Anonymous IP Login",
+                "description": "Login from an anonymous IP",
+            },
+            {
+                "alert_type": "Atypical Country",
+                "description": "Login from an atypical country",
+            },
         ]
         response = self.client.get(reverse("alert_types"))
         self.assertEqual(response.status_code, 200)
@@ -73,9 +94,19 @@ class TestAlertAPI(APITestCase):
             {
                 "alerter": "http_request",
                 "fields": ["name", "endpoint"],
-                "options": ["token_variable_name", "alert_types", "fields", "login_data", "batch_size"],
+                "options": [
+                    "token_variable_name",
+                    "alert_types",
+                    "fields",
+                    "login_data",
+                    "batch_size",
+                ],
             },
-            {"alerter": "discord", "fields": ["webhook_url", "username"], "options": []},
+            {
+                "alerter": "discord",
+                "fields": ["webhook_url", "username"],
+                "options": [],
+            },
         ]
         response = self.client.get(reverse("get_alerters"))
         self.assertEqual(response.status_code, 200)
@@ -83,14 +114,28 @@ class TestAlertAPI(APITestCase):
 
     @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
     def test_get_active_alerter(self, mock_writer):
-        expected = [{"alerter": "discord", "fields": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"}}]
+        expected = [
+            {
+                "alerter": "discord",
+                "fields": {
+                    "webhook_url": "https://discord.com/api/webhooks/WEBHOOK",
+                    "username": "BuffaLogs_Alert",
+                },
+            }
+        ]
         response = self.client.get(reverse("active_alerter_api"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected)
 
     @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
     def test_get_alerter_config(self, mock_writer):
-        expected = {"alerter": "discord", "fields": {"webhook_url": "https://discord.com/api/webhooks/WEBHOOK", "username": "BuffaLogs_Alert"}}
+        expected = {
+            "alerter": "discord",
+            "fields": {
+                "webhook_url": "https://discord.com/api/webhooks/WEBHOOK",
+                "username": "BuffaLogs_Alert",
+            },
+        }
         response = self.client.get(reverse("alerter_config_api", kwargs={"alerter": "discord"}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected)

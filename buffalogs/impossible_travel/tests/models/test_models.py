@@ -16,7 +16,16 @@ class UserModelTest(TestCase):
         """Check the existing model fields"""
         model_fields = [f.name for f in User._meta.get_fields()]
         # add also foreignkey fields
-        expected_fields = ["id", "risk_score", "username", "created", "updated", "login", "alert", "usersip"]
+        expected_fields = [
+            "id",
+            "risk_score",
+            "username",
+            "created",
+            "updated",
+            "login",
+            "alert",
+            "usersip",
+        ]
         self.assertCountEqual(model_fields, expected_fields)
 
     def test_user_creation(self):
@@ -345,7 +354,10 @@ class TaskSettingsModelTest(TestCase):
     def test_tasksettings_creation(self):
         """TaskSettings object should be created"""
         task = TaskSettings.objects.create(
-            task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.AUTOMATIC
+            task_name="clear_models",
+            start_date=self.start_date,
+            end_date=self.end_date,
+            execution_mode=ExecutionModes.AUTOMATIC,
         )
         self.assertEqual(task.task_name, "clear_models")
         self.assertEqual(task.execution_mode, ExecutionModes.AUTOMATIC)
@@ -354,14 +366,34 @@ class TaskSettingsModelTest(TestCase):
 
     def test_unique_task_execution_constraint(self):
         """Duplicate task_name + execution_mode should raises an error"""
-        TaskSettings.objects.create(task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.AUTOMATIC)
+        TaskSettings.objects.create(
+            task_name="clear_models",
+            start_date=self.start_date,
+            end_date=self.end_date,
+            execution_mode=ExecutionModes.AUTOMATIC,
+        )
         with self.assertRaises(IntegrityError):
-            TaskSettings.objects.create(task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.AUTOMATIC)
+            TaskSettings.objects.create(
+                task_name="clear_models",
+                start_date=self.start_date,
+                end_date=self.end_date,
+                execution_mode=ExecutionModes.AUTOMATIC,
+            )
 
     def test_different_execution_modes_allowed(self):
         """Same task_name with different execution_mode should be allowed"""
-        TaskSettings.objects.create(task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.AUTOMATIC)
-        task = TaskSettings.objects.create(task_name="clear_models", start_date=self.start_date, end_date=self.end_date, execution_mode=ExecutionModes.MANUAL)
+        TaskSettings.objects.create(
+            task_name="clear_models",
+            start_date=self.start_date,
+            end_date=self.end_date,
+            execution_mode=ExecutionModes.AUTOMATIC,
+        )
+        task = TaskSettings.objects.create(
+            task_name="clear_models",
+            start_date=self.start_date,
+            end_date=self.end_date,
+            execution_mode=ExecutionModes.MANUAL,
+        )
         self.assertEqual(task.execution_mode, ExecutionModes.MANUAL)
 
 
@@ -484,7 +516,10 @@ class ConfigModelTest(TestCase):
 
     def test_ignored_impossible_travel_countries_couples(self):
         """Test ignored_impossible_travel_countries_couples field"""
-        self.config.ignored_impossible_travel_countries_couples = [["Italy", "Italy"], ["India", "Canada"]]
+        self.config.ignored_impossible_travel_countries_couples = [
+            ["Italy", "Italy"],
+            ["India", "Canada"],
+        ]
         self.config.save()
         self.config.refresh_from_db()
         self.assertEqual(len(self.config.ignored_impossible_travel_countries_couples), 2)

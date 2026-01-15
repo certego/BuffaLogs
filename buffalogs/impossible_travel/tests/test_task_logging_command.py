@@ -40,7 +40,11 @@ class TaskLoggingCommandTests(TestCase):
             for mode in [ExecutionModes.MANUAL, ExecutionModes.AUTOMATIC]:
                 with self.subTest(command=command_name, mode=mode):
                     with patch.object(CommandClass, "handle", return_value=None):
-                        call_command(command_name, f"--execution_mode={mode}", stdout=io.StringIO())
+                        call_command(
+                            command_name,
+                            f"--execution_mode={mode}",
+                            stdout=io.StringIO(),
+                        )
 
                     record = TaskSettings.objects.filter(task_name=command_name, execution_mode=mode).first()
                     self.assertIsNotNone(record, f"Missing TaskSettings for {command_name} {mode}")

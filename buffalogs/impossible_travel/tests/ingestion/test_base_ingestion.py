@@ -15,7 +15,8 @@ class TestBaseIngestion(TestCase):
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user1)
         expected_result = [
             {
@@ -54,7 +55,8 @@ class TestBaseIngestion(TestCase):
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user2)
         expected_result = [
             {
@@ -80,7 +82,8 @@ class TestBaseIngestion(TestCase):
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user3)
         expected_result = [
             {
@@ -119,7 +122,8 @@ class TestBaseIngestion(TestCase):
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user4)
         expected_result = [
             {
@@ -158,7 +162,8 @@ class TestBaseIngestion(TestCase):
 
         # user1
         actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
+            ingestion_config=self.ingestion_config["elasticsearch"],
+            mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
         ).normalize_fields(logins=logins_returned_user5)
         expected_result = [
             {

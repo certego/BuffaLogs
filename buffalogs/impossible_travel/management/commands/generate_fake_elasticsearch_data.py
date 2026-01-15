@@ -91,7 +91,10 @@ class Command(TaskLoggingCommand):
         :return: parsed YAML data as dictionary
         :rtype: Dict[str, Any]
         """
-        yaml_path = os.path.join(settings.CERTEGO_DJANGO_IMPOSSIBLE_TRAVEL_APP_DIR, "tests/test_data/random_data.yaml")
+        yaml_path = os.path.join(
+            settings.CERTEGO_DJANGO_IMPOSSIBLE_TRAVEL_APP_DIR,
+            "tests/test_data/random_data.yaml",
+        )
 
         try:
             with open(yaml_path, "r", encoding="utf-8") as info:

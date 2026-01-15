@@ -19,7 +19,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.list_to_be_added_fw_proxy = load_test_data("test_data_elasticsearch_fw_proxy")
         self.es = elasticsearch.Elasticsearch(self.elastic_config["url"])
         self.template = load_index_template("example_template")
-        connections.create_connection(hosts=self.elastic_config["url"], request_timeout=self.ingestion_config["elasticsearch"]["timeout"])
+        connections.create_connection(
+            hosts=self.elastic_config["url"],
+            request_timeout=self.ingestion_config["elasticsearch"]["timeout"],
+        )
         self._load_elastic_template_on_elastic(template_to_be_added=self.template)
         # load test data into the 2 indexes: cloud-* and fw-proxy-*
         self._load_test_data_on_elastic(data_to_be_added=self.list_to_be_added_cloud, index="cloud-test_data")
@@ -37,7 +40,12 @@ class ElasticsearchIngestionTestCase(TestCase):
 
     def _bulk_gendata(self, index: str, data_list: list):
         for single_data in data_list:
-            yield {"_op_type": "index", "_id": f"log_id_{data_list.index(single_data)}", "_index": index, "_source": single_data}
+            yield {
+                "_op_type": "index",
+                "_id": f"log_id_{data_list.index(single_data)}",
+                "_index": index,
+                "_source": single_data,
+            }
 
     def _load_test_data_on_elastic(self, data_to_be_added: List[dict], index: str):
         bulk(self.es, self._bulk_gendata(index, data_to_be_added), refresh="true")
@@ -50,7 +58,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_users(start_date, end_date)
 
@@ -59,7 +70,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["timeout"] = 0.001
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_users(start_date, end_date)
 
@@ -68,7 +82,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["indexes"] = "unexisting-index"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_users(start_date, end_date)
 
@@ -76,7 +93,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         # test the function process_users with no data in that range time
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         # users returned should be: "Stitch", "scooby.doo@gmail.com", "bugs-bunny@organization.com" (from "cloud" index)
         # and "bugs.bunny" (from "fw-proxy" index)
         returned_users = elastic_ingestor.process_users(start_date, end_date)
@@ -87,19 +107,33 @@ class ElasticsearchIngestionTestCase(TestCase):
         # test the function process_users with data on Elasticsearch
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         # users returned should be: "Stitch", "scooby.doo@gmail.com", "bugs-bunny@organization.com" (from "cloud" index)
         # and "bugs.bunny" (from "fw-proxy" index)
         returned_users = elastic_ingestor.process_users(start_date, end_date)
         self.assertEqual(4, len(returned_users))
-        self.assertCountEqual(["Stitch", "scooby.doo@gmail.com", "bugs-bunny@organization.com", "bugs.bunny"], returned_users)
+        self.assertCountEqual(
+            [
+                "Stitch",
+                "scooby.doo@gmail.com",
+                "bugs-bunny@organization.com",
+                "bugs.bunny",
+            ],
+            returned_users,
+        )
 
     def test_process_user_logins_ConnectionError(self):
         # test the function process_user_logins with the exception ConnectionError
         self.elastic_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -108,7 +142,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["timeout"] = 0.001
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -117,7 +154,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.elastic_config["indexes"] = "unexisting-index"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
             elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
@@ -125,7 +165,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         # test the function process_user_logins with some data on Elasticsearch but not in the specific datetime range
         start_date = datetime(2025, 2, 26, 8, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 10, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         user1_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(0, len(user1_logins))
         user2_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="scooby.doo@gmail.com")
@@ -145,7 +188,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         expected_logins_user4 = load_test_data("test_data_elasticsearch_returned_logins_user4")
         start_date = datetime(2025, 2, 26, 13, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 14, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         # user1 logins
         user1_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(2, len(user1_logins))
@@ -177,7 +223,10 @@ class ElasticsearchIngestionTestCase(TestCase):
         expected_return_user5 = load_test_data("test_data_elasticsearch_returned_logins_user5")
         start_date = datetime(2025, 2, 26, 10, 40, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 18, 10, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
+        elastic_ingestor = ElasticsearchIngestion(
+            ingestion_config=self.elastic_config,
+            mapping=self.elastic_config["custom_mapping"],
+        )
         # user1 logins
         user1_logins = elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
         self.assertEqual(2, len(user1_logins))

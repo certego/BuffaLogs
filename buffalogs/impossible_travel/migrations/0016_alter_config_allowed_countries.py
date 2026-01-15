@@ -11,7 +11,9 @@ from django.db import migrations, models
 
 def get_valid_countries():
     with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/countries_list.json"),
+        os.path.join(
+            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/countries_list.json"
+        ),
         mode="r",
         encoding="utf-8",
     ) as f:
