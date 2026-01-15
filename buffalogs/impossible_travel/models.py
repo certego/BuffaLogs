@@ -54,6 +54,15 @@ class Login(models.Model):
     event_id = models.TextField()
     ip = models.TextField()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["timestamp"]),
+            models.Index(fields=["ip"]),
+            models.Index(fields=["country"]),
+            models.Index(fields=["index"]),
+            models.Index(fields=["event_id"]),
+        ]
+
     @classmethod
     def apply_filters(
         cls,
@@ -385,7 +394,8 @@ class Config(models.Model):
         help_text="Days after which a login from a country is considered atypical",
     )
     user_learning_period = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD, help_text="Days considered to learn the user login behaviors - no alerts generation"
+        default=settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD,
+        help_text="Days considered to learn the user login behaviors - no alerts generation",
     )
     user_max_days = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS,

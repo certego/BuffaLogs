@@ -23,6 +23,15 @@ and `option` is one of the following:
 | `-r`   | Remove     | Removes the given VALUE from the targeted Config field.                     |
 | `--set-default-values` | - | Reset the default values to all the fields                           |
 
+List fields also accept multiple values in a single flag invocation. For example, the following appends three
+countries in one command:
+
+```bash
+./manage.py setup_config -a allowed_countries=Italy Romania Spain
+```
+
+Existing entries are preserved and duplicates are automatically ignored when merging values.
+
 ## Examples
 
 ### Override one or more Config field value
@@ -43,4 +52,3 @@ and `option` is one of the following:
 ```
 
 **The options could be mixed in a single command, but each FIELD=VALU pair must be preceded by the relevant option (-o / -a / -r).**
-
