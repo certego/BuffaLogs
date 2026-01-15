@@ -27,13 +27,19 @@ class Command(TaskLoggingCommand):
 
         es = Elasticsearch([ingestion.ingestion_config["url"]])
 
-        indices = [i.strip() for i in ingestion.ingestion_config["indexes"].split(",") if i.strip()]
+        indices = [
+            i.strip()
+            for i in ingestion.ingestion_config["indexes"].split(",")
+            if i.strip()
+        ]
 
         for index in indices:
             data = self.generate_common_data()
             self.write_bulk(es, index, data)
 
-        self.stdout.write(self.style.SUCCESS("Successfully indexed test data in Elasticsearch."))
+        self.stdout.write(
+            self.style.SUCCESS("Successfully indexed test data in Elasticsearch.")
+        )
 
     def generate_common_data(self) -> List[Dict[str, Any]]:
         """
@@ -45,7 +51,9 @@ class Command(TaskLoggingCommand):
         fields = []
 
         event_outcome = ["failure"] * 10 + ["success"] * 90
-        event_category = ["threat"] * 2 + ["session"] * 2 + ["malware"] * 6 + ["authentication"] * 90
+        event_category = (
+            ["threat"] * 2 + ["session"] * 2 + ["malware"] * 6 + ["authentication"] * 90
+        )
         event_type = ["start"] * 80 + ["end"] * 20
 
         read_data_file = self._read_data_from_file()
@@ -74,7 +82,9 @@ class Command(TaskLoggingCommand):
                         },
                     },
                     "as": {"organization": {"name": ip["organization"]}},
-                    "intelligence_category": random.choice(read_data_file["intelligence_category"]),
+                    "intelligence_category": random.choice(
+                        read_data_file["intelligence_category"]
+                    ),
                 },
                 "user_agent": {"original": random.choice(read_data_file["user_agent"])},
             }
@@ -91,7 +101,10 @@ class Command(TaskLoggingCommand):
         :return: parsed YAML data as dictionary
         :rtype: Dict[str, Any]
         """
-        yaml_path = os.path.join(settings.CERTEGO_DJANGO_IMPOSSIBLE_TRAVEL_APP_DIR, "tests/test_data/random_data.yaml")
+        yaml_path = os.path.join(
+            settings.CERTEGO_DJANGO_IMPOSSIBLE_TRAVEL_APP_DIR,
+            "tests/test_data/random_data.yaml",
+        )
 
         try:
             with open(yaml_path, "r", encoding="utf-8") as info:
@@ -103,7 +116,9 @@ class Command(TaskLoggingCommand):
             self.stderr.write(f"Error parsing YAML file: {e}")
             raise
 
-    def write_bulk(self, es: Elasticsearch, index: str, msg_list: List[Dict[str, Any]]) -> None:
+    def write_bulk(
+        self, es: Elasticsearch, index: str, msg_list: List[Dict[str, Any]]
+    ) -> None:
         """
         Writes log entries to Elasticsearch using bulk indexing.
 
@@ -123,7 +138,11 @@ class Command(TaskLoggingCommand):
 
         # Ensure the index exists
         if not es.indices.exists(index=index_name):
-            self.stdout.write(self.style.WARNING(f"Index '{index_name}' does not exist. Creating it..."))
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Index '{index_name}' does not exist. Creating it..."
+                )
+            )
             try:
                 es.indices.create(index=index_name)
             except Exception as e:
@@ -132,13 +151,19 @@ class Command(TaskLoggingCommand):
         # Bulk indexing
         try:
             bulk(es, self._bulk_gendata(index_name, msg_list))
-            self.stdout.write(self.style.SUCCESS(f"Successfully indexed {len(msg_list)} documents into '{index_name}'"))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Successfully indexed {len(msg_list)} documents into '{index_name}'"
+                )
+            )
         except BulkIndexError as e:
             self.stderr.write(self.style.ERROR(f"Bulk indexing failed: {e}"))
             for error in e.errors[:5]:
                 self.stderr.write(self.style.ERROR(str(error)))
 
-    def _bulk_gendata(self, index: str, msg_list: List[Dict[str, Any]]) -> Generator[Dict[str, Any], None, None]:
+    def _bulk_gendata(
+        self, index: str, msg_list: List[Dict[str, Any]]
+    ) -> Generator[Dict[str, Any], None, None]:
         """
         Generator function to yield bulk indexing data for Elasticsearch.
 

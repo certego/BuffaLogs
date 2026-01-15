@@ -15,7 +15,9 @@ class BaseMigrationTestCase(TransactionTestCase):
     def setUp(self):
         super().setUp()
         self.migrator = Migrator(database=self.database)
-        self.old_state = self.migrator.apply_initial_migration((self.app_name, self.migrate_from))
+        self.old_state = self.migrator.apply_initial_migration(
+            (self.app_name, self.migrate_from)
+        )
 
     def apply_tested_migration(self):
         # Applies the migration being tested

@@ -102,6 +102,14 @@ def get_logins(
     login_end_time: datetime = None,
     index: str = None,
 ):
-    query = dict(user=username, ip=ip, country=country, user_agent=user_agent, login_start_time=login_start_time, login_end_time=login_end_time, index=index)
+    query = dict(
+        user=username,
+        ip=ip,
+        country=country,
+        user_agent=user_agent,
+        login_start_time=login_start_time,
+        login_end_time=login_end_time,
+        index=index,
+    )
 
     return send_request(login_api, params=query).json()

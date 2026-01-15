@@ -6,7 +6,11 @@ from django.test import TestCase
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, Login, User, UsersIP
-from impossible_travel.tasks import clean_models_periodically, process_logs, scheduled_alert_summary
+from impossible_travel.tasks import (
+    clean_models_periodically,
+    process_logs,
+    scheduled_alert_summary,
+)
 from impossible_travel.tests.utils import patched_components
 
 
@@ -26,15 +30,21 @@ class TestTasks(TestCase):
 
     def reset_auto_increment(self, model):
         # reset the id number sequence after each tearDown
-        table_name = model._meta.db_table  # get the django table name, es. if model=Alert --> table_name=impossible_travel_alert
+        table_name = (
+            model._meta.db_table
+        )  # get the django table name, es. if model=Alert --> table_name=impossible_travel_alert
         with connection.cursor() as cursor:
             # get the sequence name dinamically
-            cursor.execute(f"SELECT pg_get_serial_sequence('{table_name}', 'id'); ")  # noqa: E702
+            cursor.execute(
+                f"SELECT pg_get_serial_sequence('{table_name}', 'id'); "
+            )  # noqa: E702
             sequence_name = cursor.fetchone()[0]
 
             if sequence_name:
                 # reset the id sequence starting from 1
-                cursor.execute(f"SELECT setval('{sequence_name}', 1, false); ")  # noqa: E702
+                cursor.execute(
+                    f"SELECT setval('{sequence_name}', 1, false); "
+                )  # noqa: E702
 
     def tearDown(self):
         # clean all the DB after each test, to clean the environment
@@ -46,7 +56,11 @@ class TestTasks(TestCase):
         user_obj = User.objects.create(username="Lorena")
         Login.objects.create(user=user_obj, timestamp=timezone.now())
         UsersIP.objects.create(user=user_obj, ip=self.raw_data_NEW_COUNTRY["ip"])
-        Alert.objects.create(user=user_obj, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data=self.raw_data_NEW_COUNTRY)
+        Alert.objects.create(
+            user=user_obj,
+            name=AlertDetectionType.NEW_COUNTRY.value,
+            login_raw_data=self.raw_data_NEW_COUNTRY,
+        )
         self.assertTrue(User.objects.filter(username="Lorena").exists())
         self.assertTrue(Login.objects.filter(user=user_obj).exists())
         self.assertTrue(Alert.objects.filter(user=user_obj).exists())
@@ -99,10 +113,18 @@ class TestTasks(TestCase):
         )
 
         # Configure the creation dates
-        Alert.objects.filter(id=alert1.id).update(created=start_date + timedelta(hours=1))
-        Alert.objects.filter(id=alert2.id).update(created=start_date + timedelta(hours=2))
-        Alert.objects.filter(id=alert3.id).update(created=start_week + timedelta(days=2))
-        Alert.objects.filter(id=alert4.id).update(created=start_week + timedelta(days=5))
+        Alert.objects.filter(id=alert1.id).update(
+            created=start_date + timedelta(hours=1)
+        )
+        Alert.objects.filter(id=alert2.id).update(
+            created=start_date + timedelta(hours=2)
+        )
+        Alert.objects.filter(id=alert3.id).update(
+            created=start_week + timedelta(days=2)
+        )
+        Alert.objects.filter(id=alert4.id).update(
+            created=start_week + timedelta(days=5)
+        )
         alert1.refresh_from_db()
         alert2.refresh_from_db()
         alert3.refresh_from_db()
@@ -167,7 +189,9 @@ class TestTasks(TestCase):
         with self.assertRaises(ValueError) as context:
             scheduled_alert_summary("monthly")
 
-        self.assertEqual(str(context.exception), "Invalid frequency. Use 'daily' or 'weekly'")
+        self.assertEqual(
+            str(context.exception), "Invalid frequency. Use 'daily' or 'weekly'"
+        )
 
     def test_username_saved_in_lowercase(self):
         # check that the username is saved in lowercase into the DB

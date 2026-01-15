@@ -24,8 +24,12 @@ class PushoverAlerting(BaseAlerting):
         self.user_key = alert_config.get("user_key")
 
         if not self.api_key or not self.user_key:
-            self.logger.error("Pushover Alerter configuration is missing required fields.")
-            raise ValueError("Pushover Alerter configuration is missing required fields.")
+            self.logger.error(
+                "Pushover Alerter configuration is missing required fields."
+            )
+            raise ValueError(
+                "Pushover Alerter configuration is missing required fields."
+            )
 
     @backoff.on_exception(backoff.expo, requests.RequestException, max_tries=5, base=2)
     def send_message(self, alert, alert_title=None, alert_description=None):
@@ -40,7 +44,9 @@ class PushoverAlerting(BaseAlerting):
         resp.raise_for_status()
         return resp
 
-    def send_scheduled_summary(self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown):
+    def send_scheduled_summary(
+        self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown
+    ):
         summary_title, summary_description = self.alert_message_formatter(
             alert=None,
             template_path="alert_template_summary.jinja",
@@ -52,7 +58,11 @@ class PushoverAlerting(BaseAlerting):
         )
 
         try:
-            self.send_message(alert=None, alert_title=summary_title, alert_description=summary_description)
+            self.send_message(
+                alert=None,
+                alert_title=summary_title,
+                alert_description=summary_description,
+            )
             self.logger.info(f"Pushover Summary Sent From: {start_date} To: {end_date}")
         except requests.RequestException as e:
             self.logger.exception(f"Pushover Summary Notification Failed: {str(e)}")
@@ -61,10 +71,19 @@ class PushoverAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter((Q(notified_status__pushover=False) | ~Q(notified_status__has_key="pushover")))
+        alerts = Alert.objects.filter(
+            (
+                Q(notified_status__pushover=False)
+                | ~Q(notified_status__has_key="pushover")
+            )
+        )
         if start_date is not None and end_date is not None:
             alerts = Alert.objects.filter(
-                (Q(notified_status__pushover=False) | ~Q(notified_status__has_key="pushover")) & Q(created__range=(start_date, end_date))
+                (
+                    Q(notified_status__pushover=False)
+                    | ~Q(notified_status__has_key="pushover")
+                )
+                & Q(created__range=(start_date, end_date))
             )
 
         grouped = defaultdict(list)
@@ -81,17 +100,29 @@ class PushoverAlerting(BaseAlerting):
                     alert.notified_status["pushover"] = True
                     alert.save()
                 except requests.RequestException as e:
-                    self.logger.exception(f"Pushover Notification Failed for {alert}: {str(e)}")
+                    self.logger.exception(
+                        f"Pushover Notification Failed for {alert}: {str(e)}"
+                    )
 
             else:
                 alert = group_alerts[0]
-                alert_title, alert_description = self.alert_message_formatter(alert=alert, template_path="alert_template_clubbed.jinja", alerts=group_alerts)
+                alert_title, alert_description = self.alert_message_formatter(
+                    alert=alert,
+                    template_path="alert_template_clubbed.jinja",
+                    alerts=group_alerts,
+                )
                 try:
-                    self.send_message(alert=None, alert_title=alert_title, alert_description=alert_description)
+                    self.send_message(
+                        alert=None,
+                        alert_title=alert_title,
+                        alert_description=alert_description,
+                    )
                     self.logger.info(f"Clubbed Pushover Alert Sent: {alert_title}")
 
                     for a in group_alerts:
                         a.notified_status["pushover"] = True
                         a.save()
                 except requests.RequestException as e:
-                    self.logger.exception(f"Clubbed Pushover Alert Failed for {group_alerts}: {str(e)}")
+                    self.logger.exception(
+                        f"Clubbed Pushover Alert Failed for {group_alerts}: {str(e)}"
+                    )

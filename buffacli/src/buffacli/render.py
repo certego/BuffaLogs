@@ -14,7 +14,13 @@ class RenderOptions(str, Enum):
 
 class Render:
 
-    def __init__(self, formatter: FormatOptions, mode: str = None, page_size: int = None, exporter: BaseExporter = None):
+    def __init__(
+        self,
+        formatter: FormatOptions,
+        mode: str = None,
+        page_size: int = None,
+        exporter: BaseExporter = None,
+    ):
         self.formatter = formatter
         self.mode = mode
         self.page_size = page_size
@@ -62,8 +68,15 @@ class Render:
                 self.console.print(formatted_content)
 
 
-def make_renderable(format_option: FormatOptions, mode: str = "less", page_size: int = 50, exporter: BaseExporter = None):
+def make_renderable(
+    format_option: FormatOptions,
+    mode: str = "less",
+    page_size: int = 50,
+    exporter: BaseExporter = None,
+):
     "Return a render object."
-    render = Render(format_option.formatter, mode=mode, page_size=page_size, exporter=exporter)
+    render = Render(
+        format_option.formatter, mode=mode, page_size=page_size, exporter=exporter
+    )
     format_option.print = render
     return format_option

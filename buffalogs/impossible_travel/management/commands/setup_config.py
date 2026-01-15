@@ -49,7 +49,11 @@ def parse_field_value(item: str) -> Tuple[str, Any]:
 
 class Command(TaskLoggingCommand):
     def create_parser(self, *args, **kwargs):
-        config_fields = [f.name for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created]
+        config_fields = [
+            f.name
+            for f in Config._meta.get_fields()
+            if isinstance(f, Field) and f.editable and not f.auto_created
+        ]
 
         help_text = f"""
         Update values in the Config model.
@@ -78,19 +82,47 @@ class Command(TaskLoggingCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument("-o", "--override", action="append", metavar="FIELD=[VALUES]", help="Override field values")
-        parser.add_argument("-r", "--remove", action="append", metavar="FIELD=[VALUES]", help="Remove values from list fields")
-        parser.add_argument("-a", "--append", action="append", metavar="FIELD=[VALUES]", help="Append values to list fields or override non-list")
         parser.add_argument(
-            "--set-default-values", action="store_true", help="Initialize configuration fields with default values (already populated values are not modified)"
+            "-o",
+            "--override",
+            action="append",
+            metavar="FIELD=[VALUES]",
+            help="Override field values",
         )
-        parser.add_argument("--force", action="store_true", help="Force overwrite existing values with defaults (use with caution)")
+        parser.add_argument(
+            "-r",
+            "--remove",
+            action="append",
+            metavar="FIELD=[VALUES]",
+            help="Remove values from list fields",
+        )
+        parser.add_argument(
+            "-a",
+            "--append",
+            action="append",
+            metavar="FIELD=[VALUES]",
+            help="Append values to list fields or override non-list",
+        )
+        parser.add_argument(
+            "--set-default-values",
+            action="store_true",
+            help="Initialize configuration fields with default values (already populated values are not modified)",
+        )
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Force overwrite existing values with defaults (use with caution)",
+        )
 
     def handle(self, *args, **options):
         config, _ = Config.objects.get_or_create(id=1)
 
         # get customizable fields in the Config model dinamically
-        fields_info = {f.name: f for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created}
+        fields_info = {
+            f.name: f
+            for f in Config._meta.get_fields()
+            if isinstance(f, Field) and f.editable and not f.auto_created
+        }
 
         # MODE: --set-default-values
         if options.get("set_default_values"):
@@ -99,7 +131,11 @@ class Command(TaskLoggingCommand):
 
             for field_name, field_model in list(fields_info.items()):
                 if hasattr(field_model, "default"):
-                    default_value = field_model.default() if callable(field_model.default) else field_model.default
+                    default_value = (
+                        field_model.default()
+                        if callable(field_model.default)
+                        else field_model.default
+                    )
                     current_value = getattr(config, field_name)
 
                     # Safe mode --> update field only if it's empty
@@ -155,7 +191,9 @@ class Command(TaskLoggingCommand):
                     try:
                         validator(val)
                     except ValidationError as e:
-                        raise CommandError(f"Validation error on field '{field}' with value '{val}': {e}")
+                        raise CommandError(
+                            f"Validation error on field '{field}' with value '{val}': {e}"
+                        )
 
             # Apply changes
             if is_list:
@@ -168,7 +206,9 @@ class Command(TaskLoggingCommand):
                     current = [item for item in current if item not in value]
             else:
                 if mode != "override":
-                    raise CommandError(f"Field '{field}' is not a list. Use --override to set its value.")
+                    raise CommandError(
+                        f"Field '{field}' is not a list. Use --override to set its value."
+                    )
                 current = value
 
             setattr(config, field, current)
