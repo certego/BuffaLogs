@@ -4,7 +4,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from impossible_travel.constants import AlertTagValues
-from impossible_travel.forms import AlertAdminForm, ConfigAdminForm, TaskSettingsAdminForm, UserAdminForm
+from impossible_travel.forms import (
+    AlertAdminForm,
+    ConfigAdminForm,
+    TaskSettingsAdminForm,
+    UserAdminForm,
+)
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 
 
@@ -41,7 +46,9 @@ class LoginAdmin(admin.ModelAdmin):
     @admin.display(description="timestamp")
     def timestamp_display(self, obj):
         # Usa strftime per personalizzare il formato
-        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime("%b %d, %Y, %I:%M:%S %p %Z")
+        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime(
+            "%b %d, %Y, %I:%M:%S %p %Z"
+        )
 
 
 @admin.register(User)

@@ -25,11 +25,15 @@ class TestViewsElasticIngestion(TestCase):
         self.config["url"] = "http://localhost:9200/"
         self.create_test_data()
 
-    @patch("impossible_travel.ingestion.ingestion_factory.IngestionFactory.get_ingestion_class")
+    @patch(
+        "impossible_travel.ingestion.ingestion_factory.IngestionFactory.get_ingestion_class"
+    )
     @patch("django.utils.timezone.now")
     def test_get_all_logins(self, mock_now, mock_get_ingestion_class):
         mock_now.return_value = datetime(1970, 1, 1, 0, 0) + timedelta(days=10)
-        mock_get_ingestion_class.return_value = ElasticsearchIngestion(ingestion_config=self.config, mapping=self.config["custom_mapping"])
+        mock_get_ingestion_class.return_value = ElasticsearchIngestion(
+            ingestion_config=self.config, mapping=self.config["custom_mapping"]
+        )
         url = reverse("user_logins", kwargs={"user_id": self.user.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -51,7 +55,9 @@ class TestViewsElasticIngestion(TestCase):
                 "ip": "192.168.1.1",
                 "intelligence_category": "Test Category",
             },
-            "user_agent": {"original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"},
+            "user_agent": {
+                "original": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0"
+            },
             "event": {
                 "type": "start",
                 "category": "authentication",

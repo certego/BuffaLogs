@@ -65,21 +65,33 @@ class OpensearchIngestion(BaseIngestion):
             },
         }
         try:
-            response = self.client.search(index=self.ingestion_config["indexes"], body=query)
+            response = self.client.search(
+                index=self.ingestion_config["indexes"], body=query
+            )
         except ConnectionError:
-            self.logger.error(f"Failed to establish a connection with host: {self.client}")
+            self.logger.error(
+                f"Failed to establish a connection with host: {self.client}"
+            )
         except TimeoutError:
             self.logger.error(f"Timeout reached for the host: {self.client}")
         except Exception as e:
             self.logger.error(f"Exception while quering opensearch: {e}")
         # Only access response if it exists
-        if response and "aggregations" in response and "login_user" in response["aggregations"]:
-            self.logger.info(f"Successfully got {len(response['aggregations']['login_user']['buckets'])} users")
+        if (
+            response
+            and "aggregations" in response
+            and "login_user" in response["aggregations"]
+        ):
+            self.logger.info(
+                f"Successfully got {len(response['aggregations']['login_user']['buckets'])} users"
+            )
             for user in response["aggregations"]["login_user"]["buckets"]:
                 users_list.append(user["key"])
         return users_list
 
-    def process_user_logins(self, start_date: datetime, end_date: datetime, username: str) -> list:
+    def process_user_logins(
+        self, start_date: datetime, end_date: datetime, username: str
+    ) -> list:
         """
         Concrete implementation of the BaseIngestion.process_user_logins abstract method
 
@@ -120,9 +132,13 @@ class OpensearchIngestion(BaseIngestion):
             "size": self.ingestion_config["bucket_size"],
         }
         try:
-            response = self.client.search(index=self.ingestion_config["indexes"], body=query)
+            response = self.client.search(
+                index=self.ingestion_config["indexes"], body=query
+            )
         except ConnectionError:
-            self.logger.error(f"Failed to establish a connection with host:{self.client}")
+            self.logger.error(
+                f"Failed to establish a connection with host:{self.client}"
+            )
         except TimeoutError:
             self.logger.error(f"Timeout reached for the host:{self.client}")
         except Exception as e:
@@ -130,11 +146,17 @@ class OpensearchIngestion(BaseIngestion):
         # only access response if it exists and has the expected structure
         if response and "hits" in response and "hits" in response["hits"]:
             # Process hits into standardized format
-            self.logger.info(f"Got {len(response['hits']['hits'])} logins or the user {username} to be normalized")
+            self.logger.info(
+                f"Got {len(response['hits']['hits'])} logins or the user {username} to be normalized"
+            )
 
             for hit in response["hits"]["hits"]:
                 tmp = {
-                    "_index": ("fw-proxy" if hit.get("_index", "").startswith("fw-") else hit.get("_index", "").split("-")[0]),
+                    "_index": (
+                        "fw-proxy"
+                        if hit.get("_index", "").startswith("fw-")
+                        else hit.get("_index", "").split("-")[0]
+                    ),
                     "_id": hit["_id"],
                 }
                 # Add source data to the tmp dict

@@ -39,7 +39,9 @@ class TestMicrosoftTeamsAlerting(TestCase):
 
         self.teams_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_title, expected_alert_description = (
+            BaseAlerting.alert_message_formatter(self.alert)
+        )
 
         expected_payload = {
             "@type": "MessageCard",
@@ -108,10 +110,16 @@ class TestMicrosoftTeamsAlerting(TestCase):
             login_raw_data={},
         )
 
-        Alert.objects.filter(id=alert1.id).update(created=start_date + timedelta(minutes=10))
-        Alert.objects.filter(id=alert2.id).update(created=start_date + timedelta(minutes=20))
+        Alert.objects.filter(id=alert1.id).update(
+            created=start_date + timedelta(minutes=10)
+        )
+        Alert.objects.filter(id=alert2.id).update(
+            created=start_date + timedelta(minutes=20)
+        )
         # This alert won't be notified as it's outside of the set range
-        Alert.objects.filter(id=alert3.id).update(created=start_date - timedelta(hours=2))
+        Alert.objects.filter(id=alert3.id).update(
+            created=start_date - timedelta(hours=2)
+        )
         alert1.refresh_from_db()
         alert2.refresh_from_db()
         alert3.refresh_from_db()

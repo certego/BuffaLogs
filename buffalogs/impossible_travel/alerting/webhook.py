@@ -12,7 +12,9 @@ from .http_request import HTTPRequestAlerting
 WEBHOOKS_ALGORITHM_LIST = jwt.algorithms.get_default_algorithms()
 WEBHOOKS_DEFAULT_ALGORITHM = "HS256"
 WEBHOOKS_DEFAULT_ISSUER_ID = "buffalogs_webhook"
-WEBHOOKS_DEFAULT_TOKEN_EXPIRATION = 60 * 5  # Token expiration time in seconds (5 minutes)
+WEBHOOKS_DEFAULT_TOKEN_EXPIRATION = (
+    60 * 5
+)  # Token expiration time in seconds (5 minutes)
 
 
 def validate_token_expiration_value(value: int):

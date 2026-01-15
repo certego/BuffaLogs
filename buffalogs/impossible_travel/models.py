@@ -6,7 +6,13 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from impossible_travel.constants import AlertDetectionType, AlertFilterType, AlertTagValues, ExecutionModes, UserRiskScoreType
+from impossible_travel.constants import (
+    AlertDetectionType,
+    AlertFilterType,
+    AlertTagValues,
+    ExecutionModes,
+    UserRiskScoreType,
+)
 from impossible_travel.validators import (
     validate_countries_names,
     validate_country_couples_list,
@@ -35,7 +41,9 @@ class User(models.Model):
         constraints = [
             models.CheckConstraint(
                 # Check that the User.risk_score is one of the value in the Enum UserRiskScoreType --> ['No risk', 'Low', 'Medium', 'High']
-                condition=models.Q(risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
+                condition=models.Q(
+                    risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]
+                ),
                 name="valid_user_risk_score_choice",
             )
         ]
@@ -100,7 +108,9 @@ class Login(models.Model):
 
 
 class Alert(models.Model):
-    name = models.CharField(choices=AlertDetectionType.choices, max_length=30, null=False, blank=False)
+    name = models.CharField(
+        choices=AlertDetectionType.choices, max_length=30, null=False, blank=False
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     login_raw_data = models.JSONField()
     created = models.DateTimeField(auto_now_add=True)
@@ -121,7 +131,9 @@ class Alert(models.Model):
         validators=[validate_tags],
     )
 
-    notified_status = models.JSONField(default=dict, blank=True, help_text="Tracks each active_alerter status")
+    notified_status = models.JSONField(
+        default=dict, blank=True, help_text="Tracks each active_alerter status"
+    )
 
     @property
     def is_filtered(self):
@@ -184,13 +196,17 @@ class Alert(models.Model):
             query = query.filter(login_raw_data__country__iexact=country_code)
         if risk_score:
             if isinstance(risk_score, int):
-                query = query.filter(user__risk_score=UserRiskScoreType.get_risk_level(risk_score))
+                query = query.filter(
+                    user__risk_score=UserRiskScoreType.get_risk_level(risk_score)
+                )
             elif isinstance(risk_score, str):
                 risk_score = risk_score.title()
                 query = query.filter(user_risk_score=UserRiskScoreType(risk_score))
 
         elif min_risk_score or max_risk_score:
-            risk_range = UserRiskScoreType.get_range(min_value=min_risk_score, max_value=max_risk_score)
+            risk_range = UserRiskScoreType.get_range(
+                min_value=min_risk_score, max_value=max_risk_score
+            )
             query = query.filter(user__risk_score__in=risk_range)
 
         if limit:
@@ -204,12 +220,19 @@ class Alert(models.Model):
         constraints = [
             models.CheckConstraint(
                 # Check that the Alert.name is one of the value in the Enum AlertDetectionType
-                condition=models.Q(name__in=[choice[0] for choice in AlertDetectionType.choices]),
+                condition=models.Q(
+                    name__in=[choice[0] for choice in AlertDetectionType.choices]
+                ),
                 name="valid_alert_name_choice",
             ),
             models.CheckConstraint(
                 # Check that each element in the Alert.filter_type is in the Enum AlertFilterType
-                condition=models.Q(filter_type__contained_by=[choice[0] for choice in AlertFilterType.choices]) | models.Q(filter_type=[]),
+                condition=models.Q(
+                    filter_type__contained_by=[
+                        choice[0] for choice in AlertFilterType.choices
+                    ]
+                )
+                | models.Q(filter_type=[]),
                 name="valid_alert_filter_type_choices",
             ),
         ]
@@ -228,10 +251,16 @@ class TaskSettings(models.Model):
     updated = models.DateTimeField(auto_now=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    execution_mode = models.CharField(max_length=20, choices=ExecutionModes.choices, default="automatic")
+    execution_mode = models.CharField(
+        max_length=20, choices=ExecutionModes.choices, default="automatic"
+    )
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["task_name", "execution_mode"], name="unique_task_execution")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["task_name", "execution_mode"], name="unique_task_execution"
+            )
+        ]
 
 
 def get_default_ignored_users():
@@ -306,7 +335,9 @@ class Config(models.Model):
         help_text="Select the risk_score that users should have at least to send the alerts",
     )
     risk_score_increment_alerts = ArrayField(
-        models.CharField(max_length=50, choices=AlertDetectionType.choices, blank=False),
+        models.CharField(
+            max_length=50, choices=AlertDetectionType.choices, blank=False
+        ),
         default=get_default_risk_score_increment_alerts,
         blank=False,
         null=False,
@@ -339,7 +370,9 @@ class Config(models.Model):
         default=get_default_ignored_ISPs,
         help_text="List of ISPs names to remove from the detection",
     )
-    ignore_mobile_logins = models.BooleanField(default=True, help_text="Flag to ignore mobile devices from the detection")
+    ignore_mobile_logins = models.BooleanField(
+        default=True, help_text="Flag to ignore mobile devices from the detection"
+    )
 
     # Detection filters - alerts
     filtered_alerts_types = ArrayField(
@@ -409,7 +442,9 @@ class Config(models.Model):
 
     def clean(self):
         if not self.pk and Config.objects.exists():
-            raise ValidationError("A Config object already exist - it is possible just to modify it, not to create a new one")
+            raise ValidationError(
+                "A Config object already exist - it is possible just to modify it, not to create a new one"
+            )
         # Config.id=1 always
         self.pk = 1
 
@@ -421,12 +456,20 @@ class Config(models.Model):
         constraints = [
             models.CheckConstraint(
                 # Check that the Config.alert_minimum_risk_score is one of the value in the Enum UserRiskScoreType
-                condition=models.Q(alert_minimum_risk_score__in=[choice[0] for choice in UserRiskScoreType.choices]),
+                condition=models.Q(
+                    alert_minimum_risk_score__in=[
+                        choice[0] for choice in UserRiskScoreType.choices
+                    ]
+                ),
                 name="valid_config_alert_minimum_risk_score_choice",
             ),
             models.CheckConstraint(
                 # Check that each element in the Config.filtered_alerts_types is blank or it's in the Enum AlertFilterType
-                condition=models.Q(filtered_alerts_types__contained_by=[choice[0] for choice in AlertDetectionType.choices])
+                condition=models.Q(
+                    filtered_alerts_types__contained_by=[
+                        choice[0] for choice in AlertDetectionType.choices
+                    ]
+                )
                 | models.Q(filtered_alerts_types__isnull=True),
                 name="valid_alert_filters_choices",
             ),

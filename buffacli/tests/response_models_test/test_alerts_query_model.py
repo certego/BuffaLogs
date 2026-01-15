@@ -34,7 +34,9 @@ class TestAlertQueryModel(unittest.TestCase):
             },
         ]
 
-        self.alert_query = AlertQuery(self.sample_data, omit=["rule_desc"], mappings={"rule_name": "alert_type"})
+        self.alert_query = AlertQuery(
+            self.sample_data, omit=["rule_desc"], mappings={"rule_name": "alert_type"}
+        )
 
     def test_table_format(self):
         expected_table = {
@@ -78,7 +80,9 @@ class TestAlertQueryModel(unittest.TestCase):
             },
         ]
 
-        alert_query_multiple = AlertQuery(input_data, omit=["rule_desc"], mappings={"rule_name": "alert_type"})
+        alert_query_multiple = AlertQuery(
+            input_data, omit=["rule_desc"], mappings={"rule_name": "alert_type"}
+        )
 
         expected_table_multiple = {
             "alert_type": ["New Device", "New Device"],
@@ -144,7 +148,9 @@ class TestAlertQueryModel(unittest.TestCase):
             },
         ]
 
-        alert_query_multiple = AlertQuery(input_data, omit=["rule_desc"], mappings={"rule_name": "alert_type"})
+        alert_query_multiple = AlertQuery(
+            input_data, omit=["rule_desc"], mappings={"rule_name": "alert_type"}
+        )
 
         expected_json_multiple = [
             {

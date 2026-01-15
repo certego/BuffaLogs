@@ -76,13 +76,17 @@ class DetectionTestCase(TestCase):
             event_id="event_1",
             index="cloud",
             ip="1.2.3.4",
-            timestamp=datetime.datetime(2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc),
+            timestamp=datetime.datetime(
+                2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc
+            ),
             latitude=40.364,
             longitude=-79.8605,
             country="United States",
             user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
         )
-        result, vel = detection.calc_distance_impossible_travel(db_user, prev_login, last_login_user_fields)
+        result, vel = detection.calc_distance_impossible_travel(
+            db_user, prev_login, last_login_user_fields
+        )
         self.assertEqual({}, result)
         self.assertEqual(0, vel)
         prev_login.delete()
@@ -101,13 +105,17 @@ class DetectionTestCase(TestCase):
             event_id="event_1",
             index="cloud",
             ip="1.2.3.4",
-            timestamp=datetime.datetime(2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc),
+            timestamp=datetime.datetime(
+                2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc
+            ),
             latitude=40.364,
             longitude=-79.8605,
             country="United States",
             user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
         )
-        result, vel = detection.calc_distance_impossible_travel(db_user, prev_login, last_login_user_fields)
+        result, vel = detection.calc_distance_impossible_travel(
+            db_user, prev_login, last_login_user_fields
+        )
         self.assertEqual("Imp Travel", result["alert_name"])
         self.assertEqual(
             f"Impossible Travel detected for User: Lorena Goldoni, at: 2023-03-08T17:08:33.358Z, from: Sudan, previous country: United States, distance covered at {vel} Km/h",  # noqa: E231
@@ -157,7 +165,11 @@ class DetectionTestCase(TestCase):
             "timestamp": new_time,
         }
         detection.add_new_login(user_obj, new_login_fields)
-        self.assertTrue(Login.objects.filter(user=user_obj, event_id=new_login_fields["id"]).exists())
+        self.assertTrue(
+            Login.objects.filter(
+                user=user_obj, event_id=new_login_fields["id"]
+            ).exists()
+        )
         new_login = Login.objects.get(user=user_obj, event_id=new_login_fields["id"])
         self.assertEqual(new_login.index, new_login_fields["index"])
         self.assertEqual(new_login.ip, new_login_fields["ip"])
@@ -178,15 +190,21 @@ class DetectionTestCase(TestCase):
             "country": "Italy",
             "user_agent": "Mozilla/5.0 (X11; U; Linux i686; es-AR; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8",
         }
-        self.assertDictEqual({}, detection.check_country(db_user, last_login_user_fields, db_config))
+        self.assertDictEqual(
+            {}, detection.check_country(db_user, last_login_user_fields, db_config)
+        )
 
     def test_check_country_new_country_alert(self):
         # testing function check_country with "New Country" alert
         db_config = Config.objects.get(id=1)
         db_user = User.objects.get(username="Lorena Goldoni")
-        alert_result = detection.check_country(db_user, self.raw_data_NEW_COUNTRY, db_config)
+        alert_result = detection.check_country(
+            db_user, self.raw_data_NEW_COUNTRY, db_config
+        )
         self.assertEqual("New Country", alert_result["alert_name"])
-        self.assertEqual(AlertDetectionType.NEW_COUNTRY.value, alert_result["alert_name"])
+        self.assertEqual(
+            AlertDetectionType.NEW_COUNTRY.value, alert_result["alert_name"]
+        )
         self.assertEqual(
             "Login from new country for User: Lorena Goldoni, at: 2025-02-13T09:16:25.000Z, from: India",
             alert_result["alert_desc"],
@@ -203,9 +221,13 @@ class DetectionTestCase(TestCase):
             "country": "Germany",
             "user_agent": "Mozilla/5.0 (X11; U; Linux i686; es-AR; rv:1.9.1.8) Gecko/20100214 Ubuntu/9.10 (karmic) Firefox/3.5.8",
         }
-        alert_result = detection.check_country(db_user, last_login_user_fields, db_config)
+        alert_result = detection.check_country(
+            db_user, last_login_user_fields, db_config
+        )
         self.assertEqual("Atypical Country", alert_result["alert_name"])
-        self.assertEqual(AlertDetectionType.ATYPICAL_COUNTRY.value, alert_result["alert_name"])
+        self.assertEqual(
+            AlertDetectionType.ATYPICAL_COUNTRY.value, alert_result["alert_name"]
+        )
         self.assertEqual(
             "Login from an atypical country for User: Lorena Goldoni, at: 2025-02-26T17:10:33.358Z, from: Germany",
             alert_result["alert_desc"],
@@ -230,7 +252,9 @@ class DetectionTestCase(TestCase):
             "country": "Sudan",
             "agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/78.0.3904.108 Chrome/78.0.3904.108 Safari/537.36",
         }
-        self.assertDictEqual({}, detection.check_new_device(db_user, last_login_user_fields))
+        self.assertDictEqual(
+            {}, detection.check_new_device(db_user, last_login_user_fields)
+        )
 
     def test_check_new_device_alert(self):
         # Test to check the triggering of the NEW_DEVICE alert
@@ -241,7 +265,9 @@ class DetectionTestCase(TestCase):
             event_id="event_1",
             index="cloud",
             ip="1.2.3.4",
-            timestamp=datetime.datetime(2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc),
+            timestamp=datetime.datetime(
+                2023, 3, 8, 17, 8, 33, 358000, tzinfo=datetime.timezone.utc
+            ),
             latitude=40.364,
             longitude=-79.8605,
             country="United States",
@@ -280,7 +306,11 @@ class DetectionTestCase(TestCase):
             login_raw_data=self.raw_data_IMP_TRAVEL,
             description="Test_Description",
         )
-        self.assertTrue(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertTrue(
+            detection.update_risk_level(
+                db_user, triggered_alert=alert, app_config=db_config
+            )
+        )
         self.assertEqual("Low", db_user.risk_score)
         alerts_user = db_user.alert_set.all()
         self.assertEqual(2, alerts_user.count())
@@ -306,7 +336,11 @@ class DetectionTestCase(TestCase):
             login_raw_data=self.raw_data_IMP_TRAVEL,
             description="Test_Description1",
         )
-        self.assertTrue(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertTrue(
+            detection.update_risk_level(
+                db_user, triggered_alert=alert, app_config=db_config
+            )
+        )
         self.assertEqual("Low", db_user.risk_score)
         db_config.risk_score_increment_alerts = [AlertDetectionType.ATYPICAL_COUNTRY]
         alerts_user = db_user.alert_set.all().order_by("created")
@@ -327,7 +361,11 @@ class DetectionTestCase(TestCase):
             description="Test_Description2",
         )
         # no new USER_RISK_THRESHOLD alert and risk_score decreased to "No risk" because the config.rik_score_incrmenet_alerts changed to just ATYPICAL_COUNTRY alert
-        self.assertFalse(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertFalse(
+            detection.update_risk_level(
+                db_user, triggered_alert=alert, app_config=db_config
+            )
+        )
         self.assertEqual("No risk", db_user.risk_score)
         alerts_user = db_user.alert_set.all().order_by("created")
         self.assertEqual(3, alerts_user.count())
@@ -348,7 +386,11 @@ class DetectionTestCase(TestCase):
             description="Test_Description3",
         )
         # USER_RISK_THRESHOLD alert
-        self.assertTrue(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertTrue(
+            detection.update_risk_level(
+                db_user, triggered_alert=alert, app_config=db_config
+            )
+        )
         self.assertEqual("Low", db_user.risk_score)
         alerts_user = db_user.alert_set.all().order_by("created")
         self.assertEqual(5, alerts_user.count())
@@ -388,7 +430,11 @@ class DetectionTestCase(TestCase):
             description="Test_Description6",
         )
         # no new USER_RISK_THRESHOLD alert
-        self.assertTrue(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertTrue(
+            detection.update_risk_level(
+                db_user, triggered_alert=alert, app_config=db_config
+            )
+        )
         self.assertEqual("Medium", db_user.risk_score)
         alerts_user = db_user.alert_set.all().order_by("created")
         self.assertEqual(9, alerts_user.count())
@@ -432,7 +478,11 @@ class DetectionTestCase(TestCase):
         )
         alert.save()
         # new USER_RISK_THRESHOLD alert
-        self.assertTrue(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertTrue(
+            detection.update_risk_level(
+                db_user, triggered_alert=alert, app_config=db_config
+            )
+        )
         alert = Alert.objects.create(
             user=db_user,
             name=AlertDetectionType.IMP_TRAVEL,
@@ -440,7 +490,11 @@ class DetectionTestCase(TestCase):
             description="Test_Description8",
         )
         alert.save()
-        self.assertFalse(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertFalse(
+            detection.update_risk_level(
+                db_user, triggered_alert=alert, app_config=db_config
+            )
+        )
         self.assertEqual("High", db_user.risk_score)
         alerts_user = db_user.alert_set.all().order_by("created")
         self.assertEqual(12, alerts_user.count())
@@ -462,7 +516,11 @@ class DetectionTestCase(TestCase):
             description="Test_Description9",
         )
         # no USER_RISK_THRESHOLD alert
-        self.assertFalse(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertFalse(
+            detection.update_risk_level(
+                db_user, triggered_alert=alert, app_config=db_config
+            )
+        )
         self.assertEqual("High", db_user.risk_score)
         self.assertEqual(13, db_user.alert_set.count())
         self.assertEqual(AlertDetectionType.IMP_TRAVEL, alerts_user[12].name)
@@ -474,7 +532,11 @@ class DetectionTestCase(TestCase):
             description="Test_Description10",
         )
         # no USER_RISK_THRESHOLD alert
-        self.assertFalse(detection.update_risk_level(db_user, triggered_alert=alert, app_config=db_config))
+        self.assertFalse(
+            detection.update_risk_level(
+                db_user, triggered_alert=alert, app_config=db_config
+            )
+        )
         self.assertEqual("High", db_user.risk_score)
         self.assertEqual(14, db_user.alert_set.count())
         self.assertEqual(AlertDetectionType.IMP_TRAVEL, alerts_user[13].name)
@@ -485,7 +547,9 @@ class DetectionTestCase(TestCase):
         db_config = Config.objects.get(id=1)
         # Add an alert and check if it is correctly inserted in the Alert Model
         db_user = User.objects.get(username="Lorena Goldoni")
-        db_login = Login.objects.get(user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5")
+        db_login = Login.objects.get(
+            user_agent="Mozilla/5.0 (X11;U; Linux i686; en-GB; rv:1.9.1) Gecko/20090624 Ubuntu/9.04 (jaunty) Firefox/3.5"
+        )
         timestamp = db_login.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         login_data = {
             "timestamp": timestamp,
@@ -513,7 +577,9 @@ class DetectionTestCase(TestCase):
         self.assertIsNotNone(db_alert)
         self.assertEqual("Imp Travel", db_alert.name)
         self.assertTrue(db_alert.is_filtered)
-        self.assertListEqual([AlertFilterType.ALLOWED_COUNTRY_FILTER], db_alert.filter_type)
+        self.assertListEqual(
+            [AlertFilterType.ALLOWED_COUNTRY_FILTER], db_alert.filter_type
+        )
         mock_update_risk_level.assert_not_called()
 
     @patch("impossible_travel.modules.detection.update_risk_level")
@@ -558,7 +624,9 @@ class DetectionTestCase(TestCase):
         db_alert = Alert.objects.get(user=db_user, name=AlertDetectionType.IMP_TRAVEL)
         self.assertFalse(db_alert.is_filtered)
         self.assertEqual([], db_alert.filter_type)
-        mock_update_risk_level.assert_called_once_with(db_user=db_user, triggered_alert=db_alert, app_config=db_config)
+        mock_update_risk_level.assert_called_once_with(
+            db_user=db_user, triggered_alert=db_alert, app_config=db_config
+        )
 
     def test_check_fields_logins(self):
         fields1 = load_test_data("test_check_fields_part1")
@@ -571,20 +639,34 @@ class DetectionTestCase(TestCase):
         detection.check_fields(db_user, fields1)
         self.assertEqual(
             3,
-            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3").count(),
+            Login.objects.filter(
+                user=db_user, index="cloud-test_data-2023-5-3"
+            ).count(),
         )
         self.assertEqual(
             1,
-            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="India").count(),
+            Login.objects.filter(
+                user=db_user, index="cloud-test_data-2023-5-3", country="India"
+            ).count(),
         )
-        self.assertEqual(6, Login.objects.get(user=db_user, country="India").timestamp.hour)
-        self.assertEqual(50, Login.objects.get(user=db_user, country="India").timestamp.minute)
-        self.assertEqual(3, Login.objects.get(user=db_user, country="India").timestamp.second)
+        self.assertEqual(
+            6, Login.objects.get(user=db_user, country="India").timestamp.hour
+        )
+        self.assertEqual(
+            50, Login.objects.get(user=db_user, country="India").timestamp.minute
+        )
+        self.assertEqual(
+            3, Login.objects.get(user=db_user, country="India").timestamp.second
+        )
         self.assertEqual(
             1,
-            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count(),
+            Login.objects.filter(
+                user=db_user, index="cloud-test_data-2023-5-3", country="United States"
+            ).count(),
         )
-        self.assertEqual(7, Login.objects.get(user=db_user, country="United States").timestamp.hour)
+        self.assertEqual(
+            7, Login.objects.get(user=db_user, country="United States").timestamp.hour
+        )
         self.assertEqual(
             10,
             Login.objects.get(user=db_user, country="United States").timestamp.minute,
@@ -595,11 +677,19 @@ class DetectionTestCase(TestCase):
         )
         self.assertEqual(
             1,
-            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count(),
+            Login.objects.filter(
+                user=db_user, index="cloud-test_data-2023-5-3", country="Japan"
+            ).count(),
         )
-        self.assertEqual(6, Login.objects.get(user=db_user, country="Japan").timestamp.hour)
-        self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
-        self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
+        self.assertEqual(
+            6, Login.objects.get(user=db_user, country="Japan").timestamp.hour
+        )
+        self.assertEqual(
+            57, Login.objects.get(user=db_user, country="Japan").timestamp.minute
+        )
+        self.assertEqual(
+            27, Login.objects.get(user=db_user, country="Japan").timestamp.second
+        )
         # Second part - Expected changed logins in Login Model:
         #   4. at 2023-05-03T07:14:22.768Z from India with user_agent: Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0
         #   5. at 2023-05-03T07:18:38.768Z from India with user_agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)
@@ -607,11 +697,15 @@ class DetectionTestCase(TestCase):
         detection.check_fields(db_user, fields2)
         self.assertEqual(
             6,
-            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3").count(),
+            Login.objects.filter(
+                user=db_user, index="cloud-test_data-2023-5-3"
+            ).count(),
         )
         self.assertEqual(
             3,
-            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="India").count(),
+            Login.objects.filter(
+                user=db_user, index="cloud-test_data-2023-5-3", country="India"
+            ).count(),
         )
         self.assertEqual(
             7,
@@ -663,7 +757,9 @@ class DetectionTestCase(TestCase):
         )
         self.assertEqual(
             2,
-            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count(),
+            Login.objects.filter(
+                user=db_user, index="cloud-test_data-2023-5-3", country="United States"
+            ).count(),
         )
         self.assertEqual(
             7,
@@ -691,27 +787,43 @@ class DetectionTestCase(TestCase):
         )
         self.assertEqual(
             2,
-            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="United States").count(),
+            Login.objects.filter(
+                user=db_user, index="cloud-test_data-2023-5-3", country="United States"
+            ).count(),
         )
         self.assertEqual(
             7,
-            Login.objects.filter(user=db_user, country="United States").last().timestamp.hour,
+            Login.objects.filter(user=db_user, country="United States")
+            .last()
+            .timestamp.hour,
         )
         self.assertEqual(
             31,
-            Login.objects.filter(user=db_user, country="United States").last().timestamp.minute,
+            Login.objects.filter(user=db_user, country="United States")
+            .last()
+            .timestamp.minute,
         )
         self.assertEqual(
             36,
-            Login.objects.filter(user=db_user, country="United States").last().timestamp.second,
+            Login.objects.filter(user=db_user, country="United States")
+            .last()
+            .timestamp.second,
         )
         self.assertEqual(
             1,
-            Login.objects.filter(user=db_user, index="cloud-test_data-2023-5-3", country="Japan").count(),
+            Login.objects.filter(
+                user=db_user, index="cloud-test_data-2023-5-3", country="Japan"
+            ).count(),
         )
-        self.assertEqual(6, Login.objects.get(user=db_user, country="Japan").timestamp.hour)
-        self.assertEqual(57, Login.objects.get(user=db_user, country="Japan").timestamp.minute)
-        self.assertEqual(27, Login.objects.get(user=db_user, country="Japan").timestamp.second)
+        self.assertEqual(
+            6, Login.objects.get(user=db_user, country="Japan").timestamp.hour
+        )
+        self.assertEqual(
+            57, Login.objects.get(user=db_user, country="Japan").timestamp.minute
+        )
+        self.assertEqual(
+            27, Login.objects.get(user=db_user, country="Japan").timestamp.second
+        )
 
     def test_check_fields_alerts(self):
         count_filtered_alerts = 0
@@ -738,25 +850,45 @@ class DetectionTestCase(TestCase):
         # ---
         #   10. (4° login - id: 4) at 2023-05-03T07:10:23.154Z alert IMP TRAVEL
         total_alerts = db_user.alert_set.filter().order_by("created")
-        self.assertEqual("2023-05-03T06:55:31.768Z", total_alerts[0].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T06:55:31.768Z", total_alerts[0].login_raw_data["timestamp"]
+        )
         self.assertEqual("New Device", total_alerts[0].name)
-        self.assertEqual("2023-05-03T06:55:31.768Z", total_alerts[1].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T06:55:31.768Z", total_alerts[1].login_raw_data["timestamp"]
+        )
         self.assertEqual("User Risk Threshold", total_alerts[1].name)
-        self.assertEqual("2023-05-03T06:55:31.768Z", total_alerts[2].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T06:55:31.768Z", total_alerts[2].login_raw_data["timestamp"]
+        )
         self.assertEqual("New Country", total_alerts[2].name)
-        self.assertEqual("2023-05-03T06:55:31.768Z", total_alerts[3].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T06:55:31.768Z", total_alerts[3].login_raw_data["timestamp"]
+        )
         self.assertEqual("Imp Travel", total_alerts[3].name)
-        self.assertEqual("2023-05-03T06:57:27.768Z", total_alerts[4].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T06:57:27.768Z", total_alerts[4].login_raw_data["timestamp"]
+        )
         self.assertEqual("Anonymous IP Login", total_alerts[4].name)
-        self.assertEqual("2023-05-03T06:57:27.768Z", total_alerts[5].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T06:57:27.768Z", total_alerts[5].login_raw_data["timestamp"]
+        )
         self.assertEqual("User Risk Threshold", total_alerts[5].name)
-        self.assertEqual("2023-05-03T06:57:27.768Z", total_alerts[6].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T06:57:27.768Z", total_alerts[6].login_raw_data["timestamp"]
+        )
         self.assertEqual("New Country", total_alerts[6].name)
-        self.assertEqual("2023-05-03T06:57:27.768Z", total_alerts[7].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T06:57:27.768Z", total_alerts[7].login_raw_data["timestamp"]
+        )
         self.assertEqual("Imp Travel", total_alerts[7].name)
-        self.assertEqual("2023-05-03T07:10:23.154Z", total_alerts[8].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T07:10:23.154Z", total_alerts[8].login_raw_data["timestamp"]
+        )
         self.assertEqual("Imp Travel", total_alerts[8].name)
-        self.assertEqual("2023-05-03T07:10:23.154Z", total_alerts[9].login_raw_data["timestamp"])
+        self.assertEqual(
+            "2023-05-03T07:10:23.154Z", total_alerts[9].login_raw_data["timestamp"]
+        )
         self.assertEqual("User Risk Threshold", total_alerts[9].name)
         self.assertEqual(10, len(total_alerts))
         for alert in total_alerts:
@@ -764,19 +896,33 @@ class DetectionTestCase(TestCase):
                 count_filtered_alerts += 1
         self.assertEqual(0, count_filtered_alerts)
         self.assertEqual(0, Alert.objects.filter(~Q(filter_type=[])).count())
-        self.assertEqual(len(total_alerts), len(total_alerts) - count_filtered_alerts)  # not filtered alerts
-        self.assertEqual(len(total_alerts), Alert.objects.filter(filter_type=[]).count())
+        self.assertEqual(
+            len(total_alerts), len(total_alerts) - count_filtered_alerts
+        )  # not filtered alerts
+        self.assertEqual(
+            len(total_alerts), Alert.objects.filter(filter_type=[]).count()
+        )
 
         # ADD ORDER BY TO ENSURE CONSISTENT ORDERING
-        new_device_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).order_by("created")
+        new_device_alerts_fields1 = Alert.objects.filter(
+            user=db_user, name=AlertDetectionType.NEW_DEVICE
+        ).order_by("created")
         self.assertEqual(1, new_device_alerts_fields1.count())
-        new_country_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).order_by("created")
+        new_country_alerts_fields1 = Alert.objects.filter(
+            user=db_user, name=AlertDetectionType.NEW_COUNTRY
+        ).order_by("created")
         self.assertEqual(2, new_country_alerts_fields1.count())
-        imp_travel_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL).order_by("created")
+        imp_travel_alerts_fields1 = Alert.objects.filter(
+            user=db_user, name=AlertDetectionType.IMP_TRAVEL
+        ).order_by("created")
         self.assertEqual(3, imp_travel_alerts_fields1.count())
-        user_risk_threshold_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.USER_RISK_THRESHOLD).order_by("created")
+        user_risk_threshold_alerts_fields1 = Alert.objects.filter(
+            user=db_user, name=AlertDetectionType.USER_RISK_THRESHOLD
+        ).order_by("created")
         self.assertEqual(3, user_risk_threshold_alerts_fields1.count())
-        anonymous_ip_alerts_fields1 = Alert.objects.filter(user=db_user, name=AlertDetectionType.ANONYMOUS_IP_LOGIN).order_by("created")
+        anonymous_ip_alerts_fields1 = Alert.objects.filter(
+            user=db_user, name=AlertDetectionType.ANONYMOUS_IP_LOGIN
+        ).order_by("created")
         self.assertEqual(1, anonymous_ip_alerts_fields1.count())
 
         # check new_device alerts for fields1 logins
@@ -813,17 +959,23 @@ class DetectionTestCase(TestCase):
             imp_travel_alerts_fields1[2].description,
         )
         # check user_risk_threshold alerts for fields1 logins
-        self.assertEqual("User Risk Threshold", user_risk_threshold_alerts_fields1[0].name)
+        self.assertEqual(
+            "User Risk Threshold", user_risk_threshold_alerts_fields1[0].name
+        )
         self.assertEqual(
             "User risk_score increased for User: Aisha Delgado, who changed risk_score from No risk to Low",
             user_risk_threshold_alerts_fields1[0].description,
         )
-        self.assertEqual("User Risk Threshold", user_risk_threshold_alerts_fields1[1].name)
+        self.assertEqual(
+            "User Risk Threshold", user_risk_threshold_alerts_fields1[1].name
+        )
         self.assertEqual(
             "User risk_score increased for User: Aisha Delgado, who changed risk_score from Low to Medium",
             user_risk_threshold_alerts_fields1[1].description,
         )
-        self.assertEqual("User Risk Threshold", user_risk_threshold_alerts_fields1[2].name)
+        self.assertEqual(
+            "User Risk Threshold", user_risk_threshold_alerts_fields1[2].name
+        )
         self.assertEqual(
             "User risk_score increased for User: Aisha Delgado, who changed risk_score from Medium to High",
             user_risk_threshold_alerts_fields1[2].description,
@@ -834,7 +986,9 @@ class DetectionTestCase(TestCase):
             "Login from an anonymous IP from IP: 203.0.113.20 by User: Aisha Delgado",
             anonymous_ip_alerts_fields1[0].description,
         )
-        self.assertEqual(0, Alert.objects.filter(user=db_user, filter_type=["is_vip_filter"]).count())
+        self.assertEqual(
+            0, Alert.objects.filter(user=db_user, filter_type=["is_vip_filter"]).count()
+        )
 
         # Adding "Aisha Delgado" to vip users
         Config.objects.filter(id=1).delete()
@@ -854,13 +1008,19 @@ class DetectionTestCase(TestCase):
         #   16. at 2023-05-03T07:20:36.154Z alert IMP TRAVEL
 
         # get IDs of old alerts to check the new alerts
-        new_device_alerts_fields1_ids = list(new_device_alerts_fields1.values_list("id", flat=True))
+        new_device_alerts_fields1_ids = list(
+            new_device_alerts_fields1.values_list("id", flat=True)
+        )
 
         detection.check_fields(db_user, fields2)
         # get new_device alerts relating to fields2 making query all_new_device_alerts - new_device_alerts_fields1
-        all_new_device_alerts = Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_DEVICE).order_by("created")
+        all_new_device_alerts = Alert.objects.filter(
+            user=db_user, name=AlertDetectionType.NEW_DEVICE
+        ).order_by("created")
         self.assertEqual(3, all_new_device_alerts.count())
-        new_device_alerts_fields2 = all_new_device_alerts.exclude(id__in=new_device_alerts_fields1_ids).order_by("created")
+        new_device_alerts_fields2 = all_new_device_alerts.exclude(
+            id__in=new_device_alerts_fields1_ids
+        ).order_by("created")
         self.assertEqual(2, new_device_alerts_fields2.count())
         self.assertEqual(15, Alert.objects.filter(user=db_user).count())
         # check new_device alerts for fields2
@@ -878,12 +1038,16 @@ class DetectionTestCase(TestCase):
         # same old new_country alert relating to fields1 logins
         self.assertEqual(
             2,
-            Alert.objects.filter(user=db_user, name=AlertDetectionType.NEW_COUNTRY).count(),
+            Alert.objects.filter(
+                user=db_user, name=AlertDetectionType.NEW_COUNTRY
+            ).count(),
         )
 
         self.assertEqual(
             6,
-            Alert.objects.filter(user=db_user, name=AlertDetectionType.IMP_TRAVEL).count(),
+            Alert.objects.filter(
+                user=db_user, name=AlertDetectionType.IMP_TRAVEL
+            ).count(),
         )
 
     def test_check_fields_usersip(self):
@@ -893,26 +1057,46 @@ class DetectionTestCase(TestCase):
         fields3 = load_test_data("test_check_fields_part3")
         detection.check_fields(db_user, fields1)
         # First part: Check presence of ips in the UsersIP model
-        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.37").exists())
-        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.17").exists())
-        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.20").exists())
-        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.11").exists())
+        self.assertTrue(
+            UsersIP.objects.filter(user=db_user, ip="203.0.113.37").exists()
+        )
+        self.assertTrue(
+            UsersIP.objects.filter(user=db_user, ip="203.0.113.17").exists()
+        )
+        self.assertTrue(
+            UsersIP.objects.filter(user=db_user, ip="203.0.113.20").exists()
+        )
+        self.assertTrue(
+            UsersIP.objects.filter(user=db_user, ip="203.0.113.11").exists()
+        )
         self.assertEqual(4, UsersIP.objects.filter(user=db_user).count())
         # Second part: Check presence of ips in the UsersIP model
         detection.check_fields(db_user, fields2)
-        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.40").exists())
-        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.35").exists())
-        self.assertTrue(UsersIP.objects.filter(user=db_user, ip="203.0.113.15").exists())
+        self.assertTrue(
+            UsersIP.objects.filter(user=db_user, ip="203.0.113.40").exists()
+        )
+        self.assertTrue(
+            UsersIP.objects.filter(user=db_user, ip="203.0.113.35").exists()
+        )
+        self.assertTrue(
+            UsersIP.objects.filter(user=db_user, ip="203.0.113.15").exists()
+        )
         self.assertEqual(7, UsersIP.objects.filter(user=db_user).count())
         # Check No duplicated ips
-        self.assertEqual(1, UsersIP.objects.filter(user=db_user, ip="203.0.113.17").count())
-        self.assertEqual(1, UsersIP.objects.filter(user=db_user, ip="203.0.113.11").count())
+        self.assertEqual(
+            1, UsersIP.objects.filter(user=db_user, ip="203.0.113.17").count()
+        )
+        self.assertEqual(
+            1, UsersIP.objects.filter(user=db_user, ip="203.0.113.11").count()
+        )
         # Third part: no new alerts because all the ips have already been used
         detection.check_fields(db_user, fields3)
         self.assertEqual(
             0,
             Alert.objects.filter(
                 user=db_user,
-                login_raw_data__timestamp__gt=datetime.datetime(2023, 5, 4, 0, 0, 0).isoformat(),
+                login_raw_data__timestamp__gt=datetime.datetime(
+                    2023, 5, 4, 0, 0, 0
+                ).isoformat(),
             ).count(),
         )

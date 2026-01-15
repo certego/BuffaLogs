@@ -1,3 +1,4 @@
+import logging
 import re
 from ipaddress import AddressValueError, IPv4Address, IPv4Network
 from typing import Any, Dict, Optional, Union
@@ -7,10 +8,67 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.utils.translation import gettext_lazy as _
 from impossible_travel.constants import AlertTagValues
-from impossible_travel.modules.alert_filter import _is_safe_regex
 from impossible_travel.views.utils import read_config
 
 ALLOWED_RISK_STRINGS = ["High", "Medium", "Low", "No Risk"]
+logger = logging.getLogger(__name__)
+
+# Security constants for ReDoS protection
+MAX_REGEX_LENGTH = 100
+MAX_REGEX_COMPLEXITY = 50  # Maximum number of special regex characters
+
+
+def _is_safe_regex(pattern: str) -> bool:
+    """
+    Validates that a regex pattern is safe to compile and execute.
+    Protects against Regular Expression Denial of Service (ReDoS) attacks.
+
+    Args:
+        pattern: Regular expression pattern string
+
+    Returns:
+        True if pattern is safe, False otherwise
+    """
+    # Check pattern length
+    if len(pattern) > MAX_REGEX_LENGTH:
+        logger.warning(
+            f"Regex pattern exceeds maximum length ({MAX_REGEX_LENGTH}): {len(pattern)}"
+        )
+        return False
+
+    # Count special regex characters that can cause complexity
+    dangerous_chars = ["*", "+", "{", "(", "|", "["]
+    complexity = sum(pattern.count(char) for char in dangerous_chars)
+
+    if complexity > MAX_REGEX_COMPLEXITY:
+        logger.warning(
+            f"Regex pattern too complex ({complexity} special chars, max {MAX_REGEX_COMPLEXITY})"
+        )
+        return False
+
+    # Check for known dangerous patterns that can cause catastrophic backtracking
+    # These patterns check for nested quantifiers which are the primary cause of ReDoS
+    dangerous_patterns = [
+        r"\(.+[*+]\)[*+]",  # Direct nested quantifiers like (a+)+ or (a*)*
+        r"\(.+[*+]\).?[*+]",  # Nested quantifiers with optional char like (a+)+b
+        r"\(.+\|.+\)[*+]",  # Alternation with quantifier like (a|ab)*
+    ]
+
+    for dangerous in dangerous_patterns:
+        try:
+            if re.search(dangerous, pattern):
+                logger.warning(f"Regex pattern contains dangerous construct: {pattern}")
+                return False
+        except re.error:
+            pass
+
+    # Try to compile to catch syntax errors
+    try:
+        re.compile(pattern)
+        return True
+    except re.error as e:
+        logger.error(f"Invalid regex syntax: {pattern}, error: {e}")
+        return False
 
 
 def validate_string_or_regex(value):
@@ -20,12 +78,16 @@ def validate_string_or_regex(value):
 
     for item in value:
         if not isinstance(item, str):
-            raise ValidationError(f"The single element '{item}' in the '{value}' list field must be a string")
+            raise ValidationError(
+                f"The single element '{item}' in the '{value}' list field must be a string"
+            )
 
         try:
             re.compile(item)
         except re.error:
-            raise ValidationError(f"The single element '{item}' in the '{value}' list field is not a valid regex pattern")
+            raise ValidationError(
+                f"The single element '{item}' in the '{value}' list field is not a valid regex pattern"
+            )
 
 
 def validate_regex_patterns(patterns_list):
@@ -93,12 +155,20 @@ def validate_countries_names(value):
         raise ValidationError(_("Value must be a list."))
 
     # Flatten the input if it's a list of lists (example: [['Italy', 'France']])
-    flattened = [country for pair in value for country in pair] if all(isinstance(item, list) for item in value) else value
+    flattened = (
+        [country for pair in value for country in pair]
+        if all(isinstance(item, list) for item in value)
+        else value
+    )
 
-    invalid_entries = [country for country in flattened if country not in VALID_COUNTRY_NAMES]
+    invalid_entries = [
+        country for country in flattened if country not in VALID_COUNTRY_NAMES
+    ]
 
     if invalid_entries:
-        raise ValidationError(_(f"The following country names are invalid: {', '.join(invalid_entries)}"))
+        raise ValidationError(
+            _(f"The following country names are invalid: {', '.join(invalid_entries)}")
+        )
 
 
 def validate_country_couples_list(value):
@@ -111,7 +181,9 @@ def validate_country_couples_list(value):
 
     for country_couple in value:
         if not isinstance(country_couple, list) or len(country_couple) != 2:
-            raise ValidationError(_("Each single value must be a list of 2 elements (list of lists)."))
+            raise ValidationError(
+                _("Each single value must be a list of 2 elements (list of lists).")
+            )
         # check that each country is a valid country name
         validate_countries_names(country_couple)
 
@@ -124,11 +196,15 @@ def validate_risk_score(value: Optional[Union[str, int]] = None):
     if isinstance(value, int) or value.isnumeric():
         value = int(value)
         if not (0 <= value <= 7):
-            raise ValidationError("risk score value is out of range. Value must be in the range of 0-7")
+            raise ValidationError(
+                "risk score value is out of range. Value must be in the range of 0-7"
+            )
     else:
         value = value.title()
         if value not in ALLOWED_RISK_STRINGS:
-            raise ValidationError(f"Risk score must be an integer 0-7 or one of: {', '.join(ALLOWED_RISK_STRINGS)}")
+            raise ValidationError(
+                f"Risk score must be an integer 0-7 or one of: {', '.join(ALLOWED_RISK_STRINGS)}"
+            )
     return value
 
 
@@ -138,7 +214,9 @@ def validate_datetime_str(value: Optional[str] = None):
 
     dt_obj = parse_datetime(value)
     if dt_obj is None:
-        raise ValidationError(f"{value} is not a valid datetime format. Please use ISO 8601 format (e.g., YYYY-MM-DDTHH:MM:SSZ).")
+        raise ValidationError(
+            f"{value} is not a valid datetime format. Please use ISO 8601 format (e.g., YYYY-MM-DDTHH:MM:SSZ)."
+        )
     if is_naive(dt_obj):
         dt_obj = make_aware(dt_obj)
     return dt_obj
@@ -221,6 +299,10 @@ def validate_tags(value):
     valid_tags = [choice[0] for choice in AlertTagValues.choices]
     invalid = [t for t in value if t not in valid_tags]
     if invalid:
-        raise ValidationError(_(f"Invalid tags: {', '.join(invalid)}. Must be one of: {', '.join(valid_tags)}."))
+        raise ValidationError(
+            _(
+                f"Invalid tags: {', '.join(invalid)}. Must be one of: {', '.join(valid_tags)}."
+            )
+        )
     if len(value) != len(set(value)):
         raise ValidationError(_("Duplicate tags are not allowed."))

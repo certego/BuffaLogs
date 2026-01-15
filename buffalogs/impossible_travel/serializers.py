@@ -18,7 +18,11 @@ class Serializer:
 
     @property
     def data(self):
-        data = self.instance.all() if isinstance(self.instance, models.manager.BaseManager) else self.instance
+        data = (
+            self.instance.all()
+            if isinstance(self.instance, models.manager.BaseManager)
+            else self.instance
+        )
         if isinstance(data, (list, tuple, models.QuerySet)):
             return [self.to_representation(item) for item in data]
         return self.to_representation(data)
@@ -38,9 +42,13 @@ class QSerializer(Serializer):
         query: Optional[Dict[str, Any]] = None,
     ):
         if instance and query:
-            raise ValueError("Either `instance` or `query` parameter must be defined not both!")
+            raise ValueError(
+                "Either `instance` or `query` parameter must be defined not both!"
+            )
         if (instance is None) and (query is None):
-            raise ValueError("Both `instance` and `query` parameters cannot be None, define only one!")
+            raise ValueError(
+                "Both `instance` and `query` parameters cannot be None, define only one!"
+            )
         instance = instance or self.Model.apply_filters(**query)
         super().__init__(instance)
 
@@ -74,7 +82,9 @@ class UserSerializer(Serializer):
             "risk_score": item.risk_score,
             "login_count": Login.objects.filter(user=item).distinct().count(),
             "alert_count": Alert.objects.filter(user=item).distinct().count(),
-            "last_login": Login.objects.filter(user=item).aggregate(Max("timestamp"))["timestamp__max"],
+            "last_login": Login.objects.filter(user=item).aggregate(Max("timestamp"))[
+                "timestamp__max"
+            ],
         }
 
 
