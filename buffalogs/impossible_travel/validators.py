@@ -53,23 +53,30 @@ def get_valid_country_names():
         return set()
 
 
-def validate_countries_names(value):
+def validate_countries_names(values):
     """
-    Validator for country-related fields.
-    Ensures all entries are valid ISO 3166-1 country names.
+    Accept list of ISO2 country codes (['IT','RO']) and reject invalid ones.
     """
-    VALID_COUNTRY_NAMES = get_valid_country_names()
+    import pycountry
+    from django.core.exceptions import ValidationError
+    from django.utils.translation import gettext_lazy as _
 
-    if not isinstance(value, list):
+    if not isinstance(values, list):
         raise ValidationError(_("Value must be a list."))
 
-    # Flatten the input if it's a list of lists (example: [['Italy', 'France']])
-    flattened = [country for pair in value for country in pair] if all(isinstance(item, list) for item in value) else value
-
-    invalid_entries = [country for country in flattened if country not in VALID_COUNTRY_NAMES]
+    invalid_entries = []
+    for code in values:
+        try:
+            country = pycountry.countries.get(alpha_2=code.upper())
+            if not country:
+                invalid_entries.append(code)
+        except Exception:
+            invalid_entries.append(code)
 
     if invalid_entries:
-        raise ValidationError(_(f"The following country names are invalid: {', '.join(invalid_entries)}"))
+        raise ValidationError(
+            _(f"The following country codes are invalid: {', '.join(invalid_entries)}")
+        )
 
 
 def validate_country_couples_list(value):

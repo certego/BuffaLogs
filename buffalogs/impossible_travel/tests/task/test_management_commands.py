@@ -30,9 +30,9 @@ class ManagementCommandsTestCase(TestCase):
     def test_options_values_passed(self):
         parser = Command().create_parser("manage.py", "setup_config")
         options = parser.parse_args(["-o", "allowed_countries=[IT,RO]", "-r", "ignored_users=[admin]", "-a", "alert_is_vip_only=True"])
-        self.assertEqual(options.override, ["allowed_countries=[IT,RO]"])
-        self.assertEqual(options.remove, ["ignored_users=[admin]"])
-        self.assertEqual(options.append, ["alert_is_vip_only=True"])
+        self.assertEqual(options.override, [["allowed_countries=[IT,RO]"]])
+        self.assertEqual(options.remove, [["ignored_users=[admin]"]])
+        self.assertEqual(options.append, [["alert_is_vip_only=True"]])
 
     def test_options_values_passed_2(self):
         # reset config
@@ -66,10 +66,10 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(
             options.override,
             [
-                "ignore_mobile_logins=True",
-                "filtered_alerts_types=[New Device, User Risk Threshold]",
-                "alert_minimum_risk_score=Medium",
-                "threshold_user_risk_alert=Medium",
+                ["ignore_mobile_logins=True"],
+                ["filtered_alerts_types=[New Device, User Risk Threshold]"],
+                ["alert_minimum_risk_score=Medium"],
+                ["threshold_user_risk_alert=Medium"],
             ],
         )
         # execute command
@@ -80,6 +80,37 @@ class ManagementCommandsTestCase(TestCase):
         self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold"])
         self.assertEqual(config.alert_minimum_risk_score, UserRiskScoreType.MEDIUM)
         self.assertEqual(config.threshold_user_risk_alert, UserRiskScoreType.MEDIUM)
+
+    def test_parser_accepts_multiple_values_per_option(self):
+        parser = Command().create_parser("manage.py", "setup_config")
+        options = parser.parse_args(["-a", "allowed_countries=IT", "RO", "DE"])
+        self.assertEqual(options.append, [["allowed_countries=IT", "RO", "DE"]])
+
+    def test_append_multiple_values_preserves_existing_entries(self):
+        self.config.allowed_countries = ["ES"]
+        self.config.save(update_fields=["allowed_countries"])
+
+        call_command("setup_config", "-a", "allowed_countries=ES", "IT", "RO", "IT")
+        self.config.refresh_from_db()
+
+        self.assertListEqual(self.config.allowed_countries, ["ES", "IT", "RO"])
+
+    def test_append_multiple_runs_extend_without_overwrite(self):
+        self.config.allowed_countries = []
+        self.config.save(update_fields=["allowed_countries"])
+
+        call_command("setup_config", "-a", "allowed_countries=IT", "RO")
+        self.config.refresh_from_db()
+        self.assertListEqual(self.config.allowed_countries, ["IT", "RO"])
+
+        call_command("setup_config", "-a", "allowed_countries=DE", "RO")
+        self.config.refresh_from_db()
+        self.assertListEqual(self.config.allowed_countries, ["IT", "RO", "DE"])
+
+    def test_override_non_list_field_rejects_multiple_values(self):
+        with self.assertRaises(CommandError) as cm:
+            call_command("setup_config", "-o", "alert_is_vip_only=True", "False")
+        self.assertIn("does not accept multiple values", str(cm.exception))
 
     def test_handle_set_default_values_force(self):
         # Testing the option --set-default-values (force mode)
