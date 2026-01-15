@@ -40,9 +40,7 @@ class TestTelegramAlerting(TestCase):
 
         # url expected where request made
         expected_url = f"https://api.telegram.org/bot{self.telegram_config['bot_token']}/sendMessage"
-        expected_alert_title, expected_alert_description = (
-            BaseAlerting.alert_message_formatter(self.alert)
-        )
+        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
         expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
 
         # Check that requests.post was called twice for each alert (1 chat_ids x 1 alerts = 1)
@@ -108,16 +106,10 @@ class TestTelegramAlerting(TestCase):
             login_raw_data={},
         )
 
-        Alert.objects.filter(id=alert1.id).update(
-            created=start_date + timedelta(minutes=10)
-        )
-        Alert.objects.filter(id=alert2.id).update(
-            created=start_date + timedelta(minutes=20)
-        )
+        Alert.objects.filter(id=alert1.id).update(created=start_date + timedelta(minutes=10))
+        Alert.objects.filter(id=alert2.id).update(created=start_date + timedelta(minutes=20))
         # This alert won't be notified as it's outside of the set range
-        Alert.objects.filter(id=alert3.id).update(
-            created=start_date - timedelta(hours=2)
-        )
+        Alert.objects.filter(id=alert3.id).update(created=start_date - timedelta(hours=2))
         alert1.refresh_from_db()
         alert2.refresh_from_db()
         alert3.refresh_from_db()

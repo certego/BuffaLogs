@@ -88,15 +88,11 @@ def process_logs(start_date=None, end_date=None):
             # for each user returned, get the related logins
             for username in usernames_list:
                 username = username.lower()
-                user_logins = ingestion.process_user_logins(
-                    start_date, end_date, username
-                )
+                user_logins = ingestion.process_user_logins(start_date, end_date, username)
 
                 parsed_logins = ingestion.normalize_fields(logins=user_logins)
 
-                logger.info(
-                    f"Got {len(parsed_logins)} actual useful logins for the user {username}"
-                )
+                logger.info(f"Got {len(parsed_logins)} actual useful logins for the user {username}")
 
                 # if valid logins have been found, add the user into the DB and start the detection
                 if parsed_logins:
@@ -172,9 +168,7 @@ def scheduled_alert_summary(frequency="daily"):
 
     active_alerters = AlertFactory().get_alert_classes()
     for alerter in active_alerters:
-        alerter.send_scheduled_summary(
-            start_date, end_date, total_alerts, user_breakdown, alert_breakdown
-        )
+        alerter.send_scheduled_summary(start_date, end_date, total_alerts, user_breakdown, alert_breakdown)
 
     # Update task_settings for next execution
     task_settings.start_date = task_settings.end_date

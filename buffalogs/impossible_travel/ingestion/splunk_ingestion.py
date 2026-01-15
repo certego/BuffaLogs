@@ -77,20 +77,14 @@ class SplunkIngestion(BaseIngestion):
             self.logger.info(f"Successfully got {len(users_list)} users")
 
         except ConnectionError:
-            self.logger.error(
-                f"Failed to establish a connection with host: {self.ingestion_config.get('host')}"
-            )
+            self.logger.error(f"Failed to establish a connection with host: {self.ingestion_config.get('host')}")
         except TimeoutError:
-            self.logger.error(
-                f"Timeout reached for the host: {self.ingestion_config.get('host')}"
-            )
+            self.logger.error(f"Timeout reached for the host: {self.ingestion_config.get('host')}")
         except Exception as e:
             self.logger.error(f"Exception while querying Splunk: {e}")
         return users_list
 
-    def process_user_logins(
-        self, start_date: datetime, end_date: datetime, username: str
-    ) -> list:
+    def process_user_logins(self, start_date: datetime, end_date: datetime, username: str) -> list:
         """
         Concrete implementation of the BaseIngestion.process_user_logins abstract method
 
@@ -135,18 +129,12 @@ class SplunkIngestion(BaseIngestion):
                 if isinstance(result, dict):
                     response.append(result)
 
-            self.logger.info(
-                f"Got {len(response)} logins for user {username} to be normalized"
-            )
+            self.logger.info(f"Got {len(response)} logins for user {username} to be normalized")
 
         except ConnectionError:
-            self.logger.error(
-                f"Failed to establish a connection with host: {self.ingestion_config.get('host')}"
-            )
+            self.logger.error(f"Failed to establish a connection with host: {self.ingestion_config.get('host')}")
         except TimeoutError:
-            self.logger.error(
-                f"Timeout reached for the host: {self.ingestion_config.get('host')}"
-            )
+            self.logger.error(f"Timeout reached for the host: {self.ingestion_config.get('host')}")
         except Exception as e:
             self.logger.error(f"Exception while querying Splunk: {e}")
         return response

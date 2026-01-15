@@ -57,9 +57,7 @@ class TaskLoggingCommand(BaseCommand):
                 task_settings.end_date = end_time
                 task_settings.save(update_fields=["end_date"])
 
-                msg_end = (
-                    f"Completed command '{task_name}' ({execution_mode}) at {end_time}"
-                )
+                msg_end = f"Completed command '{task_name}' ({execution_mode}) at {end_time}"
                 self.stdout.write(msg_end)
                 logger.info(msg_end)
 

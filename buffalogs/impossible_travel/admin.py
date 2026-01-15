@@ -46,9 +46,7 @@ class LoginAdmin(admin.ModelAdmin):
     @admin.display(description="timestamp")
     def timestamp_display(self, obj):
         # Usa strftime per personalizzare il formato
-        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime(
-            "%b %d, %Y, %I:%M:%S %p %Z"
-        )
+        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime("%b %d, %Y, %I:%M:%S %p %Z")
 
 
 @admin.register(User)
