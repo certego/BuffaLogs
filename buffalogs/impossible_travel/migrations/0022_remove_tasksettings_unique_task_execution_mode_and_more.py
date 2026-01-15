@@ -3,12 +3,8 @@
 import logging
 
 from django.db import migrations, models
-from ua_parser import user_agent_parser
-
 from impossible_travel.models import Login
-import logging
-
-logger = logging.getLogger(__name__)
+from ua_parser import user_agent_parser
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +15,10 @@ def populate_device_fingerprint(apps, schema_editor):
     UNKNOWN_OS_MAJOR = "unknownosmajor"
     UNKNOWN_DEVICE = "unknowndevice"
     UNKNOWN_BROWSER = "unknownbrowser"
-    UNKNOWN_FINGERPRINT = f"{UNKNOWN_OS}-{UNKNOWN_OS_MAJOR}-{UNKNOWN_DEVICE}-{UNKNOWN_BROWSER}"
+
+    UNKNOWN_FINGERPRINT = (
+        f"{UNKNOWN_OS}-{UNKNOWN_OS_MAJOR}-{UNKNOWN_DEVICE}-{UNKNOWN_BROWSER}"
+    )
 
     logins_to_update = []
     batch_size = 500
@@ -53,7 +52,11 @@ def populate_device_fingerprint(apps, schema_editor):
 
         # Heuristic for device type detection
         agent_lower = login_db.user_agent.lower()
-        if any(x in agent_lower for x in ["x11", "win64", "wow64", "x86_64", "macintosh"]):
+
+        # Heuristic for device type
+        if any(
+            x in agent_lower for x in ["x11", "win64", "wow64", "x86_64", "macintosh"]
+        ):
             device_family = "desktop"
         elif "tablet" in agent_lower or "ipad" in agent_lower:
             device_family = "tablet"
@@ -92,11 +95,11 @@ def check_regex_patterns(apps, schema_editor):
     in ignored_users, enabled_users, and vip_users fields. Admins should
     review and update these patterns in the Django admin panel.
     """
-    Config = apps.get_model('impossible_travel', 'Config')
+    Config = apps.get_model("impossible_travel", "Config")
     from impossible_travel.modules.alert_filter import _is_safe_regex
 
     for config in Config.objects.all():
-        for field_name in ['ignored_users', 'enabled_users', 'vip_users']:
+        for field_name in ["ignored_users", "enabled_users", "vip_users"]:
             patterns = getattr(config, field_name, []) or []
             if not patterns:
                 continue
@@ -128,7 +131,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="tasksettings",
-            constraint=models.UniqueConstraint(fields=("task_name", "execution_mode"), name="unique_task_execution"),
+            constraint=models.UniqueConstraint(
+                fields=("task_name", "execution_mode"), name="unique_task_execution"
+            ),
         ),
         migrations.RunPython(populate_device_fingerprint, migrations.RunPython.noop),
         migrations.RunPython(check_regex_patterns, migrations.RunPython.noop),
