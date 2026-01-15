@@ -1,0 +1,70 @@
+{
+    "name": "BuffaLogs Development",
+    "dockerComposeFile": "docker-compose.yaml",
+    "service": "buffalogs",
+    "workspaceFolder": "/opt/certego/buffalogs",
+    // Stop all running containers on close
+    "shutdownAction": "stopCompose",
+    "remoteUser": "root",
+    "postCreateCommand": "pip install --no-cache-dir django-debug-toolbar && python manage.py migrate",
+    "forwardPorts": [
+        8000,
+        5433,
+        5672,
+        15672,
+        5679
+    ],
+    "portsAttributes": {
+        "8000": {
+            "label": "Django Dev Server",
+            "onAutoForward": "notify"
+        },
+        "5433": {
+            "label": "PostgreSQL",
+            "onAutoForward": "notify"
+        },
+        "5672": {
+            "label": "RabbitMQ",
+            "onAutoForward": "silent"
+        },
+        "15672": {
+            "label": "RabbitMQ Management",
+            "onAutoForward": "notify"
+        },
+        "5679": {
+            "label": "Celery Worker",
+            "onAutoForward": "notify"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.linting.enabled": true,
+                "python.linting.pylintEnabled": true,
+                "python.formatting.provider": "black",
+                "python.testing.pytestEnabled": true,
+                "python.testing.unittestEnabled": false,
+                "files.exclude": {
+                    "**/__pycache__": true,
+                    "**/*.pyc": true
+                },
+                "django.debugJustMyCode": false
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.debugpy",
+                "ms-python.black-formatter",
+                "ms-python.pylint",
+                "batisteo.vscode-django",
+                "ms-vscode.vscode-json",
+                "redhat.vscode-yaml"
+            ]
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "overrideCommand": false
+}

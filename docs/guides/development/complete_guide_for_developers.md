@@ -6,6 +6,8 @@ Steps workflow for Developers:
 
 1. All the developers have to set the enrivornment correctly &rarr; Follow [the System Configuration guide](#system-configuration)
 
+   **Alternative Setup**: For a containerized **backend** development environment with all dependencies pre-configured, see [Development with DevContainers](development_with_devcontainers.md).
+
    1a. Then, if you'd like to make front-end changes, so you need only to query the APIs &rarr; Upload [the fixture data](#fixture) and read the [API's section](docs/rest-apis.md) for more details about them
 
    1b. Otherwise, if you want to analyze the back-end development generating new data, please check [the BuffaLogs detection](#run-buffalogs-detection)

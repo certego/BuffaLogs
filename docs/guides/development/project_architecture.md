@@ -38,4 +38,8 @@ Message queueing allows web servers to respond to requests quickly instead of be
 
 ### Celery Beat
 [Celery Beat](https://docs.celeryq.dev/en/stable/reference/celery.beat.html) is the scheduler, so it keeps track of when tasks should be executed by Celery.
-Celery would consume the tasks instantly, instead with Celery Beat the consumption of tasks is periodic. 
+Celery would consume the tasks instantly, instead with Celery Beat the consumption of tasks is periodic.
+
+## Development Environment Setup
+
+For a complete containerized **backend** development environment that includes all the components mentioned above, see [Development with DevContainers](development_with_devcontainers.md). This provides a pre-configured setup with all services running and ready for development. 
