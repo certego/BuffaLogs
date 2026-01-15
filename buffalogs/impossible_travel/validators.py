@@ -7,6 +7,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.utils.translation import gettext_lazy as _
 from impossible_travel.constants import AlertTagValues
+from impossible_travel.modules.alert_filter import _is_safe_regex
 from impossible_travel.views.utils import read_config
 
 ALLOWED_RISK_STRINGS = ["High", "Medium", "Low", "No Risk"]
@@ -42,12 +43,14 @@ def validate_regex_patterns(patterns_list):
     if not isinstance(patterns_list, list):
         raise ValidationError("Must be a list of patterns")
 
-    from impossible_travel.modules.alert_filter import _is_safe_regex
+    unsafe = set()
+    for p in patterns_list:
+        if p and not _is_safe_regex(p):
+            unsafe.add(p)
 
-    unsafe = [p for p in patterns_list if not _is_safe_regex(p)]
     if unsafe:
         raise ValidationError(
-            f"The following regex patterns are unsafe and have been rejected: {unsafe}. "
+            f"The following regex patterns are unsafe and have been rejected: {list(unsafe)}. "
             "Patterns must not exceed 100 characters, contain more than 50 special characters, "
             "or contain nested quantifiers like (a+)+, (a*)*, or (a|ab)*."
         )
