@@ -32,8 +32,8 @@ def build_device_fingerprint(agent: str) -> str:
 
     try:
         parsed = user_agent_parser.Parse(agent)
-    except Exception as e:
-        logger.error(f"Error parsing user agent '{agent}': {e}")
+    except Exception:
+        logger.exception(f"Error parsing user agent '{agent}'")
         return UNKNOWN_FINGERPRINT
 
     # Get the relevant data, with fallbacks to empty dict if not found

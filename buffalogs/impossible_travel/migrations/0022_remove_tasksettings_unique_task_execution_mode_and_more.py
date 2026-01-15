@@ -30,9 +30,9 @@ def populate_device_fingerprint(apps, schema_editor):
 
         try:
             parsed = user_agent_parser.Parse(login_db.user_agent)
-        except Exception as e:
+        except Exception:
             # Log error in case of parsing failure and assign default fingerprint
-            logger.error(f"Error parsing user agent {login_db.user_agent}: {str(e)}")
+            logger.exception(f"Error parsing user agent {login_db.user_agent}")
             login_db.device_fingerprint = UNKNOWN_FINGERPRINT
             logins_to_update.append(login_db)
             continue
