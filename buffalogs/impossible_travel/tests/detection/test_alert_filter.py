@@ -4,17 +4,10 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.test import TestCase
-from impossible_travel.constants import (
-    AlertDetectionType,
-    AlertFilterType,
-    UserRiskScoreType,
-)
+from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, User
 from impossible_travel.modules import alert_filter
-from impossible_travel.modules.alert_filter import (
-    _check_username_list_regex,
-    _is_safe_regex,
-)
+from impossible_travel.modules.alert_filter import _check_username_list_regex, _is_safe_regex
 
 
 class TestAlertFilter(TestCase):

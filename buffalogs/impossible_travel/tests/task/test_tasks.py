@@ -6,11 +6,7 @@ from django.test import TestCase
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType
 from impossible_travel.models import Alert, Login, User, UsersIP
-from impossible_travel.tasks import (
-    clean_models_periodically,
-    process_logs,
-    scheduled_alert_summary,
-)
+from impossible_travel.tasks import clean_models_periodically, process_logs, scheduled_alert_summary
 from impossible_travel.tests.utils import patched_components
 
 

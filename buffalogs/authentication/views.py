@@ -6,12 +6,7 @@ from django.http import HttpResponsePermanentRedirect
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from .serializers import (
-    LoginSerializer,
-    LogoutSerializer,
-    RegisterSerializer,
-    UserSerializer,
-)
+from .serializers import LoginSerializer, LogoutSerializer, RegisterSerializer, UserSerializer
 
 logger = logging.getLogger(__name__)
 
