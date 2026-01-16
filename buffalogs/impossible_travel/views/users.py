@@ -66,7 +66,9 @@ def users_template_view(request):
             "geo": user_geo_distribution_chart(selected_user, start_date, end_date),
             "device": user_device_usage_chart(selected_user, start_date, end_date),
             "time_of_day": user_time_of_day_chart(selected_user, start_date, end_date),
-            "frequency": user_login_frequency_chart(selected_user, start_date, end_date),
+            "frequency": user_login_frequency_chart(
+                selected_user, start_date, end_date
+            ),
         }
 
     context = {
@@ -74,7 +76,10 @@ def users_template_view(request):
         "selected_user": selected_user,
         "start_date": start_date.strftime("%B %-d, %Y"),
         "end_date": end_date.strftime("%B %-d, %Y"),
-        "charts": {k: (v if isinstance(v, str) else v.render(is_unicode=True)) for k, v in charts.items()},
+        "charts": {
+            k: (v if isinstance(v, str) else v.render(is_unicode=True))
+            for k, v in charts.items()
+        },
     }
     return render(request, "impossible_travel/users.html", context)
 
@@ -136,7 +141,11 @@ def user_device_usage_api(request, pk):
     except User.DoesNotExist:
         return HttpResponseNotFound("User not found")
 
-    devices = Login.objects.filter(user=user, timestamp__range=(start_date, end_date)).values("user_agent").annotate(count=Count("id"))
+    devices = (
+        Login.objects.filter(user=user, timestamp__range=(start_date, end_date))
+        .values("user_agent")
+        .annotate(count=Count("id"))
+    )
     device_counts = {d["user_agent"]: d["count"] for d in devices}
 
     return JsonResponse({"devices": device_counts})
@@ -179,7 +188,10 @@ def user_login_frequency_api(request, pk):
         login_day = login.timestamp.date()
         daily_counts[login_day] = daily_counts.get(login_day, 0) + 1
 
-    daily_logins = [{"date": date.isoformat(), "count": count} for date, count in daily_counts.items()]
+    daily_logins = [
+        {"date": date.isoformat(), "count": count}
+        for date, count in daily_counts.items()
+    ]
     return JsonResponse({"daily_logins": daily_logins})
 
 

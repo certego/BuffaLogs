@@ -63,7 +63,9 @@ def homepage(request):
     if request.method == "GET":
         now = timezone.now()
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        return render(request, "impossible_travel/homepage.html", build_context(start, now))
+        return render(
+            request, "impossible_travel/homepage.html", build_context(start, now)
+        )
 
     if request.method == "POST":
         # Validate POST payload
@@ -74,7 +76,9 @@ def homepage(request):
         except Exception:
             return HttpResponseBadRequest("Invalid date range")
 
-        return render(request, "impossible_travel/homepage.html", build_context(start, end))
+        return render(
+            request, "impossible_travel/homepage.html", build_context(start, end)
+        )
 
     return HttpResponseBadRequest("Unsupported method")
 
@@ -90,10 +94,18 @@ def users_pie_chart_api(request):
         end_date = make_aware(end_date)
 
     result = {
-        "no_risk": User.objects.filter(updated__range=(start_date, end_date), risk_score="No risk").count(),
-        "low": User.objects.filter(updated__range=(start_date, end_date), risk_score="Low").count(),
-        "medium": User.objects.filter(updated__range=(start_date, end_date), risk_score="Medium").count(),
-        "high": User.objects.filter(updated__range=(start_date, end_date), risk_score="High").count(),
+        "no_risk": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="No risk"
+        ).count(),
+        "low": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="Low"
+        ).count(),
+        "medium": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="Medium"
+        ).count(),
+        "high": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="High"
+        ).count(),
     }
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
@@ -163,13 +175,25 @@ def alerts_line_chart_api(request):
     delta_timestamp = end_date - start_date
     if delta_timestamp.days < 1:
         result["Timeframe"] = "hour"
-        result.update(aggregate_alerts_interval(start_date, end_date, timedelta(hours=1), "%Y-%m-%dT%H:%M:%SZ"))
+        result.update(
+            aggregate_alerts_interval(
+                start_date, end_date, timedelta(hours=1), "%Y-%m-%dT%H:%M:%SZ"
+            )
+        )
     elif delta_timestamp.days <= 31:
         result["Timeframe"] = "day"
-        result.update(aggregate_alerts_interval(start_date, end_date, timedelta(days=1), "%Y-%m-%d"))
+        result.update(
+            aggregate_alerts_interval(
+                start_date, end_date, timedelta(days=1), "%Y-%m-%d"
+            )
+        )
     else:
         result["Timeframe"] = "month"
-        result.update(aggregate_alerts_interval(start_date, end_date, relativedelta(months=1), "%Y-%m"))
+        result.update(
+            aggregate_alerts_interval(
+                start_date, end_date, relativedelta(months=1), "%Y-%m"
+            )
+        )
 
     result = {key: value for key, value in result.items()}
 
@@ -205,7 +229,9 @@ def user_login_timeline_api(request, pk):
     except User.DoesNotExist:
         return HttpResponseNotFound("User not found")
 
-    logins = Login.objects.filter(user=user, timestamp__range=(start_date, end_date)).values_list("timestamp", flat=True)
+    logins = Login.objects.filter(
+        user=user, timestamp__range=(start_date, end_date)
+    ).values_list("timestamp", flat=True)
     login_times = [login.isoformat() for login in logins]
 
     return JsonResponse({"logins": login_times})
