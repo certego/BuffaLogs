@@ -77,7 +77,6 @@ def run_test_server(server):
 
 
 class TestHTTPRequestAlerting(TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.test_server = get_test_server()
@@ -228,7 +227,6 @@ class TestHTTPRequestAlerting(TestCase):
 
     @mock.patch("requests.post", side_effect=mocked_request_post_failure)
     def test_alerts_are_not_marked_as_notified_for_failed_request(self, mock_request):
-
         test_endpoint = "http://localhost:5000/alert"
 
         alert1 = Alert.objects.create(

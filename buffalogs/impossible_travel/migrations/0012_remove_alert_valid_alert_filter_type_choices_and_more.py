@@ -7,7 +7,6 @@ import impossible_travel.validators
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("impossible_travel", "0011_alert_filter_type_alert_is_filtered_and_more"),
     ]

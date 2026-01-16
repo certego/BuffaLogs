@@ -33,7 +33,6 @@ def clean_invalid_countries(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("impossible_travel", "0015_remove_alert_notified_alert_notified_status"),
     ]

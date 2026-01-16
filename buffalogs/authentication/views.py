@@ -24,7 +24,6 @@ class CustomRedirect(HttpResponsePermanentRedirect):
 
 
 class RegisterView(generics.GenericAPIView):
-
     serializer_class = RegisterSerializer
     authentication_classes = []
     permission_classes = []
@@ -63,7 +62,6 @@ class LogoutAPIView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-
         serializer = self.serializer_class(
             data=request.data, context={"request": request}
         )

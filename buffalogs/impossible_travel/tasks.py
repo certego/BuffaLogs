@@ -59,7 +59,6 @@ def process_logs(start_date=None, end_date=None):
     if start_date and end_date:
         date_ranges.append((start_date, end_date))
     else:
-
         if (now - process_task.end_date).days < 1:
             # Recovering old data avoiding task time limit
             for _ in range(6):
@@ -76,7 +75,6 @@ def process_logs(start_date=None, end_date=None):
             process_task.end_date = end_date
 
     if date_ranges:
-
         # get the users that logged into the system in those time ranges
         for start_date, end_date in date_ranges:
             process_task.start_date = start_date

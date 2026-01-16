@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("impossible_travel", "0018_alter_config_alert_minimum_risk_score_and_more"),
     ]

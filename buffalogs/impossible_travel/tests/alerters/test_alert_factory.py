@@ -62,9 +62,10 @@ class TestAlertFactory(TestCase):
             for alerter in active_alerters:
                 alerter.notify_alerts()
 
-                expected_alert_title, expected_alert_description = (
-                    BaseAlerting.alert_message_formatter(self.alert)
-                )
+                (
+                    expected_alert_title,
+                    expected_alert_description,
+                ) = BaseAlerting.alert_message_formatter(self.alert)
                 expected_alert_msg = (
                     expected_alert_title + "\n\n" + expected_alert_description
                 )

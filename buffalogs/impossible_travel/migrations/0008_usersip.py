@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("impossible_travel", "0007_login_event_id_login_ip"),
     ]

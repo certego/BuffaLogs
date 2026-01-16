@@ -32,7 +32,6 @@ def parse_hash_algorithm(value: str):
 
 
 class WebHookAlerting(HTTPRequestAlerting):
-
     required_fields = ["name", "endpoint", "secret_key_variable_name"]
     extra_option_parsers = {
         "token_expiration_seconds": validate_token_expiration_value,

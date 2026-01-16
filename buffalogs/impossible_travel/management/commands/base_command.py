@@ -10,7 +10,6 @@ logger = logging.getLogger("impossible_travel.management.commands")
 
 
 class TaskLoggingCommand(BaseCommand):
-
     def execute(self, *args, **options):
         """
         We override execute() to prevent double handle() call.

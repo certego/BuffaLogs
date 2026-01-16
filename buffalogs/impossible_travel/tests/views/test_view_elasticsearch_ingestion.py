@@ -13,7 +13,6 @@ from impossible_travel.tests.utils import load_ingestion_config_data
 
 
 class TestViewsElasticIngestion(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create(username="test_user", id=1)

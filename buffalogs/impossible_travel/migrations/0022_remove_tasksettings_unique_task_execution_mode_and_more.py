@@ -86,7 +86,6 @@ def populate_device_fingerprint(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("impossible_travel", "0021_tasksettings_execution_mode_and_more"),
     ]

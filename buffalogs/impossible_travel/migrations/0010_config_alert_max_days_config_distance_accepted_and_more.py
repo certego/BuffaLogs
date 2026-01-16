@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("impossible_travel", "0009_config_ignored_ips_config_ignored_users_and_more"),
     ]

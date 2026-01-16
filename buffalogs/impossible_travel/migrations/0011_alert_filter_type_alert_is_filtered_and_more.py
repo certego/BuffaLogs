@@ -27,7 +27,6 @@ def update_alert_name(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         (
             "impossible_travel",

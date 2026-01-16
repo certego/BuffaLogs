@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("impossible_travel", "0016_alter_config_allowed_countries"),
     ]

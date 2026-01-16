@@ -12,7 +12,6 @@ from impossible_travel.tests.utils import load_test_data
 
 
 class DetectionTestCase(TestCase):
-
     # dicts for alert.login_raw_data field
     raw_data_NEW_DEVICE = {
         "id": "orig_id_1",

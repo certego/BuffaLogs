@@ -38,9 +38,10 @@ class TestGoogleChatAlerting(TestCase):
 
         self.googlechat_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = (
-            BaseAlerting.alert_message_formatter(self.alert)
-        )
+        (
+            expected_alert_title,
+            expected_alert_description,
+        ) = BaseAlerting.alert_message_formatter(self.alert)
 
         expected_payload = {
             "cards": [

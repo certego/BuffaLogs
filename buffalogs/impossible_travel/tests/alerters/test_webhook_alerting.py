@@ -76,7 +76,6 @@ def run_test_server(server):
 
 
 class TestHTTPRequestAlerting(TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.test_server = get_test_server()

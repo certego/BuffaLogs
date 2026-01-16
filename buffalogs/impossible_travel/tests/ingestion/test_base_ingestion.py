@@ -4,7 +4,6 @@ from impossible_travel.tests.utils import load_ingestion_config_data, load_test_
 
 
 class TestBaseIngestion(TestCase):
-
     def setUp(self):
         # executed once per test (at the beginning)
         self.ingestion_config = load_ingestion_config_data()

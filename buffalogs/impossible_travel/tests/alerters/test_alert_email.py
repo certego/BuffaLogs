@@ -38,9 +38,10 @@ class TestEmailAlerting(TestCase):
         emailToAdmin = mail.outbox[0]
         emailToUser = mail.outbox[1]
 
-        expected_alert_title, expected_alert_description = (
-            BaseAlerting.alert_message_formatter(self.alert)
-        )
+        (
+            expected_alert_title,
+            expected_alert_description,
+        ) = BaseAlerting.alert_message_formatter(self.alert)
         expected_from_email = self.email_config.get("default_from_email")
         expected_recipient_list_admins = self.email_config.get("recipient_list_admins")
         expected_recipient_list_users = self.email_config.get("recipient_list_users")
