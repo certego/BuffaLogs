@@ -170,9 +170,7 @@ class TestViews(APITestCase):
         end = datetime.now() + timedelta(minutes=1)
         start = end - timedelta(hours=3)
         dict_expected_result = {"no_risk": 1, "low": 3, "medium": 1, "high": 0}
-        response = self.client.get(
-            f"{reverse('users_pie_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
-        )
+        response = self.client.get(f"{reverse('users_pie_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
@@ -184,9 +182,7 @@ class TestViews(APITestCase):
             "2023-06-20T10:00:00Z": 1,
             "2023-06-20T11:00:00Z": 2,
         }
-        response = self.client.get(
-            f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
-        )
+        response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
@@ -194,9 +190,7 @@ class TestViews(APITestCase):
         start = datetime(2023, 6, 19, 0, 0)
         end = datetime(2023, 6, 20, 23, 59, 59)
         dict_expected_result = {"Timeframe": "day", "2023-06-19": 2, "2023-06-20": 3}
-        response = self.client.get(
-            f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
-        )
+        response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
@@ -204,9 +198,7 @@ class TestViews(APITestCase):
         start = datetime(2023, 5, 1, 0, 0)
         end = datetime(2023, 6, 30, 23, 59, 59)
         dict_expected_result = {"Timeframe": "month", "2023-05": 1, "2023-06": 5}
-        response = self.client.get(
-            f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
-        )
+        response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
@@ -218,9 +210,7 @@ class TestViews(APITestCase):
             {"country": "jp", "lat": 36.2462, "lon": 138.8497, "alerts": 3},
             {"country": "us", "lat": 40.364, "lon": -79.8605, "alerts": 3},
         ]
-        response = self.client.get(
-            f"{reverse('world_map_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
-        )
+        response = self.client.get(f"{reverse('world_map_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         for elem in list_expected_result:
             num_alerts += elem["alerts"]
         self.assertEqual(response.status_code, 200)
@@ -265,9 +255,7 @@ class TestViews(APITestCase):
         )
         start = creation_mock_time
         end = creation_mock_time + timedelta(minutes=10)
-        response = self.client.get(
-            f"{reverse('list_alerts')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
-        )
+        response = self.client.get(f"{reverse('list_alerts')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(list_expected_result, response.json())
 
@@ -281,9 +269,7 @@ class TestViews(APITestCase):
             "Lor": "Low",
             "Loryg": "Medium",
         }
-        response = self.client.get(
-            f"{reverse('risk_score_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}"
-        )
+        response = self.client.get(f"{reverse('risk_score_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
 
@@ -333,10 +319,7 @@ class TestViews(APITestCase):
         response_timestamps = data["logins"]
         for i, timestamp in enumerate(login_timestamps):
             self.assertTrue(
-                any(
-                    timestamp.isoformat() in resp_time
-                    for resp_time in response_timestamps
-                ),
+                any(timestamp.isoformat() in resp_time for resp_time in response_timestamps),
                 f"Timestamp {timestamp.isoformat()} not found in response",
             )
 
@@ -430,17 +413,12 @@ class TestViews(APITestCase):
         data = json.loads(response.content)
         self.assertIn("daily_logins", data)
 
-        login_counts = {
-            datetime.fromisoformat(entry["date"]).date(): entry["count"]
-            for entry in data["daily_logins"]
-        }
+        login_counts = {datetime.fromisoformat(entry["date"]).date(): entry["count"] for entry in data["daily_logins"]}
         base_date.date()
         next_day_key = (base_date + timedelta(days=1)).date()
         expected_counts = {
-            base_date.date(): daily_counts.get(0, 0)
-            + 2,  # 2 existing logins on base date
-            (base_date + timedelta(days=1)).date(): daily_counts.get(1, 0)
-            + 2,  # 2 existing logins on next day
+            base_date.date(): daily_counts.get(0, 0) + 2,  # 2 existing logins on base date
+            (base_date + timedelta(days=1)).date(): daily_counts.get(1, 0) + 2,  # 2 existing logins on next day
             (base_date + timedelta(days=2)).date(): daily_counts.get(2, 0),
             (base_date + timedelta(days=3)).date(): daily_counts.get(3, 0),
             (base_date + timedelta(days=4)).date(): daily_counts.get(4, 0),
@@ -463,9 +441,7 @@ class TestViews(APITestCase):
     def test_user_time_of_day_api(self):
         """Test the user time of day API endpoint."""
         db_user = self.db_user
-        base_date = datetime(
-            2023, 6, 19, 0, 0, 0, tzinfo=timezone.utc
-        )  # Monday (weekday 0)
+        base_date = datetime(2023, 6, 19, 0, 0, 0, tzinfo=timezone.utc)  # Monday (weekday 0)
 
         hour_weekday_pattern = {
             5: [0, 1, 1, 0, 0, 1, 0],  # Hour 5: Monday, Tuesday, Tuesday, Friday
@@ -509,9 +485,7 @@ class TestViews(APITestCase):
         data = json.loads(response.content)
         self.assertIn("hourly_logins", data)
 
-        hourly_data = {
-            entry["hour"]: entry["weekdays"] for entry in data["hourly_logins"]
-        }
+        hourly_data = {entry["hour"]: entry["weekdays"] for entry in data["hourly_logins"]}
 
         for hour, expected_weekdays in hour_weekday_pattern.items():
             self.assertIn(hour, hourly_data)
@@ -591,9 +565,7 @@ class TestViews(APITestCase):
         now = datetime.now(timezone.utc)
         past = now - timedelta(days=1)
         # Push all other alerts outside the window to avoid noise
-        Alert.objects.exclude(pk__in=[alert1.pk, alert2.pk]).update(
-            created=past - timedelta(days=2)
-        )
+        Alert.objects.exclude(pk__in=[alert1.pk, alert2.pk]).update(created=past - timedelta(days=2))
 
         # Set desired created timestamps
         alert1.created = past
@@ -610,9 +582,7 @@ class TestViews(APITestCase):
 
         # Check headers
         self.assertEqual(response["Content-Type"], "text/csv")
-        self.assertIn(
-            'attachment; filename="alerts.csv"', response["Content-Disposition"]
-        )
+        self.assertIn('attachment; filename="alerts.csv"', response["Content-Disposition"])
 
         # Parse CSV
         lines = response.content.decode("utf-8").splitlines()

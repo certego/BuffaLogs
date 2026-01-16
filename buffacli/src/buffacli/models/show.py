@@ -5,7 +5,6 @@ from buffacli.models.base import DataModel
 
 
 class AlertType(DataModel):
-
     def __init__(self, content: dict, include_description: bool = False):
         self.content = content
         self.include_description = include_description
@@ -24,7 +23,6 @@ class AlertType(DataModel):
 
 
 class Ingestion(DataModel):
-
     def __init__(self, content: dict | list[dict]):
         self.content = content
 
@@ -45,7 +43,6 @@ class Ingestion(DataModel):
 
 
 class Alerters(DataModel):
-
     def __init__(self, content: dict | list[dict]):
         if isinstance(content, list):
             self.content = [alerter for alerter in content if alerter["alerter"] != "dummy"]

@@ -13,7 +13,6 @@ class VLevel(str, Enum):
 
 
 class VPrint:
-
     def __init__(self, verbose_level: int = 2):
         self.level = verbose_level
 

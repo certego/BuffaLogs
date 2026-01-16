@@ -54,9 +54,7 @@ class TestIngestionAPIViews(APITestCase):
         self.assertDictEqual(expected, json.loads(response.content))
 
     def test_get_unsupported_ingestion_source_config(self):
-        response = self.client.get(
-            reverse("ingestion_source_config_api", kwargs={"source": "UNKOWN"})
-        )
+        response = self.client.get(reverse("ingestion_source_config_api", kwargs={"source": "UNKOWN"}))
         expected_error = {"message": "Unsupported ingestion source - UNKOWN"}
         self.assertEqual(response.status_code, 400)
         self.assertEqual(expected_error, json.loads(response.content))
@@ -72,9 +70,7 @@ class TestIngestionAPIViews(APITestCase):
                 "indexes": "cloud-*,fw-proxy-*",
             },
         }
-        response = self.client.get(
-            reverse("ingestion_source_config_api", kwargs={"source": "elasticsearch"})
-        )
+        response = self.client.get(reverse("ingestion_source_config_api", kwargs={"source": "elasticsearch"}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(expected, json.loads(response.content))
 

@@ -4,7 +4,6 @@ from buffacli.models import Ingestion
 
 
 class TestIngestionModel(unittest.TestCase):
-
     def setUp(self):
         self.active_ingestion_response = {
             "source": "elasticsearch",

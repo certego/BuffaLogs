@@ -13,7 +13,6 @@ class RenderOptions(str, Enum):
 
 
 class Render:
-
     def __init__(self, formatter: FormatOptions, mode: str = None, page_size: int = None, exporter: BaseExporter = None):
         self.formatter = formatter
         self.mode = mode

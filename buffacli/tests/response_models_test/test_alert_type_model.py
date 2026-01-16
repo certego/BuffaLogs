@@ -4,7 +4,6 @@ from buffacli.models import AlertType
 
 
 class TestAlertModels(unittest.TestCase):
-
     def setUp(self):
         self.alert_types_response = [
             {"alert_type": "New Device", "description": "Login from new device"},

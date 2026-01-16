@@ -2,7 +2,6 @@ from buffacli.models.base import DataModel
 
 
 class Query(DataModel):
-
     custom_mappings = {}
 
     def __init__(self, content: dict | list[dict], omit: list = None, mappings: dict[str, str] = None, fields: str = None):

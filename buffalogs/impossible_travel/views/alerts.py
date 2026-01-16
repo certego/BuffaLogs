@@ -54,9 +54,7 @@ def export_alerts_csv(request):
     response["Content-Disposition"] = 'attachment; filename="alerts.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(
-        ["timestamp", "username", "alert_name", "description", "is_filtered"]
-    )
+    writer.writerow(["timestamp", "username", "alert_name", "description", "is_filtered"])
 
     for alert in alerts:
         writer.writerow(
@@ -77,9 +75,7 @@ def list_alerts(request):
     """Filter alerts by created datetime range."""
     query = validate_alert_query(request.GET)
     serialized_alerts = AlertSerializer(query=query)
-    return JsonResponse(
-        serialized_alerts.data, safe=False, json_dumps_params={"default": str}
-    )
+    return JsonResponse(serialized_alerts.data, safe=False, json_dumps_params={"default": str})
 
 
 def get_user_alerts(request):
@@ -116,10 +112,7 @@ def recent_alerts(request):
 @require_http_methods(["GET"])
 def alert_types(request):
     """Return all supported alert types."""
-    alert_types = [
-        {"alert_type": alert.value, "description": alert.label}
-        for alert in AlertDetectionType
-    ]
+    alert_types = [{"alert_type": alert.value, "description": alert.label} for alert in AlertDetectionType]
     return JsonResponse(alert_types, safe=False, json_dumps_params={"default": str})
 
 
@@ -143,10 +136,7 @@ def get_alerters(request):
 def get_active_alerter(request):
     alert_config = read_config("alerting.json")
     active_alerters = alert_config["active_alerters"]
-    alerter_config = [
-        {"alerter": alerter, "fields": alert_config[alerter]}
-        for alerter in active_alerters
-    ]
+    alerter_config = [{"alerter": alerter, "fields": alert_config[alerter]} for alerter in active_alerters]
     return JsonResponse(alerter_config, safe=False, json_dumps_params={"default": str})
 
 
@@ -159,19 +149,13 @@ def alerter_config(request, alerter):
     if request.method == "GET":
         content = {
             "alerter": alerter,
-            "fields": dict(
-                (field, alerter_config[field]) for field in alerter_config.keys()
-            ),
+            "fields": dict((field, alerter_config[field]) for field in alerter_config.keys()),
         }
         return JsonResponse(content, json_dumps_params={"default": str})
 
     if request.method == "POST":
         config_update = json.loads(request.body.decode("utf-8"))
-        error_fields = [
-            field
-            for field in config_update.keys()
-            if field not in alerter_config.keys()
-        ]
+        error_fields = [field for field in config_update.keys() if field not in alerter_config.keys()]
         if any(error_fields):
             return JsonResponse(
                 {"message": f"Unexpected configuration fields - {error_fields}"},

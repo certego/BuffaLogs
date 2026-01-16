@@ -2,7 +2,6 @@ import json
 
 
 class DataModel:
-
     @property
     def table(self):
         raise NotImplementedError

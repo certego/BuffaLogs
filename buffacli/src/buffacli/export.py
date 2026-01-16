@@ -9,7 +9,6 @@ from buffacli.models import DataModel
 
 
 class BaseExporter(ABC):
-
     def __init__(self, filename: Path):
         self.filename = filename
 
@@ -19,7 +18,6 @@ class BaseExporter(ABC):
 
 
 class JSONExporter(BaseExporter):
-
     def export(self, model: DataModel):
         json_content = model.json
         vprint("info", "Exporting  data to {self.filename}...", end="")
@@ -29,7 +27,6 @@ class JSONExporter(BaseExporter):
 
 
 class CSVExporter(BaseExporter):
-
     def export(self, model: DataModel):
         fieldnames = list(model.table.keys())
         vprint("info", f"Exporting  data to {self.filename}...")

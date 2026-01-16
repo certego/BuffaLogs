@@ -31,7 +31,6 @@ def alerts(
     omit: Annotated[list[str], typer.Option(help="Omit fields from query results")] = None,
     mappings: Annotated[str, typer.Option(help="Alias name for fields. Follows the format fieldname:alias")] = None,
 ):
-
     if mappings:
         mappings = dict(mapstr.split(":") for mapstr in mappings.split())
     alerts = requests.get_alerts(

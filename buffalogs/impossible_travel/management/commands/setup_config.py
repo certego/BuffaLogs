@@ -90,9 +90,7 @@ OPTION_DISPLAY = {
 }
 
 
-def parse_option_group(
-    raw_values: Sequence[str], mode: str
-) -> Tuple[str, Any, List[Any]]:
+def parse_option_group(raw_values: Sequence[str], mode: str) -> Tuple[str, Any, List[Any]]:
     if not raw_values:
         raise CommandError("Missing FIELD=VALUE argument.")
 
@@ -108,9 +106,7 @@ def parse_option_group(
     for extra in values[1:]:
         if "=" in extra:
             flag = OPTION_DISPLAY.get(mode, "the same option")
-            raise CommandError(
-                f"Invalid syntax '{extra}'. Each FIELD=VALUE must be preceded by {flag}."
-            )
+            raise CommandError(f"Invalid syntax '{extra}'. Each FIELD=VALUE must be preceded by {flag}.")
         additional_values.append(_cast_value(extra))
 
     return field, value, additional_values
@@ -150,11 +146,7 @@ def _normalize_list_payload(value: Any, extra_values: Sequence[Any]) -> List[Any
 
 class Command(TaskLoggingCommand):
     def create_parser(self, *args, **kwargs):
-        config_fields = [
-            f.name
-            for f in Config._meta.get_fields()
-            if isinstance(f, Field) and f.editable and not f.auto_created
-        ]
+        config_fields = [f.name for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created]
 
         help_text = f"""
         Update values in the Config model.
@@ -223,11 +215,7 @@ class Command(TaskLoggingCommand):
         config, _ = Config.objects.get_or_create(id=1)
 
         # get customizable fields in the Config model dinamically
-        fields_info = {
-            f.name: f
-            for f in Config._meta.get_fields()
-            if isinstance(f, Field) and f.editable and not f.auto_created
-        }
+        fields_info = {f.name: f for f in Config._meta.get_fields() if isinstance(f, Field) and f.editable and not f.auto_created}
 
         # MODE: --set-default-values
         if options.get("set_default_values"):
@@ -236,11 +224,7 @@ class Command(TaskLoggingCommand):
 
             for field_name, field_model in list(fields_info.items()):
                 if hasattr(field_model, "default"):
-                    default_value = (
-                        field_model.default()
-                        if callable(field_model.default)
-                        else field_model.default
-                    )
+                    default_value = field_model.default() if callable(field_model.default) else field_model.default
                     current_value = getattr(config, field_name)
 
                     # Safe mode --> update field only if it's empty
@@ -294,9 +278,7 @@ class Command(TaskLoggingCommand):
                 values_to_validate = normalized_values
             else:
                 if extra_values:
-                    raise CommandError(
-                        f"Field '{field}' does not accept multiple values in a single command."
-                    )
+                    raise CommandError(f"Field '{field}' does not accept multiple values in a single command.")
                 normalized_values = value
                 values_to_validate = [value]
 
@@ -311,28 +293,20 @@ class Command(TaskLoggingCommand):
                     for validator in validators:
                         validator(values_to_validate[0])
             except ValidationError as e:
-                raise CommandError(
-                    f"Validation error on field '{field}' with value '{values_to_validate}': {e}"
-                )
+                raise CommandError(f"Validation error on field '{field}' with value '{values_to_validate}': {e}")
 
             # -------- Apply changes ----------
             if is_list:
                 current = current or []
                 if mode == "append":
-                    current = _deduplicate_preserving_order(
-                        [*current, *normalized_values]
-                    )
+                    current = _deduplicate_preserving_order([*current, *normalized_values])
                 elif mode == "override":
                     current = _deduplicate_preserving_order(normalized_values)
                 elif mode == "remove":
-                    current = _deduplicate_preserving_order(
-                        [item for item in current if item not in normalized_values]
-                    )
+                    current = _deduplicate_preserving_order([item for item in current if item not in normalized_values])
             else:
                 if mode != "override":
-                    raise CommandError(
-                        f"Field '{field}' is not a list. Use --override to set its value."
-                    )
+                    raise CommandError(f"Field '{field}' is not a list. Use --override to set its value.")
                 current = normalized_values
 
             setattr(config, field, current)

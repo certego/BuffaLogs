@@ -29,9 +29,7 @@ class Command(TaskLoggingCommand):
 
         # Validate risk_score
         if risk_score not in VALID_RISK_SCORES:
-            raise CommandError(
-                f"Invalid risk_score '{risk_score}'. Valid values are: {', '.join(VALID_RISK_SCORES)}"
-            )
+            raise CommandError(f"Invalid risk_score '{risk_score}'. Valid values are: {', '.join(VALID_RISK_SCORES)}")
 
         if username:
             try:
@@ -41,15 +39,7 @@ class Command(TaskLoggingCommand):
 
             user.risk_score = risk_score
             user.save()
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Successfully updated risk_score for user '{username}' to '{risk_score}'."
-                )
-            )
+            self.stdout.write(self.style.SUCCESS(f"Successfully updated risk_score for user '{username}' to '{risk_score}'."))
         else:
             count = User.objects.update(risk_score=risk_score)
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Successfully updated risk_score for {count} users to '{risk_score}'."
-                )
-            )
+            self.stdout.write(self.style.SUCCESS(f"Successfully updated risk_score for {count} users to '{risk_score}'."))

@@ -4,7 +4,6 @@ from buffacli.models import Alerters
 
 
 class TestAlertModels(unittest.TestCase):
-
     def setUp(self):
         self.alerter_list_response = [
             {"alerter": "slack", "fields": ["webhook_url"], "options": []},

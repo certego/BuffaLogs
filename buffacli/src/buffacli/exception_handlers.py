@@ -13,7 +13,6 @@ ExceptionHandlingCallback = Callable[[Exception], int]
 
 
 class ExceptionHandler:
-
     def __init__(self, error_handlers: dict[ExceptionType, ExceptionHandlingCallback]):
         self.error_handlers = error_handlers
 

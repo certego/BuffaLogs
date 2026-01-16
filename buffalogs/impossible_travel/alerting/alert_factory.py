@@ -32,9 +32,7 @@ class AlertFactory:
         Read the configuration file.
         """
         with open(
-            os.path.join(
-                settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"
-            ),
+            os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"),
             mode="r",
             encoding="utf-8",
         ) as f:
@@ -66,7 +64,4 @@ class AlertFactory:
             BaseAlerting.SupportedAlerters.MATTERMOST: MattermostAlerting,
         }
 
-        return [
-            alerter_map[alerter](config)
-            for alerter, config in zip(self.active_alerters, self.alert_configs)
-        ]
+        return [alerter_map[alerter](config) for alerter, config in zip(self.active_alerters, self.alert_configs)]
