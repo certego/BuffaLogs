@@ -2,13 +2,22 @@ import json
 from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+    JsonResponse,
+)
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.views.decorators.http import require_http_methods
-from impossible_travel.dashboard.charts import alerts_line_chart, users_pie_chart, world_map_chart
+from impossible_travel.dashboard.charts import (
+    alerts_line_chart,
+    users_pie_chart,
+    world_map_chart,
+)
 from impossible_travel.models import Alert, Login, User
 from impossible_travel.views.utils import read_config
 
@@ -22,7 +31,12 @@ def aggregate_alerts_interval(start_date, end_date, interval, date_fmt):
 
     while current_date < end_date:
         next_date = current_date + interval
-        count = Alert.objects.filter(login_raw_data__timestamp__range=(current_date.isoformat(), next_date.isoformat())).count()
+        count = Alert.objects.filter(
+            login_raw_data__timestamp__range=(
+                current_date.isoformat(),
+                next_date.isoformat(),
+            )
+        ).count()
         aggregated_data[current_date.strftime(date_fmt)] = count
         current_date = next_date
     return aggregated_data
@@ -49,7 +63,9 @@ def homepage(request):
     if request.method == "GET":
         now = timezone.now()
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        return render(request, "impossible_travel/homepage.html", build_context(start, now))
+        return render(
+            request, "impossible_travel/homepage.html", build_context(start, now)
+        )
 
     if request.method == "POST":
         # Validate POST payload
@@ -60,7 +76,9 @@ def homepage(request):
         except Exception:
             return HttpResponseBadRequest("Invalid date range")
 
-        return render(request, "impossible_travel/homepage.html", build_context(start, end))
+        return render(
+            request, "impossible_travel/homepage.html", build_context(start, end)
+        )
 
     return HttpResponseBadRequest("Unsupported method")
 
@@ -76,10 +94,18 @@ def users_pie_chart_api(request):
         end_date = make_aware(end_date)
 
     result = {
-        "no_risk": User.objects.filter(updated__range=(start_date, end_date), risk_score="No risk").count(),
-        "low": User.objects.filter(updated__range=(start_date, end_date), risk_score="Low").count(),
-        "medium": User.objects.filter(updated__range=(start_date, end_date), risk_score="Medium").count(),
-        "high": User.objects.filter(updated__range=(start_date, end_date), risk_score="High").count(),
+        "no_risk": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="No risk"
+        ).count(),
+        "low": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="Low"
+        ).count(),
+        "medium": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="Medium"
+        ).count(),
+        "high": User.objects.filter(
+            updated__range=(start_date, end_date), risk_score="High"
+        ).count(),
     }
     data = json.dumps(result)
     return HttpResponse(data, content_type="json")
@@ -100,13 +126,26 @@ def world_map_chart_api(request):
     tmp = []
     for key, value in countries.items():
         country_alerts = Alert.objects.filter(
-            login_raw_data__timestamp__range=(start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")),
+            login_raw_data__timestamp__range=(
+                start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            ),
             login_raw_data__country__iexact=key,
         )
         if country_alerts:
             for alert in country_alerts:
-                if [alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]] not in tmp:
-                    tmp.append([alert.login_raw_data["country"], alert.login_raw_data["lat"], alert.login_raw_data["lon"]])
+                if [
+                    alert.login_raw_data["country"],
+                    alert.login_raw_data["lat"],
+                    alert.login_raw_data["lon"],
+                ] not in tmp:
+                    tmp.append(
+                        [
+                            alert.login_raw_data["country"],
+                            alert.login_raw_data["lat"],
+                            alert.login_raw_data["lon"],
+                        ]
+                    )
                     result.append(
                         {
                             "country": value.lower(),
@@ -136,13 +175,25 @@ def alerts_line_chart_api(request):
     delta_timestamp = end_date - start_date
     if delta_timestamp.days < 1:
         result["Timeframe"] = "hour"
-        result.update(aggregate_alerts_interval(start_date, end_date, timedelta(hours=1), "%Y-%m-%dT%H:%M:%SZ"))
+        result.update(
+            aggregate_alerts_interval(
+                start_date, end_date, timedelta(hours=1), "%Y-%m-%dT%H:%M:%SZ"
+            )
+        )
     elif delta_timestamp.days <= 31:
         result["Timeframe"] = "day"
-        result.update(aggregate_alerts_interval(start_date, end_date, timedelta(days=1), "%Y-%m-%d"))
+        result.update(
+            aggregate_alerts_interval(
+                start_date, end_date, timedelta(days=1), "%Y-%m-%d"
+            )
+        )
     else:
         result["Timeframe"] = "month"
-        result.update(aggregate_alerts_interval(start_date, end_date, relativedelta(months=1), "%Y-%m"))
+        result.update(
+            aggregate_alerts_interval(
+                start_date, end_date, relativedelta(months=1), "%Y-%m"
+            )
+        )
 
     result = {key: value for key, value in result.items()}
 
@@ -178,7 +229,9 @@ def user_login_timeline_api(request, pk):
     except User.DoesNotExist:
         return HttpResponseNotFound("User not found")
 
-    logins = Login.objects.filter(user=user, timestamp__range=(start_date, end_date)).values_list("timestamp", flat=True)
+    logins = Login.objects.filter(
+        user=user, timestamp__range=(start_date, end_date)
+    ).values_list("timestamp", flat=True)
     login_times = [login.isoformat() for login in logins]
 
     return JsonResponse({"logins": login_times})

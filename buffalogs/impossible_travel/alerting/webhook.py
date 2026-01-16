@@ -12,7 +12,9 @@ from .http_request import HTTPRequestAlerting
 WEBHOOKS_ALGORITHM_LIST = jwt.algorithms.get_default_algorithms()
 WEBHOOKS_DEFAULT_ALGORITHM = "HS256"
 WEBHOOKS_DEFAULT_ISSUER_ID = "buffalogs_webhook"
-WEBHOOKS_DEFAULT_TOKEN_EXPIRATION = 60 * 5  # Token expiration time in seconds (5 minutes)
+WEBHOOKS_DEFAULT_TOKEN_EXPIRATION = (
+    60 * 5
+)  # Token expiration time in seconds (5 minutes)
 
 
 def validate_token_expiration_value(value: int):
@@ -72,6 +74,9 @@ class WebHookAlerting(HTTPRequestAlerting):
     def send_notification(self, recipient_name: str, endpoint: str, data: dict):
         """Send a webhook notification with a JWT Bearer token."""
         token = self.generate_jwt()
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
         response = requests.post(endpoint, json=data, headers=headers)
         return response

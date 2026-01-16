@@ -22,7 +22,11 @@ class TestMattermostAlerting(TestCase):
 
         # Create shared alert
         cls.alert = Alert.objects.create(
-            name="Imp Travel", user=cls.user, notified_status={"mattermost": False}, description="Impossible travel detected", login_raw_data={}
+            name="Imp Travel",
+            user=cls.user,
+            notified_status={"mattermost": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @patch("requests.post")
@@ -34,7 +38,9 @@ class TestMattermostAlerting(TestCase):
 
         self.mattermost_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        expected_alert_title, expected_alert_description = (
+            BaseAlerting.alert_message_formatter(self.alert)
+        )
         expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
 
         expected_payload = {
@@ -100,10 +106,16 @@ class TestMattermostAlerting(TestCase):
             login_raw_data={},
         )
 
-        Alert.objects.filter(id=alert1.id).update(created=start_date + timedelta(minutes=10))
-        Alert.objects.filter(id=alert2.id).update(created=start_date + timedelta(minutes=20))
+        Alert.objects.filter(id=alert1.id).update(
+            created=start_date + timedelta(minutes=10)
+        )
+        Alert.objects.filter(id=alert2.id).update(
+            created=start_date + timedelta(minutes=20)
+        )
         # This alert won't be notified as it's outside of the set range
-        Alert.objects.filter(id=alert3.id).update(created=start_date - timedelta(hours=2))
+        Alert.objects.filter(id=alert3.id).update(
+            created=start_date - timedelta(hours=2)
+        )
         alert1.refresh_from_db()
         alert2.refresh_from_db()
         alert3.refresh_from_db()
@@ -119,7 +131,10 @@ class TestMattermostAlerting(TestCase):
         text = payload["text"]
 
         # 3 Imp Travel Alerts will be clubbed
-        self.assertIn('BuffaLogs - Login Anomaly Alerts : 3 "Imp Travel" alerts for user testuser', text)
+        self.assertIn(
+            'BuffaLogs - Login Anomaly Alerts : 3 "Imp Travel" alerts for user testuser',
+            text,
+        )
         # Reload the alerts from the db
         alert1 = Alert.objects.get(pk=alert1.pk)
         alert2 = Alert.objects.get(pk=alert2.pk)

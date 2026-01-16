@@ -95,7 +95,14 @@ class OpensearchIngestionTestCase(TestCase):
         self.assertEqual(len(result), 6)
         self.assertCountEqual(
             result,
-            ["Stitch", "Jessica", "bugs-bunny@organization.com", "scooby.doo@gmail.com", "Andrew", "bugs.bunny"],
+            [
+                "Stitch",
+                "Jessica",
+                "bugs-bunny@organization.com",
+                "scooby.doo@gmail.com",
+                "Andrew",
+                "bugs.bunny",
+            ],
         )
         mock_client.search.assert_called_once()
 
@@ -120,7 +127,9 @@ class OpensearchIngestionTestCase(TestCase):
         """Test process_users with no aggregation data"""
         mock_client = MagicMock()
         mock_opensearch.return_value = mock_client
-        mock_client.search.return_value = {"aggregations": {"login_user": {"buckets": []}}}
+        mock_client.search.return_value = {
+            "aggregations": {"login_user": {"buckets": []}}
+        }
 
         ingestor = OpensearchIngestion(self.opensearch_config, mapping={})
 
@@ -145,7 +154,9 @@ class OpensearchIngestionTestCase(TestCase):
         result = ingestor.process_user_logins(start_date, end_date, "Stitch")
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0]["user.name"], "Stitch")
-        self.assertEqual(result[0]["_index"], "cloud")  # Should be normalized to "cloud"
+        self.assertEqual(
+            result[0]["_index"], "cloud"
+        )  # Should be normalized to "cloud"
         mock_client.search.assert_called_once()
 
     @patch("impossible_travel.ingestion.opensearch_ingestion.OpenSearch")
@@ -186,7 +197,9 @@ class OpensearchIngestionTestCase(TestCase):
         mock_opensearch.return_value = mock_client
 
         # Response with data missing source.ip (should be filtered by query)
-        response_missing_ip = {"hits": {"hits": []}}  # OpenSearch query should filter out entries without source.ip
+        response_missing_ip = {
+            "hits": {"hits": []}
+        }  # OpenSearch query should filter out entries without source.ip
         mock_client.search.return_value = response_missing_ip
 
         ingestor = OpensearchIngestion(self.opensearch_config, mapping={})

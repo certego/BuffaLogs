@@ -4,7 +4,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from impossible_travel.constants import AlertTagValues
-from impossible_travel.forms import AlertAdminForm, ConfigAdminForm, TaskSettingsAdminForm, UserAdminForm
+from impossible_travel.forms import (
+    AlertAdminForm,
+    ConfigAdminForm,
+    TaskSettingsAdminForm,
+    UserAdminForm,
+)
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 
 
@@ -24,7 +29,15 @@ class LoginAdmin(admin.ModelAdmin):
         "event_id",
         "index",
     )
-    search_fields = ("id", "user__username", "user_agent", "index", "event_id", "ip", "country")
+    search_fields = (
+        "id",
+        "user__username",
+        "user_agent",
+        "index",
+        "event_id",
+        "ip",
+        "country",
+    )
 
     @admin.display(description="username")
     def get_username(self, obj):
@@ -33,7 +46,9 @@ class LoginAdmin(admin.ModelAdmin):
     @admin.display(description="timestamp")
     def timestamp_display(self, obj):
         # Usa strftime per personalizzare il formato
-        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime("%b %d, %Y, %I:%M:%S %p %Z")
+        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime(
+            "%b %d, %Y, %I:%M:%S %p %Z"
+        )
 
 
 @admin.register(User)
@@ -91,7 +106,14 @@ class AlertAdmin(admin.ModelAdmin):
     )
     search_fields = ("id", "user__username", "name")
     list_filter = ("is_vip", "filter_type", TagListFilter)
-    readonly_fields = ("get_username", "description", "filter_type", "is_filtered_field_display", "is_vip", "notified_status")
+    readonly_fields = (
+        "get_username",
+        "description",
+        "filter_type",
+        "is_filtered_field_display",
+        "is_vip",
+        "notified_status",
+    )
 
     @admin.display(description="username")
     def get_username(self, obj):
@@ -115,16 +137,55 @@ class ConfigsAdmin(admin.ModelAdmin):
     fieldsets = [
         (
             "Detection filters - users",
-            {"fields": ("ignored_users", "enabled_users", "vip_users", "alert_is_vip_only", "alert_minimum_risk_score", "risk_score_increment_alerts")},
+            {
+                "fields": (
+                    "ignored_users",
+                    "enabled_users",
+                    "vip_users",
+                    "alert_is_vip_only",
+                    "alert_minimum_risk_score",
+                    "risk_score_increment_alerts",
+                )
+            },
         ),
         (
             "Detection filters - location",
-            {"fields": ("ignored_ips", "allowed_countries", "ignored_impossible_travel_all_same_country", "ignored_impossible_travel_countries_couples")},
+            {
+                "fields": (
+                    "ignored_ips",
+                    "allowed_countries",
+                    "ignored_impossible_travel_all_same_country",
+                    "ignored_impossible_travel_countries_couples",
+                )
+            },
         ),
-        ("Detection filters - devices", {"fields": ("ignored_ISPs", "ignore_mobile_logins")}),
+        (
+            "Detection filters - devices",
+            {"fields": ("ignored_ISPs", "ignore_mobile_logins")},
+        ),
         ("Detection filters - alerts", {"fields": ("filtered_alerts_types",)}),
-        ("Detection setup - Alerts", {"fields": ("distance_accepted", "vel_accepted", "atypical_country_days", "threshold_user_risk_alert")}),
-        ("Detection setup - Clean models", {"fields": ("user_max_days", "login_max_days", "alert_max_days", "ip_max_days")}),
+        (
+            "Detection setup - Alerts",
+            {
+                "fields": (
+                    "distance_accepted",
+                    "vel_accepted",
+                    "atypical_country_days",
+                    "threshold_user_risk_alert",
+                )
+            },
+        ),
+        (
+            "Detection setup - Clean models",
+            {
+                "fields": (
+                    "user_max_days",
+                    "login_max_days",
+                    "alert_max_days",
+                    "ip_max_days",
+                )
+            },
+        ),
     ]
     list_display = (
         "id",

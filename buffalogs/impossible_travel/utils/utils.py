@@ -24,7 +24,9 @@ def build_device_fingerprint(agent: str) -> str:
     UNKNOWN_DEVICE = "unknowndevice"
     UNKNOWN_BROWSER = "unknownbrowser"
 
-    UNKNOWN_FINGERPRINT = f"{UNKNOWN_OS}-{UNKNOWN_OS_MAJOR}-{UNKNOWN_DEVICE}-{UNKNOWN_BROWSER}"
+    UNKNOWN_FINGERPRINT = (
+        f"{UNKNOWN_OS}-{UNKNOWN_OS_MAJOR}-{UNKNOWN_DEVICE}-{UNKNOWN_BROWSER}"
+    )
 
     # Check if the agent is provided
     if not agent:
@@ -55,7 +57,9 @@ def build_device_fingerprint(agent: str) -> str:
         device_family = "mobile"
     elif "tablet" in agent_lower or "ipad" in agent_lower:
         device_family = "tablet"
-    elif any(x in agent_lower for x in ["x11", "win64", "wow64", "x86_64", "macintosh"]):
+    elif any(
+        x in agent_lower for x in ["x11", "win64", "wow64", "x86_64", "macintosh"]
+    ):
         device_family = "desktop"
 
     # build fingerprint

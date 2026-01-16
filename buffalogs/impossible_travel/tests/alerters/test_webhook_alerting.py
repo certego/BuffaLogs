@@ -5,7 +5,11 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import jwt
 from django.test import TestCase
-from impossible_travel.alerting.webhook import WEBHOOKS_DEFAULT_ALGORITHM, WEBHOOKS_DEFAULT_ISSUER_ID, WebHookAlerting
+from impossible_travel.alerting.webhook import (
+    WEBHOOKS_DEFAULT_ALGORITHM,
+    WEBHOOKS_DEFAULT_ISSUER_ID,
+    WebHookAlerting,
+)
 from impossible_travel.models import Alert, User
 
 AUDIENCE = "test_service"
@@ -28,7 +32,12 @@ class WebhookRequestHandler(BaseHTTPRequestHandler):
         token = auth_header.split(" ")[1]  # Extract JWT token
 
         try:
-            decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[WEBHOOKS_DEFAULT_ALGORITHM], audience=AUDIENCE)
+            decoded_token = jwt.decode(
+                token,
+                SECRET_KEY,
+                algorithms=[WEBHOOKS_DEFAULT_ALGORITHM],
+                audience=AUDIENCE,
+            )
             self.server.decoded_token = decoded_token
         except jwt.ExpiredSignatureError:
             self.send_response(401)
@@ -72,7 +81,9 @@ class TestHTTPRequestAlerting(TestCase):
     def setUpClass(cls):
         cls.test_server = get_test_server()
         if cls.test_server:
-            cls.server_thread = threading.Thread(target=run_test_server, args=(cls.test_server,), daemon=True)
+            cls.server_thread = threading.Thread(
+                target=run_test_server, args=(cls.test_server,), daemon=True
+            )
             cls.server_thread.start()
         super().setUpClass()
 
@@ -97,7 +108,9 @@ class TestHTTPRequestAlerting(TestCase):
         alerter = WebHookAlerting(self.config)
         self.assertEqual(alerter.alert_config["name"], AUDIENCE)
         self.assertEqual(alerter.alert_config["endpoint"], "http://127.0.0.1:8000")
-        self.assertEqual(alerter.alert_config["secret_key_variable_name"], "TEST_SECRET_KEY")
+        self.assertEqual(
+            alerter.alert_config["secret_key_variable_name"], "TEST_SECRET_KEY"
+        )
         self.assertIn("fields", alerter.alert_config)
         self.assertIn("login_data", alerter.alert_config)
         self.assertIn("algorithm", alerter.alert_config)
@@ -118,11 +131,19 @@ class TestHTTPRequestAlerting(TestCase):
         if self.test_server is None:
             self.skipTest("Failed to create test server")
         alert1 = Alert.objects.create(
-            name="New Device", user=self.user, login_raw_data={"lat": 40.7128, "lon": -74.0060}, description="test alert", notified_status={"webhook": False}
+            name="New Device",
+            user=self.user,
+            login_raw_data={"lat": 40.7128, "lon": -74.0060},
+            description="test alert",
+            notified_status={"webhook": False},
         ).pk
 
         alert2 = Alert.objects.create(
-            name="Imp Travel", user=self.user, login_raw_data={"lat": 51.5074, "lon": -0.1278}, description="test alert", notified_status={"webhook": False}
+            name="Imp Travel",
+            user=self.user,
+            login_raw_data={"lat": 51.5074, "lon": -0.1278},
+            description="test alert",
+            notified_status={"webhook": False},
         ).pk
         alerter = WebHookAlerting(self.config)
         alerter.notify_alerts()
