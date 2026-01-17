@@ -5,9 +5,11 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import jwt
 from django.test import TestCase
-from impossible_travel.alerting.webhook import (WEBHOOKS_DEFAULT_ALGORITHM,
-                                                WEBHOOKS_DEFAULT_ISSUER_ID,
-                                                WebHookAlerting)
+from impossible_travel.alerting.webhook import (
+    WEBHOOKS_DEFAULT_ALGORITHM,
+    WEBHOOKS_DEFAULT_ISSUER_ID,
+    WebHookAlerting,
+)
 from impossible_travel.models import Alert, User
 
 AUDIENCE = "test_service"

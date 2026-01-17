@@ -1,8 +1,7 @@
 import logging
 from datetime import datetime
 
-from impossible_travel.management.commands.base_command import \
-    TaskLoggingCommand
+from impossible_travel.management.commands.base_command import TaskLoggingCommand
 from impossible_travel.tasks import process_logs
 
 logger = logging.getLogger()

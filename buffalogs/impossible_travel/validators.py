@@ -80,10 +80,14 @@ from django.utils.translation import gettext_lazy as _
 
 def validate_countries_names(values):
     """
-    Accept list of ISO2 country codes (['IT', 'RO'])
-    OR country names (['Italy', 'Romania']).
-    Reject invalid entries.
+    Accepts a list of country identifiers.
+    Valid values:
+    - ISO2 country codes (e.g. "IT", "RO")
+    - Full country names (e.g. "Italy", "Nepal")
     """
+    import pycountry
+    from django.core.exceptions import ValidationError
+    from django.utils.translation import gettext_lazy as _
 
     if not isinstance(values, list):
         raise ValidationError(_("Value must be a list."))
@@ -91,13 +95,17 @@ def validate_countries_names(values):
     invalid_entries = []
 
     for value in values:
+        if not isinstance(value, str):
+            invalid_entries.append(value)
+            continue
+
         value = value.strip()
 
-        # 1️⃣ ISO2 country code check
+        # 1️⃣ ISO2 code check
         if pycountry.countries.get(alpha_2=value.upper()):
             continue
 
-        # 2️⃣ Country name lookup (case-insensitive)
+        # 2️⃣ Country name check
         try:
             pycountry.countries.lookup(value)
             continue
@@ -106,8 +114,10 @@ def validate_countries_names(values):
 
     if invalid_entries:
         raise ValidationError(
-            _("The following country codes are invalid: %(countries)s")
-            % {"countries": ", ".join(invalid_entries)}
+            _(
+                "The following country codes are invalid: "
+                + ", ".join(map(str, invalid_entries))
+            )
         )
 
 
