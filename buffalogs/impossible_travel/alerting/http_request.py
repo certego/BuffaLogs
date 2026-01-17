@@ -1,5 +1,5 @@
-import os
 from functools import partial
+import os
 
 try:
     import requests

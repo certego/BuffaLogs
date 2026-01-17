@@ -1,14 +1,14 @@
-import re
 from ipaddress import AddressValueError, IPv4Address, IPv4Network
+import re
 from typing import Any, Dict, Optional, Union
 
-import pycountry
 from django.core.exceptions import ValidationError
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
 from django.utils.translation import gettext_lazy as _
 from impossible_travel.constants import AlertTagValues
 from impossible_travel.views.utils import read_config
+import pycountry
 
 ALLOWED_RISK_STRINGS = ["High", "Medium", "Low", "No Risk"]
 
@@ -73,9 +73,9 @@ def is_valid_country(value: str) -> bool:
         return False
 
 
-import pycountry
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+import pycountry
 
 
 def validate_countries_names(values):
@@ -85,9 +85,9 @@ def validate_countries_names(values):
     - ISO2 country codes (e.g. "IT", "RO")
     - Full country names (e.g. "Italy", "Nepal")
     """
-    import pycountry
     from django.core.exceptions import ValidationError
     from django.utils.translation import gettext_lazy as _
+    import pycountry
 
     if not isinstance(values, list):
         raise ValidationError(_("Value must be a list."))

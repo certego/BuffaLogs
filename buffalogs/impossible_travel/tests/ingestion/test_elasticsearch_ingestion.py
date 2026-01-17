@@ -1,15 +1,16 @@
 from datetime import datetime, timezone
 from typing import List
 
-import elasticsearch
 from django.test import TestCase
+import elasticsearch
 from elasticsearch.dsl import connections
 from elasticsearch.helpers import bulk
-from impossible_travel.ingestion.elasticsearch_ingestion import \
-    ElasticsearchIngestion
-from impossible_travel.tests.utils import (load_index_template,
-                                           load_ingestion_config_data,
-                                           load_test_data)
+from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
+from impossible_travel.tests.utils import (
+    load_index_template,
+    load_ingestion_config_data,
+    load_test_data,
+)
 
 
 class ElasticsearchIngestionTestCase(TestCase):

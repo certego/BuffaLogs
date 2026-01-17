@@ -1,12 +1,12 @@
 from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
-import requests
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.pushover_alerting import PushoverAlerting
 from impossible_travel.models import Alert, Login, User
+import requests
 
 
 class TestPushoverAlerting(TestCase):

@@ -1,6 +1,6 @@
+from contextlib import contextmanager
 import json
 import os
-from contextlib import contextmanager
 from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 

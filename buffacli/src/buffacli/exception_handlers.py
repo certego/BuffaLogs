@@ -1,10 +1,10 @@
 from functools import wraps
 from typing import Callable, Type
 
-import typer
 from requests import exceptions
 from rich.console import Console
 from rich.panel import Panel
+import typer
 from typer import Typer
 
 from buffacli.globals import vprint

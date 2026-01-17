@@ -3,10 +3,10 @@
 import logging
 
 import django.contrib.postgres.fields
-import django.utils.timezone
-import impossible_travel.models
 from django.db import migrations, models
+import django.utils.timezone
 from impossible_travel.constants import AlertDetectionType
+import impossible_travel.models
 
 logger = logging.getLogger(__name__)
 

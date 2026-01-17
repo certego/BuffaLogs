@@ -1,5 +1,5 @@
-import logging
 from datetime import datetime
+import logging
 
 from elasticsearch.dsl import Search, connections
 from impossible_travel.ingestion.base_ingestion import BaseIngestion

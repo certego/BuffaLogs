@@ -1,13 +1,13 @@
-import json
 from datetime import timedelta
+import json
 from unittest.mock import MagicMock, patch
 
-import requests
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel.alerting.base_alerting import BaseAlerting
 from impossible_travel.alerting.discord_alerting import DiscordAlerting
 from impossible_travel.models import Alert, Login, User
+import requests
 
 
 class TestDiscordAlerting(TestCase):

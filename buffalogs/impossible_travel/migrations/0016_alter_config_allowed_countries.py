@@ -3,11 +3,11 @@
 import json
 import os
 
+from django.conf import settings
 import django.contrib.postgres.fields
+from django.db import migrations, models
 import impossible_travel.models
 import impossible_travel.validators
-from django.conf import settings
-from django.db import migrations, models
 
 
 def get_valid_countries():

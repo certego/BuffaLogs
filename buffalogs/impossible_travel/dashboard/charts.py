@@ -1,13 +1,13 @@
 from collections import defaultdict
 from datetime import timedelta
 
-import pygal
-import pygal.style
 from dateutil.relativedelta import relativedelta
 from django.db.models import Count
 from django.utils import timezone
 from impossible_travel.models import Alert, Login, User
 from impossible_travel.views.utils import read_config
+import pygal
+import pygal.style
 from pygal_maps_world.maps import World
 
 pie_custom_style = pygal.style.Style(

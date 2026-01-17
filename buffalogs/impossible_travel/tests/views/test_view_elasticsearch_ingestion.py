@@ -1,14 +1,13 @@
+from datetime import datetime, timedelta
 import json
 import os
-from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from django.conf import settings
 from django.test import Client, TestCase
 from django.urls import reverse
 from elasticsearch import Elasticsearch
-from impossible_travel.ingestion.elasticsearch_ingestion import \
-    ElasticsearchIngestion
+from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
 from impossible_travel.models import User
 from impossible_travel.tests.utils import load_ingestion_config_data
 

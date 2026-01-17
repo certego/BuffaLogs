@@ -1,8 +1,8 @@
+from enum import Enum
 import functools
 import inspect
 import json
 import re
-from enum import Enum
 from typing import Any
 
 from rich.console import Console

@@ -1,5 +1,5 @@
-import logging
 from datetime import datetime
+import logging
 
 try:
     from splunklib import client, results

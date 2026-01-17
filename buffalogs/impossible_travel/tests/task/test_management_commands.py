@@ -7,16 +7,21 @@ from django.db.models.fields import Field
 from django.test import TestCase
 from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.management.commands.setup_config import (
-    Command, parse_field_value)
-from impossible_travel.models import (Config, User,
-                                      get_default_allowed_countries,
-                                      get_default_enabled_users,
-                                      get_default_filtered_alerts_types,
-                                      get_default_ignored_ips,
-                                      get_default_ignored_ISPs,
-                                      get_default_ignored_users,
-                                      get_default_risk_score_increment_alerts,
-                                      get_default_vip_users)
+    Command,
+    parse_field_value,
+)
+from impossible_travel.models import (
+    Config,
+    User,
+    get_default_allowed_countries,
+    get_default_enabled_users,
+    get_default_filtered_alerts_types,
+    get_default_ignored_ips,
+    get_default_ignored_ISPs,
+    get_default_ignored_users,
+    get_default_risk_score_increment_alerts,
+    get_default_vip_users,
+)
 
 
 class ManagementCommandsTestCase(TestCase):
@@ -439,11 +444,14 @@ class ResetUserRiskScoreCommandTests(TestCase):
             self.assertTrue(mock_save.called)
 
     def test_bulk_update_uses_update_not_save(self):
-        with patch(
-            "impossible_travel.management.commands.reset_user_risk_score.User.save"
-        ) as mock_save, patch(
-            "impossible_travel.management.commands.reset_user_risk_score.User.objects.update"
-        ) as mock_update:
+        with (
+            patch(
+                "impossible_travel.management.commands.reset_user_risk_score.User.save"
+            ) as mock_save,
+            patch(
+                "impossible_travel.management.commands.reset_user_risk_score.User.objects.update"
+            ) as mock_update,
+        ):
             mock_update.return_value = 2
             out = io.StringIO()
             call_command("reset_user_risk_score", risk_score="Low", stdout=out)

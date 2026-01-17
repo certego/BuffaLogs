@@ -1,8 +1,8 @@
+from abc import ABC, abstractmethod
+from enum import Enum
 import json
 import logging
 import os
-from abc import ABC, abstractmethod
-from enum import Enum
 
 from django.conf import settings
 from jinja2 import Environment, FileSystemLoader
