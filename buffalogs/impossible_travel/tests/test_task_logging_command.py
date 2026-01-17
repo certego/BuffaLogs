@@ -7,8 +7,7 @@ from unittest.mock import MagicMock, patch
 from django.core.management import call_command
 from django.test import TestCase
 from impossible_travel.constants import ExecutionModes
-from impossible_travel.management.commands.base_command import \
-    TaskLoggingCommand
+from impossible_travel.management.commands.base_command import TaskLoggingCommand
 from impossible_travel.models import TaskSettings
 
 COMMANDS_PACKAGE = "impossible_travel.management.commands"

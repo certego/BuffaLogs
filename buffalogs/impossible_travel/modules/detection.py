@@ -4,8 +4,11 @@ from celery.utils.log import get_task_logger
 from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 from geopy.distance import geodesic
-from impossible_travel.constants import (AlertDetectionType, ComparisonType,
-                                         UserRiskScoreType)
+from impossible_travel.constants import (
+    AlertDetectionType,
+    ComparisonType,
+    UserRiskScoreType,
+)
 from impossible_travel.models import Alert, Config, Login, User, UsersIP
 from impossible_travel.modules import alert_filter
 from impossible_travel.utils.utils import build_device_fingerprint
@@ -229,18 +232,18 @@ def check_country(db_user: User, login_field: dict, app_config: Config) -> dict:
     # check "New Country" alert
     if db_user.login_set.filter(country=login_field["country"]).count() == 0:
         alert_info["alert_name"] = AlertDetectionType.NEW_COUNTRY.value
-        alert_info["alert_desc"] = (
-            f"{AlertDetectionType.NEW_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
-        )
+        alert_info[
+            "alert_desc"
+        ] = f"{AlertDetectionType.NEW_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
     # check "Atypical Country" alert
     elif (
         datetime.fromisoformat(login_field["timestamp"])
         - db_user.login_set.filter(country=login_field["country"]).last().timestamp
     ).days >= app_config.atypical_country_days:
         alert_info["alert_name"] = AlertDetectionType.ATYPICAL_COUNTRY.value
-        alert_info["alert_desc"] = (
-            f"{AlertDetectionType.ATYPICAL_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
-        )
+        alert_info[
+            "alert_desc"
+        ] = f"{AlertDetectionType.ATYPICAL_COUNTRY.label} for User: {db_user.username}, at: {login_field['timestamp']}, from: {login_field['country']}"
     return alert_info
 
 
@@ -385,8 +388,8 @@ def calc_distance_impossible_travel(
 
         if vel > app_config.vel_accepted:
             alert_info["alert_name"] = AlertDetectionType.IMP_TRAVEL.value
-            alert_info["alert_desc"] = (
-                f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
-            )
+            alert_info[
+                "alert_desc"
+            ] = f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
 
     return alert_info, int(vel)

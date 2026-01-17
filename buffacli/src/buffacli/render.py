@@ -74,6 +74,8 @@ def make_renderable(
     exporter: BaseExporter = None,
 ):
     "Return a render object."
-    render = Render(format_option.formatter, mode=mode, page_size=page_size, exporter=exporter)
+    render = Render(
+        format_option.formatter, mode=mode, page_size=page_size, exporter=exporter
+    )
     format_option.print = render
     return format_option

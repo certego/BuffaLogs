@@ -9,8 +9,7 @@ from django.utils import timezone
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import BulkIndexError, bulk
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
-from impossible_travel.management.commands.base_command import \
-    TaskLoggingCommand
+from impossible_travel.management.commands.base_command import TaskLoggingCommand
 
 NUM_LOGS = 2000
 

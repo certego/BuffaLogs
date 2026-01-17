@@ -2,10 +2,18 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
-from impossible_travel.models import (Alert, AlertDetectionType,
-                                      AlertFilterType, Config, ExecutionModes,
-                                      Login, TaskSettings, User,
-                                      UserRiskScoreType, UsersIP)
+from impossible_travel.models import (
+    Alert,
+    AlertDetectionType,
+    AlertFilterType,
+    Config,
+    ExecutionModes,
+    Login,
+    TaskSettings,
+    User,
+    UserRiskScoreType,
+    UsersIP,
+)
 
 
 class UserModelTest(TestCase):
