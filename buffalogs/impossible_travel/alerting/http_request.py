@@ -90,9 +90,7 @@ def get_alerts(names: list = [], get_all: bool = False):
         alerts  : list of Alert objects
     """
     if names:
-        alerts = Alert.objects.filter(
-            notified_status__http_request=False, name__in=names
-        )
+        alerts = Alert.objects.filter(notified_status__http_request=False, name__in=names)
     elif get_all:
         alerts = Alert.objects.filter(notified_status__http_request=False)
     else:
@@ -217,28 +215,18 @@ class HTTPRequestAlerting(BaseAlerting):
             config (dict): A dictionary representing the recipient configuration.
         """
         # check for required fileds
-        missing_required_fields = [
-            field for field in self.required_fields if field not in config
-        ]
+        missing_required_fields = [field for field in self.required_fields if field not in config]
         if missing_required_fields:
-            self.logger.error(
-                f"Improperly configuration: missing required fields: {','.join(missing_required_fields)}"
-            )
-            raise ValueError(
-                "Missing required values for {','.join(missing_required_fields)}"
-            )
-        self.alert_config = dict(
-            (field, config[field]) for field in self.required_fields
-        )
+            self.logger.error(f"Improperly configuration: missing required fields: {','.join(missing_required_fields)}")
+            raise ValueError("Missing required values for {','.join(missing_required_fields)}")
+        self.alert_config = dict((field, config[field]) for field in self.required_fields)
 
         # check for optional fields
         options = config.get("options", None)
         options = self.get_valid_options(options)
         self.alert_config.update(options)
 
-    def serialize_alerts(
-        self, alerts: list[Alert], fields: list, login_data_fields: list
-    ):
+    def serialize_alerts(self, alerts: list[Alert], fields: list, login_data_fields: list):
         """
         Serialize a collection of alerts into a list of dictionaries with selected fields.
 
@@ -259,19 +247,10 @@ class HTTPRequestAlerting(BaseAlerting):
             serialized_data = {}
             if "user" in fields:
                 serialized_data["user"] = alert.user.username
-            serialized_data.update(
-                dict(
-                    (field_name, getattr(alert, field_name))
-                    for field_name in fields
-                    if field_name != "user"
-                )
-            )
+            serialized_data.update(dict((field_name, getattr(alert, field_name)) for field_name in fields if field_name != "user"))
             if login_data_fields:
                 alert_login_raw = alert.login_raw_data
-                login = dict(
-                    (field_name, alert_login_raw[field_name])
-                    for field_name in login_data_fields
-                )
+                login = dict((field_name, alert_login_raw[field_name]) for field_name in login_data_fields)
                 serialized_data.update(login)
             data.append(serialized_data)
         return data
@@ -328,9 +307,7 @@ class HTTPRequestAlerting(BaseAlerting):
         fields = self.alert_config["fields"]
         login_data = self.alert_config["login_data"]
         for alert_batch in generate_batch(alerts, batch_size):
-            data = self.serialize_alerts(
-                alert_batch, fields=fields, login_data_fields=login_data
-            )
+            data = self.serialize_alerts(alert_batch, fields=fields, login_data_fields=login_data)
             try:
                 resp = self.send_notification(recipient_name, endpoint, data)
             except Exception as e:
@@ -340,16 +317,12 @@ class HTTPRequestAlerting(BaseAlerting):
             for alert in alert_batch:
                 if resp is None:
                     # Log error message to all alerts in the batch
-                    self.logger.error(
-                        f"Alerting Failed: {alert.name} to: {recipient_name} endpoint: {endpoint} error: {error_msg}"
-                    )
+                    self.logger.error(f"Alerting Failed: {alert.name} to: {recipient_name} endpoint: {endpoint} error: {error_msg}")
                 elif resp.ok:
                     # Mark alerts as notified
                     alert.notified_status["http_request"] = True
                     alert.save()
-                    self.logger.info(
-                        f"Notification sent: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status_code}"
-                    )
+                    self.logger.info(f"Notification sent: {alert.name} to: {recipient_name} endpoint: {endpoint} status: {resp.status_code}")
                 else:
                     # Log error message for alerts in the batch
                     self.logger.error(

@@ -120,9 +120,7 @@ class ValidatorsTest(TestCase):
         try:
             validate_countries_names(default_countries)
         except ValidationError:
-            self.fail(
-                "validate_countries_names raised ValidationError unexpectedly for default allowed countries!"
-            )
+            self.fail("validate_countries_names raised ValidationError unexpectedly for default allowed countries!")
 
     def test_validate_country_couples_list_single_elem(self):
         """Test that a single string (not a list of lists) raises an exception"""
@@ -185,9 +183,7 @@ class ValidatorsTest(TestCase):
 
         self.assertIsInstance(aware_dt, datetime.datetime)
         self.assertTrue(not is_naive(aware_dt))
-        expected_aware = datetime.datetime(
-            2023, 10, 26, 14, 30, 0, tzinfo=datetime.timezone.utc
-        )
+        expected_aware = datetime.datetime(2023, 10, 26, 14, 30, 0, tzinfo=datetime.timezone.utc)
         self.assertEqual(aware_dt, expected_aware)
 
     def test_validate_datetime_str_empty_invalid(self):
@@ -214,9 +210,7 @@ class ValidatorsTest(TestCase):
         self.assertFalse(validate_boolean_str("false"))
         self.assertFalse(validate_boolean_str("False"))
 
-        with self.assertRaisesRegex(
-            ValidationError, "Notification status must be true or false, got anything"
-        ):
+        with self.assertRaisesRegex(ValidationError, "Notification status must be true or false, got anything"):
             self.assertFalse(validate_boolean_str("anything"))
 
         # None case
@@ -252,9 +246,7 @@ class ValidatorsTest(TestCase):
             validate_risk_score("Invalid Risk Score")
 
         # Test out of range risk score
-        with self.assertRaisesRegex(
-            ValidationError, "risk score value is out of range"
-        ):
+        with self.assertRaisesRegex(ValidationError, "risk score value is out of range"):
             validate_risk_score("8")
 
     def test_validate_alert_query_full_valid(self):
@@ -282,9 +274,7 @@ class ValidatorsTest(TestCase):
         validated_query = validate_alert_query(query_dict)
 
         # Expected datetime conversions
-        aware_start = datetime.datetime(
-            2023, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
-        )
+        aware_start = datetime.datetime(2023, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
         naive_end = datetime.datetime(2023, 1, 2, 0, 0, 0)
         aware_end = make_aware(naive_end, get_current_timezone())
 
@@ -384,17 +374,13 @@ class ValidatorsTest(TestCase):
         try:
             validate_tags(["security_threat", "under_investigation"])
         except ValidationError:
-            self.fail(
-                "validate_tags() raised ValidationError unexpectedly for valid tags!"
-            )
+            self.fail("validate_tags() raised ValidationError unexpectedly for valid tags!")
 
         with self.assertRaises(ValidationError):
             validate_tags(["invalid_tag"])
 
         with self.assertRaises(ValidationError):
-            validate_tags(
-                ["security_threat", "security_threat"]
-            )  # Duplicates not allowed
+            validate_tags(["security_threat", "security_threat"])  # Duplicates not allowed
 
         with self.assertRaises(ValidationError):
             validate_tags("security_threat")  # Tags must be passed as Lists

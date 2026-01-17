@@ -38,24 +38,18 @@ class Ingestion(DataModel):
             structure["sources"] = [data["source"] for data in self.content]
             structure["fields"] = [", ".join(data["fields"]) for data in self.content]
         else:
-            raise TypeError(
-                f"Expected type List or Dict for content, got {type(self.content)}"
-            )
+            raise TypeError(f"Expected type List or Dict for content, got {type(self.content)}")
         return structure
 
 
 class Alerters(DataModel):
     def __init__(self, content: dict | list[dict]):
         if isinstance(content, list):
-            self.content = [
-                alerter for alerter in content if alerter["alerter"] != "dummy"
-            ]
+            self.content = [alerter for alerter in content if alerter["alerter"] != "dummy"]
         elif isinstance(content, dict):
             self.content = content
         else:
-            raise TypeError(
-                f"Alerters got content of type {type(content)}. Expected list or dict object"
-            )
+            raise TypeError(f"Alerters got content of type {type(content)}. Expected list or dict object")
 
     @property
     def table(self):
@@ -69,7 +63,5 @@ class Alerters(DataModel):
             structure["alerter"] = [data["alerter"] for data in self.content]
             structure["fields"] = [", ".join(data["fields"]) for data in self.content]
         else:
-            raise TypeError(
-                f"Expected type List or Dict for content, got {type(self.content)}"
-            )
+            raise TypeError(f"Expected type List or Dict for content, got {type(self.content)}")
         return structure

@@ -44,25 +44,17 @@ class BaseAlerting(ABC):
         """
         Read the configuration for a specific alerter from alerting.json.
         """
-        config_path = os.path.join(
-            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json"
-        )
+        config_path = os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/alerting.json")
         with open(config_path, mode="r", encoding="utf-8") as f:
             config = json.load(f)
         return config.get(alerter_key, {})
 
     @staticmethod
-    def alert_message_formatter(
-        alert, template_path="alert_template.jinja", *args, **kwargs
-    ):
+    def alert_message_formatter(alert, template_path="alert_template.jinja", *args, **kwargs):
         """
         Format the alert message for notification.
         """
-        env = Environment(
-            loader=FileSystemLoader(
-                os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/")
-            )
-        )
+        env = Environment(loader=FileSystemLoader(os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/")))
         template = env.get_template(template_path)
         alert_title = template.module.title(alert, **kwargs)
         alert_description = template.module.description(alert, **kwargs)

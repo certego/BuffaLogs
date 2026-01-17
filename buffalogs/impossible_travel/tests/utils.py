@@ -29,9 +29,7 @@ def load_ingestion_config_data(section: str | None = None) -> dict[str, Any]:
     Example: section="elasticsearch" will return config["elasticsearch"]
     """
     with open(
-        file=os.path.join(
-            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"
-        ),
+        file=os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/ingestion.json"),
         mode="r",
         encoding="utf-8",
     ) as f:
@@ -46,9 +44,7 @@ def load_ingestion_config_data(section: str | None = None) -> dict[str, Any]:
 def load_index_template(name: str) -> dict[str, Any]:
     """Utility to load the index template"""
     with open(
-        file=os.path.join(
-            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "elasticsearch/", name + ".json"
-        ),
+        file=os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "elasticsearch/", name + ".json"),
         mode="r",
         encoding="UTF-8",
     ) as file:
@@ -94,9 +90,7 @@ def patched_components(
         patches.append(p_det)
 
     if patch_tasksettings:
-        p_task = patch(
-            "impossible_travel.tasks.process_logs.TaskSettings.objects.get_or_create"
-        )
+        p_task = patch("impossible_travel.tasks.process_logs.TaskSettings.objects.get_or_create")
         patches.append(p_task)
 
     active_patches = [p.start() for p in patches]
@@ -104,14 +98,10 @@ def patched_components(
     try:
         if patch_ingestion:
             ingestion_factory_mock = active_patches[0]
-            ingestion_factory_mock.return_value.get_ingestion_class.return_value = (
-                ingestion_mock
-            )
+            ingestion_factory_mock.return_value.get_ingestion_class.return_value = ingestion_mock
 
         if patch_detection:
-            detection_mock = (
-                active_patches[-1] if patch_ingestion else active_patches[0]
-            )
+            detection_mock = active_patches[-1] if patch_ingestion else active_patches[0]
 
         if patch_tasksettings:
             tasksettings_mock = active_patches[-1]

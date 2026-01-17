@@ -12,9 +12,7 @@ class Query(DataModel):
         fields: str = None,
     ):
         if not (isinstance(content, list) or isinstance(content, dict)):
-            raise TypeError(
-                f"{self.__class__.__name__} got content of type {type(content)}. Expected list or dict object"
-            )
+            raise TypeError(f"{self.__class__.__name__} got content of type {type(content)}. Expected list or dict object")
         self.content = content
         self.omit = omit or []
         self.fields = fields or self.__class__.fields
@@ -35,11 +33,7 @@ class Query(DataModel):
                     data[mapped_key] = column
 
         elif isinstance(self.content, dict):
-            data = dict(
-                (self.custom_mappings.get(key, key), [])
-                for key in self.fields
-                if key not in self.omit
-            )
+            data = dict((self.custom_mappings.get(key, key), []) for key in self.fields if key not in self.omit)
             for key, value in self.content.items():
                 mapped_key = self.custom_mappings.get(key, key)
                 data[mapped_key].append(value)

@@ -27,9 +27,7 @@ class TaskLoggingCommandTests(TestCase):
         self.logger.removeHandler(self.handler)
 
     def test_all_commands_log_and_create_tasksettings_both_modes(self):
-        modules = pkgutil.iter_modules(
-            importlib.import_module(COMMANDS_PACKAGE).__path__
-        )
+        modules = pkgutil.iter_modules(importlib.import_module(COMMANDS_PACKAGE).__path__)
         commands = [name for _, name, _ in modules if name != "_base"]
 
         for command_name in commands:
@@ -48,12 +46,8 @@ class TaskLoggingCommandTests(TestCase):
                             stdout=io.StringIO(),
                         )
 
-                    record = TaskSettings.objects.filter(
-                        task_name=command_name, execution_mode=mode
-                    ).first()
-                    self.assertIsNotNone(
-                        record, f"Missing TaskSettings for {command_name} {mode}"
-                    )
+                    record = TaskSettings.objects.filter(task_name=command_name, execution_mode=mode).first()
+                    self.assertIsNotNone(record, f"Missing TaskSettings for {command_name} {mode}")
                     self.assertIsNotNone(record.start_date)
                     self.assertIsNotNone(record.end_date)
 

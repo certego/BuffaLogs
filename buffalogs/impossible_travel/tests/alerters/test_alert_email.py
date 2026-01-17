@@ -53,14 +53,10 @@ class TestEmailAlerting(TestCase):
         self.assertEqual(emailToAdmin.to, expected_recipient_list_admins)
 
         # Checks for email sent to user
-        self.assertEqual(
-            emailToUser.subject, "BuffaLogs - Login Anomaly Alert: Imp Travel"
-        )
+        self.assertEqual(emailToUser.subject, "BuffaLogs - Login Anomaly Alert: Imp Travel")
         self.assertIn(f"Dear {self.user.username}", emailToUser.body)
         self.assertEqual(emailToUser.from_email, expected_from_email)
-        self.assertEqual(
-            emailToUser.to, [expected_recipient_list_users[self.user.username]]
-        )
+        self.assertEqual(emailToUser.to, [expected_recipient_list_users[self.user.username]])
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_no_alerts(self):
@@ -103,16 +99,10 @@ class TestEmailAlerting(TestCase):
             login_raw_data={},
         )
 
-        Alert.objects.filter(id=alert1.id).update(
-            created=start_date + timedelta(minutes=10)
-        )
-        Alert.objects.filter(id=alert2.id).update(
-            created=start_date + timedelta(minutes=20)
-        )
+        Alert.objects.filter(id=alert1.id).update(created=start_date + timedelta(minutes=10))
+        Alert.objects.filter(id=alert2.id).update(created=start_date + timedelta(minutes=20))
         # This alert won't be notified as it's outside of the set range
-        Alert.objects.filter(id=alert3.id).update(
-            created=start_date - timedelta(hours=2)
-        )
+        Alert.objects.filter(id=alert3.id).update(created=start_date - timedelta(hours=2))
         alert1.refresh_from_db()
         alert2.refresh_from_db()
         alert3.refresh_from_db()
