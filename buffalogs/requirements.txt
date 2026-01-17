@@ -42,4 +42,4 @@ backoff>=2.2.1                   # Library for retrying operations with exponent
 requests>=2.32.5                 # HTTP library for sending alerts and webhooks
 
 # === Web Server ===
-uwsgi>=2.0.30                   # uWSGI application server for serving Django application
+uwsgi>=2.0.30                   # uWSGI application server for serving Django applicationpycountry>=22.3
