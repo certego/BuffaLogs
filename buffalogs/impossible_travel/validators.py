@@ -50,5 +50,7 @@ def validate_countries_names(values: List[str]) -> None:
     if invalid_entries:
         raise ValidationError(
             _("The following country identifiers are invalid:")
-            % {"countries": ", ".join(invalid_entries)}
+            % {
+                "countries": ", ".join(invalid_entries),
+            }
         )
