@@ -2,7 +2,9 @@ from django.contrib import admin
 from django.urls import include, path
 from impossible_travel.views import alerts, charts, ingestion, logins, users
 
+
 urlpatterns = [
+    path("select2/", include("django_select2.urls")),
     path("admin/", admin.site.urls),
     path("authentication/", include("authentication.urls")),
     # Template response

@@ -1,9 +1,8 @@
+from .constants import AlertDetectionType, AlertFilterType, AlertTagValues, UserRiskScoreType
 from django import forms
 from django.contrib.postgres.forms import SimpleArrayField
-
-from .constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
 from .models import Alert, Config, TaskSettings, User
-
+from django_select2.forms import Select2MultipleWidget
 
 class MultiChoiceArrayWidget(forms.SelectMultiple):
     """Widget for user-friendly interface for ArrayField with multiple choices"""
@@ -51,19 +50,38 @@ class UserAdminForm(forms.ModelForm):
 
 
 class AlertAdminForm(forms.ModelForm):
-    name = ShortLabelChoiceField(choices=AlertDetectionType.choices)
-    filter_type = ShortLabelChoiceField(choices=AlertFilterType.choices)
+    name = forms.ChoiceField(choices=AlertDetectionType.choices, required=True)
+    filter_type = forms.ChoiceField(choices=AlertFilterType.choices, required=True)
 
+    tags = forms.MultipleChoiceField(
+        choices=[(tag, tag) for tag, _ in AlertTagValues.choices],
+        widget=Select2MultipleWidget,
+        required=False,
+    )
     class Meta:
         model = Alert
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Pre-fill tags from the instance
+        if self.instance and self.instance.pk:
+            self.fields['tags'].initial = self.instance.tags
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Save the selected tags into the ArrayField
+        instance.tags = self.cleaned_data['tags']
+        if commit:
+            instance.save()
+        return instance
 
 
 class ConfigAdminForm(forms.ModelForm):
     filtered_alerts_types = MultiChoiceArrayField(
         base_field=forms.CharField(),
         choices=AlertDetectionType.choices,
-        required=False,
+        required=True,
         help_text="Hold down “Control”, or “Command” on a Mac, to select more than one.",
     )
     risk_score_increment_alerts = MultiChoiceArrayField(
