@@ -4,7 +4,6 @@ from buffacli.models import AlertQuery
 
 
 class TestAlertQueryModel(unittest.TestCase):
-
     def setUp(self):
         # Setup sample input data
         self.sample_data = [

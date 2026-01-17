@@ -30,7 +30,6 @@ def parse_hash_algorithm(value: str):
 
 
 class WebHookAlerting(HTTPRequestAlerting):
-
     required_fields = ["name", "endpoint", "secret_key_variable_name"]
     extra_option_parsers = {
         "token_expiration_seconds": validate_token_expiration_value,
@@ -72,6 +71,9 @@ class WebHookAlerting(HTTPRequestAlerting):
     def send_notification(self, recipient_name: str, endpoint: str, data: dict):
         """Send a webhook notification with a JWT Bearer token."""
         token = self.generate_jwt()
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
         response = requests.post(endpoint, json=data, headers=headers)
         return response

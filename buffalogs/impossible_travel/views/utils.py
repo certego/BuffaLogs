@@ -23,4 +23,7 @@ def write_config(filename, key: str, updates: dict[str, str]):
 
 
 def get_config_read_write(config_filename):
-    return (partial(read_config, filename=config_filename), partial(write_config, filename=config_filename))
+    return (
+        partial(read_config, filename=config_filename),
+        partial(write_config, filename=config_filename),
+    )

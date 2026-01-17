@@ -29,10 +29,19 @@ class ManagementCommandsTestCase(TestCase):
 
     def test_options_values_passed(self):
         parser = Command().create_parser("manage.py", "setup_config")
-        options = parser.parse_args(["-o", "allowed_countries=[IT,RO]", "-r", "ignored_users=[admin]", "-a", "alert_is_vip_only=True"])
-        self.assertEqual(options.override, ["allowed_countries=[IT,RO]"])
-        self.assertEqual(options.remove, ["ignored_users=[admin]"])
-        self.assertEqual(options.append, ["alert_is_vip_only=True"])
+        options = parser.parse_args(
+            [
+                "-o",
+                "allowed_countries=[IT,RO]",
+                "-r",
+                "ignored_users=[admin]",
+                "-a",
+                "alert_is_vip_only=True",
+            ]
+        )
+        self.assertEqual(options.override, [["allowed_countries=[IT,RO]"]])
+        self.assertEqual(options.remove, [["ignored_users=[admin]"]])
+        self.assertEqual(options.append, [["alert_is_vip_only=True"]])
 
     def test_options_values_passed_2(self):
         # reset config
@@ -66,10 +75,10 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(
             options.override,
             [
-                "ignore_mobile_logins=True",
-                "filtered_alerts_types=[New Device, User Risk Threshold]",
-                "alert_minimum_risk_score=Medium",
-                "threshold_user_risk_alert=Medium",
+                ["ignore_mobile_logins=True"],
+                ["filtered_alerts_types=[New Device, User Risk Threshold]"],
+                ["alert_minimum_risk_score=Medium"],
+                ["threshold_user_risk_alert=Medium"],
             ],
         )
         # execute command
@@ -81,6 +90,37 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(config.alert_minimum_risk_score, UserRiskScoreType.MEDIUM)
         self.assertEqual(config.threshold_user_risk_alert, UserRiskScoreType.MEDIUM)
 
+    def test_parser_accepts_multiple_values_per_option(self):
+        parser = Command().create_parser("manage.py", "setup_config")
+        options = parser.parse_args(["-a", "allowed_countries=IT", "RO", "DE"])
+        self.assertEqual(options.append, [["allowed_countries=IT", "RO", "DE"]])
+
+    def test_append_multiple_values_preserves_existing_entries(self):
+        self.config.allowed_countries = ["ES"]
+        self.config.save(update_fields=["allowed_countries"])
+
+        call_command("setup_config", "-a", "allowed_countries=ES", "IT", "RO", "IT")
+        self.config.refresh_from_db()
+
+        self.assertListEqual(self.config.allowed_countries, ["ES", "IT", "RO"])
+
+    def test_append_multiple_runs_extend_without_overwrite(self):
+        self.config.allowed_countries = []
+        self.config.save(update_fields=["allowed_countries"])
+
+        call_command("setup_config", "-a", "allowed_countries=IT", "RO")
+        self.config.refresh_from_db()
+        self.assertListEqual(self.config.allowed_countries, ["IT", "RO"])
+
+        call_command("setup_config", "-a", "allowed_countries=DE", "RO")
+        self.config.refresh_from_db()
+        self.assertListEqual(self.config.allowed_countries, ["IT", "RO", "DE"])
+
+    def test_override_non_list_field_rejects_multiple_values(self):
+        with self.assertRaises(CommandError) as cm:
+            call_command("setup_config", "-o", "alert_is_vip_only=True", "False")
+        self.assertIn("does not accept multiple values", str(cm.exception))
+
     def test_handle_set_default_values_force(self):
         # Testing the option --set-default-values (force mode)
         # Check that if new fields in the Config model have been added, they should be integrated into this test
@@ -90,7 +130,10 @@ class ManagementCommandsTestCase(TestCase):
         self.config.ignored_users = ["blabla", "user2"]
         self.config.alert_is_vip_only = True
         self.config.alert_minimum_risk_score = UserRiskScoreType.MEDIUM
-        self.config.risk_score_increment_alerts = [AlertDetectionType.NEW_COUNTRY, AlertDetectionType.ATYPICAL_COUNTRY]
+        self.config.risk_score_increment_alerts = [
+            AlertDetectionType.NEW_COUNTRY,
+            AlertDetectionType.ATYPICAL_COUNTRY,
+        ]
         self.config.ignored_ips = ["9.9.9.9", "4.5.4.5"]
         self.config.ignored_ISPs = ["isp1"]
         self.config.atypical_country_days = 80
@@ -114,23 +157,35 @@ class ManagementCommandsTestCase(TestCase):
         self.assertListEqual(self.config.vip_users, get_default_vip_users())
         self.assertFalse(self.config.alert_is_vip_only)
         self.assertEqual(self.config.alert_minimum_risk_score, "Medium")
-        self.assertListEqual(self.config.risk_score_increment_alerts, get_default_risk_score_increment_alerts())
+        self.assertListEqual(
+            self.config.risk_score_increment_alerts,
+            get_default_risk_score_increment_alerts(),
+        )
         self.assertListEqual(self.config.ignored_ips, get_default_ignored_ips())
         self.assertListEqual(self.config.allowed_countries, get_default_allowed_countries())
         self.assertListEqual(self.config.ignored_ISPs, get_default_ignored_ISPs())
         self.assertTrue(self.config.ignore_mobile_logins)
         self.assertListEqual(self.config.filtered_alerts_types, get_default_filtered_alerts_types())
         self.assertEqual(self.config.threshold_user_risk_alert, "Medium")
-        self.assertEqual(self.config.distance_accepted, settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED)
+        self.assertEqual(
+            self.config.distance_accepted,
+            settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED,
+        )
         self.assertEqual(self.config.vel_accepted, settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED)
-        self.assertEqual(self.config.atypical_country_days, settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS)
+        self.assertEqual(
+            self.config.atypical_country_days,
+            settings.CERTEGO_BUFFALOGS_ATYPICAL_COUNTRY_DAYS,
+        )
         self.assertEqual(self.config.user_max_days, settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS)
         self.assertEqual(self.config.login_max_days, settings.CERTEGO_BUFFALOGS_LOGIN_MAX_DAYS)
         self.assertEqual(self.config.alert_max_days, settings.CERTEGO_BUFFALOGS_ALERT_MAX_DAYS)
         self.assertEqual(self.config.ip_max_days, settings.CERTEGO_BUFFALOGS_IP_MAX_DAYS)
         self.assertTrue(self.config.ignored_impossible_travel_all_same_country)
         self.assertEqual(self.config.ignored_impossible_travel_countries_couples, [])
-        self.assertEqual(self.config.user_learning_period, settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD)
+        self.assertEqual(
+            self.config.user_learning_period,
+            settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD,
+        )
 
     def test_handle_set_default_values_safe(self):
         # Testing the option --set-default-values (safe mode)
@@ -141,7 +196,10 @@ class ManagementCommandsTestCase(TestCase):
         self.config.ignored_users = ["blabla", "user2"]
         self.config.alert_is_vip_only = True
         self.config.alert_minimum_risk_score = UserRiskScoreType.MEDIUM
-        self.config.risk_score_increment_alerts = [AlertDetectionType.NEW_COUNTRY, AlertDetectionType.ATYPICAL_COUNTRY]
+        self.config.risk_score_increment_alerts = [
+            AlertDetectionType.NEW_COUNTRY,
+            AlertDetectionType.ATYPICAL_COUNTRY,
+        ]
         self.config.ignored_ips = ["9.9.9.9", "4.5.4.5"]
         self.config.ignored_ISPs = ["isp1"]
         self.config.atypical_country_days = 80
@@ -166,14 +224,20 @@ class ManagementCommandsTestCase(TestCase):
         self.assertListEqual(self.config.vip_users, get_default_vip_users())
         self.assertTrue(self.config.alert_is_vip_only)
         self.assertEqual(self.config.alert_minimum_risk_score, "Medium")
-        self.assertListEqual(self.config.risk_score_increment_alerts, [AlertDetectionType.NEW_COUNTRY, AlertDetectionType.ATYPICAL_COUNTRY])
+        self.assertListEqual(
+            self.config.risk_score_increment_alerts,
+            [AlertDetectionType.NEW_COUNTRY, AlertDetectionType.ATYPICAL_COUNTRY],
+        )
         self.assertListEqual(self.config.ignored_ips, ["9.9.9.9", "4.5.4.5"])
         self.assertListEqual(self.config.allowed_countries, get_default_allowed_countries())
         self.assertListEqual(self.config.ignored_ISPs, ["isp1"])
         self.assertTrue(self.config.ignore_mobile_logins)
         self.assertListEqual(self.config.filtered_alerts_types, get_default_filtered_alerts_types())
         self.assertEqual(self.config.threshold_user_risk_alert, "Medium")
-        self.assertEqual(self.config.distance_accepted, settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED)
+        self.assertEqual(
+            self.config.distance_accepted,
+            settings.CERTEGO_BUFFALOGS_DISTANCE_KM_ACCEPTED,
+        )
         self.assertEqual(self.config.vel_accepted, settings.CERTEGO_BUFFALOGS_VEL_TRAVEL_ACCEPTED)
         self.assertEqual(self.config.atypical_country_days, 80)
         self.assertEqual(self.config.user_max_days, settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS)
@@ -191,12 +255,18 @@ class ManagementCommandsTestCase(TestCase):
         # 1. Single element missing "="
         with self.assertRaises(CommandError) as cm:
             call_command("setup_config", "-a", "ignored_users lorygold")
-        self.assertIn("Invalid syntax 'ignored_users lorygold': must be FIELD=VALUE", str(cm.exception))
+        self.assertIn(
+            "Invalid syntax 'ignored_users lorygold': must be FIELD=VALUE",
+            str(cm.exception),
+        )
 
         # 2. List missing "="
         with self.assertRaises(CommandError) as cm:
             call_command("setup_config", "-a", "enabled_users [lorygold]")
-        self.assertIn("Invalid syntax 'enabled_users [lorygold]': must be FIELD=VALUE", str(cm.exception))
+        self.assertIn(
+            "Invalid syntax 'enabled_users [lorygold]': must be FIELD=VALUE",
+            str(cm.exception),
+        )
 
         # 3. Field not existing
         with self.assertRaises(CommandError) as cm:
@@ -274,7 +344,10 @@ class ResetUserRiskScoreCommandTests(TestCase):
         self.assertEqual(alice.risk_score, "Medium")
         # other users unchanged
         self.assertEqual(bob.risk_score, "Low")
-        self.assertIn("Successfully updated risk_score for user 'alice' to 'Medium'.", out.getvalue())
+        self.assertIn(
+            "Successfully updated risk_score for user 'alice' to 'Medium'.",
+            out.getvalue(),
+        )
 
     def test_bulk_update_success(self):
         out = io.StringIO()
@@ -308,9 +381,10 @@ class ResetUserRiskScoreCommandTests(TestCase):
             self.assertTrue(mock_save.called)
 
     def test_bulk_update_uses_update_not_save(self):
-        with patch("impossible_travel.management.commands.reset_user_risk_score.User.save") as mock_save, patch(
-            "impossible_travel.management.commands.reset_user_risk_score.User.objects.update"
-        ) as mock_update:
+        with (
+            patch("impossible_travel.management.commands.reset_user_risk_score.User.save") as mock_save,
+            patch("impossible_travel.management.commands.reset_user_risk_score.User.objects.update") as mock_update,
+        ):
             mock_update.return_value = 2
             out = io.StringIO()
             call_command("reset_user_risk_score", risk_score="Low", stdout=out)

@@ -13,7 +13,6 @@ ExceptionHandlingCallback = Callable[[Exception], int]
 
 
 class ExceptionHandler:
-
     def __init__(self, error_handlers: dict[ExceptionType, ExceptionHandlingCallback]):
         self.error_handlers = error_handlers
 
@@ -36,7 +35,10 @@ class ExceptionHandler:
 
 
 def request_generic_handler(exc: exceptions.RequestException):
-    vprint("debug", Panel(str(exc), title="[bold red]Request Error[/bold red]", style="bold"))
+    vprint(
+        "debug",
+        Panel(str(exc), title="[bold red]Request Error[/bold red]", style="bold"),
+    )
     vprint("error", "Error: Request Failed")
     return 1
 

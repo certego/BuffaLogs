@@ -59,10 +59,22 @@ world_custom_style = pygal.style.Style(
 def users_pie_chart(start, end):
     pie_chart = pygal.Pie(style=pie_custom_style, width=1000, height=650)
 
-    pie_chart.add("No risk", User.objects.filter(updated__range=(start, end), risk_score="No risk").count())
-    pie_chart.add("Low", User.objects.filter(updated__range=(start, end), risk_score="Low").count())
-    pie_chart.add("Medium", User.objects.filter(updated__range=(start, end), risk_score="Medium").count())
-    pie_chart.add("High", User.objects.filter(updated__range=(start, end), risk_score="High").count())
+    pie_chart.add(
+        "No risk",
+        User.objects.filter(updated__range=(start, end), risk_score="No risk").count(),
+    )
+    pie_chart.add(
+        "Low",
+        User.objects.filter(updated__range=(start, end), risk_score="Low").count(),
+    )
+    pie_chart.add(
+        "Medium",
+        User.objects.filter(updated__range=(start, end), risk_score="Medium").count(),
+    )
+    pie_chart.add(
+        "High",
+        User.objects.filter(updated__range=(start, end), risk_score="High").count(),
+    )
     return pie_chart.render(disable_xml_declaration=True)
 
 
@@ -80,7 +92,14 @@ def alerts_line_chart(start, end):
         tooltip_font_size=20,
         x_labels_font_size=20,
     )
-    line_chart = pygal.StackedBar(fill=True, show_legend=False, style=custom_style, width=1200, height=550, x_label_rotation=20)
+    line_chart = pygal.StackedBar(
+        fill=True,
+        show_legend=False,
+        style=custom_style,
+        width=1200,
+        height=550,
+        x_label_rotation=20,
+    )
     date_range = []
     alerts_in_range = []
     date_str = []
@@ -167,7 +186,13 @@ def world_map_chart(start, end):
 # -> user personal login activity dashboard
 def user_login_timeline_chart(user, start, end):
     logins = Login.objects.filter(user=user, timestamp__range=(start, end))
-    chart = pygal.DateTimeLine(x_label_rotation=20, style=line_custom_style, title="Login Timeline", width=1000, height=650)
+    chart = pygal.DateTimeLine(
+        x_label_rotation=20,
+        style=line_custom_style,
+        title="Login Timeline",
+        width=1000,
+        height=650,
+    )
     chart.add("Logins", [(login.timestamp, 1) for login in logins])
     return chart.render(disable_xml_declaration=True)
 

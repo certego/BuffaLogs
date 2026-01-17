@@ -9,7 +9,6 @@ InstanceType = Union[models.Model, List[models.Model]]
 
 
 class Serializer:
-
     def __init__(self, instance: InstanceType):
         self.instance = instance
 
@@ -29,10 +28,13 @@ class Serializer:
 
 
 class QSerializer(Serializer):
-
     Model: models.Model
 
-    def __init__(self, instance: Optional[InstanceType] = None, query: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        instance: Optional[InstanceType] = None,
+        query: Optional[Dict[str, Any]] = None,
+    ):
         if instance and query:
             raise ValueError("Either `instance` or `query` parameter must be defined not both!")
         if (instance is None) and (query is None):
@@ -42,7 +44,6 @@ class QSerializer(Serializer):
 
 
 class LoginSerializer(QSerializer):
-
     Model = Login
 
     def to_representation(self, item):
@@ -62,7 +63,6 @@ class LoginSerializer(QSerializer):
 
 
 class UserSerializer(Serializer):
-
     def to_representation(self, item):
         return {
             "id": item.id,
@@ -75,7 +75,6 @@ class UserSerializer(Serializer):
 
 
 class AlertSerializer(QSerializer):
-
     Model = Alert
 
     def to_representation(self, item):

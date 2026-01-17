@@ -28,7 +28,10 @@ def ingestion(
     """Display supported ingestion sources."""
     if active_ingestion:
         content = requests.get_active_ingestion_source()
-        format_option.print(content=Ingestion(content), title=f"Active Ingestion Source: {content['source']}")
+        format_option.print(
+            content=Ingestion(content),
+            title=f"Active Ingestion Source: {content['source']}",
+        )
 
     if source:
         ingestion_config = Ingestion(requests.get_ingestion_source(source))

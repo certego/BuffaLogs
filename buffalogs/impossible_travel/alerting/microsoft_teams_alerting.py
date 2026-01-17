@@ -61,7 +61,11 @@ class MicrosoftTeamsAlerting(BaseAlerting):
         )
 
         try:
-            self.send_message(alert=None, alert_title=summary_title, alert_description=summary_description)
+            self.send_message(
+                alert=None,
+                alert_title=summary_title,
+                alert_description=summary_description,
+            )
             self.logger.info(f"MicrosoftTeams Summary Sent From: {start_date} To: {end_date}")
         except requests.RequestException as e:
             self.logger.exception(f"MicrosoftTeams Summary Notification Failed: {str(e)}")
@@ -94,9 +98,17 @@ class MicrosoftTeamsAlerting(BaseAlerting):
 
             else:
                 alert = group_alerts[0]
-                alert_title, alert_description = self.alert_message_formatter(alert=alert, template_path="alert_template_clubbed.jinja", alerts=group_alerts)
+                alert_title, alert_description = self.alert_message_formatter(
+                    alert=alert,
+                    template_path="alert_template_clubbed.jinja",
+                    alerts=group_alerts,
+                )
                 try:
-                    self.send_message(alert=None, alert_title=alert_title, alert_description=alert_description)
+                    self.send_message(
+                        alert=None,
+                        alert_title=alert_title,
+                        alert_description=alert_description,
+                    )
                     self.logger.info(f"Clubbed MicrosoftTeams Alert Sent: {alert_title}")
 
                     for a in group_alerts:

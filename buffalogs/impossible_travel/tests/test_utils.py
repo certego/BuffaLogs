@@ -4,7 +4,6 @@ from impossible_travel.utils.utils import build_device_fingerprint
 
 
 class TestBuildDeviceFingerprint(unittest.TestCase):
-
     def test_empty_agent(self):
         """Should return fallback when agent is empty."""
         result = build_device_fingerprint("")

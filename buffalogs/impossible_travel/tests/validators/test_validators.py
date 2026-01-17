@@ -132,13 +132,19 @@ class ValidatorsTest(TestCase):
         """Test that a single list (not a list of lists) raises an exception"""
         with self.assertRaises(ValidationError) as context:
             validate_country_couples_list(["Italy", "Germany"])
-        self.assertIn("Each single value must be a list of 2 elements (list of lists).", str(context.exception))
+        self.assertIn(
+            "Each single value must be a list of 2 elements (list of lists).",
+            str(context.exception),
+        )
 
     def test_validate_country_couples_list_too_elements(self):
         """Test that a list of more than 2 elements raises an exception"""
         with self.assertRaises(ValidationError) as context:
             validate_country_couples_list([["Italy", "Germany", "France"]])
-        self.assertIn("Each single value must be a list of 2 elements (list of lists).", str(context.exception))
+        self.assertIn(
+            "Each single value must be a list of 2 elements (list of lists).",
+            str(context.exception),
+        )
 
     def test_validate_country_couples_list_wrong_country_name(self):
         """Test that a list containing a wrong country name raises an exception"""
@@ -226,11 +232,17 @@ class ValidatorsTest(TestCase):
         self.assertEqual(validate_risk_score("high"), "High")
 
         # Test empty string
-        with self.assertRaisesRegex(ValidationError, "Risk score must be an integer 0-7 or one of: High, Medium, Low, No Risk"):
+        with self.assertRaisesRegex(
+            ValidationError,
+            "Risk score must be an integer 0-7 or one of: High, Medium, Low, No Risk",
+        ):
             validate_risk_score("")
 
         # Test empty string
-        with self.assertRaisesRegex(ValidationError, "Risk score must be an integer 0-7 or one of: High, Medium, Low, No Risk"):
+        with self.assertRaisesRegex(
+            ValidationError,
+            "Risk score must be an integer 0-7 or one of: High, Medium, Low, No Risk",
+        ):
             validate_risk_score("Invalid Risk Score")
 
         # Test out of range risk score

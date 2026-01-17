@@ -2,16 +2,19 @@
 
 import json
 import os
+
 from django.conf import settings
 import django.contrib.postgres.fields
+from django.db import migrations, models
 import impossible_travel.models
 import impossible_travel.validators
-from django.db import migrations, models
 
 
 def get_valid_countries():
     with open(
-        os.path.join(settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/countries_list.json"),
+        os.path.join(
+            settings.CERTEGO_BUFFALOGS_CONFIG_PATH, "buffalogs/countries_list.json"
+        ),
         mode="r",
         encoding="utf-8",
     ) as f:
@@ -31,7 +34,6 @@ def clean_invalid_countries(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("impossible_travel", "0015_remove_alert_notified_alert_notified_status"),
     ]

@@ -177,7 +177,11 @@ class TestViews(APITestCase):
     def test_alerts_line_chart_api_hour(self):
         start = datetime(2023, 6, 20, 10, 0)
         end = datetime(2023, 6, 20, 12, 0)
-        dict_expected_result = {"Timeframe": "hour", "2023-06-20T10:00:00Z": 1, "2023-06-20T11:00:00Z": 2}
+        dict_expected_result = {
+            "Timeframe": "hour",
+            "2023-06-20T10:00:00Z": 1,
+            "2023-06-20T11:00:00Z": 2,
+        }
         response = self.client.get(f"{reverse('alerts_line_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
@@ -202,7 +206,10 @@ class TestViews(APITestCase):
         start = datetime(2023, 5, 1, 0, 0)
         end = datetime(2023, 6, 30, 23, 59, 59)
         num_alerts = 0
-        list_expected_result = [{"country": "jp", "lat": 36.2462, "lon": 138.8497, "alerts": 3}, {"country": "us", "lat": 40.364, "lon": -79.8605, "alerts": 3}]
+        list_expected_result = [
+            {"country": "jp", "lat": 36.2462, "lon": 138.8497, "alerts": 3},
+            {"country": "us", "lat": 40.364, "lon": -79.8605, "alerts": 3},
+        ]
         response = self.client.get(f"{reverse('world_map_chart_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         for elem in list_expected_result:
             num_alerts += elem["alerts"]
@@ -255,7 +262,13 @@ class TestViews(APITestCase):
     def test_risk_score_api(self):
         end = datetime.now() + timedelta(seconds=1)
         start = end - timedelta(minutes=1)
-        dict_expected_result = {"Lorena Goldoni": "No risk", "Lorygold": "Low", "Lory": "Low", "Lor": "Low", "Loryg": "Medium"}
+        dict_expected_result = {
+            "Lorena Goldoni": "No risk",
+            "Lorygold": "Low",
+            "Lory": "Low",
+            "Lor": "Low",
+            "Loryg": "Medium",
+        }
         response = self.client.get(f"{reverse('risk_score_api')}?start={start.strftime('%Y-%m-%dT%H:%M:%SZ')}&end={end.strftime('%Y-%m-%dT%H:%M:%SZ')}")
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(dict_expected_result, json.loads(response.content))
@@ -306,7 +319,8 @@ class TestViews(APITestCase):
         response_timestamps = data["logins"]
         for i, timestamp in enumerate(login_timestamps):
             self.assertTrue(
-                any(timestamp.isoformat() in resp_time for resp_time in response_timestamps), f"Timestamp {timestamp.isoformat()} not found in response"
+                any(timestamp.isoformat() in resp_time for resp_time in response_timestamps),
+                f"Timestamp {timestamp.isoformat()} not found in response",
             )
 
     def test_user_device_usage_api(self):
@@ -415,7 +429,11 @@ class TestViews(APITestCase):
             found = False
             for entry in data["daily_logins"]:
                 if entry["date"] == date_str:
-                    self.assertEqual(entry["count"], expected_count, f"Count mismatch for date {date_str}")
+                    self.assertEqual(
+                        entry["count"],
+                        expected_count,
+                        f"Count mismatch for date {date_str}",
+                    )
                     found = True
                     break
             self.assertTrue(found, f"Date {date_str} not found in response")
@@ -473,7 +491,9 @@ class TestViews(APITestCase):
             self.assertIn(hour, hourly_data)
             for weekday, expected_count in enumerate(expected_weekdays):
                 self.assertGreaterEqual(
-                    hourly_data[hour][weekday], expected_count, f"Expected at least {expected_count} logins for hour {hour}, weekday {weekday}"
+                    hourly_data[hour][weekday],
+                    expected_count,
+                    f"Expected at least {expected_count} logins for hour {hour}, weekday {weekday}",
                 )
 
     def test_user_geo_distribution_api(self):
@@ -481,7 +501,12 @@ class TestViews(APITestCase):
         db_user = self.db_user
 
         countries = {
-            "United States": {"code": "us", "lat": 37.7749, "lon": -122.4194, "count": 3},
+            "United States": {
+                "code": "us",
+                "lat": 37.7749,
+                "lon": -122.4194,
+                "count": 3,
+            },
             "Germany": {"code": "de", "lat": 52.5200, "lon": 13.4050, "count": 2},
             "India": {"code": "in", "lat": 20.5937, "lon": 78.9629, "count": 4},
             "Canada": {"code": "ca", "lat": 56.1304, "lon": -106.3468, "count": 1},
@@ -525,7 +550,11 @@ class TestViews(APITestCase):
             country_code = details["code"]
             expected_count = details["count"]
             if country_code in data["countries"]:
-                self.assertGreaterEqual(data["countries"][country_code], expected_count, f"Expected at least {expected_count} logins for country {country}")
+                self.assertGreaterEqual(
+                    data["countries"][country_code],
+                    expected_count,
+                    f"Expected at least {expected_count} logins for country {country}",
+                )
 
     def test_export_alerts_csv(self):
         """Test the CSV export endpoint returns the correct headers and only intended rows."""
@@ -558,7 +587,10 @@ class TestViews(APITestCase):
         # Parse CSV
         lines = response.content.decode("utf-8").splitlines()
         header = lines[0].split(",")
-        self.assertEqual(header, ["timestamp", "username", "alert_name", "description", "is_filtered"])
+        self.assertEqual(
+            header,
+            ["timestamp", "username", "alert_name", "description", "is_filtered"],
+        )
 
         # Expect exactly two data rows
         self.assertEqual(len(lines) - 1, 2)

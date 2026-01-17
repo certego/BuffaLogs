@@ -43,3 +43,7 @@ requests>=2.32.5                 # HTTP library for sending alerts and webhooks
 
 # === Web Server ===
 uwsgi>=2.0.30                   # uWSGI application server for serving Django application
+
+# === Geo / Country Utilities ===
+pycountry>=22.3        # ISO country, subdivision, and language databases
+

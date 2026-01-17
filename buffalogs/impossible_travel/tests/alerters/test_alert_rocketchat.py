@@ -22,7 +22,11 @@ class TestRocketChatAlerting(TestCase):
 
         # Alert shared across test cases
         cls.alert = Alert.objects.create(
-            name="Imp Travel", user=cls.user, notified_status={"rocketchat": False}, description="Impossible travel detected", login_raw_data={}
+            name="Imp Travel",
+            user=cls.user,
+            notified_status={"rocketchat": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @patch("requests.post")
@@ -34,7 +38,10 @@ class TestRocketChatAlerting(TestCase):
 
         self.rocketchat_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        (
+            expected_alert_title,
+            expected_alert_description,
+        ) = BaseAlerting.alert_message_formatter(self.alert)
         expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
         expected_payload = {
             "text": expected_alert_msg,
@@ -118,7 +125,10 @@ class TestRocketChatAlerting(TestCase):
         text = kwargs["data"]["text"]
 
         # 3 Imp Travel Alerts will be clubbed
-        self.assertIn('BuffaLogs - Login Anomaly Alerts : 3 "Imp Travel" alerts for user testuser', text)
+        self.assertIn(
+            'BuffaLogs - Login Anomaly Alerts : 3 "Imp Travel" alerts for user testuser',
+            text,
+        )
         # Reload the alerts from the db
         alert1 = Alert.objects.get(pk=alert1.pk)
         alert2 = Alert.objects.get(pk=alert2.pk)

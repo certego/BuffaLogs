@@ -23,7 +23,11 @@ class TestMicrosoftTeamsAlerting(TestCase):
 
         # Create shared alert
         cls.alert = Alert.objects.create(
-            name="Imp Travel", user=cls.user, notified_status={"microsoftteams": False}, description="Impossible travel detected", login_raw_data={}
+            name="Imp Travel",
+            user=cls.user,
+            notified_status={"microsoftteams": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @patch("requests.post")
@@ -35,7 +39,10 @@ class TestMicrosoftTeamsAlerting(TestCase):
 
         self.teams_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        (
+            expected_alert_title,
+            expected_alert_description,
+        ) = BaseAlerting.alert_message_formatter(self.alert)
 
         expected_payload = {
             "@type": "MessageCard",

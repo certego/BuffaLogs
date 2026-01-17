@@ -55,7 +55,12 @@ def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config)
             logger.info(
                 f"Upgraded risk level for User: {db_user.username} to level: {new_risk_level}, detected {db_user.alert_set.count()} alerts. The Config.risk_score_increment_alerts list contains: {app_config.risk_score_increment_alerts}"
             )
-            set_alert(db_user=db_user, login_alert=triggered_alert.login_raw_data, alert_info=alert_info, app_config=app_config)
+            set_alert(
+                db_user=db_user,
+                login_alert=triggered_alert.login_raw_data,
+                alert_info=alert_info,
+                app_config=app_config,
+            )
 
             return True
 
@@ -74,7 +79,12 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Co
     :rtype: Alert obj
     """
     logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
-    alert = Alert.objects.create(user=db_user, login_raw_data=login_alert, name=alert_info["alert_name"], description=alert_info["alert_desc"])
+    alert = Alert.objects.create(
+        user=db_user,
+        login_raw_data=login_alert,
+        name=alert_info["alert_name"],
+        description=alert_info["alert_desc"],
+    )
     alert.save()
     # check filters
     alert_filter.match_filters(alert=alert, app_config=app_config)
@@ -111,18 +121,32 @@ def check_fields(db_user: User, fields: list):
                     # check the possible alert: NEW_DEVICE
                     agent_alert = check_new_device(db_user, login)
                     if agent_alert:
-                        set_alert(db_user, login_alert=login, alert_info=agent_alert, app_config=db_config)
+                        set_alert(
+                            db_user,
+                            login_alert=login,
+                            alert_info=agent_alert,
+                            app_config=db_config,
+                        )
 
                 if login["country"]:
                     # check the possible alerts: NEW_COUNTRY / ATYPICAL_COUNTRY
                     country_alert = check_country(db_user, login, db_config)
                     if country_alert:
-                        set_alert(db_user, login_alert=login, alert_info=country_alert, app_config=db_config)
+                        set_alert(
+                            db_user,
+                            login_alert=login,
+                            alert_info=country_alert,
+                            app_config=db_config,
+                        )
 
                 if not db_user.usersip_set.filter(ip=login["ip"]).exists():
                     last_user_login = db_user.login_set.latest("timestamp")
                     logger.info(f"Calculating impossible travel: {login['id']}")
-                    travel_alert, travel_vel = calc_distance_impossible_travel(db_user, prev_login=last_user_login, last_login_user_fields=login)
+                    travel_alert, travel_vel = calc_distance_impossible_travel(
+                        db_user,
+                        prev_login=last_user_login,
+                        last_login_user_fields=login,
+                    )
                     if travel_alert:
                         # enrich imp_travel alert with related fields
                         login["buffalogs"] = {
@@ -131,11 +155,21 @@ def check_fields(db_user: User, fields: list):
                             "start_lat": last_user_login.latitude,
                             "start_lon": last_user_login.longitude,
                         }
-                        set_alert(db_user, login_alert=login, alert_info=travel_alert, app_config=db_config)
+                        set_alert(
+                            db_user,
+                            login_alert=login,
+                            alert_info=travel_alert,
+                            app_config=db_config,
+                        )
                     #   Add the new ip address from which the login comes to the db
                     UsersIP.objects.create(user=db_user, ip=login["ip"])
 
-                if Login.objects.filter(user=db_user, index=login["index"], country=login["country"], user_agent=login["agent"]).exists():
+                if Login.objects.filter(
+                    user=db_user,
+                    index=login["index"],
+                    country=login["country"],
+                    user_agent=login["agent"],
+                ).exists():
                     logger.info(f"Updating login {login['id']} for user: {db_user.username}")
                     update_model(db_user, login)
                 else:
@@ -245,7 +279,11 @@ def update_model(db_user: User, new_login: dict):
     :type new_login: dict
     """
     try:
-        db_user.login_set.filter(user_agent=new_login["agent"], country=new_login["country"], index=new_login["index"]).update(
+        db_user.login_set.filter(
+            user_agent=new_login["agent"],
+            country=new_login["country"],
+            index=new_login["index"],
+        ).update(
             timestamp=new_login["timestamp"],
             latitude=new_login["lat"],
             longitude=new_login["lon"],
@@ -282,7 +320,10 @@ def calc_distance_impossible_travel(db_user: User, prev_login: Login, last_login
     app_config = Config.objects.get(id=1)
     alert_info = {}
     vel = 0
-    distance_km = geodesic((prev_login.latitude, prev_login.longitude), (last_login_user_fields["lat"], last_login_user_fields["lon"])).km
+    distance_km = geodesic(
+        (prev_login.latitude, prev_login.longitude),
+        (last_login_user_fields["lat"], last_login_user_fields["lon"]),
+    ).km
 
     if distance_km > app_config.distance_accepted:
         last_timestamp_datetimeObj_aware = timezone.make_aware(datetime.strptime(last_login_user_fields["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"))
@@ -301,4 +342,5 @@ def calc_distance_impossible_travel(db_user: User, prev_login: Login, last_login
             alert_info["alert_desc"] = (
                 f"{AlertDetectionType.IMP_TRAVEL.label} for User: {db_user.username}, at: {last_login_user_fields['timestamp']}, from: {last_login_user_fields['country']}, previous country: {prev_login.country}, distance covered at {int(vel)} Km/h"
             )
+
     return alert_info, int(vel)

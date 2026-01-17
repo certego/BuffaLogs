@@ -22,7 +22,11 @@ class TestPushoverAlerting(TestCase):
 
         # Create shared alert
         cls.alert = Alert.objects.create(
-            name="Imp Travel", user=cls.user, notified_status={"pushover": False}, description="Impossible travel detected", login_raw_data={}
+            name="Imp Travel",
+            user=cls.user,
+            notified_status={"pushover": False},
+            description="Impossible travel detected",
+            login_raw_data={},
         )
 
     @patch("requests.post")
@@ -34,9 +38,16 @@ class TestPushoverAlerting(TestCase):
 
         self.pushover_alerting.notify_alerts()
 
-        expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+        (
+            expected_alert_title,
+            expected_alert_description,
+        ) = BaseAlerting.alert_message_formatter(self.alert)
         expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
-        expected_payload = {"token": self.pushover_config["api_key"], "user": self.pushover_config["user_key"], "message": expected_alert_msg}
+        expected_payload = {
+            "token": self.pushover_config["api_key"],
+            "user": self.pushover_config["user_key"],
+            "message": expected_alert_msg,
+        }
 
         mock_post.assert_called_once_with("https://api.pushover.net/1/messages.json", data=expected_payload)
 
@@ -111,7 +122,10 @@ class TestPushoverAlerting(TestCase):
         message = kwargs["data"]["message"]
 
         # 3 Imp Travel Alerts will be clubbed
-        self.assertIn('BuffaLogs - Login Anomaly Alerts : 3 "Imp Travel" alerts for user testuser', message)
+        self.assertIn(
+            'BuffaLogs - Login Anomaly Alerts : 3 "Imp Travel" alerts for user testuser',
+            message,
+        )
         # Reload the alerts from the db
         alert1 = Alert.objects.get(pk=alert1.pk)
         alert2 = Alert.objects.get(pk=alert2.pk)

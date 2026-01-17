@@ -121,7 +121,11 @@ def get_alerters(request):
     config = read_config("alerting.json")
     config.pop("active_alerters")
     alerters = [
-        {"alerter": alerter, "fields": [field for field in config[alerter].keys() if field != "options"], "options": list(config[alerter].get("options", []))}
+        {
+            "alerter": alerter,
+            "fields": [field for field in config[alerter].keys() if field != "options"],
+            "options": list(config[alerter].get("options", [])),
+        }
         for alerter in config.keys()
         if alerter != "dummy"
     ]
@@ -143,14 +147,20 @@ def alerter_config(request, alerter):
         return JsonResponse({"message": f"Unsupported alerter - {alerter}"}, status=400)
 
     if request.method == "GET":
-        content = {"alerter": alerter, "fields": dict((field, alerter_config[field]) for field in alerter_config.keys())}
+        content = {
+            "alerter": alerter,
+            "fields": dict((field, alerter_config[field]) for field in alerter_config.keys()),
+        }
         return JsonResponse(content, json_dumps_params={"default": str})
 
     if request.method == "POST":
         config_update = json.loads(request.body.decode("utf-8"))
         error_fields = [field for field in config_update.keys() if field not in alerter_config.keys()]
         if any(error_fields):
-            return JsonResponse({"message": f"Unexpected configuration fields - {error_fields}"}, status=400)
+            return JsonResponse(
+                {"message": f"Unexpected configuration fields - {error_fields}"},
+                status=400,
+            )
         else:
             alerter_config.update(config_update)
             write_config("alerting.json", alerter, alerter_config)

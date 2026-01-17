@@ -80,7 +80,10 @@ WSGI_APPLICATION = "buffalogs.wsgi.application"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"simple": {"format": "%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s"}, "reader_alert": {"format": "%(message)s"}},
+    "formatters": {
+        "simple": {"format": "%(asctime)s - %(name)s - %(funcName)s - %(levelname)s - %(message)s"},
+        "reader_alert": {"format": "%(message)s"},
+    },
     "handlers": {
         "null": {
             "level": "DEBUG",
@@ -226,9 +229,16 @@ CELERY_BEAT_SCHEDULE = {
         "task": "BuffalogsProcessLogsTask",
         "schedule": crontab(minute=30),
     },
-    "clean_models_periodically": {"task": "BuffalogsCleanModelsPeriodicallyTask", "schedule": crontab(hour=23, minute=59)},
+    "clean_models_periodically": {
+        "task": "BuffalogsCleanModelsPeriodicallyTask",
+        "schedule": crontab(hour=23, minute=59),
+    },
     "notify_alerts": {"task": "NotifyAlertsTask", "schedule": crontab(minute=5)},
-    "daily_alert_summary": {"task": "ScheduledAlertSummaryTask", "schedule": crontab(hour=0, minute=0), "args": ["daily"]},
+    "daily_alert_summary": {
+        "task": "ScheduledAlertSummaryTask",
+        "schedule": crontab(hour=0, minute=0),
+        "args": ["daily"],
+    },
     "weekly_alert_summary": {
         "task": "ScheduledAlertSummaryTask",
         "schedule": crontab(hour=0, minute=0, day_of_week="monday"),

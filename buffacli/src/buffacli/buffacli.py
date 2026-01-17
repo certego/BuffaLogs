@@ -13,7 +13,9 @@ app.add_typer(query.app, name="query")
 
 
 @app.callback()
-def callback(verbose_level: Annotated[VLevel, typer.Option("-v", "--verbose", help="Verbose level")] = None):
+def callback(
+    verbose_level: Annotated[VLevel, typer.Option("-v", "--verbose", help="Verbose level")] = None,
+):
     verbose_level = verbose_level.value if verbose_level else config.read_from_config("verbose_level")
     set_verbose_level(verbose_level)
 

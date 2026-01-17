@@ -25,7 +25,11 @@ class TestAlertFactory(TestCase):
         cls.alert = Alert.objects.create(
             name="Imp Travel",
             user=cls.user,
-            notified_status={"telegram": False, "microsoftteams": False, "discord": False},
+            notified_status={
+                "telegram": False,
+                "microsoftteams": False,
+                "discord": False,
+            },
             description="Impossible travel detected",
             login_raw_data={},
         )
@@ -58,7 +62,10 @@ class TestAlertFactory(TestCase):
             for alerter in active_alerters:
                 alerter.notify_alerts()
 
-                expected_alert_title, expected_alert_description = BaseAlerting.alert_message_formatter(self.alert)
+                (
+                    expected_alert_title,
+                    expected_alert_description,
+                ) = BaseAlerting.alert_message_formatter(self.alert)
                 expected_alert_msg = expected_alert_title + "\n\n" + expected_alert_description
 
                 if alerter.__class__.__name__ == "MicrosoftTeamsAlerting":

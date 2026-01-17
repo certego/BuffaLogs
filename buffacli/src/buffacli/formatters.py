@@ -74,7 +74,6 @@ def as_json(content: DataModel, title: str):
 
 
 class FormatOptions(str, Enum):
-
     def __new__(cls, value: str, formatter: callable):
         obj = str.__new__(cls)
         obj._value_ = value

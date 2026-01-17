@@ -7,7 +7,6 @@ import impossible_travel.validators
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         (
             "impossible_travel",

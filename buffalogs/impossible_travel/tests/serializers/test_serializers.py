@@ -100,7 +100,11 @@ class TestSerializers(TestCase):
                 Alert(
                     user=cls.db_user_alice,
                     name=AlertDetectionType.NEW_DEVICE,
-                    login_raw_data={"country": "Japan", "timestamp": cls.alert_ts_1.isoformat(), "ip": "203.0.113.24"},
+                    login_raw_data={
+                        "country": "Japan",
+                        "timestamp": cls.alert_ts_1.isoformat(),
+                        "ip": "203.0.113.24",
+                    },
                     description="Test_Description0",
                     notified_status={"slack": True},  # Notified
                 ),
@@ -118,7 +122,11 @@ class TestSerializers(TestCase):
                 Alert(
                     user=cls.db_user_bob,
                     name=AlertDetectionType.NEW_DEVICE,
-                    login_raw_data={"country": "Germany", "timestamp": cls.alert_ts_1.isoformat(), "ip": "5.6.7.8"},
+                    login_raw_data={
+                        "country": "Germany",
+                        "timestamp": cls.alert_ts_1.isoformat(),
+                        "ip": "5.6.7.8",
+                    },
                     description="Low Risk Alert",
                     notified_status={},  # Not notified
                 ),
@@ -134,12 +142,18 @@ class TestSerializers(TestCase):
         # Both instance and query defined
         with self.assertRaises(ValueError) as context:
             LoginSerializer(instance=Login.objects.first(), query={"ip": "1.2.3.4"})
-        self.assertEqual(str(context.exception), "Either `instance` or `query` parameter must be defined not both!")
+        self.assertEqual(
+            str(context.exception),
+            "Either `instance` or `query` parameter must be defined not both!",
+        )
 
         # Neither instance nor query defined
         with self.assertRaises(ValueError) as context:
             LoginSerializer()
-        self.assertEqual(str(context.exception), "Both `instance` and `query` parameters cannot be None, define only one!")
+        self.assertEqual(
+            str(context.exception),
+            "Both `instance` and `query` parameters cannot be None, define only one!",
+        )
 
     # ----------------------------------------------------------------------
     # Test LoginSerializer

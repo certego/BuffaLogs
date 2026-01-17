@@ -46,7 +46,11 @@ class TestTasks(TestCase):
         user_obj = User.objects.create(username="Lorena")
         Login.objects.create(user=user_obj, timestamp=timezone.now())
         UsersIP.objects.create(user=user_obj, ip=self.raw_data_NEW_COUNTRY["ip"])
-        Alert.objects.create(user=user_obj, name=AlertDetectionType.NEW_COUNTRY.value, login_raw_data=self.raw_data_NEW_COUNTRY)
+        Alert.objects.create(
+            user=user_obj,
+            name=AlertDetectionType.NEW_COUNTRY.value,
+            login_raw_data=self.raw_data_NEW_COUNTRY,
+        )
         self.assertTrue(User.objects.filter(username="Lorena").exists())
         self.assertTrue(Login.objects.filter(user=user_obj).exists())
         self.assertTrue(Alert.objects.filter(user=user_obj).exists())

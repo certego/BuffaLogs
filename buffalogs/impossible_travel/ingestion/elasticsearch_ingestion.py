@@ -16,7 +16,11 @@ class ElasticsearchIngestion(BaseIngestion):
         """
         super().__init__(ingestion_config, mapping)
         # create the elasticsearch host connection
-        connections.create_connection(hosts=self.ingestion_config["url"], request_timeout=self.ingestion_config["timeout"], verify_certs=False)
+        connections.create_connection(
+            hosts=self.ingestion_config["url"],
+            request_timeout=self.ingestion_config["timeout"],
+            verify_certs=False,
+        )
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def process_users(self, start_date: datetime, end_date: datetime) -> list:
@@ -42,7 +46,12 @@ class ElasticsearchIngestion(BaseIngestion):
             .query("match", **{"event.type": "start"})
             .query("exists", field="user.name")
         )
-        s.aggs.bucket("login_user", "terms", field="user.name", size=self.ingestion_config["bucket_size"])
+        s.aggs.bucket(
+            "login_user",
+            "terms",
+            field="user.name",
+            size=self.ingestion_config["bucket_size"],
+        )
         try:
             response = s.execute()
         except ConnectionError:
@@ -119,7 +128,7 @@ class ElasticsearchIngestion(BaseIngestion):
             for hit in response.hits.hits:
                 hit_dict = hit.to_dict()
                 tmp = {
-                    "_index": "fw-proxy" if hit_dict.get("_index", "").startswith("fw-") else hit_dict.get("_index", "").split("-")[0],
+                    "_index": ("fw-proxy" if hit_dict.get("_index", "").startswith("fw-") else hit_dict.get("_index", "").split("-")[0]),
                     "_id": hit_dict["_id"],
                 }
                 tmp.update(hit_dict["_source"])

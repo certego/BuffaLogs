@@ -86,7 +86,6 @@ class ConfigAdminForm(forms.ModelForm):
 
 
 class TaskSettingsAdminForm(forms.ModelForm):
-
     class Meta:
         model = TaskSettings
         fields = "__all__"
