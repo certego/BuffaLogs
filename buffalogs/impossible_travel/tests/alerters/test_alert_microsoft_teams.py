@@ -6,7 +6,8 @@ import requests
 from django.test import TestCase
 from django.utils import timezone
 from impossible_travel.alerting.base_alerting import BaseAlerting
-from impossible_travel.alerting.microsoft_teams_alerting import MicrosoftTeamsAlerting
+from impossible_travel.alerting.microsoft_teams_alerting import \
+    MicrosoftTeamsAlerting
 from impossible_travel.models import Alert, Login, User
 
 
