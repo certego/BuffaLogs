@@ -3,11 +3,7 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.test import TestCase
-from impossible_travel.constants import (
-    AlertDetectionType,
-    AlertFilterType,
-    UserRiskScoreType,
-)
+from impossible_travel.constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
 from impossible_travel.models import Alert, Config, User
 from impossible_travel.modules import alert_filter
 

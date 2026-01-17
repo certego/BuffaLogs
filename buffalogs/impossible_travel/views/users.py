@@ -5,12 +5,7 @@ from functools import wraps
 
 from dateutil.parser import isoparse
 from django.db.models import Count, Max
-from django.http import (
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseNotFound,
-    JsonResponse,
-)
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime

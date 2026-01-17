@@ -4,11 +4,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest import mock
 
 from django.test import TestCase
-from impossible_travel.alerting.http_request import (
-    PERMITTED_LOGIN_FIELD_LIST,
-    HTTPRequestAlerting,
-    generate_batch,
-)
+from impossible_travel.alerting.http_request import PERMITTED_LOGIN_FIELD_LIST, HTTPRequestAlerting, generate_batch
 from impossible_travel.models import Alert, User
 
 

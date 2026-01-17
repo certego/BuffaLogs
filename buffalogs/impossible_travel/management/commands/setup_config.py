@@ -1,16 +1,14 @@
 import logging
-import pycountry
-
 from argparse import RawTextHelpFormatter
 from typing import Any, Iterable, List, Sequence, Tuple
 
+import pycountry
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db.models.fields import Field
 from impossible_travel.management.commands.base_command import TaskLoggingCommand
 from impossible_travel.models import Config
-
 
 logger = logging.getLogger()
 
