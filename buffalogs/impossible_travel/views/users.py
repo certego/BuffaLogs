@@ -1,16 +1,11 @@
+import json
 from collections import defaultdict
 from datetime import timedelta
 from functools import wraps
-import json
 
 from dateutil.parser import isoparse
 from django.db.models import Count, Max
-from django.http import (
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseNotFound,
-    JsonResponse,
-)
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime

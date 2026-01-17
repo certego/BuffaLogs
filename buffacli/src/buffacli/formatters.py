@@ -1,18 +1,17 @@
-from enum import Enum
 import functools
 import inspect
 import json
 import re
+from enum import Enum
 from typing import Any
 
+from buffacli.globals import vprint
+from buffacli.models import DataModel
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.table import Column, Table
 from rich.text import Text
-
-from buffacli.globals import vprint
-from buffacli.models import DataModel
 
 
 def print_func(formatter: callable):

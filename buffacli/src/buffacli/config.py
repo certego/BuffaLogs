@@ -1,7 +1,7 @@
 import configparser
-from importlib.resources import files
 import json
 import os
+from importlib.resources import files
 from pathlib import Path
 
 from yarl import URL

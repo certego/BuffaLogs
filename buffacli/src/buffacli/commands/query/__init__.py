@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-
 from buffacli import export
 from buffacli.commands.query import alerts, logins
 from buffacli.formatters import FormatOptions

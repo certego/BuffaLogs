@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta, timezone
 import json
+from datetime import datetime, timedelta, timezone
 
 from django.urls import reverse
 from impossible_travel.constants import AlertDetectionType, UserRiskScoreType

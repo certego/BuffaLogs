@@ -1,8 +1,7 @@
 import json
 
-from yarl import URL
-
 from buffacli import config
+from yarl import URL
 
 
 class DataModel:

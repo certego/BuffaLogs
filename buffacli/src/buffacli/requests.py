@@ -1,8 +1,7 @@
-from datetime import datetime
 import sys
+from datetime import datetime
 
 import requests
-
 from buffacli.config import get_buffalogs_url
 from buffacli.exception_handlers import request_exception_handler
 from buffacli.globals import vprint

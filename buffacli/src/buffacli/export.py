@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
 import csv
-from enum import Enum
 import json
+from abc import ABC, abstractmethod
+from enum import Enum
 from pathlib import Path
 
 from buffacli.globals import vprint

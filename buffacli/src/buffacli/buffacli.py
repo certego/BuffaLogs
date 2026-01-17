@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-
 from buffacli import config
 from buffacli.commands import query, show
 from buffacli.globals import VLevel, set_verbose_level

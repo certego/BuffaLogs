@@ -1,16 +1,12 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import os
 import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from django.test import TestCase
-from impossible_travel.alerting.webhook import (
-    WEBHOOKS_DEFAULT_ALGORITHM,
-    WEBHOOKS_DEFAULT_ISSUER_ID,
-    WebHookAlerting,
-)
-from impossible_travel.models import Alert, User
 import jwt
+from django.test import TestCase
+from impossible_travel.alerting.webhook import WEBHOOKS_DEFAULT_ALGORITHM, WEBHOOKS_DEFAULT_ISSUER_ID, WebHookAlerting
+from impossible_travel.models import Alert, User
 
 AUDIENCE = "test_service"
 SECRET_KEY = "secret_key"

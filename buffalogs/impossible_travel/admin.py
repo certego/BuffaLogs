@@ -4,12 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from impossible_travel.constants import AlertTagValues
-from impossible_travel.forms import (
-    AlertAdminForm,
-    ConfigAdminForm,
-    TaskSettingsAdminForm,
-    UserAdminForm,
-)
+from impossible_travel.forms import AlertAdminForm, ConfigAdminForm, TaskSettingsAdminForm, UserAdminForm
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User, UsersIP
 
 

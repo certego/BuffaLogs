@@ -1,15 +1,15 @@
-from datetime import timedelta
 import os
 import random
+from datetime import timedelta
 from typing import Any, Dict, Generator, List
 
+import yaml
 from django.conf import settings
 from django.utils import timezone
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import BulkIndexError, bulk
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.management.commands.base_command import TaskLoggingCommand
-import yaml
 
 NUM_LOGS = 2000
 
