@@ -73,17 +73,51 @@ def is_valid_country(value: str) -> bool:
         return False
 
 
+import pycountry
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
+
 def validate_countries_names(values):
     """
-    Accept list of ISO2 country codes (['IT','RO']) OR country names
-    and reject invalid ones.
-    """
-    import pycountry
-    from django.core.exceptions import ValidationError
-    from django.utils.translation import gettext_lazy as _
+    Accept a list of ISO2 country codes OR country names.
+    Valid examples:
+      - ["IT", "RO"]
+      - ["Italy", "Nepal"]
+      - ["IT", "Italy", "Nepal"]
 
+    Invalid examples:
+      - ["XX", "UnknownLand"]
+    """
     if not isinstance(values, list):
         raise ValidationError(_("Value must be a list."))
+
+    invalid_entries = []
+
+    for value in values:
+        value = value.strip()
+
+        if not value:
+            invalid_entries.append(value)
+            continue
+
+        # 1️⃣ ISO2 code check
+        if pycountry.countries.get(alpha_2=value.upper()):
+            continue
+
+        # 2️⃣ Country name lookup
+        try:
+            pycountry.countries.lookup(value)
+        except LookupError:
+            invalid_entries.append(value)
+
+    if invalid_entries:
+        raise ValidationError(
+            _(
+                "The following country codes are invalid: "
+                + ", ".join(invalid_entries)
+            )
+        )
 
 
 def is_valid_country(value: str) -> bool:
