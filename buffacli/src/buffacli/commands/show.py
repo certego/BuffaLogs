@@ -1,6 +1,7 @@
 from typing import Annotated
 
 import typer
+
 from buffacli import config, requests
 from buffacli.formatters import FormatOptions
 from buffacli.models import Alerters, AlertType, Ingestion

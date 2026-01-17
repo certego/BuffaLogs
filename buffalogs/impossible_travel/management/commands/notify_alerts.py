@@ -1,4 +1,5 @@
-from impossible_travel.management.commands.base_command import TaskLoggingCommand
+from impossible_travel.management.commands.base_command import \
+    TaskLoggingCommand
 from impossible_travel.tasks import notify_alerts
 
 

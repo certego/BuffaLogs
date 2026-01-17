@@ -4,11 +4,8 @@ from celery.utils.log import get_task_logger
 from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 from geopy.distance import geodesic
-from impossible_travel.constants import (
-    AlertDetectionType,
-    ComparisonType,
-    UserRiskScoreType,
-)
+from impossible_travel.constants import (AlertDetectionType, ComparisonType,
+                                         UserRiskScoreType)
 from impossible_travel.models import Alert, Config, Login, User, UsersIP
 from impossible_travel.modules import alert_filter
 from impossible_travel.utils.utils import build_device_fingerprint

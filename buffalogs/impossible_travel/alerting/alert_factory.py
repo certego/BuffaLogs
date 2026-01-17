@@ -9,7 +9,8 @@ from impossible_travel.alerting.email_alerting import EmailAlerting
 from impossible_travel.alerting.googlechat_alerting import GoogleChatAlerting
 from impossible_travel.alerting.http_request import HTTPRequestAlerting
 from impossible_travel.alerting.mattermost_alerting import MattermostAlerting
-from impossible_travel.alerting.microsoft_teams_alerting import MicrosoftTeamsAlerting
+from impossible_travel.alerting.microsoft_teams_alerting import \
+    MicrosoftTeamsAlerting
 from impossible_travel.alerting.pushover_alerting import PushoverAlerting
 from impossible_travel.alerting.rocketchat_alerting import RocketChatAlerting
 from impossible_travel.alerting.slack_alerting import SlackAlerting

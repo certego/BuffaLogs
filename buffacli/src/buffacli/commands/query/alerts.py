@@ -2,10 +2,11 @@ from datetime import datetime
 from typing import Annotated
 
 import typer
+from rich.console import Console
+
 from buffacli import config, requests
 from buffacli.formatters import FormatOptions
 from buffacli.models import AlertQuery
-from rich.console import Console
 
 app = typer.Typer(help="Query alert data.")
 

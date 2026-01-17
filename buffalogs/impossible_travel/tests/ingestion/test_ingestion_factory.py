@@ -1,5 +1,6 @@
 from django.test import TestCase
-from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
+from impossible_travel.ingestion.elasticsearch_ingestion import \
+    ElasticsearchIngestion
 from impossible_travel.ingestion.ingestion_factory import IngestionFactory
 from impossible_travel.tests.utils import load_ingestion_config_data
 
