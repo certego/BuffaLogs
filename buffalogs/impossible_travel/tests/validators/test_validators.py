@@ -4,18 +4,16 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils.timezone import get_current_timezone, is_naive, make_aware
 from impossible_travel.models import get_default_allowed_countries
-from impossible_travel.validators import (
-    validate_alert_query,
-    validate_boolean_str,
-    validate_countries_names,
-    validate_country_couples_list,
-    validate_datetime_str,
-    validate_ips_or_network,
-    validate_login_query,
-    validate_risk_score,
-    validate_string_or_regex,
-    validate_tags,
-)
+from impossible_travel.validators import (validate_alert_query,
+                                          validate_boolean_str,
+                                          validate_countries_names,
+                                          validate_country_couples_list,
+                                          validate_datetime_str,
+                                          validate_ips_or_network,
+                                          validate_login_query,
+                                          validate_risk_score,
+                                          validate_string_or_regex,
+                                          validate_tags)
 
 
 class ValidatorsTest(TestCase):

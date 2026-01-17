@@ -1,6 +1,7 @@
 from django.apps import apps
 from django.core.management.base import CommandParser
-from impossible_travel.management.commands.base_command import TaskLoggingCommand
+from impossible_travel.management.commands.base_command import \
+    TaskLoggingCommand
 from impossible_travel.models import Alert, Config, Login, TaskSettings, User
 
 

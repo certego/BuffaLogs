@@ -7,21 +7,16 @@ from django.db.models.fields import Field
 from django.test import TestCase
 from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.management.commands.setup_config import (
-    Command,
-    parse_field_value,
-)
-from impossible_travel.models import (
-    Config,
-    User,
-    get_default_allowed_countries,
-    get_default_enabled_users,
-    get_default_filtered_alerts_types,
-    get_default_ignored_ips,
-    get_default_ignored_ISPs,
-    get_default_ignored_users,
-    get_default_risk_score_increment_alerts,
-    get_default_vip_users,
-)
+    Command, parse_field_value)
+from impossible_travel.models import (Config, User,
+                                      get_default_allowed_countries,
+                                      get_default_enabled_users,
+                                      get_default_filtered_alerts_types,
+                                      get_default_ignored_ips,
+                                      get_default_ignored_ISPs,
+                                      get_default_ignored_users,
+                                      get_default_risk_score_increment_alerts,
+                                      get_default_vip_users)
 
 
 class ManagementCommandsTestCase(TestCase):

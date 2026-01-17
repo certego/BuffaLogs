@@ -2,7 +2,8 @@ from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
-from impossible_travel.ingestion.opensearch_ingestion import OpensearchIngestion
+from impossible_travel.ingestion.opensearch_ingestion import \
+    OpensearchIngestion
 from impossible_travel.tests.utils import load_ingestion_config_data
 
 

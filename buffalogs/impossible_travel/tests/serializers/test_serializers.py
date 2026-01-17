@@ -3,11 +3,8 @@ from datetime import datetime, timedelta, timezone
 from django.test import TestCase
 from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.models import Alert, Login, User
-from impossible_travel.serializers import (
-    AlertSerializer,
-    LoginSerializer,
-    UserSerializer,
-)
+from impossible_travel.serializers import (AlertSerializer, LoginSerializer,
+                                           UserSerializer)
 
 
 class TestSerializers(TestCase):
