@@ -2,10 +2,11 @@
 
 import json
 import os
-from django.conf import settings
+
 import django.contrib.postgres.fields
 import impossible_travel.models
 import impossible_travel.validators
+from django.conf import settings
 from django.db import migrations, models
 
 

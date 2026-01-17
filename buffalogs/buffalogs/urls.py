@@ -11,7 +11,9 @@ urlpatterns = [
     path("users/", users.users_template_view, name="users"),
     path("users/alerts", alerts.alert_template_view, name="alerts"),
     path("users/<int:user_id>/alerts", alerts.alert_template_view, name="alerts"),
-    path("users/<int:user_id>/logins", users.all_login_template_view, name="all_logins"),
+    path(
+        "users/<int:user_id>/logins", users.all_login_template_view, name="all_logins"
+    ),
     path(
         "users/<int:user_id>/unique_logins",
         users.unique_login_template_view,
@@ -74,7 +76,9 @@ urlpatterns = [
         users.user_geo_distribution_api,
         name="geo_distribution_api",
     ),
-    path("api/users/analytics/risk-score/", users.risk_score_api, name="risk_score_api"),
+    path(
+        "api/users/analytics/risk-score/", users.risk_score_api, name="risk_score_api"
+    ),
     # Ingestion APIs
     path(
         "api/ingestion/sources/",
@@ -97,6 +101,8 @@ urlpatterns = [
         alerts.get_active_alerter,
         name="active_alerter_api",
     ),
-    path("api/alerters/<str:alerter>/", alerts.alerter_config, name="alerter_config_api"),
+    path(
+        "api/alerters/<str:alerter>/", alerts.alerter_config, name="alerter_config_api"
+    ),
     path("api/alerters/", alerts.get_alerters, name="get_alerters"),
 ]

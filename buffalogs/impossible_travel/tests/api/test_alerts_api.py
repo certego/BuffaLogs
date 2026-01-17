@@ -71,7 +71,9 @@ class TestAlertAPI(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected)
 
-    @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
+    @mock.patch(
+        "impossible_travel.views.alerts.read_config", side_effect=mock_read_config
+    )
     def test_get_alerters(self, mock_reader):
         expected = [
             {"alerter": "slack", "fields": ["webhook_url"], "options": []},
@@ -112,7 +114,9 @@ class TestAlertAPI(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected)
 
-    @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
+    @mock.patch(
+        "impossible_travel.views.alerts.read_config", side_effect=mock_read_config
+    )
     def test_get_active_alerter(self, mock_writer):
         expected = [
             {
@@ -127,7 +131,9 @@ class TestAlertAPI(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected)
 
-    @mock.patch("impossible_travel.views.alerts.read_config", side_effect=mock_read_config)
+    @mock.patch(
+        "impossible_travel.views.alerts.read_config", side_effect=mock_read_config
+    )
     def test_get_alerter_config(self, mock_writer):
         expected = {
             "alerter": "discord",
@@ -136,11 +142,15 @@ class TestAlertAPI(APITestCase):
                 "username": "BuffaLogs_Alert",
             },
         }
-        response = self.client.get(reverse("alerter_config_api", kwargs={"alerter": "discord"}))
+        response = self.client.get(
+            reverse("alerter_config_api", kwargs={"alerter": "discord"})
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected)
 
-    @mock.patch("impossible_travel.views.alerts.write_config", side_effect=mock_write_config)
+    @mock.patch(
+        "impossible_travel.views.alerts.write_config", side_effect=mock_write_config
+    )
     def test_update_alerter_config(self, mock_writer):
         response = self.client.post(
             reverse("alerter_config_api", kwargs={"alerter": "discord"}),

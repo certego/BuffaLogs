@@ -3,7 +3,11 @@ from datetime import datetime, timedelta, timezone
 from django.test import TestCase
 from impossible_travel.constants import AlertDetectionType, UserRiskScoreType
 from impossible_travel.models import Alert, Login, User
-from impossible_travel.serializers import AlertSerializer, LoginSerializer, UserSerializer
+from impossible_travel.serializers import (
+    AlertSerializer,
+    LoginSerializer,
+    UserSerializer,
+)
 
 
 class TestSerializers(TestCase):
@@ -265,12 +269,16 @@ class TestSerializers(TestCase):
         """
         Test Alert serialization of single instance
         """
-        alert_obj = Alert.objects.get(description="Test_Description0")  # Notified, NEW_DEVICE, Alice Johnson
+        alert_obj = Alert.objects.get(
+            description="Test_Description0"
+        )  # Notified, NEW_DEVICE, Alice Johnson
         user_obj = alert_obj.user
         serializer = AlertSerializer(instance=alert_obj)
         data = serializer.data
 
-        self.assertIn(alert_obj.created.strftime("%y-%m-%d %H:%M:%S")[:11], data["created"])
+        self.assertIn(
+            alert_obj.created.strftime("%y-%m-%d %H:%M:%S")[:11], data["created"]
+        )
         self.assertEqual(data["country"], "japan")
         self.assertTrue(data["notified"])
         self.assertEqual(data["severity_type"], user_obj.risk_score)

@@ -4,7 +4,11 @@ from celery.utils.log import get_task_logger
 from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 from geopy.distance import geodesic
-from impossible_travel.constants import AlertDetectionType, ComparisonType, UserRiskScoreType
+from impossible_travel.constants import (
+    AlertDetectionType,
+    ComparisonType,
+    UserRiskScoreType,
+)
 from impossible_travel.models import Alert, Config, Login, User, UsersIP
 from impossible_travel.modules import alert_filter
 from impossible_travel.utils.utils import build_device_fingerprint
@@ -12,7 +16,9 @@ from impossible_travel.utils.utils import build_device_fingerprint
 logger = get_task_logger(__name__)
 
 
-def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config) -> bool:
+def update_risk_level(
+    db_user: User, triggered_alert: Alert, app_config: Config
+) -> bool:
     """Update user risk level depending on how many alerts were triggered and the Config.risk_score_increment_alerts
 
     :param db_user: user from DB
@@ -28,23 +34,33 @@ def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config)
     with transaction.atomic():
         current_risk_score = db_user.risk_score
         # for the risk_score consider the number of alerts that are not in the Config.risk_score_increment_alerts list
-        new_risk_level = UserRiskScoreType.get_risk_level(db_user.alert_set.filter(name__in=app_config.risk_score_increment_alerts).count())
+        new_risk_level = UserRiskScoreType.get_risk_level(
+            db_user.alert_set.filter(
+                name__in=app_config.risk_score_increment_alerts
+            ).count()
+        )
 
         # update the risk_score anyway in order to keep the users up-to-date each time they are seen by the system
         db_user.risk_score = new_risk_level
         db_user.save()
 
-        risk_comparison = UserRiskScoreType.compare_risk(current_risk_score, new_risk_level)
+        risk_comparison = UserRiskScoreType.compare_risk(
+            current_risk_score, new_risk_level
+        )
         if risk_comparison in [ComparisonType.LOWER, ComparisonType.EQUAL]:
             logger.info(
                 f"The current user.risk_score ({current_risk_score}) is {risk_comparison.value} than the new risk_score: {new_risk_level}. The Config.risk_score_increment_alerts list contains: {app_config.risk_score_increment_alerts}"
             )
-            return False  # risk_score doesn't increased, so no USER_RISK_THRESHOLD alert
+            return (
+                False  # risk_score doesn't increased, so no USER_RISK_THRESHOLD alert
+            )
 
         # if the new_risk_level is higher than the current one
         # and the new_risk_level is higher or equal than the threshold set in the config.threshold_user_risk_alert
         # send the USER_RISK_THRESHOLD alert
-        config_threshold_comparison = UserRiskScoreType.compare_risk(app_config.threshold_user_risk_alert, new_risk_level)
+        config_threshold_comparison = UserRiskScoreType.compare_risk(
+            app_config.threshold_user_risk_alert, new_risk_level
+        )
 
         if config_threshold_comparison in [ComparisonType.EQUAL, ComparisonType.HIGHER]:
             alert_info = {
@@ -65,7 +81,9 @@ def update_risk_level(db_user: User, triggered_alert: Alert, app_config: Config)
             return True
 
 
-def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Config) -> Alert:
+def set_alert(
+    db_user: User, login_alert: dict, alert_info: dict, app_config: Config
+) -> Alert:
     """Save the alert on db and logs it
 
     :param db_user: user from db
@@ -78,7 +96,9 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Co
     :return: new buffalogs alert object
     :rtype: Alert obj
     """
-    logger.info(f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}")
+    logger.info(
+        f"ALERT {alert_info['alert_name']} for User: {db_user.username} at: {login_alert['timestamp']}"
+    )
     alert = Alert.objects.create(
         user=db_user,
         login_raw_data=login_alert,
@@ -90,7 +110,9 @@ def set_alert(db_user: User, login_alert: dict, alert_info: dict, app_config: Co
     alert_filter.match_filters(alert=alert, app_config=app_config)
     # update user.risk_score if necessary (not for filtered alerts)
     if not alert.is_filtered:
-        update_risk_level(db_user=alert.user, triggered_alert=alert, app_config=app_config)
+        update_risk_level(
+            db_user=alert.user, triggered_alert=alert, app_config=app_config
+        )
     return alert
 
 
@@ -112,7 +134,9 @@ def check_fields(db_user: User, fields: list):
                 "alert_name": AlertDetectionType.ANONYMOUS_IP_LOGIN.value,
                 "alert_desc": f"{AlertDetectionType.ANONYMOUS_IP_LOGIN.label} from IP: {login['ip']} by User: {db_user.username}",
             }
-            set_alert(db_user, login_alert=login, alert_info=alert_info, app_config=db_config)
+            set_alert(
+                db_user, login_alert=login, alert_info=alert_info, app_config=db_config
+            )
         if login["lat"] and login["lon"]:
             if Login.objects.filter(user_id=db_user.id, index=login["index"]).exists():
                 agent_alert = False
@@ -170,14 +194,20 @@ def check_fields(db_user: User, fields: list):
                     country=login["country"],
                     user_agent=login["agent"],
                 ).exists():
-                    logger.info(f"Updating login {login['id']} for user: {db_user.username}")
+                    logger.info(
+                        f"Updating login {login['id']} for user: {db_user.username}"
+                    )
                     update_model(db_user, login)
                 else:
-                    logger.info(f"Adding new login {login['id']} for user: {db_user.username}")
+                    logger.info(
+                        f"Adding new login {login['id']} for user: {db_user.username}"
+                    )
                     add_new_login(db_user, login)
 
             else:
-                logger.info(f"Creating new login {login['id']} for user: {db_user.username}")
+                logger.info(
+                    f"Creating new login {login['id']} for user: {db_user.username}"
+                )
                 add_new_login(db_user, login)
                 UsersIP.objects.create(user=db_user, ip=login["ip"])
         else:
@@ -207,7 +237,8 @@ def check_country(db_user: User, login_field: dict, app_config: Config) -> dict:
         )
     # check "Atypical Country" alert
     elif (
-        datetime.fromisoformat(login_field["timestamp"]) - db_user.login_set.filter(country=login_field["country"]).last().timestamp
+        datetime.fromisoformat(login_field["timestamp"])
+        - db_user.login_set.filter(country=login_field["country"]).last().timestamp
     ).days >= app_config.atypical_country_days:
         alert_info["alert_name"] = AlertDetectionType.ATYPICAL_COUNTRY.value
         alert_info["alert_desc"] = (
@@ -230,18 +261,26 @@ def check_new_device(db_user: User, login_field: dict) -> dict:
     """
     # if the user has not registred logins yet -> no alerts
     if not db_user.login_set.all():
-        logger.info(f"User {db_user.username} has no registered devices yet. " f"Skipping NEW_DEVICE alert for login at {login_field['timestamp']}.")
+        logger.info(
+            f"User {db_user.username} has no registered devices yet. "
+            f"Skipping NEW_DEVICE alert for login at {login_field['timestamp']}."
+        )
         return {}
 
     # Create device fingerprint for the current user-agent
     current_fingerprint = build_device_fingerprint(agent=login_field["agent"])
-    logger.info(f"Device fingerprint for user {db_user.username} at login {login_field['timestamp']}: {current_fingerprint}")
+    logger.info(
+        f"Device fingerprint for user {db_user.username} at login {login_field['timestamp']}: {current_fingerprint}"
+    )
 
     # If the device fingerprint is new -> alert
     if not db_user.login_set.filter(device_fingerprint=current_fingerprint):
         return {
             "alert_name": AlertDetectionType.NEW_DEVICE.value,
-            "alert_desc": (f"{AlertDetectionType.NEW_DEVICE.label} for User: " f"{db_user.username}, at: {login_field['timestamp']}"),
+            "alert_desc": (
+                f"{AlertDetectionType.NEW_DEVICE.label} for User: "
+                f"{db_user.username}, at: {login_field['timestamp']}"
+            ),
         }
 
     # No alert
@@ -304,7 +343,9 @@ def update_model(db_user: User, new_login: dict):
         )
 
 
-def calc_distance_impossible_travel(db_user: User, prev_login: Login, last_login_user_fields: dict):
+def calc_distance_impossible_travel(
+    db_user: User, prev_login: Login, last_login_user_fields: dict
+):
     """Compute distance and velocity to alert if impossible travel occurs
 
     :param db_user: user from db
@@ -326,10 +367,18 @@ def calc_distance_impossible_travel(db_user: User, prev_login: Login, last_login
     ).km
 
     if distance_km > app_config.distance_accepted:
-        last_timestamp_datetimeObj_aware = timezone.make_aware(datetime.strptime(last_login_user_fields["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"))
-        prev_timestamp_datetimeObj_aware = prev_login.timestamp  # already aware in the db
+        last_timestamp_datetimeObj_aware = timezone.make_aware(
+            datetime.strptime(
+                last_login_user_fields["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
+        )
+        prev_timestamp_datetimeObj_aware = (
+            prev_login.timestamp
+        )  # already aware in the db
 
-        diff_timestamp = last_timestamp_datetimeObj_aware - prev_timestamp_datetimeObj_aware
+        diff_timestamp = (
+            last_timestamp_datetimeObj_aware - prev_timestamp_datetimeObj_aware
+        )
         diff_timestamp_hours = diff_timestamp.total_seconds() / 3600
 
         if diff_timestamp_hours == 0:

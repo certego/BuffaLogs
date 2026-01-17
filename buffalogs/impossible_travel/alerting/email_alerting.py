@@ -46,7 +46,9 @@ class EmailAlerting(BaseAlerting):
             setattr(settings, key, value)
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5, base=2)
-    def send_message(self, alert, recipient_list, alert_title=None, alert_description=None):
+    def send_message(
+        self, alert, recipient_list, alert_title=None, alert_description=None
+    ):
         if alert_title is None and alert_description is None and alert:
             alert_title, alert_description = self.alert_message_formatter(alert)
 
@@ -60,7 +62,9 @@ class EmailAlerting(BaseAlerting):
             raise Exception(f"Email alert failed to send to {recipient_list}")
         return res
 
-    def send_scheduled_summary(self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown):
+    def send_scheduled_summary(
+        self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown
+    ):
         summary_title, summary_description = self.alert_message_formatter(
             alert=None,
             template_path="alert_template_summary.jinja",
@@ -86,9 +90,14 @@ class EmailAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter(Q(notified_status__email=False) | ~Q(notified_status__has_key="email"))
+        alerts = Alert.objects.filter(
+            Q(notified_status__email=False) | ~Q(notified_status__has_key="email")
+        )
         if start_date is not None and end_date is not None:
-            alerts = Alert.objects.filter((Q(notified_status__email=False) | ~Q(notified_status__has_key="email")) & Q(created__range=(start_date, end_date)))
+            alerts = Alert.objects.filter(
+                (Q(notified_status__email=False) | ~Q(notified_status__has_key="email"))
+                & Q(created__range=(start_date, end_date))
+            )
 
         grouped = defaultdict(list)
         for alert in alerts:
@@ -100,24 +109,38 @@ class EmailAlerting(BaseAlerting):
                 alert = group_alerts[0]
                 # Email for admin
                 try:
-                    self.send_message(alert=alert, recipient_list=self.recipient_list_admins)  # 1 if sent,0 if not
-                    self.logger.info(f"Email alert Sent: {alert.name} to {self.recipient_list_admins}")
+                    self.send_message(
+                        alert=alert, recipient_list=self.recipient_list_admins
+                    )  # 1 if sent,0 if not
+                    self.logger.info(
+                        f"Email alert Sent: {alert.name} to {self.recipient_list_admins}"
+                    )
                 except Exception as e:
-                    self.logger.exception(f"Email alert failed for {alert.name}: {str(e)}")
+                    self.logger.exception(
+                        f"Email alert failed for {alert.name}: {str(e)}"
+                    )
 
                 # Email for user
                 if username in list(self.recipient_list_users.keys()):
-                    alert_title, alert_description = self.alert_message_formatter(alert, template_path=self.user_email_template_path)
+                    alert_title, alert_description = self.alert_message_formatter(
+                        alert, template_path=self.user_email_template_path
+                    )
                     try:
                         self.send_message(
                             alert=None,
                             alert_title=alert_title,
                             alert_description=alert_description,
-                            recipient_list=[self.recipient_list_users[alert.user.username]],
+                            recipient_list=[
+                                self.recipient_list_users[alert.user.username]
+                            ],
                         )
-                        self.logger.info(f"Email alert Sent: {alert.name} to {self.recipient_list_users[alert.user.username]}")
+                        self.logger.info(
+                            f"Email alert Sent: {alert.name} to {self.recipient_list_users[alert.user.username]}"
+                        )
                     except Exception as e:
-                        self.logger.exception(f"Email alert failed for {alert.name}: {str(e)}")
+                        self.logger.exception(
+                            f"Email alert failed for {alert.name}: {str(e)}"
+                        )
 
                 alert.notified_status["email"] = True
                 alert.save()
@@ -137,9 +160,13 @@ class EmailAlerting(BaseAlerting):
                         alert_title=alert_title,
                         alert_description=alert_description,
                     )  # 1 if sent,0 if not
-                    self.logger.info(f"Clubbed Email alert Sent: {alert_title} to {self.recipient_list_admins}")
+                    self.logger.info(
+                        f"Clubbed Email alert Sent: {alert_title} to {self.recipient_list_admins}"
+                    )
                     for a in group_alerts:
                         a.notified_status["email"] = True
                         a.save()
                 except Exception as e:
-                    self.logger.exception(f"Clubbed Email Alert Failed for {group_alerts}: {str(e)}")
+                    self.logger.exception(
+                        f"Clubbed Email Alert Failed for {group_alerts}: {str(e)}"
+                    )

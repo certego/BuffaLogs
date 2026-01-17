@@ -60,7 +60,9 @@ class SlackAlerting(BaseAlerting):
         resp.raise_for_status()
         return resp
 
-    def send_scheduled_summary(self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown):
+    def send_scheduled_summary(
+        self, start_date, end_date, total_alerts, user_breakdown, alert_breakdown
+    ):
         summary_title, summary_description = self.alert_message_formatter(
             alert=None,
             template_path="alert_template_summary.jinja",
@@ -85,9 +87,14 @@ class SlackAlerting(BaseAlerting):
         """
         Execute the alerter operation.
         """
-        alerts = Alert.objects.filter((Q(notified_status__slack=False) | ~Q(notified_status__has_key="slack")))
+        alerts = Alert.objects.filter(
+            (Q(notified_status__slack=False) | ~Q(notified_status__has_key="slack"))
+        )
         if start_date is not None and end_date is not None:
-            alerts = Alert.objects.filter((Q(notified_status__slack=False) | ~Q(notified_status__has_key="slack")) & Q(created__range=(start_date, end_date)))
+            alerts = Alert.objects.filter(
+                (Q(notified_status__slack=False) | ~Q(notified_status__has_key="slack"))
+                & Q(created__range=(start_date, end_date))
+            )
 
         grouped = defaultdict(list)
         for alert in alerts:
@@ -103,7 +110,9 @@ class SlackAlerting(BaseAlerting):
                     alert.notified_status["slack"] = True
                     alert.save()
                 except requests.RequestException as e:
-                    self.logger.exception(f"Slack Notification Failed for {alert}: {str(e)}")
+                    self.logger.exception(
+                        f"Slack Notification Failed for {alert}: {str(e)}"
+                    )
 
             else:
                 alert = group_alerts[0]
@@ -124,4 +133,6 @@ class SlackAlerting(BaseAlerting):
                         a.notified_status["slack"] = True
                         a.save()
                 except requests.RequestException as e:
-                    self.logger.exception(f"Clubbed Slack Alert Failed for {group_alerts}: {str(e)}")
+                    self.logger.exception(
+                        f"Clubbed Slack Alert Failed for {group_alerts}: {str(e)}"
+                    )
