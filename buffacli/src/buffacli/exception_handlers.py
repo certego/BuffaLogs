@@ -35,7 +35,10 @@ class ExceptionHandler:
 
 
 def request_generic_handler(exc: exceptions.RequestException):
-    vprint("debug", Panel(str(exc), title="[bold red]Request Error[/bold red]", style="bold"))
+    vprint(
+        "debug",
+        Panel(str(exc), title="[bold red]Request Error[/bold red]", style="bold"),
+    )
     vprint("error", "Error: Request Failed")
     return 1
 

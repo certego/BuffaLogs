@@ -29,7 +29,10 @@ def alerts(
     login_end_time: Annotated[datetime, typer.Option(help="Filter by login date up to date.")] = None,
     user_agent: Annotated[str, typer.Option(help="Filter by login agent.")] = None,
     omit: Annotated[list[str], typer.Option(help="Omit fields from query results")] = None,
-    mappings: Annotated[str, typer.Option(help="Alias name for fields. Follows the format fieldname:alias")] = None,
+    mappings: Annotated[
+        str,
+        typer.Option(help="Alias name for fields. Follows the format fieldname:alias"),
+    ] = None,
 ):
     if mappings:
         mappings = dict(mapstr.split(":") for mapstr in mappings.split())

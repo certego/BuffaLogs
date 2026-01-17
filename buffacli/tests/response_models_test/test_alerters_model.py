@@ -10,7 +10,10 @@ class TestAlertModels(unittest.TestCase):
             {"alerter": "telegram", "fields": ["bot_token", "chat_ids"], "options": []},
         ]
 
-        self.alerter_response = {"alerter": "telegram", "fields": {"bot_token": "BOT_TOKEN", "chat_ids": ["CHAT_ID"]}}
+        self.alerter_response = {
+            "alerter": "telegram",
+            "fields": {"bot_token": "BOT_TOKEN", "chat_ids": ["CHAT_ID"]},
+        }
 
     def test_table_format_for_alerters_list(self):
         data_model = Alerters(self.alerter_list_response)
