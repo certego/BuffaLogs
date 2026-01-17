@@ -1,8 +1,8 @@
 from typing import List
 
+import pycountry
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-import pycountry
 
 
 def is_valid_country(value: str) -> bool:
