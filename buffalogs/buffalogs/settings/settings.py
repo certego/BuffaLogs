@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from datetime import timedelta
 from pathlib import Path
+from pickle import TRUE
 
 from celery.schedules import crontab
 from django.conf import settings
@@ -25,7 +26,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 
 SECRET_KEY = CERTEGO_BUFFALOGS_SECRET_KEY
-DEBUG = settings.CERTEGO_DEBUG
+DEBUG = True
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "authentication",
     "corsheaders",
+    "django_select2",
 ]
 
 MIDDLEWARE = [

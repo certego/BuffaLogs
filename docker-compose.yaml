@@ -29,6 +29,7 @@ services:
         depends_on:
             - buffalogs
         volumes:
+            - ./buffalogs:/app
             - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
            # - ./config/nginx/certs:/etc/nginx/certs:ro
             - buffalogs_django_static:/var/www:ro
