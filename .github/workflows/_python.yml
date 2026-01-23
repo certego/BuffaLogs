@@ -310,24 +310,24 @@ jobs:
           echo > requirements-linters.txt
 
           if [[ '${{ inputs.use_black}}' != 'false' ]]; then
-            echo "black==25.1.0" >> requirements-linters.txt
+            echo "black==26.1.0" >> requirements-linters.txt
           fi
 
           if [[ '${{ inputs.use_isort}}' != 'false' ]]; then
-            echo "isort==6.0.1" >> requirements-linters.txt
+            echo "isort==7.0.0" >> requirements-linters.txt
           fi
 
           if [[ '${{ inputs.use_flake8}}' != 'false' ]]; then
-            echo "flake8==7.1.2" >> requirements-linters.txt
+            echo "flake8==7.3.0" >> requirements-linters.txt
             #if [[ -n '${{ inputs.django_settings_module }}' ]]; then
               #echo "flake8-django==1.4" >> requirements-linters.txt
             #fi
           fi
 
           if [[ '${{ inputs.use_pylint}}' != 'false' ]]; then
-            echo "pylint==3.2.6" >> requirements-linters.txt
+            echo "pylint==4.0.4" >> requirements-linters.txt
             if [[ -n '${{ inputs.django_settings_module }}' ]]; then
-              echo "pylint-django==2.5.5" >> requirements-linters.txt
+              echo "pylint-django==2.7.0" >> requirements-linters.txt
             fi
           fi
 
