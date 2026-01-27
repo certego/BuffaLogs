@@ -1,3 +1,3 @@
 #!/bin/bash
 
-celery -A buffalogs beat --schedule /tmp/celerybeat-schedule
+celery -A buffalogs beat
