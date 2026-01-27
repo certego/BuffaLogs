@@ -1,6 +1,11 @@
 from django.contrib import admin
 from django.urls import include, path
 from impossible_travel.views import alerts, charts, ingestion, logins, users
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -43,4 +48,8 @@ urlpatterns = [
     path("api/alerters/active-alerter/", alerts.get_active_alerter, name="active_alerter_api"),
     path("api/alerters/<str:alerter>/", alerts.alerter_config, name="alerter_config_api"),
     path("api/alerters/", alerts.get_alerters, name="get_alerters"),
+    # OpenAPI/Swagger Documentation
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
