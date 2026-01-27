@@ -6,4 +6,4 @@ setuptools==80.9.0
 pre_commit==4.2.0
 pyproject_hooks==1.2.0
 pytest==8.4.0
-wheel==0.45.1
+wheel==0.46.2
