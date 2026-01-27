@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
+    "drf_spectacular",  # OpenAPI schema generation
     "authentication",
     "corsheaders",
 ]
@@ -234,4 +235,16 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(hour=0, minute=0, day_of_week="monday"),
         "args": ["weekly"],
     },
+}
+
+# DRF Spectacular Settings for OpenAPI/Swagger Documentation
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "BuffaLogs API",
+    "DESCRIPTION": "BuffaLogs is an Open Source Django App for detecting login anomalies and managing security alerts.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
