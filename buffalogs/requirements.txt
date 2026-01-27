@@ -43,3 +43,6 @@ requests>=2.32.5                 # HTTP library for sending alerts and webhooks
 
 # === Web Server ===
 uwsgi>=2.0.31                   # uWSGI application server for serving Django application
+
+# === API Documentation ===
+drf-spectacular>=2.0.0  # OpenAPI/Swagger schema generation for Django REST Framework
