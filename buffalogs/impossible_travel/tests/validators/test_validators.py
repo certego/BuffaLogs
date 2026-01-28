@@ -12,6 +12,7 @@ from impossible_travel.validators import (
     validate_datetime_str,
     validate_ips_or_network,
     validate_login_query,
+    validate_regex_patterns,
     validate_risk_score,
     validate_string_or_regex,
     validate_tags,
@@ -132,13 +133,19 @@ class ValidatorsTest(TestCase):
         """Test that a single list (not a list of lists) raises an exception"""
         with self.assertRaises(ValidationError) as context:
             validate_country_couples_list(["Italy", "Germany"])
-        self.assertIn("Each single value must be a list of 2 elements (list of lists).", str(context.exception))
+        self.assertIn(
+            "Each single value must be a list of 2 elements (list of lists).",
+            str(context.exception),
+        )
 
     def test_validate_country_couples_list_too_elements(self):
         """Test that a list of more than 2 elements raises an exception"""
         with self.assertRaises(ValidationError) as context:
             validate_country_couples_list([["Italy", "Germany", "France"]])
-        self.assertIn("Each single value must be a list of 2 elements (list of lists).", str(context.exception))
+        self.assertIn(
+            "Each single value must be a list of 2 elements (list of lists).",
+            str(context.exception),
+        )
 
     def test_validate_country_couples_list_wrong_country_name(self):
         """Test that a list containing a wrong country name raises an exception"""
@@ -226,11 +233,17 @@ class ValidatorsTest(TestCase):
         self.assertEqual(validate_risk_score("high"), "High")
 
         # Test empty string
-        with self.assertRaisesRegex(ValidationError, "Risk score must be an integer 0-7 or one of: High, Medium, Low, No Risk"):
+        with self.assertRaisesRegex(
+            ValidationError,
+            "Risk score must be an integer 0-7 or one of: High, Medium, Low, No Risk",
+        ):
             validate_risk_score("")
 
         # Test empty string
-        with self.assertRaisesRegex(ValidationError, "Risk score must be an integer 0-7 or one of: High, Medium, Low, No Risk"):
+        with self.assertRaisesRegex(
+            ValidationError,
+            "Risk score must be an integer 0-7 or one of: High, Medium, Low, No Risk",
+        ):
             validate_risk_score("Invalid Risk Score")
 
         # Test out of range risk score
@@ -372,3 +385,114 @@ class ValidatorsTest(TestCase):
 
         with self.assertRaises(ValidationError):
             validate_tags("security_threat")  # Tags must be passed as Lists
+
+    def test_is_safe_regex_valid_patterns(self):
+        """Test that safe regex patterns are accepted."""
+        from impossible_travel.validators import _is_safe_regex
+
+        safe_patterns = [
+            r"^admin.*",
+            r"test\d+",
+            r"user@.*\.com",
+            r"[a-z]+@domain\.com",
+            "admin",  # Plain string
+            "test-user",  # Plain string with hyphen
+        ]
+
+        for pattern in safe_patterns:
+            with self.subTest(pattern=pattern):
+                self.assertTrue(_is_safe_regex(pattern), f"Pattern should be safe: {pattern}")
+
+    def test_is_safe_regex_rejects_nested_quantifiers(self):
+        """Test that patterns with nested quantifiers are rejected (ReDoS vulnerability)."""
+        from impossible_travel.validators import _is_safe_regex
+
+        dangerous_patterns = [
+            r"(a+)+",  # Nested plus quantifiers
+            r"(a*)*",  # Nested star quantifiers
+            r"(a+)*",  # Mixed nested quantifiers
+            r"(a|ab)*",  # Alternation with quantifier
+            r"(a|a)+",  # Redundant alternation with quantifier
+        ]
+
+        for pattern in dangerous_patterns:
+            with self.subTest(pattern=pattern):
+                self.assertFalse(_is_safe_regex(pattern), f"Dangerous pattern should be rejected: {pattern}")
+
+    def test_is_safe_regex_rejects_too_long(self):
+        """Test that patterns exceeding MAX_REGEX_LENGTH are rejected."""
+        from impossible_travel.validators import _is_safe_regex
+
+        # Pattern longer than 100 characters
+        long_pattern = "a" * 101
+        self.assertFalse(_is_safe_regex(long_pattern), "Pattern exceeding 100 chars should be rejected")
+
+        # Pattern exactly 100 characters (should pass length check)
+        exactly_100 = "a" * 100
+        self.assertTrue(_is_safe_regex(exactly_100), "Pattern with exactly 100 chars should pass length check")
+
+    def test_is_safe_regex_rejects_too_complex(self):
+        """Test that patterns with too many special characters are rejected."""
+        from impossible_travel.validators import _is_safe_regex
+
+        # Pattern with > 50 special regex characters
+        complex_pattern = "(" * 30 + "a" + ")" * 30 + "*" * 20
+        self.assertFalse(_is_safe_regex(complex_pattern), "Overly complex pattern should be rejected")
+
+    def test_is_safe_regex_rejects_invalid_syntax(self):
+        """Test that patterns with invalid regex syntax are rejected."""
+        from impossible_travel.validators import _is_safe_regex
+
+        invalid_patterns = [
+            r"[unclosed",  # Unclosed bracket
+            r"(unmatched",  # Unmatched parenthesis
+            r"*invalid",  # Invalid quantifier placement
+            r"(?P<incomplete",  # Incomplete named group
+        ]
+
+        for pattern in invalid_patterns:
+            with self.subTest(pattern=pattern):
+                self.assertFalse(_is_safe_regex(pattern), f"Invalid syntax should be rejected: {pattern}")
+
+    def test_validate_regex_patterns_accepts_safe_list(self):
+        """Test that validate_regex_patterns accepts a list of safe patterns."""
+        safe_list = [r"^admin.*", r"test\d+", "user@domain.com"]
+
+        # Should not raise ValidationError
+        try:
+            validate_regex_patterns(safe_list)
+        except ValidationError:
+            self.fail("validate_regex_patterns raised ValidationError for safe patterns")
+
+    def test_validate_regex_patterns_rejects_unsafe_list(self):
+        """Test that validate_regex_patterns rejects lists containing unsafe patterns."""
+        unsafe_list = [r"^admin.*", r"(a+)+", r"test\d+"]  # Middle pattern is unsafe
+
+        with self.assertRaises(ValidationError) as context:
+            validate_regex_patterns(unsafe_list)
+
+        self.assertIn("unsafe", str(context.exception).lower())
+        self.assertIn("(a+)+", str(context.exception))
+
+    def test_validate_regex_patterns_accepts_empty_list(self):
+        """Test that validate_regex_patterns accepts empty list."""
+        # Should not raise ValidationError
+        try:
+            validate_regex_patterns([])
+        except ValidationError:
+            self.fail("validate_regex_patterns raised ValidationError for empty list")
+
+    def test_validate_regex_patterns_accepts_none(self):
+        """Test that validate_regex_patterns accepts None."""
+        # Should not raise ValidationError
+        try:
+            validate_regex_patterns(None)
+        except ValidationError:
+            self.fail("validate_regex_patterns raised ValidationError for None")
+
+    def test_validate_regex_patterns_rejects_non_list(self):
+        """Test that validate_regex_patterns rejects non-list input."""
+        with self.assertRaises(ValidationError) as context:
+            validate_regex_patterns("not a list")
+
+        self.assertIn("list", str(context.exception).lower())

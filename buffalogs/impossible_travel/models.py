@@ -11,6 +11,7 @@ from impossible_travel.validators import (
     validate_countries_names,
     validate_country_couples_list,
     validate_ips_or_network,
+    validate_regex_patterns,
     validate_string_or_regex,
     validate_tags,
 )
@@ -274,7 +275,7 @@ class Config(models.Model):
         blank=True,
         null=True,
         default=get_default_ignored_users,
-        validators=[validate_string_or_regex],
+        validators=[validate_string_or_regex, validate_regex_patterns],
         help_text="List of users (strings or regex patterns) to be ignored from the detection",
     )
     enabled_users = ArrayField(
@@ -282,7 +283,7 @@ class Config(models.Model):
         blank=True,
         null=True,
         default=get_default_enabled_users,
-        validators=[validate_string_or_regex],
+        validators=[validate_string_or_regex, validate_regex_patterns],
         help_text="List of selected users (strings or regex patterns) on which the detection will perform",
     )
     vip_users = ArrayField(
@@ -290,6 +291,7 @@ class Config(models.Model):
         blank=True,
         null=True,
         default=get_default_vip_users,
+        validators=[validate_regex_patterns],
         help_text="List of users considered more sensitive",
     )
     alert_is_vip_only = models.BooleanField(
@@ -385,7 +387,8 @@ class Config(models.Model):
         help_text="Days after which a login from a country is considered atypical",
     )
     user_learning_period = models.PositiveIntegerField(
-        default=settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD, help_text="Days considered to learn the user login behaviors - no alerts generation"
+        default=settings.CERTEGO_BUFFALOGS_USER_LEARNING_PERIOD,
+        help_text="Days considered to learn the user login behaviors - no alerts generation",
     )
     user_max_days = models.PositiveIntegerField(
         default=settings.CERTEGO_BUFFALOGS_USER_MAX_DAYS,
