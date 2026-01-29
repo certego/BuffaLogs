@@ -1,7 +1,9 @@
 from django import forms
 from django.contrib.postgres.forms import SimpleArrayField
-from .constants import (AlertDetectionType, AlertFilterType, AlertTagValues,UserRiskScoreType,)
+
+from .constants import AlertDetectionType, AlertFilterType, AlertTagValues, UserRiskScoreType
 from .models import Alert, Config, TaskSettings, User
+
 
 class MultiChoiceArrayWidget(forms.SelectMultiple):
     """Widget for user-friendly interface for ArrayField with multiple choices"""
@@ -30,6 +32,7 @@ class MultiChoiceArrayField(SimpleArrayField):
             return []
         return value
 
+
 class ShortLabelChoiceField(forms.ChoiceField):
     """ChoiceField personalized in order to show the short_value as label on DjangoValue"""
 
@@ -37,6 +40,7 @@ class ShortLabelChoiceField(forms.ChoiceField):
         choices = kwargs.pop("choices", [])
         formatted_choices = [("", "---------")] + [(value, value) for value, _ in choices]
         super().__init__(*args, choices=formatted_choices, required=False, **kwargs)
+
 
 class UserAdminForm(forms.ModelForm):
     risk_score = ShortLabelChoiceField(choices=UserRiskScoreType.choices)
