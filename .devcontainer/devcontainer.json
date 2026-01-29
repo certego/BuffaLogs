@@ -6,7 +6,7 @@
     // Stop all running containers on close
     "shutdownAction": "stopCompose",
     "remoteUser": "root",
-    "postCreateCommand": "pip install --no-cache-dir django-debug-toolbar && python manage.py migrate",
+    "postCreateCommand": "python manage.py migrate",
     "forwardPorts": [
         8000,
         5433,
