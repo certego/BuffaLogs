@@ -30,11 +30,11 @@ dependencies:
     specifier: 18.2.6
     version: 18.2.6
   ag-grid-community:
-    specifier: ^30.0.6
-    version: 30.0.6
+    specifier: ^35.0.1
+    version: 35.0.1
   ag-grid-react:
-    specifier: ^30.0.6
-    version: 30.0.6(ag-grid-community@30.0.6)(react-dom@18.2.0)(react@18.2.0)
+    specifier: ^35.0.1
+    version: 35.0.1(react-dom@18.2.0)(react@18.2.0)
   autoprefixer:
     specifier: 10.4.14
     version: 10.4.14(postcss@8.4.24)
@@ -1335,18 +1335,23 @@ packages:
     hasBin: true
     dev: false
 
-  /ag-grid-community@30.0.6:
-    resolution: {integrity: sha512-aMTJNXFDC00QxMaI0/V6M0GTzAtsXUvuxuld97S1Kqb4LvFNsycZlQ3/IcHW7JangRQZxAcwmSpBQBV/lcWoEg==}
+  /ag-charts-types@13.0.1:
+    resolution: {integrity: sha512-qg9adyiAaeUaDtWZEEPF45dv55kdJTe6Ghi0EQXCS79h/7KvOd6dxhqGZjPL1zeFl/L9qEXuYgb+LkGStq4mgQ==}
     dev: false
 
-  /ag-grid-react@30.0.6(ag-grid-community@30.0.6)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-fWvf4DIyMihbuhvVlhO6pewXyOirEDgM73Pv6s9V1Ay4xp61Y/kdv2JFmkIwCV0NSpA5CKUeu1JFa5vmA/HVMw==}
-    peerDependencies:
-      ag-grid-community: ~30.0.6
-      react: ^16.3.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0
+  /ag-grid-community@35.0.1:
+    resolution: {integrity: sha512-fYYZdymWKsN9/tZv+R6uZRnuiWYEQr+GHl85ZrB0ixbFcE8opYK4NJI29NnMc9ShYiCBnAO9hj54IFa+FI4aDA==}
     dependencies:
-      ag-grid-community: 30.0.6
+      ag-charts-types: 13.0.1
+    dev: false
+
+  /ag-grid-react@35.0.1(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-NvrrgWUm+DsnsZVFho16srlyBNKSl9nqeSadk63HpHYerq4S4vN/2JCxdNtfqns7SpbYx7GbasbMFCXKYj7Qaw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    dependencies:
+      ag-grid-community: 35.0.1
       prop-types: 15.8.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
