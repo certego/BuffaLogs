@@ -1,10 +1,13 @@
 import logging
 from datetime import datetime
 
-from django.conf import settings
 from elasticsearch.dsl import Search, connections
+from elasticsearch.exceptions import ConnectionError as ESConnectionError
+from elasticsearch.exceptions import ConnectionTimeout
+from elastic_transport import ConnectionError as TransportConnectionError
+from elastic_transport import ConnectionTimeout as TransportConnectionTimeout
 from impossible_travel.ingestion.base_ingestion import BaseIngestion
-from impossible_travel.utils.connection_retry import es_connection_retry
+from impossible_travel.utils.connection_retry import create_retry_decorator
 
 
 class ElasticsearchIngestion(BaseIngestion):
@@ -17,16 +20,23 @@ class ElasticsearchIngestion(BaseIngestion):
         Constructor for the Elasticsearch Ingestion object
         """
         super().__init__(ingestion_config, mapping)
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        self.max_retries = getattr(settings, "CERTEGO_BUFFALOGS_ES_MAX_RETRIES", 10)
-        self.retry_max_time = getattr(settings, "CERTEGO_BUFFALOGS_ES_RETRY_MAX_TIME", 300)
         self._initialize_connection()
 
-    def _create_retry_decorator(self):
-        return es_connection_retry(max_tries=self.max_retries, max_time=self.retry_max_time)
-
     def _initialize_connection(self):
-        retry_decorator = self._create_retry_decorator()
+        """Initialize Elasticsearch connection with retry logic."""
+        retry_decorator = create_retry_decorator(
+            retry_config=self.retry_config,
+            exception_types=(
+                TransportConnectionError,
+                TransportConnectionTimeout,
+                ESConnectionError,
+                ConnectionTimeout,
+                ConnectionError,
+                TimeoutError,
+                OSError,
+            ),
+            operation_name="Elasticsearch connection"
+        )
 
         @retry_decorator
         def _connect():
@@ -35,16 +45,31 @@ class ElasticsearchIngestion(BaseIngestion):
                 request_timeout=self.ingestion_config["timeout"],
                 verify_certs=False,
             )
+            conn = connections.get_connection()
+            conn.cluster.health()
             self.logger.info(f"Successfully connected to Elasticsearch at {self.ingestion_config['url']}")
 
         try:
             _connect()
         except Exception as e:
             self.logger.error(f"Failed to connect to Elasticsearch after all retry attempts: {e}")
-            self.logger.warning("Elasticsearch ingestion will be unavailable. Service will continue running.")
+            raise
 
     def _execute_search(self, search_obj):
-        retry_decorator = self._create_retry_decorator()
+        """Execute search with retry logic."""
+        retry_decorator = create_retry_decorator(
+            retry_config=self.retry_config,
+            exception_types=(
+                TransportConnectionError,
+                TransportConnectionTimeout,
+                ESConnectionError,
+                ConnectionTimeout,
+                ConnectionError,
+                TimeoutError,
+                OSError,
+            ),
+            operation_name="Elasticsearch search"
+        )
 
         @retry_decorator
         def _execute():
@@ -85,6 +110,7 @@ class ElasticsearchIngestion(BaseIngestion):
                         users_list.append(user.key)
         except Exception as e:
             self.logger.error(f"Failed to retrieve users from Elasticsearch: {e}")
+            raise
 
         return users_list
 
@@ -144,5 +170,6 @@ class ElasticsearchIngestion(BaseIngestion):
                     user_logins.append(tmp)
         except Exception as e:
             self.logger.error(f"Failed to retrieve logins for user {username}: {e}")
+            raise
 
         return user_logins

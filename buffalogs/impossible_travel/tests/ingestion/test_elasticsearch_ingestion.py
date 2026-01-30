@@ -21,13 +21,11 @@ class ElasticsearchIngestionTestCase(TestCase):
         self.template = load_index_template("example_template")
         connections.create_connection(hosts=self.elastic_config["url"], request_timeout=self.ingestion_config["elasticsearch"]["timeout"])
         self._load_elastic_template_on_elastic(template_to_be_added=self.template)
-        # load test data into the 2 indexes: cloud-* and fw-proxy-*
         self._load_test_data_on_elastic(data_to_be_added=self.list_to_be_added_cloud, index="cloud-test_data")
         self._load_test_data_on_elastic(data_to_be_added=self.list_to_be_added_fw_proxy, index="fw-proxy-test_data")
 
     def _load_elastic_template_on_elastic(self, template_to_be_added):
         response = self.es.indices.put_index_template(name="example_template", body=template_to_be_added)
-        # check that the template has been uploaded correctly
         self.assertTrue(response["acknowledged"])
 
     def tearDown(self) -> None:
@@ -41,39 +39,34 @@ class ElasticsearchIngestionTestCase(TestCase):
 
     def _load_test_data_on_elastic(self, data_to_be_added: List[dict], index: str):
         bulk(self.es, self._bulk_gendata(index, data_to_be_added), refresh="true")
-        # check that the data on the Elastic index has been uploaded correctly
         count = self.es.count(index=index)["count"]
         self.assertTrue(count > 0)
 
     def test_process_users_ConnectionError(self):
-        # test the function process_users with the exception ConnectionError
+        self.elastic_config["retry"] = {"enabled": False}
         self.elastic_config["url"] = "http://unexisting-url:8888"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
-        with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
-            elastic_ingestor.process_users(start_date, end_date)
+        with self.assertRaises(Exception):
+            elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
 
     def test_process_users_TimeoutError(self):
-        # test the function process_users with the exception TimeoutError
+        self.elastic_config["retry"] = {"enabled": False}
         self.elastic_config["timeout"] = 0.001
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
-        elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
-        with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
-            elastic_ingestor.process_users(start_date, end_date)
+        with self.assertRaises(Exception):
+            elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
 
     def test_process_users_Exception(self):
-        # test the function process_users with a generic exception (e.g. for wrong indexes)
         self.elastic_config["indexes"] = "unexisting-index"
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
         elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
-        with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
+        with self.assertRaises(Exception):
             elastic_ingestor.process_users(start_date, end_date)
 
     def test_process_users_no_data(self):
-        # test the function process_users with no data in that range time
         start_date = datetime(2025, 2, 26, 11, 30, tzinfo=timezone.utc)
         end_date = datetime(2025, 2, 26, 12, 00, tzinfo=timezone.utc)
         elastic_ingestor = ElasticsearchIngestion(ingestion_config=self.elastic_config, mapping=self.elastic_config["custom_mapping"])
