@@ -78,6 +78,9 @@ After that, there are two ways of running BuffaLogs, depending on your system co
     * run `docker compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d` in order to execute all the containers, included Elasticsearch and Kibana
     * Now elasticsearch and kibana are running on the same host with Buffalogs.
 
+### Secure Bundled Elasticsearch (Opt-In)
+By default, the bundled Elasticsearch is unsecured for easy development. To enable basic authentication and TLS/SSL opt-in, use the `secure` profile. For instructions on generating certificates, setting passwords/tokens, and starting secure mode, see [docs/ingestion/elasticsearch.md](docs/ingestion/elasticsearch.md).
+
 ### Configuring Elasticsearch Connection
 
 For detailed instructions on connecting BuffaLogs to an existing Elasticsearch cluster, including:

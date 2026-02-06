@@ -4,27 +4,40 @@ from django.db import migrations, models
 from ua_parser import user_agent_parser
 
 from impossible_travel.models import Login
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def populate_device_fingerprint(apps, schema_editor):
-    # populate the new device_fingerprint field for existing logins
+    # Constants
     UNKNOWN_OS = "unknownos"
     UNKNOWN_OS_MAJOR = "unknownosmajor"
     UNKNOWN_DEVICE = "unknowndevice"
     UNKNOWN_BROWSER = "unknownbrowser"
-
     UNKNOWN_FINGERPRINT = f"{UNKNOWN_OS}-{UNKNOWN_OS_MAJOR}-{UNKNOWN_DEVICE}-{UNKNOWN_BROWSER}"
 
+    logins_to_update = []
+    batch_size = 500
+
+    # Fetch all the logins, process them in memory
     for login_db in Login.objects.all():
+        # Default fallback for unknown user agent
         if not login_db.user_agent:
             login_db.device_fingerprint = UNKNOWN_FINGERPRINT
-            login_db.save()
+            logins_to_update.append(login_db)
             continue
+
         try:
             parsed = user_agent_parser.Parse(login_db.user_agent)
         except Exception:
-            return UNKNOWN_FINGERPRINT
+            # Log error in case of parsing failure and assign default fingerprint
+            logger.exception(f"Error parsing user agent {login_db.user_agent}")
+            login_db.device_fingerprint = UNKNOWN_FINGERPRINT
+            logins_to_update.append(login_db)
+            continue
 
+        # Extract data from parsed user agent
         os_data = parsed.get("os", {}) or {}
         ua_data = parsed.get("user_agent", {}) or {}
         device_data = parsed.get("device", {}) or {}
@@ -34,9 +47,8 @@ def populate_device_fingerprint(apps, schema_editor):
         device_family = (device_data.get("family") or UNKNOWN_DEVICE).strip().lower()
         browser_family = (ua_data.get("family") or UNKNOWN_BROWSER).strip().lower()
 
+        # Heuristic for device type detection
         agent_lower = login_db.user_agent.lower()
-
-        # Heuristic for device type
         if any(x in agent_lower for x in ["x11", "win64", "wow64", "x86_64", "macintosh"]):
             device_family = "desktop"
         elif "tablet" in agent_lower or "ipad" in agent_lower:
@@ -44,20 +56,29 @@ def populate_device_fingerprint(apps, schema_editor):
         elif "mobile" in agent_lower:
             device_family = "mobile"
 
+        # Construct the device fingerprint
         os_part = f"{os_family}-{os_major}".replace(" ", "")
         device_part = device_family.replace(" ", "")
         browser_part = browser_family.replace(" ", "")
 
         fingerprint = f"{os_part}-{device_part}-{browser_part}"
 
-        # if all values are unkwown, return the fallback string
+        # If fingerprint is unknown, use the fallback
         if fingerprint == UNKNOWN_FINGERPRINT:
-            res = UNKNOWN_FINGERPRINT
+            login_db.device_fingerprint = UNKNOWN_FINGERPRINT
+        else:
+            login_db.device_fingerprint = fingerprint
 
-        res = fingerprint
+        logins_to_update.append(login_db)
 
-        login_db.device_fingerprint = res
-        login_db.save()
+        # Bulk update in batches
+        if len(logins_to_update) >= batch_size:
+            Login.objects.bulk_update(logins_to_update, ["device_fingerprint"])
+            logins_to_update.clear()  # Clear the list after bulk update
+
+    # Final bulk update for any remaining records
+    if logins_to_update:
+        Login.objects.bulk_update(logins_to_update, ["device_fingerprint"])
 
 
 class Migration(migrations.Migration):

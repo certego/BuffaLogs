@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.postgres.forms import SimpleArrayField
 
-from .constants import AlertDetectionType, AlertFilterType, UserRiskScoreType
+from .constants import AlertDetectionType, AlertFilterType, AlertTagValues, UserRiskScoreType
 from .models import Alert, Config, TaskSettings, User
 
 
@@ -51,12 +51,21 @@ class UserAdminForm(forms.ModelForm):
 
 
 class AlertAdminForm(forms.ModelForm):
-    name = ShortLabelChoiceField(choices=AlertDetectionType.choices)
-    filter_type = ShortLabelChoiceField(choices=AlertFilterType.choices)
+    name = forms.ChoiceField(choices=AlertDetectionType.choices, required=True)
+    filter_type = forms.ChoiceField(choices=AlertFilterType.choices, required=True)
+    tags = forms.MultipleChoiceField(
+        choices=[(tag, tag) for tag, _ in AlertTagValues.choices],
+        widget=forms.SelectMultiple(attrs={"size": "1"}),
+        required=False,
+    )
 
     class Meta:
         model = Alert
         fields = "__all__"
+
+    def clean_tags(self):
+        tags = self.data.getlist("tags")
+        return tags or []
 
 
 class ConfigAdminForm(forms.ModelForm):
