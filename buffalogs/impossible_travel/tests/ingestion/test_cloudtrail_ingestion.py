@@ -1,13 +1,11 @@
-import json
-from datetime import datetime, timedelta, timezone
 import gzip
+import json
+from datetime import datetime, timezone
+from unittest.mock import patch
 
-from moto import mock_aws
 import boto3
-
-from unittest.mock import patch  # <--- This was missing!
-
 from impossible_travel.ingestion.cloudtrail_ingestion import CloudTrailIngestion
+from moto import mock_aws
 
 
 @mock_aws
@@ -32,13 +30,13 @@ def test_integration():
             "source.geo.country_name": "country",
             "source.geo.location.lat": "lat",
             "source.geo.location.lon": "lon",
-            "source.intelligence_category": "intelligence_category"
-        }
+            "source.intelligence_category": "intelligence_category",
+        },
     }
 
     # Create mock S3 bucket
-    s3 = boto3.client('s3', region_name='us-east-1')
-    s3.create_bucket(Bucket='test-bucket')
+    s3 = boto3.client("s3", region_name="us-east-1")
+    s3.create_bucket(Bucket="test-bucket")
 
     # Mock CloudTrail log file
     mock_record_alice = {
@@ -56,11 +54,7 @@ def test_integration():
         "eventName": "AssumeRole",
         "userIdentity": {
             "type": "AssumedRole",
-            "sessionContext": {
-                "sessionIssuer": {
-                    "userName": "bob"
-                }
-            }
+            "sessionContext": {"sessionIssuer": {"userName": "bob"}},
         },
         "sourceIPAddress": "198.51.100.77",
         "userAgent": "Mozilla/5.0",
@@ -69,9 +63,9 @@ def test_integration():
     mock_log = {"Records": [mock_record_alice, mock_record_bob]}
     gz_log = gzip.compress(json.dumps(mock_log).encode())
     s3.put_object(
-        Bucket='test-bucket',
-        Key="AWSLogs/123456789012/CloudTrail/us-east-1/2025/10/15/file.json.gz",
-        Body=gz_log
+        Bucket="test-bucket",
+        Key=("AWSLogs/123456789012/CloudTrail/us-east-1/" "2025/10/15/file.json.gz"),
+        Body=gz_log,
     )
 
     # Create ingestion instance
@@ -80,39 +74,39 @@ def test_integration():
     # Mock parse_login to force success (no recursion, full implementation)
     def mock_parse_login(self, record):
         data = {
-            '@timestamp': record.get('eventTime', ''),
-            'user.name': (
-                record.get('userIdentity', {}).get('userName') 
-                or record.get('userIdentity', {}).get('sessionContext', {}).get('sessionIssuer', {}).get('userName') 
-                or ''
+            "@timestamp": record.get("eventTime", ""),
+            "user.name": (
+                record.get("userIdentity", {}).get("userName")
+                or record.get("userIdentity", {}).get("sessionContext", {}).get("sessionIssuer", {}).get("userName")
+                or ""
             ),
-            'source.ip': record.get('sourceIPAddress', ''),
-            'user_agent.original': record.get('userAgent', ''),
-            'source.as.organization.name': '',
-            'source.geo.country_name': 'MockCountry',
-            'source.geo.location.lat': 0.0,
-            'source.geo.location.lon': 0.0,
-            'source.intelligence_category': '',
-            '_id': record.get('eventID', ''),
-            '_index': 'cloudtrail'
+            "source.ip": record.get("sourceIPAddress", ""),
+            "user_agent.original": record.get("userAgent", ""),
+            "source.as.organization.name": "",
+            "source.geo.country_name": "MockCountry",
+            "source.geo.location.lat": 0.0,
+            "source.geo.location.lon": 0.0,
+            "source.intelligence_category": "",
+            "_id": record.get("eventID", ""),
+            "_index": "cloudtrail",
         }
 
         # Skip invalid IPs
-        ip = data['source.ip']
-        if not ip or ip == '127.0.0.1' or ip.startswith(('10.', '192.168.', '172.16.')):
+        ip = data["source.ip"]
+        if not ip or ip == "127.0.0.1" or ip.startswith(("10.", "192.168.", "172.16.")):
             return None
 
         # Skip if no country (but we force it here)
-        if not data['source.geo.country_name']:
+        if not data["source.geo.country_name"]:
             return None
 
         return data
 
-    with patch.object(CloudTrailIngestion, 'parse_login', mock_parse_login):
+    with patch.object(CloudTrailIngestion, "parse_login", mock_parse_login):
         # Test process_users
         users = ingestion.process_users(
             start_date=datetime(2025, 10, 15, tzinfo=timezone.utc),
-            end_date=datetime(2025, 10, 16, tzinfo=timezone.utc)
+            end_date=datetime(2025, 10, 16, tzinfo=timezone.utc),
         )
         print("Users found:", users)
         assert sorted(users) == ["alice", "bob"], "process_users failed"
@@ -121,7 +115,7 @@ def test_integration():
         alice_logins = ingestion.process_user_logins(
             start_date=datetime(2025, 10, 15, tzinfo=timezone.utc),
             end_date=datetime(2025, 10, 16, tzinfo=timezone.utc),
-            username="alice"
+            username="alice",
         )
         print("Alice logins:", alice_logins)
         assert len(alice_logins) == 1, "process_user_logins failed for alice"

@@ -24,30 +24,17 @@ class CloudTrailIngestion(BaseIngestion):
         self.s3 = boto3.client(
             "s3",
             aws_access_key_id=ingestion_config.get("aws_access_key_id"),
-            aws_secret_access_key=ingestion_config.get(
-                "aws_secret_access_key"
-            ),
+            aws_secret_access_key=ingestion_config.get("aws_secret_access_key"),
             region_name=ingestion_config["region"],
         )
         self.bucket = ingestion_config["bucket_name"]
-        self.prefix_template = ingestion_config.get(
-            "prefix_template",
-            "AWSLogs/{account_id}/CloudTrail/{region}/"
-        )  # User can override
-        self.geo_db_path = ingestion_config.get(
-            "geo_db_path",
-            "/etc/buffalogs/GeoLite2-City.mmdb"
-        )
-        self.logger = logging.getLogger(
-            f"{__name__}.{self.__class__.__name__}"
-        )
+        self.prefix_template = ingestion_config.get("prefix_template", "AWSLogs/{account_id}/CloudTrail/{region}/")  # User can override
+        self.geo_db_path = ingestion_config.get("geo_db_path", "/etc/buffalogs/GeoLite2-City.mmdb")
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         try:
             self.geo_reader = geoip2.database.Reader(self.geo_db_path)
         except FileNotFoundError:
-            msg = (
-                f"GeoIP database not found at {self.geo_db_path}. "
-                "Geo-enrichment disabled."
-            )
+            msg = f"GeoIP database not found at {self.geo_db_path}. " "Geo-enrichment disabled."
             self.logger.warning(msg)
             self.geo_reader = None
 
@@ -58,33 +45,21 @@ class CloudTrailIngestion(BaseIngestion):
         Handles pagination for list_objects_v2.
         """
         files = []
-        current = start_date.replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        current = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
         account_id = self.ingestion_config.get("account_id", "")
         region = self.ingestion_config["region"]  # Required in config
 
         while current < end_date:
             date_part = f"{current.year}/{current.month:02d}/{current.day:02d}/"  # noqa: E501
-            prefix = (
-                self.prefix_template.format(
-                    account_id=account_id, region=region
-                )
-                + date_part
-            )
+            prefix = self.prefix_template.format(account_id=account_id, region=region) + date_part
 
             try:
                 paginator = self.s3.get_paginator("list_objects_v2")
-                for page in paginator.paginate(
-                    Bucket=self.bucket, Prefix=prefix
-                ):
+                for page in paginator.paginate(Bucket=self.bucket, Prefix=prefix):
                     for obj in page.get("Contents", []):
                         files.append(obj["Key"])
             except Exception as e:
-                err_msg = (
-                    f"Error listing S3 objects for prefix "
-                    f"{prefix}: {e}"
-                )
+                err_msg = f"Error listing S3 objects for prefix " f"{prefix}: {e}"
                 self.logger.error(err_msg)
             current += timedelta(days=1)
         return files
@@ -113,20 +88,14 @@ class CloudTrailIngestion(BaseIngestion):
         Filter for relevant security/login events.
         Equivalent to ES filters: authentication, success, start.
         """
-        if (
-            record.get("errorCode") is not None
-            or record.get("errorMessage") is not None
-        ):
+        if record.get("errorCode") is not None or record.get("errorMessage") is not None:
             return False  # Only successful events
 
         event_name = record.get("eventName")
         event_source = record.get("eventSource")
 
         # Console sign-ins
-        if (
-            event_source == "signin.amazonaws.com"
-            and event_name in ["ConsoleLogin", "CheckMfa"]
-        ):
+        if event_source == "signin.amazonaws.com" and event_name in ["ConsoleLogin", "CheckMfa"]:
             return True
 
         # Role assumptions (like starting a session)
@@ -150,33 +119,19 @@ class CloudTrailIngestion(BaseIngestion):
         data["@timestamp"] = record.get("eventTime", "")
 
         user_identity = record.get("userIdentity", {})
-        session_issuer = user_identity.get("sessionContext", {}).get(
-            "sessionIssuer", {}
-        )
+        session_issuer = user_identity.get("sessionContext", {}).get("sessionIssuer", {})
 
         arn_last = user_identity.get("arn", "").split("/")[-1]
         principal_last = user_identity.get("principalId", "").split(":")[-1]
 
-        data["user.name"] = (
-            user_identity.get("userName")
-            or session_issuer.get("userName")
-            or arn_last
-            or principal_last
-            or ""
-        )
+        data["user.name"] = user_identity.get("userName") or session_issuer.get("userName") or arn_last or principal_last or ""
 
         data["source.ip"] = record.get("sourceIPAddress", "")
         data["user_agent.original"] = record.get("userAgent", "")
-        data["source.as.organization.name"] = (
-            ""  # Not available in CloudTrail; can enrich externally if needed
-        )
+        data["source.as.organization.name"] = ""  # Not available in CloudTrail; can enrich externally if needed
 
         ip = data["source.ip"]
-        if (
-            not ip
-            or ip == "127.0.0.1"
-            or ip.startswith(("10.", "192.168.", "172.16."))
-        ):
+        if not ip or ip == "127.0.0.1" or ip.startswith(("10.", "192.168.", "172.16.")):
             return None  # Skip invalid/local IPs
 
         # Geo-enrichment
@@ -200,10 +155,7 @@ class CloudTrailIngestion(BaseIngestion):
 
         # Intelligence category (e.g., anonymous)
         ua_lower = data["user_agent.original"].lower()
-        is_anonymous = (
-            user_identity.get("type") == "AnonymousUser"
-            or "tor" in ua_lower
-        )
+        is_anonymous = user_identity.get("type") == "AnonymousUser" or "tor" in ua_lower
         data["source.intelligence_category"] = "anonymous" if is_anonymous else ""  # noqa: E501
 
         # Other fields
@@ -228,17 +180,12 @@ class CloudTrailIngestion(BaseIngestion):
                 users.add(name)
         return list(users)
 
-    def process_user_logins(
-        self, start_date: datetime, end_date: datetime, username: str
-    ) -> list:
+    def process_user_logins(self, start_date: datetime, end_date: datetime, username: str) -> list:
         """
         Concrete implementation of the BaseIngestion.process_user_logins
         abstract method
         """
-        msg = (
-            f"Processing logins for user {username} "
-            f"from {start_date} to {end_date}"
-        )
+        msg = f"Processing logins for user {username} " f"from {start_date} to {end_date}"
         self.logger.info(msg)
 
         files = self.get_log_files(start_date, end_date)
