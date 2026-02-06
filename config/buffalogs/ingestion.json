@@ -20,7 +20,7 @@
             "source.geo.location.lon": "lon",
             "source.intelligence_category": "intelligence_category"
         },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+        "__custom_fields__": ["url", "username", "password", "timeout", "indexes"]
     },
     "opensearch": {
         "url": "http://opensearch:9200/",
@@ -42,7 +42,7 @@
             "source.geo.location.lon": "lon",
             "source.intelligence_category": "intelligence_category"
         },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+        "__custom_fields__": ["url", "username", "password", "timeout", "indexes"]
     },
     "splunk": {
         "host": "splunk",
@@ -66,6 +66,39 @@
             "index": "index",
             "source.intelligence_category": "intelligence_category"
         },
-	"__custom_fields__" : ["host","port", "scheme", "username", "password", "timeout", "indexes"]
-      }
+        "__custom_fields__": ["host", "port", "scheme", "username", "password", "timeout", "indexes"]
+    },
+    "cloudtrail": {
+        "bucket_name": "your-cloudtrail-logs-bucket-name",
+        "region": "us-east-1",
+        "account_id": "123456789012",
+        "aws_access_key_id": "AKIAXXXXXXXXXXXXXXXX",
+        "aws_secret_access_key": "your-secret-key-here",
+        "prefix_template": "AWSLogs/{account_id}/CloudTrail/{region}/",
+        "geo_db_path": "/etc/buffalogs/GeoLite2-City.mmdb",
+        "timeout": 90,
+        "bucket_size": 10000,
+        "custom_mapping": {
+            "@timestamp": "timestamp",
+            "_id": "id",
+            "_index": "index",
+            "user.name": "username",
+            "source.ip": "ip",
+            "user_agent.original": "agent",
+            "source.as.organization.name": "organization",
+            "source.geo.country_name": "country",
+            "source.geo.location.lat": "lat",
+            "source.geo.location.lon": "lon",
+            "source.intelligence_category": "intelligence_category"
+        },
+        "__custom_fields__": [
+            "bucket_name",
+            "region",
+            "account_id",
+            "aws_access_key_id",
+            "aws_secret_access_key",
+            "prefix_template",
+            "geo_db_path"
+        ]
+    }
 }
