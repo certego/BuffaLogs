@@ -206,10 +206,8 @@ class Command(TaskLoggingCommand):
                     validator(value)
                 except ValidationError as e:
                     # Extract detailed error messages from ValidationError
-                    error_details = "; ".join(e.messages) if hasattr(e, 'messages') else str(e)
-                    raise CommandError(
-                        f"Validation error on field '{field}' with value '{value}': {error_details}"
-                    )
+                    error_details = "; ".join(e.messages) if hasattr(e, "messages") else str(e)
+                    raise CommandError(f"Validation error on field '{field}' with value '{value}': {error_details}")
 
             # Apply changes
             if is_list:
@@ -230,15 +228,12 @@ class Command(TaskLoggingCommand):
             setattr(config, field, current)
 
         # Validate filtered_alerts_types before saving
-        if hasattr(config, 'filtered_alerts_types') and config.filtered_alerts_types:
+        if hasattr(config, "filtered_alerts_types") and config.filtered_alerts_types:
             valid_choices = [choice[0] for choice in AlertDetectionType.choices]
             invalid_values = [val for val in config.filtered_alerts_types if val not in valid_choices]
-            
+
             if invalid_values:
-                raise CommandError(
-                    f"Invalid values in 'filtered_alerts_types': {invalid_values}. "
-                    f"Valid choices are: {valid_choices}"
-                )
+                raise CommandError(f"Invalid values in 'filtered_alerts_types': {invalid_values}. " f"Valid choices are: {valid_choices}")
 
         config.save()
         self.stdout.write(self.style.SUCCESS("Config updated successfully."))
