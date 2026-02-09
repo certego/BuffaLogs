@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.functions import Upper
 from django.utils import timezone
 from impossible_travel.constants import AlertDetectionType, AlertFilterType, AlertTagValues, ExecutionModes, UserRiskScoreType
 from impossible_travel.validators import (
@@ -96,6 +97,13 @@ class Login(models.Model):
             query = query[start:end]
 
         return query
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["-timestamp"], name="login_timestamp_desc_idx"),
+            models.Index(Upper("country"), name="login_country_upper_idx"),
+            models.Index(fields=["ip"], name="login_ip_idx"),
+        ]
 
 
 class Alert(models.Model):
