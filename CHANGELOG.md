@@ -1,3 +1,15 @@
+### 3.1.x
+### 3.1.0
+#### Features
+* Improved the DB performance adding query-aligned indexes for Login model (`-timestamp`, `country` and `ip`) (by community - @nishantxscooby)
+#### Changes
+* Upgraded python packages
+* Upgraded `wheel` from `0.45.1` to `0.46.2` in `buffacli/` (by dependabot)
+* Upgraded `next` from `13.4.6` to `16.1.5` in `frontend/` (by dependabot)
+* Upgraded `ag-grid-community` and `ag-grid-react` from `30.0.6` to `35.0.1` in `/frontend` (by dependabot)
+#### Bugfix
+* Fixed the `Alert.tags` field (MultiChoiceArrayField) view in the django admin interface (by community - @Nivikiwi)
+
 ### 3.0.x
 ### 3.0.1
 #### Bugfix
