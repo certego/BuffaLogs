@@ -1,3 +1,5 @@
+import json
+
 import logging
 from argparse import RawTextHelpFormatter
 from typing import Any, Tuple
@@ -31,20 +33,27 @@ def _cast_value(val: str) -> Any:
 
 
 def parse_field_value(item: str) -> Tuple[str, Any]:
-    """Parse a string of the form FIELD=VALUE or FIELD=[val1,val2]"""
+    """Parse FIELD=VALUE or FIELD=["val1","val2"]"""
     if "=" not in item:
         raise CommandError(f"Invalid syntax '{item}': must be FIELD=VALUE")
 
     field, value = item.split("=", 1)
-    value = value.strip()
+    field, value = field.strip(), value.strip()
 
     if value.startswith("[") and value.endswith("]"):
-        inner = value[1:-1].strip()
-        parsed = [_cast_value(v) for v in inner.split(",") if v.strip()]
+        try:
+            # Try JSON for complex strings with spaces
+            json_val = value.replace("'", '"')
+            parsed_list = json.loads(json_val)
+            parsed = [_cast_value(v) for v in (parsed_list if isinstance(parsed_list, list) else [parsed_list])]
+        except json.JSONDecodeError:
+            # Fallback for legacy comma-split format
+            inner = value[1:-1].strip()
+            parsed = [_cast_value(v.strip()) for v in inner.split(",") if v.strip()]
     else:
         parsed = _cast_value(value)
 
-    return field.strip(), parsed
+    return field, parsed
 
 
 class Command(TaskLoggingCommand):
