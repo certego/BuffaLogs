@@ -260,6 +260,82 @@ class ManagementCommandsTestCase(TestCase):
         self.assertEqual(field_float, "vel_accepted")
         self.assertEqual(value_float, 55.7)
 
+    def test_parse_field_value_list_with_single_quoted_values_with_spaces(self):
+        # Testing the parse_field_value function with single-quoted values containing spaces
+        field, value = parse_field_value("filtered_alerts_types=['New Device','User Risk Threshold','Anonymous IP Login']")
+        self.assertEqual(field, "filtered_alerts_types")
+        self.assertListEqual(value, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
+    def test_parse_field_value_list_with_double_quoted_values_with_spaces(self):
+        # Testing the parse_field_value function with double-quoted values containing spaces
+        field, value = parse_field_value('filtered_alerts_types=["New Device","User Risk Threshold","Anonymous IP Login"]')
+        self.assertEqual(field, "filtered_alerts_types")
+        self.assertListEqual(value, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
+    def test_parse_field_value_list_with_mixed_quotes(self):
+        # Testing the parse_field_value function with mixed single and double quotes
+        field, value = parse_field_value("filtered_alerts_types=['New Device',\"User Risk Threshold\",'Anonymous IP Login']")
+        self.assertEqual(field, "filtered_alerts_types")
+        self.assertListEqual(value, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
+    def test_parse_field_value_list_with_quoted_and_unquoted_mixed(self):
+        # Testing the parse_field_value function with a mix of quoted and unquoted values
+        field, value = parse_field_value("allowed_countries=['United States',Italy,'United Kingdom',France]")
+        self.assertEqual(field, "allowed_countries")
+        self.assertListEqual(value, ["United States", "Italy", "United Kingdom", "France"])
+
+    def test_parse_field_value_list_with_spaces_around_quoted_values(self):
+        # Testing the parse_field_value function with spaces around quoted values
+        field, value = parse_field_value("filtered_alerts_types=[ 'New Device' , 'User Risk Threshold' , 'Anonymous IP Login' ]")
+        self.assertEqual(field, "filtered_alerts_types")
+        self.assertListEqual(value, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
+    def test_setup_config_command_with_quoted_list_values(self):
+        # Integration test: verify the entire command works with quoted values containing spaces
+        Config.objects.all().delete()
+        config = Config.objects.create(id=1, filtered_alerts_types=[])
+
+        # Test append mode with single-quoted values
+        call_command("setup_config", "-a", "filtered_alerts_types=['New Device','User Risk Threshold']")
+        config.refresh_from_db()
+        self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold"])
+
+        # Test append mode adding more values
+        call_command("setup_config", "-a", "filtered_alerts_types=['Anonymous IP Login']")
+        config.refresh_from_db()
+        self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
+        # Test override mode with double-quoted values
+        call_command("setup_config", "-o", 'filtered_alerts_types=["Imp Travel","New Country"]')
+        config.refresh_from_db()
+        self.assertListEqual(config.filtered_alerts_types, ["Imp Travel", "New Country"])
+
+        # Test remove mode with quoted values
+        call_command("setup_config", "-r", "filtered_alerts_types=['New Country']")
+        config.refresh_from_db()
+        self.assertListEqual(config.filtered_alerts_types, ["Imp Travel"])
+
+    def test_setup_config_append_idempotent(self):
+        """Test that running append multiple times doesn't create duplicates (idempotent behavior)"""
+        Config.objects.all().delete()
+        config = Config.objects.create(id=1, filtered_alerts_types=[])
+
+        # Run append command first time
+        call_command("setup_config", "-a", "filtered_alerts_types=['New Device','User Risk Threshold']")
+        config.refresh_from_db()
+        self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold"])
+
+        # Run the SAME command again - should NOT create duplicates
+        call_command("setup_config", "-a", "filtered_alerts_types=['New Device','User Risk Threshold']")
+        config.refresh_from_db()
+        self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold"])
+
+        # Append with mix of existing and new values
+        call_command("setup_config", "-a", "filtered_alerts_types=['User Risk Threshold','Anonymous IP Login']")
+        config.refresh_from_db()
+        # Should only add 'Anonymous IP Login', not duplicate 'User Risk Threshold'
+        self.assertListEqual(config.filtered_alerts_types, ["New Device", "User Risk Threshold", "Anonymous IP Login"])
+
 
 class ResetUserRiskScoreCommandTests(TestCase):
     def setUp(self):
