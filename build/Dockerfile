@@ -18,7 +18,13 @@ RUN pip install --no-cache-dir -r requirements.txt \
 
 
 COPY buffalogs/ /opt/certego/buffalogs/
-RUN chmod +x /opt/certego/buffalogs/run.sh; chmod +x /opt/certego/buffalogs/run_worker.sh; chmod +x /opt/certego/buffalogs/run_beat.sh;
+
+# Fix line endings and set execute permissions
+RUN apt-get update && apt-get install -y dos2unix \
+    && dos2unix /opt/certego/buffalogs/run.sh /opt/certego/buffalogs/run_worker.sh /opt/certego/buffalogs/run_beat.sh \
+    && chmod +x /opt/certego/buffalogs/run.sh /opt/certego/buffalogs/run_worker.sh /opt/certego/buffalogs/run_beat.sh \
+    && apt-get -y purge dos2unix && apt-get -y autoremove && apt-get -y clean
+
 WORKDIR /opt/certego/buffalogs/
 
-CMD [ "./run.sh" ]
+CMD ["/bin/bash", "/opt/certego/buffalogs/run.sh"]

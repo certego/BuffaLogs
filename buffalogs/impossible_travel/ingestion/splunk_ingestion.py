@@ -1,11 +1,13 @@
 import logging
 from datetime import datetime
 
+from impossible_travel.ingestion.base_ingestion import BaseIngestion
+from impossible_travel.utils.connection_retry import create_retry_decorator
+
 try:
     from splunklib import client, results
 except ImportError:
     pass
-from impossible_travel.ingestion.base_ingestion import BaseIngestion
 
 
 class SplunkIngestion(BaseIngestion):
@@ -18,8 +20,18 @@ class SplunkIngestion(BaseIngestion):
         Constructor for the Splunk Ingestion object
         """
         super().__init__(ingestion_config, mapping)
-        try:
-            # Create the Splunk host connection
+        self._initialize_connection()
+
+    def _initialize_connection(self):
+        """Initialize Splunk connection with retry logic."""
+        retry_decorator = create_retry_decorator(
+            retry_config=self.retry_config,
+            exception_types=(ConnectionError, TimeoutError, OSError),
+            operation_name="Splunk connection",
+        )
+
+        @retry_decorator
+        def _connect():
             self.service = client.connect(
                 host=self.ingestion_config.get("host", "localhost"),
                 port=self.ingestion_config.get("port", 8089),
@@ -27,11 +39,31 @@ class SplunkIngestion(BaseIngestion):
                 password=self.ingestion_config.get("password"),
                 scheme=self.ingestion_config.get("scheme", "http"),
             )
-        except ConnectionError as e:
-            logging.error("Failed to establish a connection: %s", e)
-            self.service = None
+            self.service.apps.list()
+            self.logger.info(f"Successfully connected to Splunk at {self.ingestion_config.get('host')}")
 
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        try:
+            _connect()
+        except Exception as e:
+            self.logger.error(f"Failed to connect to Splunk after all retry attempts: {e}")
+            raise
+
+    def _execute_search(self, query: str, search_kwargs: dict):
+        """Execute Splunk search with retry logic."""
+        retry_decorator = create_retry_decorator(
+            retry_config=self.retry_config,
+            exception_types=(ConnectionError, TimeoutError, OSError),
+            operation_name="Splunk search",
+        )
+
+        @retry_decorator
+        def _execute():
+            search_job = self.service.jobs.create(query, **search_kwargs)
+            while not search_job.is_done():
+                search_job.refresh()
+            return results.ResultsReader(search_job.results())
+
+        return _execute()
 
     def process_users(self, start_date: datetime, end_date: datetime) -> list:
         """
@@ -64,24 +96,17 @@ class SplunkIngestion(BaseIngestion):
                 "count": self.ingestion_config.get("bucket_size", 10000),
             }
 
-            search_job = self.service.jobs.create(query, **search_kwargs)
-
-            while not search_job.is_done():
-                search_job.refresh()
-
-            results_reader = results.ResultsReader(search_job.results())
+            results_reader = self._execute_search(query, search_kwargs)
             for result in results_reader:
                 if isinstance(result, dict) and "user.name" in result:
                     users_list.append(result["user.name"])
 
             self.logger.info(f"Successfully got {len(users_list)} users")
 
-        except ConnectionError:
-            self.logger.error(f"Failed to establish a connection with host: {self.ingestion_config.get('host')}")
-        except TimeoutError:
-            self.logger.error(f"Timeout reached for the host: {self.ingestion_config.get('host')}")
         except Exception as e:
-            self.logger.error(f"Exception while querying Splunk: {e}")
+            self.logger.error(f"Failed to retrieve users from Splunk: {e}")
+            raise
+
         return users_list
 
     def process_user_logins(self, start_date: datetime, end_date: datetime, username: str) -> list:
@@ -110,6 +135,7 @@ class SplunkIngestion(BaseIngestion):
               source.intelligence_category
             | sort 0 @timestamp
         """
+
         try:
             search_kwargs = {
                 "earliest_time": start_date_str,
@@ -118,23 +144,15 @@ class SplunkIngestion(BaseIngestion):
                 "count": self.ingestion_config.get("bucket_size", 10000),
             }
 
-            search_job = self.service.jobs.create(query, **search_kwargs)
-
-            # Wait for the job to complete
-            while not search_job.is_done():
-                search_job.refresh()
-
-            results_reader = results.ResultsReader(search_job.results())
+            results_reader = self._execute_search(query, search_kwargs)
             for result in results_reader:
                 if isinstance(result, dict):
                     response.append(result)
 
             self.logger.info(f"Got {len(response)} logins for user {username} to be normalized")
 
-        except ConnectionError:
-            self.logger.error(f"Failed to establish a connection with host: {self.ingestion_config.get('host')}")
-        except TimeoutError:
-            self.logger.error(f"Timeout reached for the host: {self.ingestion_config.get('host')}")
         except Exception as e:
-            self.logger.error(f"Exception while querying Splunk: {e}")
+            self.logger.error(f"Failed to retrieve logins for user {username}: {e}")
+            raise
+
         return response

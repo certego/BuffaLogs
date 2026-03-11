@@ -1,71 +1,103 @@
 {
-    "active_ingestion": "elasticsearch",
-    "elasticsearch": {
-        "url": "http://elasticsearch:9200/",
-        "username": "foobar",
-        "password": "bar",
-        "timeout": 90,
-        "indexes": "cloud-*,fw-proxy-*",
-        "bucket_size": 10000,
-        "custom_mapping": {
-            "@timestamp": "timestamp",
-            "_id": "id",
-            "_index": "index",
-            "user.name": "username",
-            "source.ip": "ip",
-            "user_agent.original": "agent",
-            "source.as.organization.name": "organization",
-            "source.geo.country_name": "country",
-            "source.geo.location.lat": "lat",
-            "source.geo.location.lon": "lon",
-            "source.intelligence_category": "intelligence_category"
-        },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+  "active_ingestion": "elasticsearch",
+  "elasticsearch": {
+    "url": "http://elasticsearch:9200/",
+    "username": "foobar",
+    "password": "bar",
+    "timeout": 90,
+    "retry": {
+      "enabled": true,
+      "max_retries": 10,
+      "initial_backoff": 1,
+      "max_backoff": 30,
+      "max_elapsed_time": 60,
+      "jitter": true
     },
-    "opensearch": {
-        "url": "http://opensearch:9200/",
-        "username": "foobar",
-        "password": "bar",
-        "timeout": 90,
-        "indexes": "cloud-*,fw-proxy-*",
-        "bucket_size": 10000,
-        "custom_mapping": {
-            "@timestamp": "timestamp",
-            "_id": "id",
-            "_index": "index",
-            "user.name": "username",
-            "source.ip": "ip",
-            "user_agent.original": "agent",
-            "source.as.organization.name": "organization",
-            "source.geo.country_name": "country",
-            "source.geo.location.lat": "lat",
-            "source.geo.location.lon": "lon",
-            "source.intelligence_category": "intelligence_category"
-        },
-	"__custom_fields__" : ["url", "username", "password", "timeout", "indexes"]
+    "indexes": "cloud-*,fw-proxy-*",
+    "bucket_size": 10000,
+    "custom_mapping": {
+      "@timestamp": "timestamp",
+      "_id": "id",
+      "_index": "index",
+      "user.name": "username",
+      "source.ip": "ip",
+      "user_agent.original": "agent",
+      "source.as.organization.name": "organization",
+      "source.geo.country_name": "country",
+      "source.geo.location.lat": "lat",
+      "source.geo.location.lon": "lon",
+      "source.intelligence_category": "intelligence_category"
     },
-    "splunk": {
-        "host": "splunk",
-        "port": 8089,
-        "scheme": "http",
-        "username": "foobar",
-        "password": "bar",
-        "timeout": 90,
-        "indexes": "main",
-        "bucket_size": 10000,
-        "custom_mapping": {
-            "user.name": "username",
-            "@timestamp": "timestamp",
-            "source.ip": "ip",
-            "source.geo.country_name": "country",
-            "source.geo.location.lat": "lat",
-            "source.geo.location.lon": "lon",
-            "user_agent.original": "agent",
-            "source.as.organization.name": "organization",
-            "_id": "id",
-            "index": "index",
-            "source.intelligence_category": "intelligence_category"
-        },
-	"__custom_fields__" : ["host","port", "scheme", "username", "password", "timeout", "indexes"]
-      }
+    "__custom_fields__": ["url", "username", "password", "timeout", "indexes"]
+  },
+  "opensearch": {
+    "url": "http://opensearch:9200/",
+    "username": "foobar",
+    "password": "bar",
+    "timeout": 90,
+    "retry": {
+      "enabled": true,
+      "max_retries": 10,
+      "initial_backoff": 1,
+      "max_backoff": 30,
+      "max_elapsed_time": 60,
+      "jitter": true
+    },
+    "indexes": "cloud-*,fw-proxy-*",
+    "bucket_size": 10000,
+    "custom_mapping": {
+      "@timestamp": "timestamp",
+      "_id": "id",
+      "_index": "index",
+      "user.name": "username",
+      "source.ip": "ip",
+      "user_agent.original": "agent",
+      "source.as.organization.name": "organization",
+      "source.geo.country_name": "country",
+      "source.geo.location.lat": "lat",
+      "source.geo.location.lon": "lon",
+      "source.intelligence_category": "intelligence_category"
+    },
+    "__custom_fields__": ["url", "username", "password", "timeout", "indexes"]
+  },
+  "splunk": {
+    "host": "splunk",
+    "port": 8089,
+    "scheme": "http",
+    "username": "foobar",
+    "password": "bar",
+    "timeout": 90,
+    "retry": {
+      "enabled": true,
+      "max_retries": 10,
+      "initial_backoff": 1,
+      "max_backoff": 30,
+      "max_elapsed_time": 60,
+      "jitter": true
+    },
+    "indexes": "main",
+    "bucket_size": 10000,
+    "custom_mapping": {
+      "user.name": "username",
+      "@timestamp": "timestamp",
+      "source.ip": "ip",
+      "source.geo.country_name": "country",
+      "source.geo.location.lat": "lat",
+      "source.geo.location.lon": "lon",
+      "user_agent.original": "agent",
+      "source.as.organization.name": "organization",
+      "_id": "id",
+      "index": "index",
+      "source.intelligence_category": "intelligence_category"
+    },
+    "__custom_fields__": [
+      "host",
+      "port",
+      "scheme",
+      "username",
+      "password",
+      "timeout",
+      "indexes"
+    ]
+  }
 }

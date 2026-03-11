@@ -1,8 +1,13 @@
 import logging
 from datetime import datetime
 
+from elastic_transport import ConnectionError as TransportConnectionError
+from elastic_transport import ConnectionTimeout as TransportConnectionTimeout
 from elasticsearch.dsl import Search, connections
+from elasticsearch.exceptions import ConnectionError as ESConnectionError
+from elasticsearch.exceptions import ConnectionTimeout
 from impossible_travel.ingestion.base_ingestion import BaseIngestion
+from impossible_travel.utils.connection_retry import create_retry_decorator
 
 
 class ElasticsearchIngestion(BaseIngestion):
@@ -15,9 +20,62 @@ class ElasticsearchIngestion(BaseIngestion):
         Constructor for the Elasticsearch Ingestion object
         """
         super().__init__(ingestion_config, mapping)
-        # create the elasticsearch host connection
-        connections.create_connection(hosts=self.ingestion_config["url"], request_timeout=self.ingestion_config["timeout"], verify_certs=False)
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self._initialize_connection()
+
+    def _initialize_connection(self):
+        """Initialize Elasticsearch connection with retry logic."""
+        retry_decorator = create_retry_decorator(
+            retry_config=self.retry_config,
+            exception_types=(
+                TransportConnectionError,
+                TransportConnectionTimeout,
+                ESConnectionError,
+                ConnectionTimeout,
+                ConnectionError,
+                TimeoutError,
+                OSError,
+            ),
+            operation_name="Elasticsearch connection",
+        )
+
+        @retry_decorator
+        def _connect():
+            connections.create_connection(
+                hosts=self.ingestion_config["url"],
+                request_timeout=self.ingestion_config["timeout"],
+                verify_certs=False,
+            )
+            conn = connections.get_connection()
+            conn.cluster.health()
+            self.logger.info(f"Successfully connected to Elasticsearch at {self.ingestion_config['url']}")
+
+        try:
+            _connect()
+        except Exception as e:
+            self.logger.error(f"Failed to connect to Elasticsearch after all retry attempts: {e}")
+            raise
+
+    def _execute_search(self, search_obj):
+        """Execute search with retry logic."""
+        retry_decorator = create_retry_decorator(
+            retry_config=self.retry_config,
+            exception_types=(
+                TransportConnectionError,
+                TransportConnectionTimeout,
+                ESConnectionError,
+                ConnectionTimeout,
+                ConnectionError,
+                TimeoutError,
+                OSError,
+            ),
+            operation_name="Elasticsearch search",
+        )
+
+        @retry_decorator
+        def _execute():
+            return search_obj.execute()
+
+        return _execute()
 
     def process_users(self, start_date: datetime, end_date: datetime) -> list:
         """
@@ -31,7 +89,6 @@ class ElasticsearchIngestion(BaseIngestion):
         :return: list of users strings that logged in Elasticsearch
         :rtype: list
         """
-        response = None
         self.logger.info(f"Starting at: {start_date} Finishing at: {end_date}")
         users_list = []
         s = (
@@ -42,22 +99,23 @@ class ElasticsearchIngestion(BaseIngestion):
             .query("match", **{"event.type": "start"})
             .query("exists", field="user.name")
         )
-        s.aggs.bucket("login_user", "terms", field="user.name", size=self.ingestion_config["bucket_size"])
-        try:
-            response = s.execute()
-        except ConnectionError:
-            self.logger.error(f"Failed to establish a connection with host: {connections.get_connection()}")
-        except TimeoutError:
-            self.logger.error(f"Timeout reached for the host: {connections.get_connection()}")
-        except Exception as e:
-            self.logger.error(f"Exception while quering elasticsearch: {e}")
+        s.aggs.bucket(
+            "login_user",
+            "terms",
+            field="user.name",
+            size=self.ingestion_config["bucket_size"],
+        )
 
-        if response:
-            if response.aggregations:
+        try:
+            response = self._execute_search(s)
+            if response and response.aggregations:
                 self.logger.info(f"Successfully got {len(response.aggregations.login_user.buckets)} users")
                 for user in response.aggregations.login_user.buckets:
-                    if user.key:  # exclude not well-formatted usernames (e.g. "")
+                    if user.key:
                         users_list.append(user.key)
+        except Exception as e:
+            self.logger.error(f"Failed to retrieve users from Elasticsearch: {e}")
+            raise
 
         return users_list
 
@@ -75,7 +133,6 @@ class ElasticsearchIngestion(BaseIngestion):
         :return: list of the logins (dictionaries) for that username
         :rtype: list of dicts
         """
-        response = None
         user_logins = []
         s = (
             Search(index=self.ingestion_config["indexes"])
@@ -100,29 +157,23 @@ class ElasticsearchIngestion(BaseIngestion):
                     "source.intelligence_category",
                 ]
             )
-            .sort("@timestamp")  # from the oldest to the most recent login
+            .sort("@timestamp")
             .extra(size=self.ingestion_config["bucket_size"])
         )
+
         try:
-            response = s.execute()
-        except ConnectionError:
-            self.logger.error(f"Failed to establish a connection with host: {connections.get_connection()}")
-        except TimeoutError:
-            self.logger.error(f"Timeout reached for the host: {connections.get_connection()}")
+            response = self._execute_search(s)
+            if response:
+                self.logger.info(f"Got {len(response)} logins for the user {username} to be normalized")
+                for hit in response.hits.hits:
+                    hit_dict = hit.to_dict()
+                    tmp = {
+                        "_index": ("fw-proxy" if hit_dict.get("_index", "").startswith("fw-") else hit_dict.get("_index", "").split("-")[0]),
+                        "_id": hit_dict["_id"],
+                    }
+                    tmp.update(hit_dict["_source"])
+                    user_logins.append(tmp)
         except Exception as e:
-            self.logger.error(f"Exception while quering elasticsearch: {e}")
-
-        # create a single standard dict (with the required fields listed in the ingestion.json config file) for each login
-        if response:
-            self.logger.info(f"Got {len(response)} logins for the user {username} to be normalized")
-
-            for hit in response.hits.hits:
-                hit_dict = hit.to_dict()
-                tmp = {
-                    "_index": "fw-proxy" if hit_dict.get("_index", "").startswith("fw-") else hit_dict.get("_index", "").split("-")[0],
-                    "_id": hit_dict["_id"],
-                }
-                tmp.update(hit_dict["_source"])
-                user_logins.append(tmp)
+            self.logger.error(f"Failed to retrieve logins for user {username}: {e}")
 
         return user_logins
