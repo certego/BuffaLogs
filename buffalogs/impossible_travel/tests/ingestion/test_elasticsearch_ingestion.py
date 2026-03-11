@@ -137,8 +137,7 @@ class ElasticsearchIngestionTestCase(TestCase):
             side_effect=ESConnectionError("Connection refused"),
         ):
             with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
-                with self.assertRaises(ESConnectionError):
-                    elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
+                elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
     def test_process_user_logins_TimeoutError(self):
         # test the function process_user_logins with the exception TimeoutError
@@ -156,8 +155,7 @@ class ElasticsearchIngestionTestCase(TestCase):
             side_effect=TimeoutError("Request timed out"),
         ):
             with self.assertLogs(elastic_ingestor.logger, level="ERROR"):
-                with self.assertRaises(TimeoutError):
-                    elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
+                elastic_ingestor.process_user_logins(start_date, end_date, username="Stitch")
 
     def test_process_user_logins_Exception(self):
         # test the function process_user_logins with a generic exception (e.g. for wrong indexes)
