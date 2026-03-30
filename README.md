@@ -111,9 +111,6 @@ Then you can safely delete this repository.
 5. Commit a PR from the develop to the main branch with the version as a Title and the changes as a comment
 6. Now you can export BuffaLogs copying the `buffalogs-x.y.z.tar.gz` package into your project
 
-## Licence
-This project is protected by the Apache Licence 2.0.
-
 ##  Contribution
 BuffaLogs is an Open Source project and was developed in order to allow enrichments from people with any level of experience, but please read carefully the [Contribution guidelines](CONTRIBUTING.md) before making any changes to the project.
 
