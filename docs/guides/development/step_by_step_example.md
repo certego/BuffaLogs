@@ -1,4 +1,7 @@
 ##  A Step by step Example
+
+**Alternative Setup**(optional): For a simplified development experience with all services pre-configured, consider using [Development with DevContainers](development_with_devcontainers.md) instead of manual setup.
+
 It is possible to create random logs to test the project just by running the commands below:
 1. Launch Elasticsearch and Kibana with the `docker compose -f docker-compose.yaml -f docker-compose.elastic.yaml up -d elasticsearch kibana` command`
 2. Load the Elastic Common Schema template running the `./load_templates.sh` script

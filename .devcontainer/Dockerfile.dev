@@ -1,0 +1,45 @@
+FROM python:3.12-slim-trixie
+
+ENV INSTALL_PATH /opt/certego
+RUN mkdir -p $INSTALL_PATH
+WORKDIR $INSTALL_PATH
+
+# Install system dependencies
+RUN sed -i 's/main/main non-free/g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get -y install \
+    gcc \
+    curl \
+    git \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python packages
+COPY buffalogs/ /opt/certego/buffalogs/
+RUN pip install --no-cache-dir -r buffalogs/requirements.txt -r buffalogs/requirements_dev.txt
+
+# Install additional development packages
+RUN pip install --no-cache-dir \
+    django-debug-toolbar \
+    django-extensions \
+    ipython \
+    pytest-django \
+    pytest-cov \
+    black==25.1.0 \
+    pylint==3.3.5 \
+    flake8==7.1.2 \
+    debugpy
+
+RUN chmod +x /opt/certego/buffalogs/run.sh
+RUN chmod +x /opt/certego/buffalogs/run_worker.sh
+RUN chmod +x /opt/certego/buffalogs/run_beat.sh
+
+WORKDIR /opt/certego/buffalogs/
+
+# Create socket directory for uwsgi
+RUN mkdir -p /var/run/nginx-sockets
+
+# Expose port for development server
+EXPOSE 8000
+
+CMD ["sleep", "infinity"]
