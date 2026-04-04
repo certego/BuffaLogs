@@ -26,6 +26,27 @@ class BaseIngestion(ABC):
         self.ingestion_config = ingestion_config
         self.mapping = mapping
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.retry_config = self._read_retry_config()
+
+    def _read_retry_config(self) -> dict:
+        """
+        Read retry configuration from ingestion_config.
+        Provides default values if not specified.
+
+        :return: retry configuration dictionary
+        :rtype: dict
+        """
+        default_retry_config = {
+            "enabled": True,
+            "max_retries": 10,
+            "initial_backoff": 1,
+            "max_backoff": 30,
+            "max_elapsed_time": 60,
+            "jitter": True,
+        }
+
+        retry_config = self.ingestion_config.get("retry", {})
+        return {**default_retry_config, **retry_config}
 
     @abstractmethod
     def process_users(self, start_date: datetime, end_date: datetime) -> list:

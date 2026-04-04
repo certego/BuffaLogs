@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from impossible_travel.ingestion.elasticsearch_ingestion import ElasticsearchIngestion
 from impossible_travel.tests.utils import load_ingestion_config_data, load_test_data
@@ -6,17 +8,18 @@ from impossible_travel.tests.utils import load_ingestion_config_data, load_test_
 class TestBaseIngestion(TestCase):
 
     def setUp(self):
-        # executed once per test (at the beginning)
         self.ingestion_config = load_ingestion_config_data()
 
-    def test_normalize_fields_elasticsearch_user1(self):
-        # test the _normalize_fields() fields normalization for Elasticsearch login response user1
-        logins_returned_user1 = load_test_data("test_data_elasticsearch_returned_logins_user1")
+    def _make_ingestor(self):
+        with patch.object(ElasticsearchIngestion, "_initialize_connection"):
+            return ElasticsearchIngestion(
+                ingestion_config=self.ingestion_config["elasticsearch"],
+                mapping=self.ingestion_config["elasticsearch"]["custom_mapping"],
+            )
 
-        # user1
-        actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
-        ).normalize_fields(logins=logins_returned_user1)
+    def test_normalize_fields_elasticsearch_user1(self):
+        logins_returned_user1 = load_test_data("test_data_elasticsearch_returned_logins_user1")
+        actual_result = self._make_ingestor().normalize_fields(logins=logins_returned_user1)
         expected_result = [
             {
                 "timestamp": "2025-02-26T13:40:15.173Z",
@@ -49,13 +52,8 @@ class TestBaseIngestion(TestCase):
         self.assertListEqual(expected_result, actual_result)
 
     def test_normalize_fields_elasticsearch_user2(self):
-        # test the _normalize_fields() fields normalization for Elasticsearch login response user2
         logins_returned_user2 = load_test_data("test_data_elasticsearch_returned_logins_user2")
-
-        # user1
-        actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
-        ).normalize_fields(logins=logins_returned_user2)
+        actual_result = self._make_ingestor().normalize_fields(logins=logins_returned_user2)
         expected_result = [
             {
                 "timestamp": "2025-02-26T13:56:21.123Z",
@@ -69,19 +67,14 @@ class TestBaseIngestion(TestCase):
                 "country": "Germany",
                 "lat": 51.0951,
                 "lon": 10.2714,
-            }
+            },
         ]
         self.assertEqual(len(expected_result), len(actual_result))
         self.assertListEqual(expected_result, actual_result)
 
     def test_normalize_fields_elasticsearch_user3(self):
-        # test the _normalize_fields() fields normalization for Elasticsearch login response user3
         logins_returned_user3 = load_test_data("test_data_elasticsearch_returned_logins_user3")
-
-        # user1
-        actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
-        ).normalize_fields(logins=logins_returned_user3)
+        actual_result = self._make_ingestor().normalize_fields(logins=logins_returned_user3)
         expected_result = [
             {
                 "timestamp": "2025-02-26T13:57:49.953Z",
@@ -114,13 +107,8 @@ class TestBaseIngestion(TestCase):
         self.assertListEqual(expected_result, actual_result)
 
     def test_normalize_fields_elasticsearch_user4(self):
-        # test the _normalize_fields() fields normalization for Elasticsearch login response user4
         logins_returned_user4 = load_test_data("test_data_elasticsearch_returned_logins_user4")
-
-        # user1
-        actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
-        ).normalize_fields(logins=logins_returned_user4)
+        actual_result = self._make_ingestor().normalize_fields(logins=logins_returned_user4)
         expected_result = [
             {
                 "timestamp": "2025-02-26T13:59:59.167Z",
@@ -153,13 +141,8 @@ class TestBaseIngestion(TestCase):
         self.assertListEqual(expected_result, actual_result)
 
     def test_normalize_fields_elasticsearch_user5(self):
-        # test the _normalize_fields() fields normalization for Elasticsearch login response user4
         logins_returned_user5 = load_test_data("test_data_elasticsearch_returned_logins_user5")
-
-        # user1
-        actual_result = ElasticsearchIngestion(
-            ingestion_config=self.ingestion_config["elasticsearch"], mapping=self.ingestion_config["elasticsearch"]["custom_mapping"]
-        ).normalize_fields(logins=logins_returned_user5)
+        actual_result = self._make_ingestor().normalize_fields(logins=logins_returned_user5)
         expected_result = [
             {
                 "timestamp": "2025-02-26T14:02:10.167Z",
@@ -173,7 +156,7 @@ class TestBaseIngestion(TestCase):
                 "country": "Germany",
                 "lat": 45.6342,
                 "lon": 18.2578,
-            }
+            },
         ]
         self.assertEqual(len(expected_result), len(actual_result))
         self.assertListEqual(expected_result, actual_result)
