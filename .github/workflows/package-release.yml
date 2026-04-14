@@ -21,6 +21,6 @@ jobs:
           python setup.py sdist
 
       - name: Release and upload asset
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: django-buffalogs/dist/buffalogs*
